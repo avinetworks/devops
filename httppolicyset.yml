@@ -1,4 +1,4 @@
-# Create 2 Pool, HTTPPolicySet to direct traffic to each, and Virtual Service 
+# Create 2 Pools, HTTPPolicySet to direct traffic to each, and Virtual Service 
 ---
 - hosts: localhost
   connection: local
