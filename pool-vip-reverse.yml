@@ -1,3 +1,4 @@
+# Remove a Virtual Service, and it's corresponding Pool.
 ---
 - hosts: localhost
   connection: local
