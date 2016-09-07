@@ -50,5 +50,5 @@
             key_size: SSL_KEY_2048_BITS
             exponent: 65537
           algorithm: SSL_KEY_ALGORITHM_RSA
-        type: SSL_CERTIFICATE_TYPE_VIRTUALSERVICE
-        name: System-Default-Cert
+      type: SSL_CERTIFICATE_TYPE_VIRTUALSERVICE
+      name: System-Default-Cert
