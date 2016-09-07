@@ -1,0 +1,47 @@
+# Remove a Virtual Service, and it's corresponding Pool.
+---
+- hosts: localhost
+  connection: local
+  vars:
+    controller: 10.10.27.90
+    username: admin
+    password: AviNetworks123!
+  tasks:
+  - avi_sslkeyandcertificate:
+      controller: "{{ controller }}"
+      username: "{{ username }}"
+      password: "{{ password }}"
+      certificate:
+        public_key: |
+          -----BEGIN PUBLIC KEY-----
+          MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAw6/bkUaozvMEWjhK5IMZ
+          sJ6a+iT+2nOVKH57WWVJZ7+9Nivx779/VusMTjBPs7r18m6eR9adUFXVvlJQ39cG
+          tdq3YoM2NvfKpSeGXYWzQzLpmryaQJwMs+S/wK/Y+SBrEyv+/VNHtc+zxk/Gof15
+          AZgjFk5g2UGX35Y/Fjkh6zu4YDNJjFDGcWU80EQYZT29Vv0DkM1TYCReROHlx4h0
+          vKNV7WQK3NkVKCzmAw488oYHFn5yOWofJyfvdenvdsA5DhT4oh/2G22Nzyib7xz+
+          epfKwcSo5NO1jvZh+cGBuCUCMtVxyfqTzdO7/v4FLaZw+hEvAcO5zW5hUSvxL0Xq
+          hQIDAQAB
+          -----END PUBLIC KEY-----
+        self_signed: true
+        certificate: |
+          -----BEGIN CERTIFICATE-----
+          MIIDOjCCAiKgAwIBAgIJAPyCkh/dTfa1MA0GCSqGSIb3DQEBCwUAMB4xHDAaBgNV
+          BAMME1N5c3RlbSBEZWZhdWx0IENlcnQwHhcNMTYwODIzMTg0NjUwWhcNMjEwODIy
+          MTg0NjUwWjAeMRwwGgYDVQQDDBNTeXN0ZW0gRGVmYXVsdCBDZXJ0MIIBIjANBgkq
+          hkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAw6/bkUaozvMEWjhK5IMZsJ6a+iT+2nOV
+          KH57WWVJZ7+9Nivx779/VusMTjBPs7r18m6eR9adUFXVvlJQ39cGtdq3YoM2NvfK
+          pSeGXYWzQzLpmryaQJwMs+S/wK/Y+SBrEyv+/VNHtc+zxk/Gof15AZgjFk5g2UGX
+          35Y/Fjkh6zu4YDNJjFDGcWU80EQYZT29Vv0DkM1TYCReROHlx4h0vKNV7WQK3NkV
+          KCzmAw488oYHFn5yOWofJyfvdenvdsA5DhT4oh/2G22Nzyib7xz+epfKwcSo5NO1
+          jvZh+cGBuCUCMtVxyfqTzdO7/v4FLaZw+hEvAcO5zW5hUSvxL0XqhQIDAQABo3sw
+          eTAJBgNVHRMEAjAAMCwGCWCGSAGG+EIBDQQfFh1PcGVuU1NMIEdlbmVyYXRlZCBD
+          ZXJ0aWZpY2F0ZTAdBgNVHQ4EFgQUnzgD6c+uOwvVsdCWAxcRgFcb1powHwYDVR0j
+          BBgwFoAUnzgD6c+uOwvVsdCWAxcRgFcb1powDQYJKoZIhvcNAQELBQADggEBAJt2
+          UoDUrgZg2ziikpqYV4Ut+qcH0f6N2DJU52KYFRTD+Qk0KhllMatfr1TJr6N3OKmY
+          8yzHTieTrdZuh6VtMg4vg5HRlj955vpC4w30PEB/r77Cs0Kij3wL5Y8mKmpWQjsQ
+          Li7WGCAHQCfvBDvH6lTiLhjeEm4M1G2XBYQ4tyQaVTQ8KE8lIzhxEBmex8/KKP2l
+          +JnRkccPIe3X7e3/fbAkWHb+b32EAZ/6C0sh42WhCadhG3K/n3sctJQlPrvdd/j2
+          T3DG6QYzYpqT/zojIBSBqDVbd8i+kagK6AGUonbGmgRwRxxyEb/41sWiy+o3Sdk/
+          OerfmjMMAJOZ6l/5vuY=
+          -----END CERTIFICATE-----
+      name: System-Default-Cert2
