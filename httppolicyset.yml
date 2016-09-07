@@ -1,4 +1,4 @@
-# Create 2 Pools, HTTPPolicySet to direct traffic to each, and Virtual Service 
+# Create 2 Pools, HTTPPolicySet to direct traffic to each, and Virtual Service
 ---
 - hosts: localhost
   connection: local
@@ -19,7 +19,6 @@
         - ip:
             addr: 10.90.130.8
             type: V4
-          enabled: false
         - ip:
             addr: 10.90.130.7
             type: V4
