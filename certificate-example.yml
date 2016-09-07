@@ -1,4 +1,4 @@
-# Remove a Virtual Service, and it's corresponding Pool.
+# Create a certificate SSL Certificate
 ---
 - hosts: localhost
   connection: local
