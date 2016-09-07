@@ -44,4 +44,10 @@
           T3DG6QYzYpqT/zojIBSBqDVbd8i+kagK6AGUonbGmgRwRxxyEb/41sWiy+o3Sdk/
           OerfmjMMAJOZ6l/5vuY=
           -----END CERTIFICATE-----
-      name: System-Default-Cert2
+        signature_algorithm: sha256WithRSAEncryption
+        key_params:
+          rsa_params:
+            key_size: SSL_KEY_2048_BITS
+            exponent: 65537
+          algorithm: SSL_KEY_ALGORITHM_RSA
+      name: System-Default-Cert
