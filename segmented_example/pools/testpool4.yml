@@ -1,0 +1,16 @@
+- avi_pool:
+    controller: "{{ controller }}"
+    username: "{{ username }}"
+    password: "{{ password }}"
+    tenant: "{{ tenant }}"
+    name: testpool4
+    state: present
+    health_monitor_refs:
+      - '/api/healthmonitor?name=System-HTTP'
+    servers:
+      - ip:
+          addr: 10.90.130.8
+          type: V4
+      - ip:
+          addr: 10.90.130.7
+          type: V4
