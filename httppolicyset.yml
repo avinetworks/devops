@@ -6,11 +6,13 @@
     controller: 10.10.27.90
     username: admin
     password: AviNetworks123!
+    tenant: admin
   tasks:
   - avi_pool:
       controller: "{{ controller }}"
       username: "{{ username }}"
       password: "{{ password }}"
+      tenant: "{{ tenant }}"
       name: testpool1
       state: present
       health_monitor_refs:
@@ -26,6 +28,7 @@
       controller: "{{ controller }}"
       username: "{{ username }}"
       password: "{{ password }}"
+      tenant: "{{ tenant }}"
       name: testpool2
       state: present
       health_monitor_refs:
@@ -41,6 +44,7 @@
       controller: "{{ controller }}"
       username: "{{ username }}"
       password: "{{ password }}"
+      tenant: "{{ tenant }}"
       name: test-HTTP-Policy-Set
       tenant_ref: admin
       http_request_policy:
@@ -76,6 +80,7 @@
       controller: "{{ controller }}"
       username: "{{ username }}"
       password: "{{ password }}"
+      tenant: "{{ tenant }}"
       name: newtestvs
       state: present
       performance_limits:
@@ -91,7 +96,7 @@
       ip_address:
         addr: 10.90.131.103
         type: V4
-      pool_ref: '/api/pool?name=testpool2'
+      pool_ref: '/api/pool?name=testpool1'
       http_policies:
         - index: 11
           http_policy_set_ref: '/api/httppolicyset?name=test-HTTP-Policy-Set'

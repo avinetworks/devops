@@ -6,11 +6,13 @@
     controller: 10.10.27.90
     username: admin
     password: AviNetworks123!
+    tenant: admin
   tasks:
   - avi_virtualservice:
       controller: "{{ controller }}"
       username: "{{ username }}"
       password: "{{ password }}"
+      tenant: "{{ tenant }}"
       name: newtestvs
       state: absent
       performance_limits:
@@ -24,14 +26,15 @@
       ssl_key_and_certificate_refs:
         - '/api/sslkeyandcertificate?name=System-Default-Cert'
       ip_address:
-        addr: 10.90.131.103
+        addr: 10.90.131.105
         type: V4
       pool_ref: '/api/pool?name=testpool2'
   - avi_pool:
       controller: "{{ controller }}"
       username: "{{ username }}"
       password: "{{ password }}"
-      name: testpool2
+      tenant: "{{ tenant }}"
+      name: testpool1
       state: absent
       health_monitor_refs:
         - '/api/healthmonitor?name=System-HTTP'

@@ -1,5 +1,4 @@
 ---
-#test ansible script for ec2 deploy
 - hosts: localhost
   connection: local
   tasks:

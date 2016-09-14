@@ -6,11 +6,13 @@
     controller: 10.10.27.90
     username: admin
     password: AviNetworks123!
+    tenant: admin
   tasks:
   - avi_sslkeyandcertificate:
       controller: "{{ controller }}"
       username: "{{ username }}"
       password: "{{ password }}"
+      tenant: "{{ tenant }}"
       key: |
         -----BEGIN PRIVATE KEY-----
         MIIJQwIBADANBgkqhkiG9w0BAQEFAASCCS0wggkpAgEAAoICAQC23047XEGJYPEK
