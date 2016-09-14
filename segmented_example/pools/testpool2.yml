@@ -14,3 +14,4 @@
       - ip:
           addr: 10.90.130.7
           type: V4
+    register: testpool2

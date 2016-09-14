@@ -1,0 +1,21 @@
+- avi_virtualservice:
+    controller: "{{ controller }}"
+    username: "{{ username }}"
+    password: "{{ password }}"
+    tenant: "{{ tenant }}"
+    name: MyVirtualService1
+    state: present
+    performance_limits:
+      max_concurrent_connections: 1000
+    services:
+      - port: 443
+        enable_ssl: true
+      - port: 80
+    ssl_profile_ref: '/api/sslprofile?name=System-Standard'
+    application_profile_ref: '/api/applicationprofile?name=System-Secure-HTTP'
+    ssl_key_and_certificate_refs:
+      - '/api/sslkeyandcertificate?name=System-Default-Cert'
+    ip_address:
+      addr: 10.90.131.105
+      type: V4
+    pool_ref: '/api/pool?name=testpool1'
