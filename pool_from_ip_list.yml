@@ -1,0 +1,34 @@
+# 
+# @author: Gaurav Rastogi (grastogi@avinetworks.com)
+#
+# This playbook creates a pool from a comma separated pool servers 
+# provided in the arguments.
+#
+# Usage: 
+#   ansible-playbook  -M network/avi --extra-vars "username=admin password=avi123 controller=10.10.25.42 pool=p1 pool_servers_ip=10.10.10.10,20.20.20.20"
+# 
+---
+# Example of how to use a list of IP addresses and create server objects
+# that can be then used in the AVI Pool configuration
+- hosts: localhost
+  connection: local
+  vars:
+    controller: "{{ controller }}"
+    username: "{{ username }}"
+    password: "{{ password }}"
+    pool_name: "{{ pool_name }}"
+    pool_servers_ip: "{{ pool_servers }}"
+  tasks:
+  - name: build server list
+    set_fact: 
+      servers: "{{servers|default([]) + [{'ip': {'addr': item, 'type': 'V4'}}] }}"
+    with_items: "{{pool_servers_ip.split(',')}}"
+  - debug:
+      msg: "{{servers}}"
+  - avi_pool:
+      controller: "{{ controller }}"
+      username: "{{ username }}"
+      password: "{{ password }}"
+      name: "{{ pool_name }}"
+      state: present
+      servers: "{{ servers }}"
