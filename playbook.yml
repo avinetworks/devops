@@ -1,4 +1,4 @@
-# ansible-playbook
+# ansible-playbook playbook.yml --extra-vars "rhn_username=myuser rhn_password=foo eth0=ens10001 eth1=ens10002"
 ---
 - hosts: hosts
   roles:
