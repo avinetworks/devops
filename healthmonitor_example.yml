@@ -1,19 +1,21 @@
 ---
 - hosts: localhost
   connection: local
+  roles:
+    - role: avinetworks.avisdk
   tasks:
-  - avi_healthmonitor:
-      controller: 10.10.27.90
-      username: admin
-      password: AviNetworks123!
-      https_monitor:
-        http_request: HEAD / HTTP/1.0
-        http_response_code:
-          - HTTP_2XX
-          - HTTP_3XX
-      receive_timeout: 4
-      failed_checks: 3
-      send_interval: 10
-      successful_checks: 3
-      type: HEALTH_MONITOR_HTTPS
-      name: MyWebsite-HTTPS
+    - avi_healthmonitor:
+        controller: 10.10.27.90
+        username: admin
+        password: AviNetworks123!
+        https_monitor:
+          http_request: HEAD / HTTP/1.0
+          http_response_code:
+            - HTTP_2XX
+            - HTTP_3XX
+        receive_timeout: 4
+        failed_checks: 3
+        send_interval: 10
+        successful_checks: 3
+        type: HEALTH_MONITOR_HTTPS
+        name: MyWebsite-HTTPS

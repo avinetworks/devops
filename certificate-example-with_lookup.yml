@@ -2,22 +2,19 @@
 ---
 - hosts: localhost
   connection: local
-  vars:
-    controller: 10.10.27.90
-    username: admin
-    password: AviNetworks123!
-    tenant: admin
+  roles:
+    - role: avinetworks.avisdk
   tasks:
-  - debug: msg="Private Key is {{ lookup('file', 'private_key.pem') }}"
-  - debug: msg="Public Cert is {{ lookup('file', 'certificate.crt')}}"
-  - avi_sslkeyandcertificate:
-      controller: "{{ controller }}"
-      username: "{{ username }}"
-      password: "{{ password }}"
-      tenant: "{{ tenant }}"
-      key: "{{ lookup('file', 'private_key.pem') }}"
-      certificate:
-        self_signed: true
-        certificate: "{{ lookup('file', 'certificate.crt')}}"
-      type: SSL_CERTIFICATE_TYPE_VIRTUALSERVICE
-      name: MyTestCert
+    - debug: msg="Private Key is {{ lookup('file', 'private_key.pem') }}"
+    - debug: msg="Public Cert is {{ lookup('file', 'certificate.crt')}}"
+    - avi_sslkeyandcertificate:
+        controller: 10.10.27.90
+        username: admin
+        password: AviNetworks123!
+        tenant: admin
+        key: "{{ lookup('file', 'private_key.pem') }}"
+        certificate:
+          self_signed: true
+          certificate: "{{ lookup('file', 'certificate.crt')}}"
+        type: SSL_CERTIFICATE_TYPE_VIRTUALSERVICE
+        name: MyTestCert
