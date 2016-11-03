@@ -1,4 +1,6 @@
 ---
+# Usage
+# ansible-playbook -M ~/workspace/build/ansible aws_vs.yml  --extra-vars '{"controller": "xxxxx", "username": "xxxx", "password": "xxxx", "tenant": "xxxx", "cs_items": [{"name": "blah", "pool": "abc", "match_str": ["xby", "rst"]}, {"name": "blah4", "pool": "abc", "match_str": ["xby2", "rst2"]}]}'
 - hosts: localhost
   vars:
     cloud_name: AWS Cloud
@@ -43,22 +45,31 @@
         tenant: "{{ tenant }}"
         cloud_ref: "/api/cloud?name={{ cloud_name }}"
         name: abc 
-    - name: Create Content switching rules
+    - name: Create Content switching rules array
       set_fact:
-        cs_rules:
-          - index: "{{ item.0 | int }}"
-            enable: true
-            name: "{{ item.1.name }}"
-            match:
-              path:
-                match_case: INSENSITIVE
-                match_str: "{{ item.1.match_str }}"
-                match_criteria: CONTAINS
-            switching_action:
-              action: HTTP_SWITCHING_SELECT_POOL
-              status_code: HTTP_LOCAL_RESPONSE_STATUS_CODE_200
-              pool_ref: "/api/pool?name={{ item.1.pool }}"
+        cs_rule:
+          index: "{{ item.0 | int }}"
+          enable: true
+          name: "{{ item.1.name }}"
+          match:
+            path:
+              match_case: INSENSITIVE
+              match_str: "{{ match_str|default([]) + item.1.match_str }}"
+              match_criteria: CONTAINS
+          switching_action:
+            action: HTTP_SWITCHING_SELECT_POOL
+            status_code: HTTP_LOCAL_RESPONSE_STATUS_CODE_200
+            pool_ref: "/api/pool?name={{ item.1.pool }}"
+      register: cs_rules_array
       with_indexed_items: "{{ cs_items }}"
+    - name: dump cs_rules_results
+      debug: msg="{{ cs_rules_array }}"
+    - name: create cs_rule array
+      set_fact:
+        cs_rules: "{{cs_rules|default([]) + [item.ansible_facts.cs_rule] }}"
+      with_items: "{{ cs_rules_array.results }}"
+    - name: dump final
+      debug: msg="{{ cs_rules }}"
     - avi_httppolicyset:
         #state: absent
         controller: "{{ controller }}"
@@ -71,8 +82,7 @@
           rules: "{{ cs_rules }}"
         is_internal_policy: false
       register: http_policy_obj
-    - debug: var=http_policy_obj.obj
-    - debug: var=http_policy_obj.old_obj
+    - debug: var=http_policy_obj
     - avi_virtualservice:
         #state: absent
         controller: "{{ controller }}"
