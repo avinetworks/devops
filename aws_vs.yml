@@ -1,0 +1,92 @@
+---
+- hosts: localhost
+  vars:
+    cloud_name: AWS Cloud
+    subnet_name: 2A-public
+    cs_items: "{{ cs_items }}"
+    policy_set: blah
+    tenant: "{{ tenant }}"
+    controller: "{{ controller }}"
+    username: "{{ username }}"
+    password: "{{ password }}"
+  #roles:
+  #  - role: avinetworks.avisdk
+  tasks:
+    - avi_api_session:
+        controller: "{{ controller }}"
+        username: "{{ username }}"
+        password: "{{ password }}"
+        tenant: "{{ tenant }}"
+        http_method: get
+        path: "cloud?name={{ cloud_name }}"
+      register: cloud_data
+    - avi_api_session:
+        controller: "{{ controller }}"
+        username: "{{ username }}"
+        password: "{{ password }}"
+        tenant: "{{ tenant }}"
+        http_method: get
+        path: networksubnetlist
+        params:
+          include_name: true
+          sort: name
+          name: "{{ subnet_name }}"
+          auto_allocate_only: true
+          cloud_uuid: "{{ cloud_data.obj.results[0].uuid}}"
+      register: subnets
+    - debug: var=subnets
+    - avi_pool:
+        #state: absent
+        controller: "{{ controller }}"
+        username: "{{ username }}"
+        password: "{{ password }}"
+        tenant: "{{ tenant }}"
+        cloud_ref: "/api/cloud?name={{ cloud_name }}"
+        name: abc 
+    - name: Create Content switching rules
+      set_fact:
+        cs_rules:
+          - index: "{{ item.0 | int }}"
+            enable: true
+            name: "{{ item.1.name }}"
+            match:
+              path:
+                match_case: INSENSITIVE
+                match_str: "{{ item.1.match_str }}"
+                match_criteria: CONTAINS
+            switching_action:
+              action: HTTP_SWITCHING_SELECT_POOL
+              status_code: HTTP_LOCAL_RESPONSE_STATUS_CODE_200
+              pool_ref: "/api/pool?name={{ item.1.pool }}"
+      with_indexed_items: "{{ cs_items }}"
+    - avi_httppolicyset:
+        #state: absent
+        controller: "{{ controller }}"
+        username: "{{ username }}"
+        password: "{{ password }}"
+        tenant: "{{ tenant }}"
+        name: "{{ policy_set }}"
+        tenant: "{{ tenant }}"
+        http_request_policy:
+          rules: "{{ cs_rules }}"
+        is_internal_policy: false
+      register: http_policy_obj
+    - debug: var=http_policy_obj.obj
+    - debug: var=http_policy_obj.old_obj
+    - avi_virtualservice:
+        #state: absent
+        controller: "{{ controller }}"
+        username: "{{ username }}"
+        password: "{{ password }}"
+        tenant: "{{ tenant }}"
+        cloud_ref: "/api/cloud?name={{ cloud_name }}"
+        name: avi_aws_test
+        services:
+          - port: 80
+        subnet_uuid: "{{ subnets.obj.results[0].uuid }}"
+        auto_allocate_ip: true
+        http_policies:
+          - index: 11
+            http_policy_set_ref: '/api/httppolicyset?name={{ policy_set }}'
+      register: vip
+
