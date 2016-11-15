@@ -1,0 +1,3 @@
+# from GitHub
+- src: https://github.com/avinetworks/ansible-role-avicontroller/archive/master.tar.gz
+  name: avinetworks.avicontroller

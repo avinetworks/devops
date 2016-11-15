@@ -1,0 +1,28 @@
+galaxy_info:
+  author: Eric Anderson
+  description: Deploy's the AVI Vantage Controller
+  company: Avi Networks
+  issue_tracker_url: https://github.com/avinetworks/ansible-role-avicontroller/issues
+  license: MIT
+  min_ansible_version: 2.0.0
+  github_branch: master
+  platforms:
+  - name: EL
+    versions:
+    - 7
+  - name: Ubuntu
+    versions:
+    - precise
+    - trusty
+    - xenial
+  galaxy_tags:
+    - avi
+    - controller
+    - loadbalancer
+    - avinetworks
+    - avicontroller
+    - centos
+    - ubuntu
+    - mesos
+dependencies:
+  - avinetworks.docker

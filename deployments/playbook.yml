@@ -1,0 +1,25 @@
+# ansible-playbook playbook.yml --extra-vars "rhn_username=myuser rhn_password=foo eth0=ens10001 eth1=ens10002"
+---
+- hosts: hosts
+  roles:
+    - role: samdoran.redhat-subscription
+      rhn_username: {{ rhn_username }}
+      rhn_password: {{ rhn_password }}
+      rhsub_repos:
+        - name: rhel-7-server-extras-rpms
+          state: enable
+    - role: MartinVerges.network_interface
+      network_bond_interfaces:
+        - device: bond0
+          onboot: yes
+          bootproto: static
+          nm_controlled: no
+          bond_slaves: [{{ eth0 }}, {{ eth1 }}]
+          bond_miimon: 100
+          bond_extra_opts: "xmit_hash_policy=layer3+4 use_carrier=1"
+    - role: avinetworks.docker
+  tasks:
+    - yum: name='*' state=latest
+    - selinux: state=disabled
+    - sysctl: name="net.ipv4.ip_forward" value=1 sysctl_set=yes state=present reload=yes
+    - service: name="firewalld" state="stopped" enabled="no"

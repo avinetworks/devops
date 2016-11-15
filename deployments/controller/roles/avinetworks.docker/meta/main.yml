@@ -1,0 +1,35 @@
+galaxy_info:
+  author: Eric Anderson
+  description: Ansible role that installs Docker
+  company: Avi Networks
+  issue_tracker_url: https://github.com/avinetworks/ansible-role-docker/issues
+  license: MIT
+  min_ansible_version: 1.9.3
+  github_branch: master
+  platforms:
+  - name: EL
+    versions:
+    - 6
+    - 7
+  - name: Fedora
+    versions:
+    - 22
+    - 23
+    - 24
+  - name: Ubuntu
+    versions:
+    - precise
+    - trusty
+    - wily
+    - xenial
+  - name: Debian
+    versions:
+    - jessie
+    - stretch
+    - wheezy
+  galaxy_tags:
+  - docker
+  - ubuntu
+  - centos
+  - debian
+dependencies: []

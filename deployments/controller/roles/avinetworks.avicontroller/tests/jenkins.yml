@@ -1,0 +1,4 @@
+---
+- hosts: VMWARE
+  roles:
+    - role: avinetworks.avicontroller

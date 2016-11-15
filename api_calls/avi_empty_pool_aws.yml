@@ -1,0 +1,64 @@
+## Examples:
+# example of adding a empty POOL
+# ansible-playbook avi_empty_pool.yml --extra-vars "pool_name=gary-pool3 health_check=System-HTTP lb_algorithm=LB_ALGORITHM_LEAST_LOAD persistence_type=System-Persistence-Http-Cookie patch_op=add"
+# example of adding a empty POOL with no persistance
+# ansible-playbook avi_empty_pool.yml --extra-vars "pool_name=gary-pool3 health_check=System-HTTP lb_algorithm=LB_ALGORITHM_LEAST_LOAD persistence_type=None patch_op=add"
+# example of modifying a pool - NOTE!!!! this replaces all values
+# ansible-playbook avi_empty_pool.yml --extra-vars "pool_name=gary-pool3 health_check=System-Ping lb_algorithm=LB_ALGORITHM_ROUND_ROBIN persistence_type=System-Persistence-Http-Cookie patch_op=replace"
+---
+- hosts: localhost
+  connection: local
+  vars:
+    controller: 10.74.24.104
+    username: admin
+    password: Football1
+    tenant_name: "{{ tenant_name }}"
+    pool_name: "{{ pool_name }}"
+    health_check: "{{ health_check }}"
+#    pool_servers_ip: "{{ pool_servers }}"
+    lb_algorithm: "{{ lb_algorithm }}"
+    persistence_type: "{{ persistence_type }}"
+    cloud_name: "East VES-NP VPC Internal"
+    application_persistence_profile_ref: application_persistence_profile_ref
+  roles:
+   - role: avinetworks.avisdk
+     install_sdk: false
+  tasks:
+#  - name: build server list
+#    set_fact:
+#     servers: "{{servers|default([]) + [{'ip': {'addr': item, 'type': 'V4'}}] }}"
+#    with_items: "{{pool_servers_ip.split(',')}}"
+#  - name: presistance
+#    set_fact:
+#     pres: "{ 'persistence_type': {{persistence_type}} }"
+  - debug:
+     msg: "{{persistence_type}}"
+  - avi_pool:
+     controller: "{{ controller }}"
+     username: "{{ username }}"
+     password: "{{ password }}"
+     tenant: "{{ tenant_name }}"
+     name: "{{ pool_name }}"
+     cloud_ref: "/api/cloud?name={{ cloud_name }}"
+     state: present
+#     vrf_ref: global
+     health_monitor_refs:
+      - '/api/healthmonitor?name={{health_check}}'
+     lb_algorithm: "{{ lb_algorithm }}"
+     application_persistence_profile_ref: '/api/applicationpersistenceprofile?name={{persistence_type}}'
+#     servers: "{{ servers }}"
+    when: ("{{persistence_type}}" != "None")
+  - avi_pool:
+     controller: "{{ controller }}"
+     username: "{{ username }}"
+     password: "{{ password }}"
+     tenant: "{{ tenant_name }}"
+     name: "{{ pool_name }}"
+     cloud_ref: "/api/cloud?name={{ cloud_name }}"
+     state: present
+#     vrf_ref: global
+     health_monitor_refs:
+      - '/api/healthmonitor?name={{health_check}}'
+     lb_algorithm: "{{ lb_algorithm }}"
+#     servers: "{{ servers }}"
+    when: ("{{persistence_type}}" == "None")

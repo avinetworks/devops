@@ -1,0 +1,58 @@
+---
+- name: APT | Install Prerequisits for APT
+  apt: name="{{ item }}" state=present
+  with_items:
+    - apt-transport-https
+    - ca-certificates
+
+- name: APT | Add Docker GPG Key
+  apt_key:
+    keyserver: hkp://p80.pool.sks-keyservers.net:80
+    id: 58118E89F3A912897C070ADBF76221572C52609D
+
+#Docker’s APT repository contains Docker 1.7.1 and higher.
+- name: APT | Configure Docker repository
+  apt_repository:
+    repo: "deb https://apt.dockerproject.org/repo {{ ansible_distribution|lower}}-{{ ansible_distribution_release }} main"
+    state: present
+
+#For Ubuntu Trusty, Wily, and Xenial, it’s recommended to install the linux-image-extra kernel package.
+#The linux-image-extra package allows you use the aufs storage driver.
+- name: Ubuntu | Install the linux-image-extra kernal package
+  apt: name="linux-image-extra-{{ ansible_kernel }}" state=present
+  when: ansible_distribution == 'Ubuntu' and ansible_distribution_version in ['14.04','15.10']
+
+#If you are installing on Ubuntu 14.04 or 12.04, apparmor is required.
+- name: Ubuntu | Install AppArmor Dependency
+  apt: name=apparmor state=present
+  when: ansible_distribution == 'Ubuntu' and ansible_distribution_version in ['14.04','12.04']
+
+#Docker requires that your kernel be set to 3.13 or higher.
+- name: Ubuntu | Update Kernel Version to >= 3.13
+  apt: name={{ item }} state=present
+  with_items:
+    - linux-image-generic-lts-trusty
+    - linux-headers-generic-lts-trusty
+  when: ansible_distribution == 'Ubuntu' and ansible_distribution_version == '12.04'
+
+#Before we start docker, we need to make sure the system is running on Kernel 3.13 or higher.
+- name: Ubuntu | Update Kernel Version to >= 3.13 | Reboot Host
+  command: sleep 2 && shutdown -r now "Ansible updates triggered"
+  async: 1
+  poll: 0
+  sudo: true
+  ignore_errors: true
+  when: ansible_distribution == 'Ubuntu' and ansible_distribution_version == '12.04'
+
+- name: Ubuntu | Update Kernel Version to at least 3.13 | Wait for Host
+  local_action: wait_for host="{{ inventory_hostname }}" state=started delay=30 timeout=300
+  sudo: false
+  when: ansible_distribution == 'Ubuntu' and ansible_distribution_version == '12.04'
+
+# Remove any previous version of docker.
+- name: APT | Remove old repo lxc-docker
+  apt: name=lxc-docker state=absent
+
+#Install newer version of docker.
+- name: APT | Install Docker Engine
+  apt: name=docker-engine state=present

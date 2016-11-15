@@ -1,0 +1,96 @@
+---
+# check system against minimum requirements
+
+- name: Avi Controller | Requirements | Check if Controller IP is defined.
+  fail: msg="Variable controller_ip is not defined"
+  when: controller_ip == None
+
+- name: Avi Controller | Requirements | Install python-netaddr on Ansible host | yum
+  yum: name=python-netaddr
+  delegate_to: localhost
+  ignore_errors: true
+  failed_when: false
+
+- name: Avi Controller | Requirements | Install python-netaddr on Ansible host | apt
+  apt: name=python-netaddr
+  delegate_to: localhost
+  ignore_errors: true
+  failed_when: false
+
+- name: Avi Controller | Requirements | Install python-netaddr on Ansible host | dnf
+  dnf: name=python-netaddr
+  delegate_to: localhost
+  ignore_errors: true
+  failed_when: false
+
+- name: Avi Controller | Requirements | Verify the IP Address is Valid.
+  assert: { that: "controller_ip | ipaddr" }
+
+- name: Avi Controller | Requirements | Get the management device name
+  shell: "netstat -ie | grep -B1 {{ controller_ip }} | head -n1 | awk -F ':' '{print $1}'"
+  register: mgmt_device
+  changed_when: false
+  when: dev_name == None
+
+- name: Avi Controller | Requirements | Set the management device name
+  set_fact:
+    dev_name: "{{ mgmt_device.stdout }}"
+  when: mgmt_device
+
+- name: Avi Controller | Requirements | Controller needs more than 4 cores.
+  assert:
+    that:
+      - "ansible_processor_cores >= 4"
+      - "con_cores <= ansible_processor_cores"
+
+- name: Avi Controller | Requirements | Set the ansible_memtotal_gb var
+  set_fact:
+    ansible_memtotal_gb: "{{ ansible_memtotal_mb // 1024 }}"
+
+- name: Avi Controller | Requirements | Controller needs between 12GB and {{ ansible_memtotal_mb // 1024 }}GB memory.
+  assert:
+    that:
+      - "ansible_memtotal_mb >= 12288"
+      - "con_memory_gb <= ansible_memtotal_gb"
+
+- name: Avi Controller | Requirements | Create directories for controller
+  file: path="{{ item }}" state=directory mode=0755
+  when: item != None
+  with_items:
+    - "{{ con_disk_path }}"
+    - "{{ con_metrics_disk_path }}"
+    - "{{ con_logs_disk_path }}"
+
+- block:
+    - name: Avi Controller | Requirements | Get disk space on controller disk path
+      shell: "df {{ con_disk_path }} -BG | grep -iv Used | awk '{print $4}' | sed s/G//g"
+      changed_when: false
+      register: con_disk_path_space
+    - name: Avi Controller | Requirements | Check if there is enough space for controller disk path
+      assert:
+        that:
+          - con_disk_gb != None
+          - con_disk_path_space.stdout > con_disk_gb
+  when: con_disk_path != None
+
+- block:
+    - name: Avi Controller | Requirements | Get disk space on controller metrics disk path
+      shell: "df {{ con_metrics_disk_path }} -BG | grep -iv Used | awk '{print $4}' | sed s/G//g"
+      register: con_metrics_disk_path_space
+    - name: Avi Controller | Requirements | Check if there is enough space for controller metrics disk path
+      assert:
+        that:
+          - con_metrics_disk_gb != None
+          - con_metrics_disk_path_space.stdout > con_metrics_disk_gb
+  when: con_metrics_disk_path != None
+
+- block:
+    - name: Avi Controller | Requirements | Get disk space on controller logs disk path
+      shell: "df {{ con_logs_disk_path }} -BG | grep -iv Used | awk '{print $4}' | sed s/G//g"
+      register: con_logs_disk_path_space
+    - name: Avi Controller | Requirements | Check if there is enough space for controller logs disk path
+      assert:
+        that:
+          - con_logs_disk_gb != None
+          - con_logs_disk_path_space.stdout > con_logs_disk_gb
+  when: con_logs_disk_path != None

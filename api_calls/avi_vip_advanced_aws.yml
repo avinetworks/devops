@@ -1,0 +1,66 @@
+---
+- hosts: localhost
+  vars:
+   controller: 10.74.24.104
+   username: admin
+   password: Football1
+   tenant: "{{ tenant_name }}"
+   vip_name: "{{ vip_name }}"
+   pool_name: "{{ pool_name }}"
+   cert_name: "{{ cert_name }}"
+   policy_set: "{{ policy_set }}"
+   state: "{{ state }}"
+#   cloud_name: "{{ cloud_name }}"
+#   subnet_name: "{{ subnet_name }}"
+   cloud_name: "East VES-NP VPC Internal"
+   subnet_name: LBSubnet1
+  roles:
+   - role: avinetworks.avisdk
+  tasks:
+   - avi_api_session:
+       controller: "{{ controller }}"
+       username: "{{ username }}"
+       password: "{{ password }}"
+       tenant: "{{ tenant }}"
+       http_method: get
+       path: "cloud?name={{ cloud_name }}"
+     register: cloud_data
+   - avi_api_session:
+       controller: "{{ controller }}"
+       username: "{{ username }}"
+       password: "{{ password }}"
+       tenant: "{{ tenant }}"
+       http_method: get
+       path: networksubnetlist
+       params:
+         include_name: true
+         sort: name
+         name: "{{ subnet_name }}"
+         auto_allocate_only: true
+         cloud_uuid: "{{ cloud_data.obj.results[0].uuid}}"
+     register: subnets
+   - debug: var=subnets
+   - avi_virtualservice:
+       controller: "{{ controller }}"
+       username: "{{ username }}"
+       password: "{{ password }}"
+       tenant: "{{ tenant }}"
+       cloud_ref: "/api/cloud?name={{ cloud_name }}"
+       vrf_context_ref: "/api/vrfcontext/vrfcontext-97e16764-eccf-4b7a-92e6-aff084a052dc"
+       name: "{{ vip_name }}"
+       state: "{{ state }}"
+       services:
+         - port: 443
+           enable_ssl: true
+         - port: 80
+       ssl_profile_ref: '/api/sslprofile?name=System-Standard'
+       application_profile_ref: '/api/applicationprofile?name=System-Secure-HTTP'
+       ssl_key_and_certificate_refs:
+         - '/api/sslkeyandcertificate?name={{cert_name}}'
+       subnet_uuid: "{{ subnets.obj.results[0].uuid }}"
+       pool_ref: '/api/pool?name={{ pool_name }}'
+       http_policies:
+         - index: 11
+           http_policy_set_ref: '/api/httppolicyset?name={{policy_set}}'
+       auto_allocate_ip: true
+     register: vip

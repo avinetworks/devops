@@ -1,0 +1,65 @@
+#!/bin/sh
+#
+#       /etc/rc.d/init.d/avicontroller
+#
+#       Daemon for avicontroller
+#
+# chkconfig:   2345 99 99
+# description: AVI SE
+
+### BEGIN INIT INFO
+# Provides:       avicontroller
+# Required-Start: docker
+# Required-Stop:
+# Should-Start:
+# Should-Stop:
+# Default-Start: 2 3 4 5
+# Default-Stop:  0 1 6
+# Short-Description: start and stop avicontroller
+# Description: AVICONTROLLER
+### END INIT INFO
+
+
+prestart() {
+/usr/bin/docker kill avicontroller
+/usr/bin/docker rm -f avicontroller
+}
+
+start() {
+prestart
+echo "Starting avicontroller"
+/usr/bin/docker run {{ docker_run_params }}
+}
+
+stop() {
+echo "Stopping avicontroller"
+/usr/bin/docker stop avicontroller
+/usr/bin/docker kill avicontroller
+/usr/bin/docker rm -f avicontroller
+/sbin/ifconfig {{ dev_name }}:1 down
+}
+
+restart() {
+stop
+start
+}
+
+case "$1" in
+start)
+$1
+;;
+stop)
+$1
+;;
+restart)
+$1
+;;
+status)
+status avicontroller
+;;
+*)
+echo $"Usage: $0 {start|stop|status|restart}"
+exit 2
+esac
+
+exit $?
