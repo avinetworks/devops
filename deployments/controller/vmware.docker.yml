@@ -32,7 +32,7 @@
       register: host
     - debug: var=host
     - add_host: name="{{ host.ansible_facts.hw_eth0.ipaddresses[0] }}" groups=hosts ansible_user=root
-    
+
 - hosts: hosts
   tasks:
     - yum: name='*' state=latest
@@ -51,4 +51,5 @@
 
 - hosts: hosts
   roles:
+    - role: avinetworks.docker
     - role: avinetworks.avicontroller
