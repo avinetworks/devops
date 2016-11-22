@@ -1,0 +1,127 @@
+# START ACTUALLY ORCHESTRATING:
+#
+# First thing is first...  Let's create self-signed SSL Certs
+#
+---
+- hosts: localhost
+  vars:
+    CONTROLLER: 10.10.23.1
+    USERNAME: admin
+    PASSWORD: avi123
+    APP: bar
+    LB_persistence: ''
+  #roles:
+  #  - role: avinetworks.avisdk
+  tasks:
+    - name: Set passphrase key_file name
+      set_fact: key_file="{{APP}}.key"
+
+    - name: Set no passphrase key_file name
+      set_fact: key_np_file="{{APP}}_np.key"
+
+    - name: Set cert_file name
+      set_fact: cert_file="{{APP}}_cert.pem"
+
+    - name: Set cert_name
+      set_fact: cert_name="{{APP}}_cert"
+
+    - name: create self-signed SSL certs
+      command: 'openssl req -new -newkey rsa:2048 -x509 -nodes -passout pass:ThisIsV3r1son -subj "/C=US/ST=Texas/L=Dallas/O=IT/CN={{APP}}" -days 365 -keyout "{{key_file}}" -out "{{cert_file}}"'
+
+    - name: Remove passphrase from private key
+      command: 'openssl rsa -in "{{key_file}}" -out "{{key_np_file}}"'
+
+    - name: copy keys to AVI Controllers
+      avi_sslkeyandcertificate:
+        controller: "{{ CONTROLLER }}"
+        username:   "{{ USERNAME }}"
+        password:   "{{ PASSWORD }}"
+        tenant:     "admin"
+        key:        "{{ lookup('file', key_np_file) }}"
+        type: SSL_CERTIFICATE_TYPE_VIRTUALSERVICE
+        certificate:
+          self_signed: true
+          certificate: "{{ lookup('file', cert_file) }}"
+        name:       "{{ cert_name }}"
+
+  #
+  # Cleanup Ansible of any certs or keys as security measure
+  #
+    - name: delete private key from Ansible Tower
+      command: 'rm {{APP}}.key'
+
+    - name: delete private key from Ansible Tower
+      command: 'rm {{APP}}_np.key'
+
+    - name: delete public key from Ansible Tower
+      command: 'rm {{APP}}_cert.pem'
+
+  #
+  # Let's create a server pool for the fqdn
+  #
+    - name: Create a server pool for the application
+      avi_pool:
+        controller: "{{ CONTROLLER }}"
+        username:   "{{ USERNAME }}"
+        password:   "{{ PASSWORD }}"
+        tenant:     "admin"
+        name:       "{{ APP }}_vs_sg"
+        state:      present
+      when: ("{{LB_persistence}}" != "None")
+
+    - name: Create placeholder policy
+      avi_httppolicyset:
+        controller: "{{ CONTROLLER }}"
+        username:   "{{ USERNAME }}"
+        password:   "{{ PASSWORD }}"
+        tenant:     "admin"
+        name:       "{{ APP }}_vs_policy"
+        state:      present
+        tenant_ref: "admin"
+        http_request_policy:
+         rules:
+          - index: 1
+            enable: false
+            name: place-holder
+            match:
+              path:
+                match_case: INSENSITIVE
+                match_str:
+                  - /
+                match_criteria: EQUALS
+            switching_action:
+              action: HTTP_SWITCHING_SELECT_POOL
+              status_code: HTTP_LOCAL_RESPONSE_STATUS_CODE_200
+              pool_ref: "/api/pool?name={{ APP }}_vs_sg"
+        is_internal_policy: false
+
+
+  #
+  # Now, create the virtual service using the basic information already collected
+  #
+    - name: Create Virtual Service
+      avi_virtualservice:
+        controller: "{{ CONTROLLER }}"
+        username:   "{{ USERNAME }}"
+        password:   "{{ PASSWORD }}"
+        tenant:     "admin"
+        name:       "{{ APP }}_vs"
+        state:      present
+        services:
+          - port: 443
+            enable_ssl: true
+          - port: 80
+        ssl_profile_ref: '/api/sslprofile?name=System-Standard'
+        application_profile_ref: '/api/applicationprofile?name=System-Secure-HTTP'
+        ssl_key_and_certificate_refs:
+          - "/api/sslkeyandcertificate?name={{cert_name}}"
+        pool_ref: "/api/pool?name={{ APP }}_vs_sg"
+        # We start at index 11 as AVI reserves the first 10 for internal use
+        http_policies:
+          - index: 11
+            http_policy_set_ref: '/api/httppolicyset?name={{ APP }}_vs_policy'
+        ip_address:
+         addr: '10.90.64.253'
+         type: 'V4'
+      register: vip
+    - debug: var=vip
