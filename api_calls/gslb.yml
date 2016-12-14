@@ -1,0 +1,65 @@
+# Auto-generated from Avi Configuration
+---
+- connection: local
+  hosts: localhost
+  tasks:
+  - avi_gslbservice:
+      controller: '{{ controller }}'
+      password: '{{ password }}'
+      username: '{{ username }}'
+      name: gs-3
+      domain_names:
+      - cloud5.avi.com
+      - cloud6.avi.com
+      groups:
+      - algorithm: GSLB_ALGORITHM_CONSISTENT_HASH
+        members:
+        - enabled: true
+          ip:
+            addr: 10.30.10.1
+            type: V4
+          ratio: 1
+        - enabled: true
+          ip:
+            addr: 10.30.10.10
+            type: V4
+          ratio: 1
+        name: sc
+        priority: 20
+      - algorithm: GSLB_ALGORITHM_ROUND_ROBIN
+        members:
+        - enabled: true
+          ip:
+            addr: 10.30.10.2
+            type: V4
+          ratio: 1
+        name: cn
+        priority: 14
+      - algorithm: GSLB_ALGORITHM_ROUND_ROBIN
+        members:
+        - enabled: true
+          ip:
+            addr: 10.30.10.3
+            type: V4
+          ratio: 1
+        name: in
+        priority: 15
+      health_monitor_scope: GSLB_SERVICE_HEALTH_MONITOR_ALL_MEMBERS
+      num_dns_ip: 2
+  - avi_virtualservice:
+      controller: '{{ controller }}'
+      password: '{{ password }}'
+      username: '{{ username }}'
+      name: dns-vs1
+      ip_address:
+        addr: 10.90.12.74
+        type: V4
+      application_profile_ref: /api/applicationprofile?name=System-DNS
+      network_profile_ref: /api/networkprofile?name=System-UDP-Per-Pkt
+      services:
+      - port: 53
+        override_network_profile_ref: /api/networkprofile?name=System-TCP-Proxy
+
+
+
+
