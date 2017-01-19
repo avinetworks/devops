@@ -1,0 +1,69 @@
+# ansible-playbook playbook.yml --extra-vars "rhn_username=myuser rhn_password=foo eth0=ens10001 eth1=ens10002"
+
+# Notes:
+#   Requirements:
+#     pip install libselinux-python
+#
+---
+- hosts: baremetal-test
+  vars:
+    interface_1: eno1
+    interface_2: eno2
+    rhn_username: "username"
+    rhn_password: "password"
+  # environment:
+  #   http_proxy: http://104.255.50.254:8080
+  #   https_proxy: http://104.255.50.254:8080
+  pre_tasks:
+    - name: Disable SELinux on this host
+      selinux: state=disabled
+    - name: Restart machine
+      shell: sleep 2 && shutdown -r now "Restarting with SELinux Disabled"
+      async: 1
+      poll: 0
+      sudo: true
+      ignore_errors: true
+    - name: Wait for the server to come back
+      local_action: wait_for host={{ inventory_hostname }} state=started delay=30 timeout=300
+      sudo: false
+    - name: Enable ipv4 forwarding
+      sysctl: name="net.ipv4.ip_forward" value=1 sysctl_set=yes state=present reload=yes
+    - name: Disabled and stop Firewalld
+      service: name="firewalld" state="stopped" enabled="no"
+    - name: Disable and stop NetworkManager
+      service: name="NetworkManager" state="stopped" enabled="no"
+    # http://docs.ansible.com/ansible/redhat_subscription_module.html
+    - redhat_subscription:
+        state: present
+        username: "{{ rhn_username }}"
+        password: "{{ rhn_password }}"
+        autosubscribe: true
+  roles:
+    - role: avinetworks.docker
+    - role: avinetworks.network_interface
+      network_ether_interfaces:
+       - device: eth1
+         bootproto: static
+         cidr: 192.168.10.18/24
+         gateway: auto
+         route:
+          - network: 192.168.200.0
+            netmask: 255.255.255.0
+            gateway: 192.168.10.1
+      - device: eth2
+        bootproto: static
+        cidr: 192.168.10.18/24
+        gateway: auto
+        route:
+         - network: 192.168.200.0
+           netmask: 255.255.255.0
+           gateway: 192.168.10.1
+      network_bond_interfaces:
+        - device: bond0
+          onboot: yes
+          bootproto: static
+          nm_controlled: no
+          bond_slaves: ["{{ interface_1 }}", "{{ interface_2 }}"]
+          bond_miimon: 100
+          bond_xmit_hash_policy: layer3+4
+          bond_use_carrier: 1

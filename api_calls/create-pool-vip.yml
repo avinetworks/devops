@@ -6,9 +6,9 @@
     - role: avinetworks.avisdk
   tasks:
     - avi_pool:
-        controller: 10.10.27.90
+        controller: 10.90.115.20
         username: admin
-        password: AviNetworks123!
+        password: Avi12345
         tenant: admin
         name: testpool1
         state: present
@@ -22,9 +22,9 @@
               addr: 10.90.130.7
               type: V4
     - avi_virtualservice:
-        controller: 10.10.27.90
+        controller: 10.90.115.20
         username: admin
-        password: AviNetworks123!
+        password: Avi12345
         tenant: admin
         name: newtestvs
         state: present

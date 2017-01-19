@@ -1,0 +1,49 @@
+---
+hosts: localhost
+vars:
+  vip_address: 10.156.12.213
+roles:
+  - role: avinetworks.avisdk
+tasks:
+  - gce:
+      instance_names: my-instance
+      zone: us-west1-a
+      machine_type: n1-standard-n1
+    register: my-instance
+      ...
+  - debug: var=my-instance
+  - avi_pool:
+      controller: 10.10.27.90
+      username: admin
+      password: AviNetworks123!
+      tenant: admin
+      name: testpool1
+      state: present
+      health_monitor_refs:
+        - '/api/healthmonitor?name=System-HTTP'
+      servers:
+        - ip:
+            addr: "{{ my-instance.ip_address }}"
+            type: V4
+    - avi_virtualservice:
+        controller: 10.10.27.90
+        username: admin
+        password: AviNetworks123!
+        tenant: admin
+        name: newtestvs
+        state: present
+        performance_limits:
+          max_concurrent_connections: 1000
+        services:
+          - port: 443
+            enable_ssl: true
+          - port: 80
+        ssl_profile_ref: '/api/sslprofile?name=System-Standard'
+        application_profile_ref: '/api/applicationprofile?name=System-Secure-HTTP'
+        ssl_key_and_certificate_refs:
+          - '/api/sslkeyandcertificate?name=System-Default-Cert'
+        ip_address:
+          addr: "{{ vip_address }}"
+          type: V4
+        pool_ref: '/api/pool?name=testpool1'
+        

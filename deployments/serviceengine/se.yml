@@ -1,0 +1,10 @@
+---
+- hosts: 10.70.160.102
+  vars:
+    avi_version: 16.3-9010-20161115.045631
+  roles:
+    - role: avinetworks.docker
+    - role: avinetworks.avise
+      se_version: "{{ avi_version }}"
+      master_ctl_ip: 10.70.160.102
+      autoregister: false
