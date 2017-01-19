@@ -20,11 +20,13 @@ parser.add_argument('-p', '--password', required=True, help='Password to authent
 parser.add_argument('-z', '--zabbix_server', required=True, help='The Zabbix server url: format 10.10.27.198 or zabbixserver.avi.local')
 parser.add_argument('--zabbix_user', required=True, help='The Zabbix user.')
 parser.add_argument('--zabbix_password', required=True, help='The Zabbix user password.')
+parser.add_argument('--zabbix_templateid', required=True, help='The template id of the zabbix template we will post the generated itemprototypes to')
 args = parser.parse_args()
 
 zabbix_user = args.zabbix_user
 zabbix_password = args.zabbix_password
 zabbix_server = 'http://' + zabbix_server + '/zabbix/'
+zabbix_templateid = args.zabbix_templateid
 
 avi_controller = args.controller
 avi_user = args.user
@@ -42,12 +44,12 @@ def get_metrics_list(entity_type):
     return metrics_list
 
 def create_lldiscovery_rule(entity_type):
-    zapi.discoveryrule.create(name=entity_type, key_='avi_zabbix_discovery.py[' + entity_type + ']', hostid='10105', type=10, delay=30)
+    zapi.discoveryrule.create(name=entity_type, key_='avi_zabbix_discovery.py[' + entity_type + ']', hostid=zabbix_templateid, type=10, delay=30)
 
 def create_avi_item(ruleid, entity_type, metric_name, metric_description):
     item = zapi.itemprototype.create(
         ruleid=ruleid,
-        hostid='10105',
+        hostid=zabbix_templateid,
         name='{{#OBJTENANT}} {} {{#OBJNAME}} {}'.format(entity_type, metric_name),
         type='2',
         delay='30',
@@ -71,10 +73,10 @@ def create_avi_graph(item, entity_type, metric_name):
     return graph
 
 try:
-    discoveryrule = zapi.discoveryrule.get(filter={'name': args.entity_type, 'hostid': '10105'})[0]
+    discoveryrule = zapi.discoveryrule.get(filter={'name': args.entity_type, 'hostid': zabbix_templateid})[0]
 except:
     create_lldiscovery_rule(args.entity_type)
-    discoveryrule = zapi.discoveryrule.get(filter={'name': args.entity_type, 'hostid': '10105'})[0]
+    discoveryrule = zapi.discoveryrule.get(filter={'name': args.entity_type, 'hostid': zabbix_templateid})[0]
 
 api = ApiSession.get_session(avi_controller, avi_user, avi_password)
 
