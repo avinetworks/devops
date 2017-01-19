@@ -1,14 +1,16 @@
 ---
 - hosts: localhost
   connection: local
-  roles:
-    - role: avinetworks.avisdk
+  vars:
+    LB_host: 10.10.25.42
+    LB_user: admin
+    LB_password: avi123$%
   tasks:
     - avi_healthmonitor:
-        controller: 10.10.27.90
-        username: admin
-        password: AviNetworks123!
-        https_monitor:
+        controller: "{{ LB_host }}"
+        username:   "{{ LB_user }}"
+        password:   "{{ LB_password }}"
+        http_monitor:
           http_request: HEAD / HTTP/1.0
           http_response_code:
             - HTTP_2XX
@@ -17,5 +19,40 @@
         failed_checks: 3
         send_interval: 10
         successful_checks: 3
-        type: HEALTH_MONITOR_HTTPS
-        name: MyWebsite-HTTPS
+        type: HEALTH_MONITOR_HTTP
+        name: MyWebsite-HTTP
+      register: hm_obj
+    - debug:
+        msg: "{{ hm_obj }}"
+    - avi_pool:
+        controller: "{{ LB_host }}"
+        username:   "{{ LB_user }}"
+        password:   "{{ LB_password }}"
+        name: p1
+    - name: Associate the Monitor to the Application
+      avi_api_session:
+        controller: "{{ LB_host }}"
+        username:   "{{ LB_user }}"
+        password:   "{{ LB_password }}"
+        tenant:     "admin"
+        http_method: get
+        path: pool
+        params:
+          name: p1
+      register: pool_results
+    - name: Get Pool Path Info
+      set_fact:
+        pool_path: pool/{{ pool_results.obj.results[0].uuid }}
+
+    - name: Update API Session
+      avi_api_session:
+        controller:  "{{ LB_host }}"
+        username:    "{{ LB_user }}"
+        password:    "{{ LB_password }}"
+        tenant:      "admin"
+        http_method: patch
+        path:        "{{ pool_path }}"
+        data:
+          add:
+            health_monitor_refs:
+              - "{{ hm_obj.obj.uuid }}"
