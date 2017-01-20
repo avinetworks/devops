@@ -26,4 +26,4 @@ for obj in response['results']:
     new_obj = { "{#OBJNAME}": obj["name"], "{#OBJTYPE}": args.entity_type, "{#OBJTENANT}": args.tenant }
     obj_dict["data"].append(new_obj)
 
-print obj_dict
+print json.dumps(obj_dict)

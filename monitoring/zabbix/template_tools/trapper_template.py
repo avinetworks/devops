@@ -25,7 +25,7 @@ args = parser.parse_args()
 
 zabbix_user = args.zabbix_user
 zabbix_password = args.zabbix_password
-zabbix_server = 'http://' + zabbix_server + '/zabbix/'
+zabbix_server = 'http://' + args.zabbix_server + '/zabbix/'
 zabbix_templateid = args.zabbix_templateid
 
 avi_controller = args.controller
@@ -57,7 +57,7 @@ def create_avi_item(ruleid, entity_type, metric_name, metric_description):
         description=metric_description,
         value_type='0',
         interfaceid='0',
-        applicationPrototypes=[{'name': '{{#OBJTENANT}} {} {{#OBJNAME }}'.format(entity_type)}],
+        applicationPrototypes=[{'name': '{{#OBJTENANT}} {} {{#OBJNAME}}'.format(entity_type)}],
         #avi_trapper[admin,serviceengine,zabbix-1.8.13,vm_stats.avg_net_dropped]
         key_='avi_trapper[{{#OBJTENANT}},{},{{#OBJNAME}},{}]'.format(entity_type, metric_name)
         )
