@@ -73,11 +73,16 @@ def get_metrics(entity_type, metrics_list, step):
 
 def format_metric(entity_type, metric, hostname):
     header = metric['header']
+    tenant_ref = header['tenant_ref'].rsplit('#',1)[1]
+    print header
     if entity_type == 'pool':
         obj_name = header['pool_ref'].rsplit('#',1)[1]
     else:
-        obj_name = header['entity_ref'].rsplit('#',1)[1]
-    zabbix_key = 'avi_trapper[{},{},{},{}]'.format(header['tenant_ref'].rsplit('#',1)[1], entity_type, obj_name, header['name'])
+        try:
+            obj_name = header['entity_ref'].rsplit('#',1)[1]
+        except:
+            obj_name = header['entity_ref']
+    zabbix_key = 'avi_trapper[{},{},{},{}]'.format(tenant_ref, entity_type, obj_name, header['name'])
     value = metric['data'][0]['value']
     packet = ZabbixMetric(hostname, zabbix_key, value)
     return packet
@@ -87,6 +92,7 @@ def send_metrics(entity_type, metrics, hostname):
         packet = []
         for m in metric:
             data = format_metric(entity_type, m, hostname)
+            print data
             packet.append(data)
         result = ZabbixSender(zabbix_server=zabbix_server).send(packet)
 
