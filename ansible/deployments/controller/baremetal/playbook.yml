@@ -1,30 +1,36 @@
 # ansible-playbook playbook.yml --extra-vars "rhn_username=myuser rhn_password=foo interface_1=ens10001 interface_2=ens10002"
-
+# for this playbook to work it requires Ansible 2.2.1
 # Notes:
 #   Requirements:
 #     yum install -y libselinux-python
 #
 ---
+# Please make sure your hosts are in your Inventory (/etc/ansible/hosts) or are in a supplied hosts file to ansible using `-i`
 - hosts: 10.164.4.15
   vars:
     interface_1: "{{ interface_1 }}"
     interface_2: "{{ interface_2 }}"
     rhn_username: "{{ rhn_username }}"
     rhn_password: "{{ rhn_password }}"
+    disable_selinux: false
+  # Enable these if you need to provide a proxy environment to the server for internet access
   # environment:
   #   http_proxy: "{{ http_proxy }}"
   #   https_proxy: "{{ https_proxy }}"
   pre_tasks:
     - name: Disable SELinux on this host
       selinux: state=disabled
+      when: disable_selinux
     - name: Restart machine
       shell: sleep 2 && shutdown -r now "Restarting with SELinux Disabled"
       async: 1
       poll: 0
       become: true
       ignore_errors: true
+      when: disable_selinux
     - name: Wait for the server to come back
       local_action: wait_for host={{ ansible_ssh_host | default(inventory_hostname) }} search_regex=OpenSSH state=started delay=10 timeout=300
+      when: disable_selinux
     - name: Enable ipv4 forwarding
       sysctl: name="net.ipv4.ip_forward" value=1 sysctl_set=yes state=present reload=yes
     - name: Disable and stop Firewalld
