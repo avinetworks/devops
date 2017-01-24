@@ -4,9 +4,9 @@
 #   Requirements:
 #     yum install -y libselinux-python
 #
----
 # Please make sure your hosts are in your Inventory (/etc/ansible/hosts) or are in a supplied hosts file to ansible using `-i`
-- hosts: 10.164.4.15
+---
+- hosts: avicontroller
   vars:
     interface_1: "{{ interface_1 }}"
     interface_2: "{{ interface_2 }}"
