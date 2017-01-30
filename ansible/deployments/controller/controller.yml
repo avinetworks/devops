@@ -3,4 +3,4 @@
   roles:
     - role: avinetworks.docker
     - role: avinetworks.avicontroller
-      con_version: 16.3.3-9004-20161214.182727
+      con_version: "{{ con_version }}"

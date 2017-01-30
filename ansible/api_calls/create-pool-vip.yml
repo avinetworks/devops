@@ -5,10 +5,11 @@
   roles:
     - role: avinetworks.avisdk
   tasks:
-    - avi_pool:
-        controller: 10.90.115.20
+    - name: Create the testpool1 pool
+      avi_pool:
+        controller: 10.10.27.90
         username: admin
-        password: Avi12345
+        password: AviNetworks123!
         tenant: admin
         name: testpool1
         state: present
@@ -16,17 +17,18 @@
           - '/api/healthmonitor?name=System-HTTP'
         servers:
           - ip:
-              addr: 10.90.130.8
+              addr: 10.90.130.13
               type: V4
           - ip:
-              addr: 10.90.130.7
+              addr: 10.90.130.15
               type: V4
-    - avi_virtualservice:
-        controller: 10.90.115.20
+    - name: Create the Virtual Service testvs1 and assign testpool1 to it
+      avi_virtualservice:
+        controller: 10.10.27.90
         username: admin
-        password: Avi12345
+        password: AviNetworks123!
         tenant: admin
-        name: newtestvs
+        name: testvs1
         state: present
         performance_limits:
           max_concurrent_connections: 1000
