@@ -1,0 +1,159 @@
+#
+# @author: Gaurav Rastogi grastogi@avinetworks.com
+#
+# ansible-playbook -M <location of avi ansible modules> avi_vip_with_content_aws.yml
+---
+- hosts: localhost
+  vars:
+    controller: 10.74.25.34
+    username: admin
+    password: Football1
+    tenant: "{{ tenant_name }}"
+    vip_name: "{{ vip_name }}"
+    pool_name: "{{ pool_name }}"
+    cert_name: "{{ cert_name }}"
+    policy_set: "{{ policy_set }}"
+    state: "{{ state }}"
+    cloud_name: "{{ cloud_name }}"
+    subnet_name: "{{ subnet_name }}"
+    cs_rules: []
+    cs_items: "{{ cs_items }}"
+    fqdns: "{{ fqdns }}"
+  roles:
+  - role: avinetworks.avisdk
+  tasks:
+  - avi_api_session:
+      controller: "{{ controller }}"
+      username: "{{ username }}"
+      password: "{{ password }}"
+      tenant: "{{ tenant }}"
+      http_method: get
+      path: "cloud?name={{ cloud_name }}"
+    register: cloud_data
+  - avi_api_session:
+      controller: "{{ controller }}"
+      username: "{{ username }}"
+      password: "{{ password }}"
+      tenant: "{{ tenant }}"
+      http_method: get
+      path: networksubnetlist
+      params:
+        include_name: true
+        sort: name
+        name: "{{ subnet_name }}"
+        auto_allocate_only: true
+        cloud_uuid: "{{ cloud_data.obj.results[0].uuid}}"
+    register: subnets
+#  - name: Create Content switching rules
+#    set_fact:
+#      cs_rules:
+#        - index: "{{ item.0 }}"
+#          enable: true
+#          name: "{{ item.1.name }}"
+#          match:
+#            path:
+#              match_case: INSENSITIVE
+#              match_str: "{{ item.1.match_str }}"
+#              match_criteria: CONTAINS
+#          switching_action:
+#            action: HTTP_SWITCHING_SELECT_POOL
+#            status_code: HTTP_LOCAL_RESPONSE_STATUS_CODE_200
+#            pool_ref: "/api/pool?name={{ item.1.pool }}"
+#  - name: Create Content switching rule
+#    set_fact:
+#      cs_rules: '{{ cs_rules }} + [
+#          {
+#            "index": "{{ item.0 }}",
+#            "enable": true,
+#            "name": "{{ item.1.name }}",
+#            "match": {
+#              "path": {
+#                "match_case": "INSENSITIVE",
+#                "match_str": [ "{{ item.1.match_str }}" ],
+#                "match_criteria": "CONTAINS"
+#              }
+#            },
+#            "switching_action": {
+#              "action": "HTTP_SWITCHING_SELECT_POOL",
+#              "status_code": "HTTP_LOCAL_RESPONSE_STATUS_CODE_200",
+#              "pool_ref": "/api/pool?name={{ item.1.pool }}"
+#            }
+#          }
+#        ]'
+#    with_indexed_items: "{{ cs_items }}"
+#  - debug: msg="{{ cs_rules }}"
+  - name: Create Content switching rules array
+    set_fact:
+      cs_rule:
+        index: "{{ item.0 | int }}"
+        enable: true
+        name: "{{ item.1.name }}"
+        match:
+          path:
+            match_case: INSENSITIVE
+            match_str: "{{ match_str|default([]) + item.1.match_str }}"
+            match_criteria: CONTAINS
+        switching_action:
+          action: HTTP_SWITCHING_SELECT_POOL
+          status_code: HTTP_LOCAL_RESPONSE_STATUS_CODE_200
+          pool_ref: "/api/pool?name={{ item.1.pool }}"
+    register: cs_rules_array
+    with_indexed_items: "{{ cs_items }}"
+  - name: dump cs_rules_results
+    debug: msg="{{ cs_rules_array }}"
+  - name: create cs_rule array
+    set_fact:
+      cs_rules: "{{cs_rules|default([]) + [item.ansible_facts.cs_rule] }}"
+    with_items: "{{ cs_rules_array.results }}"
+  - name: dump final
+    debug: msg="{{ cs_rules }}"
+  - avi_httppolicyset:
+      #state: absent
+      controller: "{{ controller }}"
+      username: "{{ username }}"
+      password: "{{ password }}"
+      tenant: "{{ tenant }}"
+      name: "{{ policy_set }}"
+      http_request_policy:
+        rules: "{{ cs_rules }}"
+      is_internal_policy: false
+    register: http_policy_obj
+  - debug: var=http_policy_obj.obj
+  - name: Parse fqdns info from args
+    set_fact:
+      fqdn_item:
+        fqdn: "{{ item }}"
+        type: DNS_RECORD_A
+    register: parsed_fqdn_array
+    with_items: "{{fqdns.split(',')}}"
+  - name: Create Dns info array
+    set_fact:
+      dns_info: "{{dns_info|default([]) + [item.ansible_facts.fqdn_item] }}"
+    with_items: "{{ parsed_fqdn_array.results }}"
+  - name: DNS info array for virtual services
+    debug:
+      msg: "{{ dns_info }}"
+  - avi_virtualservice:
+      controller: "{{ controller }}"
+      username: "{{ username }}"
+      password: "{{ password }}"
+      tenant: "{{ tenant }}"
+      cloud_ref: "/api/cloud?name={{ cloud_name }}"
+      name: "{{ vip_name }}"
+      state: "{{ state }}"
+      services:
+        - port: 443
+          enable_ssl: true
+        - port: 80
+      dns_info: "{{ dns_info }}"
+      ssl_profile_ref: '/api/sslprofile?name=System-Standard'
+      application_profile_ref: '/api/applicationprofile?name=System-Secure-HTTP'
+      ssl_key_and_certificate_refs:
+        - '/api/sslkeyandcertificate?name={{cert_name}}'
+      subnet_uuid: "{{ subnets.obj.results[0].uuid }}"
+      pool_ref: '/api/pool?name={{ pool_name }}'
+      http_policies:
+        - index: 11
+          http_policy_set_ref: '/api/httppolicyset?name={{policy_set}}'
+      auto_allocate_ip: true
+    register: vip
