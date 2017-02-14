@@ -13,6 +13,7 @@
         tenant: admin
         name: testpool1
         state: present
+        enabled: false
         health_monitor_refs:
           - '/api/healthmonitor?name=System-HTTP'
         servers:

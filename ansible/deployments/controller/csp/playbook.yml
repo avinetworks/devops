@@ -1,0 +1,12 @@
+---
+- hosts: csp_devices
+  gather_facts: false
+  roles:
+    - role: avinetworks.avicontroller
+      csp_deploy: true
+      csp_user: admin
+      csp_password: AviCsp@2100
+      csp_con_qcow_image_file: ERIC_SE.qcow2
+      csp_con_mgmt_mask: 255.255.255.0
+      csp_con_default_gw: 10.128.2.1
+      csp_service_name: eric-controller

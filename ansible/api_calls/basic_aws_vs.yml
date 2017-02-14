@@ -1,0 +1,48 @@
+---
+- hosts: localhost
+  vars:
+    cloud_name: Default-Cloud
+    subnet_name: Public subnet
+    master_ctl_ip: ec2-34-250-111-254.eu-west-1.compute.amazonaws.com
+    master_ctl_username: admin
+    master_ctl_password: AviNetworks123!
+  roles:
+    - role: avinetworks.avisdk
+  tasks:
+    - avi_api_session:
+        controller: "{{ master_ctl_ip }}"
+        username: "{{ master_ctl_username }}"
+        password: "{{ master_ctl_password }}"
+        http_method: get
+        path: "cloud?name={{ cloud_name }}"
+      register: cloud_data
+
+    - avi_api_session:
+        controller: "{{ master_ctl_ip }}"
+        username: "{{ master_ctl_username }}"
+        password: "{{ master_ctl_password }}"
+        http_method: get
+        path: networksubnetlist
+        params:
+          include_name: true
+          sort: name
+          name: "{{ subnet_name }}"
+          auto_allocate_only: true
+          cloud_uuid: "{{ cloud_data.obj.results[0].uuid}}"
+      register: subnets
+
+    - debug: var=subnets
+
+    - avi_virtualservice:
+        controller: "{{ master_ctl_ip }}"
+        username: "{{ master_ctl_username }}"
+        password: "{{ master_ctl_password }}"
+        cloud_ref: "/api/cloud?name={{ cloud_name }}"
+        name: avi_aws_test
+        services:
+          - port: 80
+        subnet_uuid: "{{ subnets.obj.results[0].uuid }}"
+        auto_allocate_ip: true
+      register: vip
+
+    - debug: var=vip
