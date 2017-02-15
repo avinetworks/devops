@@ -1,0 +1,23 @@
+#
+# @author: Gaurav Rastogi grastogi@avinetworks.com
+# Simple playbook to create virtualservice and get on it using
+# avi_api_session module
+# ansible-playbook -M <location of avi ansible modules> vs.yml
+---
+- hosts: localhost
+  connection: local
+  vars:
+    controller: 10.10.25.42
+    username: admin
+    password: avi123
+    dontskip: false
+  tasks:
+
+    - name: Test systemconfiguration
+      avi_systemconfiguration:
+        controller: "{{ controller }}"
+        username: "{{ username }}"
+        password: "{{ password }}"
+        tech_support_uploader_configuration:
+          auto_upload: false
+
