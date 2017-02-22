@@ -10,7 +10,7 @@
     controller: 10.10.25.42
     username: admin
     password: avi123
-    dontskip: false
+    dontskip: true
   tasks:
 
     - name: Check GET API
@@ -40,6 +40,7 @@
     - name: set fact pool
       set_fact:
          testpool: "{{tp.obj.results[0]}}"
+      when: dontskip
 
     - name: Create or update Pool using post
       avi_api_session:
@@ -68,10 +69,12 @@
     - name: set pool path
       set_fact:
         pool_path: "pool/{{tp.obj.results[0]['uuid']}}"
+      when: dontskip
 
     - name: print pool path
       debug:
         msg: "{{ pool_path}}"
+      when: dontskip
 
     - name: Updated servers
       avi_api_session:
@@ -107,7 +110,7 @@
            addr: '10.90.64.252'
            type: 'V4'
       register: testvs
-      when: dontskip
+      when: false
     - name: print test pool
       debug:
         var: updated_pool
@@ -128,3 +131,45 @@
         password: "{{ password }}"
         name: testanalyticsprofile
         apdex_response_tolerated_factor: 41
+
+    - name: Test check mode for Pool
+      avi_pool:
+        controller: "{{ controller }}"
+        username: "{{ username }}"
+        password: "{{ password }}"
+        name: testpool2
+        lb_algorithm: LB_ALGORITHM_LEAST_CONNECTIONS
+        #lb_algorithm: LB_ALGORITHM_ROUND_ROBIN
+      check_mode: true
+
+    - name: Test check mode delete of existing object
+      avi_pool:
+        controller: "{{ controller }}"
+        username: "{{ username }}"
+        password: "{{ password }}"
+        name: testpool2
+        state: absent
+        lb_algorithm: LB_ALGORITHM_LEAST_CONNECTIONS
+        #lb_algorithm: LB_ALGORITHM_ROUND_ROBIN
+      check_mode: true
+
+    - name: Test check mode delete of non existing object
+      avi_pool:
+        controller: "{{ controller }}"
+        username: "{{ username }}"
+        password: "{{ password }}"
+        name: doesnotexist
+        state: absent
+        lb_algorithm: LB_ALGORITHM_LEAST_CONNECTIONS
+        #lb_algorithm: LB_ALGORITHM_ROUND_ROBIN
+      check_mode: true
+
+    - name: Test check mode creationg of new pool object
+      avi_pool:
+        controller: "{{ controller }}"
+        username: "{{ username }}"
+        password: "{{ password }}"
+        name: doesnotexist
+        lb_algorithm: LB_ALGORITHM_LEAST_CONNECTIONS
+        #lb_algorithm: LB_ALGORITHM_ROUND_ROBIN
+      check_mode: true
