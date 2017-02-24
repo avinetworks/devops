@@ -1,0 +1,175 @@
+#
+# @author: Gaurav Rastogi grastogi@avinetworks.com
+# Simple playbook to create virtualservice and get on it using
+# avi_api_session module
+# ansible-playbook -M <location of avi ansible modules> vs.yml
+---
+- hosts: localhost
+  connection: local
+  vars:
+    controller: 10.10.25.42
+    username: admin
+    password: avi123
+    dontskip: true
+  tasks:
+
+    - name: Check GET API
+      avi_api_session:
+        controller: "{{ controller }}"
+        username: "{{ username }}"
+        password: "{{ password }}"
+        tenant: admin
+        path: virtualservice
+        http_method: get
+        params:
+          name: vs1
+      register: vs1
+
+    - name: Check GET Pool
+      avi_api_session:
+        controller: "{{ controller }}"
+        username: "{{ username }}"
+        password: "{{ password }}"
+        tenant: admin
+        path: pool
+        http_method: get
+        params:
+          name: testpool
+      register: tp
+
+    - name: set fact pool
+      set_fact:
+         testpool: "{{tp.obj.results[0]}}"
+      when: dontskip
+
+    - name: Create or update Pool using post
+      avi_api_session:
+        controller: "{{ controller }}"
+        username: "{{ username }}"
+        password: "{{ password }}"
+        tenant: admin
+        path: pool
+        http_method: post
+        data:
+          name: testpool
+      register: testpool
+
+    - name: Create or update Pool using put
+      avi_api_session:
+        controller: "{{ controller }}"
+        username: "{{ username }}"
+        password: "{{ password }}"
+        tenant: admin
+        path: pool
+        http_method: put
+        data:
+          name: testpool
+      register: testpool
+
+    - name: set pool path
+      set_fact:
+        pool_path: "pool/{{tp.obj.results[0]['uuid']}}"
+      when: dontskip
+
+    - name: print pool path
+      debug:
+        msg: "{{ pool_path}}"
+      when: dontskip
+
+    - name: Updated servers
+      avi_api_session:
+        controller: "{{ controller }}"
+        username: "{{ username }}"
+        password: "{{ password }}"
+        http_method: patch
+        path: "{{ pool_path }}"
+        data:
+          add:
+            servers:
+              - ip:
+                  addr: 10.10.10.10
+                  type: V4
+              - ip:
+                  addr: 20.20.20.20
+                  type: V4
+      register: updated_pool
+
+    - avi_virtualservice:
+        controller: 10.10.25.42
+        username: admin
+        password: avi123
+        name: testvs
+        state: present
+        services:
+           - port: 80
+        pool_ref: '/api/pool?name=testpool'
+        performance_limits:
+           max_concurrent_connections: 1000
+           #state: absent
+        ip_address:
+           addr: '10.90.64.252'
+           type: 'V4'
+      register: testvs
+      when: false
+    - name: print test pool
+      debug:
+        var: updated_pool
+      when: dontskip
+    - name: Pool test
+      avi_pool:
+        controller: "{{ controller }}"
+        username: "{{ username }}"
+        password: "{{ password }}"
+        name: testpool2
+        #lb_algorithm: LB_ALGORITHM_LEAST_CONNECTIONS
+        lb_algorithm: LB_ALGORITHM_ROUND_ROBIN
+
+    - name: Test int to float conversion in analytics profile
+      avi_analyticsprofile:
+        controller: "{{ controller }}"
+        username: "{{ username }}"
+        password: "{{ password }}"
+        name: testanalyticsprofile
+        apdex_response_tolerated_factor: 41
+
+    - name: Test check mode for Pool
+      avi_pool:
+        controller: "{{ controller }}"
+        username: "{{ username }}"
+        password: "{{ password }}"
+        name: testpool2
+        lb_algorithm: LB_ALGORITHM_LEAST_CONNECTIONS
+        #lb_algorithm: LB_ALGORITHM_ROUND_ROBIN
+      check_mode: true
+
+    - name: Test check mode delete of existing object
+      avi_pool:
+        controller: "{{ controller }}"
+        username: "{{ username }}"
+        password: "{{ password }}"
+        name: testpool2
+        state: absent
+        lb_algorithm: LB_ALGORITHM_LEAST_CONNECTIONS
+        #lb_algorithm: LB_ALGORITHM_ROUND_ROBIN
+      check_mode: true
+
+    - name: Test check mode delete of non existing object
+      avi_pool:
+        controller: "{{ controller }}"
+        username: "{{ username }}"
+        password: "{{ password }}"
+        name: doesnotexist
+        state: absent
+        lb_algorithm: LB_ALGORITHM_LEAST_CONNECTIONS
+        #lb_algorithm: LB_ALGORITHM_ROUND_ROBIN
+      check_mode: true
+
+    - name: Test check mode creationg of new pool object
+      avi_pool:
+        controller: "{{ controller }}"
+        username: "{{ username }}"
+        password: "{{ password }}"
+        name: doesnotexist
+        lb_algorithm: LB_ALGORITHM_LEAST_CONNECTIONS
+        #lb_algorithm: LB_ALGORITHM_ROUND_ROBIN
+      check_mode: true
