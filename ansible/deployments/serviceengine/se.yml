@@ -1,10 +1,12 @@
 ---
-- hosts: 10.70.160.102
+- hosts: all
   vars:
-    avi_version: 16.3-9010-20161115.045631
+    avi_version: latest
   roles:
     - role: avinetworks.docker
     - role: avinetworks.avise
       se_version: "{{ avi_version }}"
-      master_ctl_ip: 10.70.160.102
-      autoregister: false
+      se_master_ctl_ip: 10.164.4.32
+      se_master_ctl_username: admin
+      se_master_ctl_password: "AviNetworks123!"
+      se_cores: 4
