@@ -15,6 +15,13 @@
       - algorithm: GSLB_ALGORITHM_CONSISTENT_HASH
         members:
         - enabled: true
+          vs_uuid: "{{ vs.obj.uuid }}"
+          cluster_uuid: "{{ cluster.obj.uuid }}"
+          ratio: 1
+          ip:
+            type: V4
+            addr: 10.10.10.10
+        - enabled: true
           ip:
             addr: 10.30.10.1
             type: V4
@@ -59,7 +66,3 @@
       services:
       - port: 53
         override_network_profile_ref: /api/networkprofile?name=System-TCP-Proxy
-
-
-
-
