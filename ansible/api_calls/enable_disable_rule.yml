@@ -1,0 +1,48 @@
+#
+# @author: Gaurav Rastogi grastogi@avinetworks.com
+# Simple playbook to create virtualservice and get on it using
+# avi_api_session module
+# ansible-playbook -M <location of avi ansible modules> --extra-vars "enable=true index=1 tenant=admin policyset_name=policyname" enable_disable_rule.yml
+---
+- hosts: localhost
+  connection: local
+  vars:
+    controller: 10.10.24.105
+    username: admin
+    password: avi123!@#
+    policyset_name: "{{ policyset_name }}"
+    enable: "{{ enable }}"
+    index: "{{ index }}"
+    tenant_name: "{{ tenant_name }}"
+  tasks:
+    - name: Get HTTP Policy
+      avi_httppolicyset:
+        controller: "{{ controller }}"
+        username: "{{ username }}"
+        password: "{{ password }}"
+        tenant: "{{ tenant_name }}"
+        name: "{{ policyset_name }}"
+      register: policy
+    - name: find rule
+      set_fact:
+        rule: "{{ item.1 }}"
+      with_indexed_items: "{{ policy.obj.http_request_policy.rules }}"
+      when: item.1.index == index|int
+    - name: update rule
+      set_fact:
+        new_rule: "{{rule|combine({'enable': enable | bool})}}"
+    - name: updated rule
+      debug: msg="{{ new_rule }}"
+    - name: patch rule in controller
+      avi_api_session:
+        controller: "{{ controller }}"
+        username: "{{ username }}"
+        password: "{{ password }}"
+        tenant: "{{ tenant_name }}"
+        http_method: patch
+        path: "httppolicyset/{{policy.obj.uuid}}"
+        data:
+          add:
+            http_request_policy:
+              rules:
+                - "{{ new_rule }}"
