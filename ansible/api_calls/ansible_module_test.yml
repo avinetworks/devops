@@ -12,7 +12,14 @@
     password: avi123
     dontskip: true
   tasks:
-
+    - name: Pool test
+      avi_pool:
+        controller: "{{ controller }}"
+        username: "{{ username }}"
+        password: "{{ password }}"
+        name: testpool
+        #lb_algorithm: LB_ALGORITHM_LEAST_CONNECTIONS
+        lb_algorithm: LB_ALGORITHM_ROUND_ROBIN
     - name: Check GET API
       avi_api_session:
         controller: "{{ controller }}"
