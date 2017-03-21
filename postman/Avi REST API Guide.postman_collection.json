@@ -50,7 +50,7 @@
 								},
 								{
 									"key": "password",
-									"value": "avi123$%",
+									"value": "password",
 									"type": "text",
 									"enabled": true
 								}
