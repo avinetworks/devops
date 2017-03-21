@@ -5,49 +5,41 @@
 # ansible-playbook -M <location of avi ansible modules> vs.yml
 ---
 - hosts: localhost
+  vars:
+    state: "{{ state }}"
+    controller: 10.10.25.42
+    username: admin
+    password: avi123
   connection: local
-  roles:
-    - role: avinetworks.avisdk
+  #roles:
+  #  - role: avinetworks.avisdk
   tasks:
     - avi_pool:
-        controller: 10.10.25.42
-        username: admin
-        password: avi123
+        controller: "{{ controller }}"
+        username: "{{ username }}"
+        password: "{{ password }}"
         name: testpool
-        description: woadfder pool
-        state: present
         health_monitor_refs:
            - '/api/healthmonitor?name=System-HTTP'
         servers:
            - ip:
-               addr: '10.10.25.35'
+               addr: '10.90.64.16'
                type: 'V4'
       register: mypool
     - avi_virtualservice:
-        controller: 10.10.25.42
-        username: admin
-        password: avi123
+        controller: "{{ controller }}"
+        username: "{{ username }}"
+        password: "{{ password }}"
         name: testvs
-        state: present
+        state: "{{ state }}"
         services:
            - port: 80
         pool_ref: '/api/pool?name=testpool'
         performance_limits:
            max_concurrent_connections: 1000
-           #state: absent
-        ip_address:
-           addr: '10.90.64.252'
-           type: 'V4'
+        vip:
+          - ip_address:
+              addr: '10.90.64.252'
+              type: 'V4'
       register: testvs
-    - avi_api_session:
-        controller: 10.10.25.42
-        username: admin
-        password: avi123
-        tenant: admin
-        path: virtualservice
-        http_method: get
-        params:
-          name: testvs
-    - debug:
-        var: testvs
-        verbosity: 2
+

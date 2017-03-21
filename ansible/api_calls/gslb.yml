@@ -1,9 +1,19 @@
 # Auto-generated from Avi Configuration
+# Usage: ansible-playbook -M ~/workspace/build/ansible gslb.yml --extra-vars "controller=10.10.24.207 create_gs=false username=admin password=avi123"
 ---
 - connection: local
   hosts: localhost
+  vars:
+    group_obj: ''
+    member_obj: ''
+    member_ip: 10.30.10.10
+    group_name: 'bar'
+    priority: 42
+    member_index: -1
+    create_gs: false
   tasks:
-  - avi_gslbservice:
+  - name: create GS
+    avi_gslbservice:
       controller: '{{ controller }}'
       password: '{{ password }}'
       username: '{{ username }}'
@@ -14,13 +24,6 @@
       groups:
       - algorithm: GSLB_ALGORITHM_CONSISTENT_HASH
         members:
-        - enabled: true
-          vs_uuid: "{{ vs.obj.uuid }}"
-          cluster_uuid: "{{ cluster.obj.uuid }}"
-          ratio: 1
-          ip:
-            type: V4
-            addr: 10.10.10.10
         - enabled: true
           ip:
             addr: 10.30.10.1
@@ -53,16 +56,223 @@
         priority: 15
       health_monitor_scope: GSLB_SERVICE_HEALTH_MONITOR_ALL_MEMBERS
       num_dns_ip: 2
-  - avi_virtualservice:
+    register: gs
+    when:
+      - create_gs|bool == true
+  - name: Get GS
+    avi_gslbservice:
       controller: '{{ controller }}'
       password: '{{ password }}'
       username: '{{ username }}'
-      name: dns-vs1
-      ip_address:
-        addr: 10.90.12.74
-        type: V4
-      application_profile_ref: /api/applicationprofile?name=System-DNS
-      network_profile_ref: /api/networkprofile?name=System-UDP-Per-Pkt
-      services:
-      - port: 53
-        override_network_profile_ref: /api/networkprofile?name=System-TCP-Proxy
+      name: gs-3
+    register: gs
+
+  - name: GS Object
+    debug: msg="{{ gs }}"
+
+  - name: Try Patch to add a member
+    avi_api_session:
+      controller: '{{ controller }}'
+      password: '{{ password }}'
+      username: '{{ username }}'
+      http_method: patch
+      path: "gslbservice/{{ gs.obj.uuid }}"
+      data:
+        add:
+          groups:
+            - algorithm: GSLB_ALGORITHM_ROUND_ROBIN
+              members:
+                - enabled: true
+                  ip:
+                    addr:  10.30.10.42 #"{{ vs.obj.ip_address.addr }}"
+                    type: V4
+                  ratio: 3
+                - enabled: true
+                  ip:
+                    addr: 10.30.10.45
+                    type: V4
+                  ratio: 3
+              name: foo
+              priority: 30
+    register: gs
+  - name: find existing GSLB group
+    set_fact:
+      group_obj: "{{item}}"
+    with_items:
+      - "{{ gs.obj.groups }}"
+    when:
+      - item.name == "{{ group_name }}"
+
+  - name: Set Member object
+    set_fact:
+      base_member:
+        enabled: true
+        ip:
+          addr: "{{ member_ip }}" #"{{ vs.obj.ip_address.addr }}"
+          type: V4
+        ratio: 3
+
+  - name: Create group if does not exist
+    set_fact:
+      group_obj:
+        algorithm: GSLB_ALGORITHM_ROUND_ROBIN
+        priority: "{{ priority | int}}"
+        name: "{{ group_name }}"
+        members:
+          - "{{ base_member }}"
+    when:
+      - group_obj == ''
+
+  - name: find existing Member
+    set_fact:
+      member_index: item.0
+      member_obj: "{{item.1}}"
+    with_indexed_items:
+      - "{{ group_obj.members }}"
+    when:
+      - item.1.ip.addr == "{{member_ip}}"
+
+  - name: update member if found
+    set_fact:
+      member_obj: "{{member_obj|combine(base_member)}}"
+    when:
+      - member_obj != ''
+
+  - name: create member if not found
+    set_fact:
+      member_obj: "{{ base_member }}"
+    when:
+      - member_obj == ''
+
+  - name: member list without the new member
+    set_fact:
+      members_list: "{{members_list|default([]) + [item.1]}}"
+    with_indexed_items:
+      - "{{ group_obj.members }}"
+    when:
+      - item.1.ip.addr != "{{ member_ip }}"
+      - item.0 < member_index|int
+      - member_index != -1
+
+  - name: Add new member to the list
+    set_fact:
+      members_list: "{{members_list|default([]) + [member_obj]}}"
+
+  - name: member list after member
+    set_fact:
+      members_list: "{{members_list|default([]) + [item.1]}}"
+    with_indexed_items:
+      - "{{ group_obj.members }}"
+    when:
+      - item.1.ip.addr != "{{ member_ip }}"
+      - item.0 > member_index|int
+      - member_index != -1
+
+  - name: update group with new list
+    set_fact:
+      group_obj: "{{ group_obj|combine({'members': members_list})}}"
+
+  - name: group_obj
+    debug: msg="{{ group_obj }}"
+
+  - name: patch group
+    avi_api_session:
+      controller: '{{ controller }}'
+      password: '{{ password }}'
+      username: '{{ username }}'
+      http_method: patch
+      path: "gslbservice/{{ gs.obj.uuid }}"
+      data:
+        add:
+          groups:
+            - "{{ group_obj }}"
+    register: new_gs
+
+  - name: new gs
+    debug: msg="{{ new_gs }}"
+
+  - name: Patch GS using new module
+    tags:
+      - debug
+    avi_gslbservice_patch_member:
+      controller: '{{ controller }}'
+      password: '{{ password }}'
+      username: '{{ username }}'
+      name: gs-3
+      data:
+        group:
+          name: foo
+          priority: 30
+          members:
+            - enabled: true
+              ip:
+                addr:  10.30.10.44 #"{{ vs.obj.ip_address.addr }}"
+                type: V4
+              ratio: 3
+
+  - name: Patch GS using new member and group
+    tags:
+      - debug
+    avi_gslbservice_patch_member:
+      controller: '{{ controller }}'
+      password: '{{ password }}'
+      username: '{{ username }}'
+      name: gs-3
+      data:
+        group:
+          name: newfoo
+          priority: 60
+          members:
+            - enabled: true
+              ip:
+                addr:  10.30.10.66 #"{{ vs.obj.ip_address.addr }}"
+                type: V4
+              ratio: 3
+  - name: Patch GS delete non existing member
+    tags:
+      - delete
+    avi_gslbservice_patch_member:
+      controller: '{{ controller }}'
+      password: '{{ password }}'
+      username: '{{ username }}'
+      name: gs-3
+      state: absent
+      data:
+        group:
+          name: newfoo
+          members:
+            - enabled: true
+              ip:
+                addr:  10.30.10.68 #"{{ vs.obj.ip_address.addr }}"
+                type: V4
+              ratio: 3
+  - name: Patch GS delete an existing member
+    tags:
+      - delete
+    avi_gslbservice_patch_member:
+      controller: '{{ controller }}'
+      password: '{{ password }}'
+      username: '{{ username }}'
+      name: gs-3
+      state: absent
+      data:
+        group:
+          name: foo
+          members:
+            - enabled: true
+              ip:
+                addr:  10.30.10.44 #"{{ vs.obj.ip_address.addr }}"
+                type: V4
+              ratio: 3
+
+
+
+
+
+
+
+
+
+
+
+
