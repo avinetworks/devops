@@ -7,11 +7,6 @@
 # Please make sure your hosts are in your Inventory (/etc/ansible/hosts) or are in a supplied hosts file to ansible using `-i`
 ---
 - hosts: avicontroller
-  vars:
-    interface_1: "{{ interface_1 }}"
-    interface_2: "{{ interface_2 }}"
-    rhn_username: "{{ rhn_username }}"
-    rhn_password: "{{ rhn_password }}"
 # Enable these if you need to provide a proxy environment to the server for internet access
 # environment:
 #   http_proxy: "{{ http_proxy }}"
@@ -21,8 +16,6 @@
       sysctl: name="net.ipv4.ip_forward" value=1 sysctl_set=yes state=present reload=yes
     - name: Disable and stop Firewalld
       service: name="firewalld" state="stopped" enabled="no"
-    - name: Disable and stop NetworkManager
-      service: name="NetworkManager" state="stopped" enabled="no"
     - name: Make sure yum-cron is removed
       yum: name=yum-cron state=absent
     - name: Find the docker-thinpool device
@@ -42,8 +35,8 @@
         autosubscribe: true
   roles:
     - role: avinetworks.docker
-      storage_driver: devicemapper
-      block_device: "{{ block_device_var.stdout }}"
+      docker_storage_driver: devicemapper
+      docker_block_device: "{{ block_device_var.stdout }}"
     - role: avinetworks.network_interface
       network_bond_interfaces:
         - device: bond0

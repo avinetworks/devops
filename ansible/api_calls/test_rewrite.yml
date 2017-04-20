@@ -1,0 +1,60 @@
+# Create pool, 1 VIP, and assign SSL Certificate to Pool
+---
+- hosts: localhost
+  connection: local
+  roles:
+    - role: avinetworks.avisdk
+  tasks:
+    - name: Create the testpool1 pool
+      avi_pool:
+        controller: 10.10.27.90
+        username: admin
+        password: AviNetworks123!
+        tenant: admin
+        name: testpool1
+        state: present
+        enabled: false
+        health_monitor_refs:
+          - '/api/healthmonitor?name=System-HTTP'
+        servers:
+          - ip:
+              addr: 10.90.130.13
+              type: V4
+          - ip:
+              addr: 10.90.130.15
+              type: V4
+    - name: Create the Virtual Service testvs1 and assign testpool1 to it
+      avi_virtualservice:
+        controller: 10.10.27.90
+        username: admin
+        password: AviNetworks123!
+        tenant: admin
+        name: testvs1
+        state: present
+        performance_limits:
+          max_concurrent_connections: 1000
+        services:
+          - port: 443
+            enable_ssl: true
+          - port: 80
+        ssl_profile_ref: '/api/sslprofile?name=System-Standard'
+        application_profile_ref: '/api/applicationprofile?name=System-Secure-HTTP'
+        ssl_key_and_certificate_refs:
+          - '/api/sslkeyandcertificate?name=System-Default-Cert'
+        ip_address:
+          addr: 10.90.131.105
+          type: V4
+        pool_ref: '/api/pool?name=testpool1'
+      register: myvip
+    - debug: var=myvip
+    - set_fact:
+        myvip_json: "{{ myvip.obj }}"
+    - debug: var=myvip_json
+    - name: get services
+      set_fact:
+        my_services: "{{ myvip_json.services }}"
+    - name: change value
+      set_fact:
+        my_test: "{{ my_services.0 | combine({ 'enable_ssl': false }) }}"
+    - debug: var=my_services
+    - debug: var=my_test

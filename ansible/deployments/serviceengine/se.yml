@@ -1,12 +1,13 @@
+# ansible-playbook -i 10.10.10.10, se.yml --extra-vars "se_master_ctl_ip=10.10.10.11 se_auth_token=555555555-6666666-7777777777 se_cores=4 se_disk_gb=40"
 ---
 - hosts: all
-  vars:
-    avi_version: latest
   roles:
     - role: avinetworks.docker
+      docker_storage_driver: devicemapper
     - role: avinetworks.avise
-      se_version: "{{ avi_version }}"
-      se_master_ctl_ip: 10.164.4.32
-      se_master_ctl_username: admin
-      se_master_ctl_password: "AviNetworks123!"
-      se_cores: 4
+      se_package_deploy: true
+      se_package_source: location-of-se.docker.tgz
+      se_master_ctl_ip: "{{ se_master_ctl_ip }}"
+      se_auth_token: "{{ se_auth_token }}"
+      se_cores: "{{ se_cores }}"
+      se_disk_gb: "{{ se_disk_gb }}"
