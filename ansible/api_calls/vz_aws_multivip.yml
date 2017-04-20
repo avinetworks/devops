@@ -1,0 +1,73 @@
+---
+- connection: local
+  hosts: localhost
+  vars:
+    controller: 10.144.131.50
+    username: admin
+    password: avi123$%
+    tenant: admin
+    cloud_name: Default-Cloud
+    subnets: 2C-nw-9,2A-nw-10
+    fqdn: foo.swap.avi.local
+  tasks:
+    - name: subnets passed
+      debug: msg="{{ subnets }}"
+      tags:
+        - debug
+
+    - name: Get subnet_uuids from the controller
+      tags:
+        - debug
+      avi_api_session:
+        controller: "{{ controller }}"
+        username: "{{ username }}"
+        password: "{{ password }}"
+        tenant: "{{ tenant }}"
+        http_method: get
+        path: "networksubnetlist/?cloud={{ cloud_name }}&name={{item}}"
+      register: subnet_objs
+      with_items: "{{subnets.split(',')}}"
+
+    - name: subnet_objs
+      tags:
+        - debug
+      debug: msg="{{subnet_objs}}"
+
+    - name: Extract the subnet_uuids
+      set_fact:
+        vips: "{{vips|default([]) + [{'vip_id': item.0, 'subnet_uuid': item.1.obj.results[0].uuid, 'auto_allocate_ip': true}]}}"
+      with_indexed_items:
+        - "{{ subnet_objs.results }}"
+#     register: bar
+#    - name: Extract the subnet_uuids
+#      set_fact:
+#        vips:
+#          - vip_id: item.0
+#            subnet_uuid: item.1.obj.results[0].uuid
+#            auto_allocate_ip: true
+#      with_indexed_items:
+#        - "{{ subnet_objs.results }}"
+#      register: bar
+#    - name: test bar
+#      debug: msg="{{bar}}"
+
+    - name: Vip objects
+      debug: msg="{{vips}}"
+
+    - name: Creating multi vip VS
+      avi_virtualservice:
+        controller: "{{ controller }}"
+        username: "{{ username }}"
+        password: "{{ password }}"
+        tenant: "{{ tenant }}"
+        cloud_ref: "/api/cloud?name={{ cloud_name }}"
+        name: avi_aws_test
+        services:
+          - port: 80
+        vip: "{{ vips }}"
+        dns_info:
+          - fqdn: "{{ fqdn }}"
+      register: vs
+    - name: VS created
+      debug: msg="{{ vs.obj }}"
+
