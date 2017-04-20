@@ -1,0 +1,241 @@
+{
+	"variables": [],
+	"info": {
+		"name": "Avi REST API Guide",
+		"_postman_id": "d78bb130-6a3c-7a3f-676d-5a83fe231046",
+		"description": "",
+		"schema": "https://schema.getpostman.com/json/collection/v2.0.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "01 Login, Data Retrieval and Creation of VS",
+			"description": "",
+			"item": [
+				{
+					"name": "https://{{cntrl_ip}}:{{port}}/login",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"var token1 = postman.getResponseCookie(\"csrftoken\").value;\r",
+									"var token2 = token1.replace(\"<br/>\",\"\");\r",
+									"postman.setEnvironmentVariable(\"X-CSRFToken\", token2);\r",
+									"\r",
+									"\r",
+									""
+								]
+							}
+						}
+					],
+					"request": {
+						"url": "https://{{cntrl_ip}}:{{port}}/login",
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "username",
+									"value": "admin",
+									"type": "text",
+									"enabled": true
+								},
+								{
+									"key": "password",
+									"value": "password",
+									"type": "text",
+									"enabled": true
+								}
+							]
+						},
+						"description": "Login to the Avi Controller. When Basic Authentication is disallowed, the login is done by providing the \"username\" and \"password\" fields in the Body as Form-Data.\n\nThe Response in case of successfull authentication is a 200 OK status with a possible body containing some administrative settings."
+					},
+					"response": []
+				},
+				{
+					"name": "https://{{cntrl_ip}}:{{port}}/api/virtualservice",
+					"request": {
+						"url": "https://{{cntrl_ip}}:{{port}}/api/virtualservice",
+						"method": "GET",
+						"header": [
+							{
+								"key": "//Content-Type",
+								"value": "application/json",
+								"description": "",
+								"disabled": true
+							}
+						],
+						"body": {},
+						"description": "Get all Virtual Services present on this Controller.\n\nReturn : Json"
+					},
+					"response": []
+				},
+				{
+					"name": "https://{{cntrl_ip}}:{{port}}/api/pool",
+					"request": {
+						"url": "https://{{cntrl_ip}}:{{port}}/api/pool",
+						"method": "GET",
+						"header": [],
+						"body": {},
+						"description": "Get a list of all the Pools available."
+					},
+					"response": []
+				},
+				{
+					"name": "https://{{cntrl_ip}}:{{port}}/api/pool",
+					"request": {
+						"url": "https://{{cntrl_ip}}:{{port}}/api/pool",
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							},
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"description": ""
+							},
+							{
+								"key": "Referer",
+								"value": "https://{{cntrl_ip}}:{{port}}/",
+								"description": ""
+							},
+							{
+								"key": "X-CSRFToken",
+								"value": "{{X-CSRFToken}}",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n\"name\": \"abhinav-test-pool4\",\r\n\"servers\" : [ {\"ip\" : {\"addr\": \"1.1.1.1\",\"type\":\"V4\"}},{\"ip\": {\"addr\":\"1.1.1.2\",\"type\":\"V4\"}}]\r\n}"
+						},
+						"description": "Create a Pool to be used infor creating a Virtual Service.\n\nThis might fail if the pool already exists - in that case, please change the name of the pool."
+					},
+					"response": []
+				},
+				{
+					"name": "https://{{cntrl_ip}}:{{port}}/api/virtualservice",
+					"request": {
+						"url": "https://{{cntrl_ip}}:{{port}}/api/virtualservice/",
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							},
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"description": ""
+							},
+							{
+								"key": "Referer",
+								"value": "https://{{cntrl_ip}}:{{port}}/",
+								"description": ""
+							},
+							{
+								"key": "X-CSRFToken",
+								"value": "{{X-CSRFToken}}",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"name\" : \"abhinav-test-vs8\",\n\t\"ip_address\": { \"addr\":\"3.3.3.12\",\"type\":\"V4\"},\n\t\"services\":[{\"port\":\"80\"}]\n}"
+						},
+						"description": "Create a Virtualservice and assign the previously created pool to the VS.\n\nNote that the Pool reference is not mandatory for creating the VS."
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "02 Modifications - PUT requests",
+			"description": "This Folder has samples to modify the existing resources via PUT requests",
+			"item": [
+				{
+					"name": "https://{{cntrl_ip}}:{{port}}/api/pool/{(uuid_pool_mod}}",
+					"request": {
+						"url": "https://{{cntrl_ip}}:{{port}}/api/pool/{(uuid_pool_mod}}",
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							},
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"description": ""
+							},
+							{
+								"key": "Referer",
+								"value": "https://{{cntrl_ip}}:{{port}}/",
+								"description": ""
+							},
+							{
+								"key": "X-CSRFToken",
+								"value": "{{X-CSRFToken}}",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n\"name\": \"abhinav-test-pool4\",\r\n\"servers\" : [ {\"ip\" : {\"addr\": \"1.1.1.1\",\"type\":\"V4\"}},{\"ip\": {\"addr\":\"1.1.1.2\",\"type\":\"V4\"}}]\r\n}"
+						},
+						"description": "To Modify the Pool created earlier. The URL changes to include the UUID.\n\nThe Name of the pool is mandatory.\n\nReplace {{uuid_pool_mod}} with the UUID of the pool that needs to be modified."
+					},
+					"response": []
+				},
+				{
+					"name": "https://{{cntrl_ip}}:{{port}}/api/virtualservice/{{uuid_vs_mod}}",
+					"request": {
+						"url": "https://{{cntrl_ip}}:{{port}}/api/virtualservice/{{uuid_vs_mod}}",
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							},
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"description": ""
+							},
+							{
+								"key": "Referer",
+								"value": "https://{{cntrl_ip}}:{{port}}/",
+								"description": ""
+							},
+							{
+								"key": "X-CSRFToken",
+								"value": "{{X-CSRFToken}}",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"name\" : \"abhinav-test-vs11\",\n\t\"ip_address\": { \"addr\":\"3.3.3.13\",\"type\":\"V4\"},\n\t\"services\":[{\"port\":\"80\"}]\n}"
+						},
+						"description": "Create a Virtualservice and assign the previously created pool to the VS.\n\nNote that the Pool reference is not mandatory for creating the VS."
+					},
+					"response": []
+				}
+			]
+		}
+	]
+}
