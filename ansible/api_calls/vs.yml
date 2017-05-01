@@ -6,10 +6,11 @@
 ---
 - hosts: localhost
   vars:
-    state: present
+    state: absent
     controller: 10.10.25.42
     username: admin
     password: avi123
+    tenant: Metrics_Test_Tenant
   connection: local
   #roles:
   #  - role: avinetworks.avisdk
@@ -18,7 +19,9 @@
         controller: "{{ controller }}"
         username: "{{ username }}"
         password: "{{ password }}"
-        api_version: 17.1
+        #state: absent
+        tenant: "{{ tenant }}"
+        api_version: 17.1.1
         name: testpool
         health_monitor_refs:
            - '/api/healthmonitor?name=System-HTTP'
@@ -31,6 +34,8 @@
         controller: "{{ controller }}"
         username: "{{ username }}"
         password: "{{ password }}"
+        tenant: "{{ tenant }}"
+        tenant_ref: '/api/tenant?name={{ tenant }}'
         name: testvs
         state: "{{ state }}"
         services:
@@ -38,7 +43,7 @@
         pool_ref: '/api/pool?name=testpool'
         performance_limits:
            max_concurrent_connections: 1000
-        api_version: 17.1
+        api_version: 17.1.1
         vip:
           - ip_address:
               addr: '10.90.64.252'
