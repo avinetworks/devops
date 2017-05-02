@@ -2,18 +2,19 @@
 - connection: local
   hosts: localhost
   vars:
-    controller: 10.144.131.50
+    controller: 10.10.5.27
     username: admin
-    password: something
     tenant: admin
-    cloud_name: Default-Cloud
-    subnets: 2C-nw-9,2A-nw-10
-    fqdn: foo.swap.avi.local
+    cloud_name: avinetworks-aws
+    subnets: 2C-nw-9,2A-nw-10,2A-nw-10
   tasks:
-    - name: subnets passed
+    - name: subnets args
       debug: msg="{{ subnets }}"
       tags:
         - debug
+    - name: cloud name args
+      debug: msg="{{ cloud_name }}"
+
     - name: Get cloud obj from the controller
       avi_api_session:
         controller: "{{ controller }}"
@@ -43,30 +44,16 @@
       with_subelements:
         - "{{ subnet_filter_objs.results }}"
         - obj.results
-    - name: List of valid subnets
+    - name: subnet objs
       debug: msg="{{ subnet_objs }}"
+
     - name: Create VIP Objects
       set_fact:
         vips: "{{vips|default([]) + [{'vip_id': item.0, 'subnet_uuid': item.1.uuid, 'auto_allocate_ip': true}]}}"
       with_indexed_items:
         - "{{ subnet_objs.values() }}"
-    - name: Vip objects
+
+    - name: VIPS
       debug: msg="{{vips}}"
 
-    - name: Creating multi vip VS
-      avi_virtualservice:
-        controller: "{{ controller }}"
-        username: "{{ username }}"
-        password: "{{ password }}"
-        tenant: "{{ tenant }}"
-        cloud_ref: "/api/cloud?name={{ cloud_name }}"
-        name: avi_aws_test
-        services:
-          - port: 80
-        vip: "{{ vips }}"
-        dns_info:
-          - fqdn: "{{ fqdn }}"
-      register: vs
-    - name: VS created
-      debug: msg="{{ vs.obj }}"
 
