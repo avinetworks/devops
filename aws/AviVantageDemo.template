@@ -1,7 +1,7 @@
 {
   "AWSTemplateFormatVersion" : "2010-09-09",
 
-  "Description" : "Deploys Single Avi Controller with proper IAM Role, cretes VS and adds pool members",
+  "Description" : "Deploys Single Avi Controller with proper IAM Role, creates VS and adds pool members",
 
   "Parameters" : {
     "KeyName": {
