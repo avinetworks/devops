@@ -11,13 +11,15 @@
     priority: 42
     member_index: -1
     create_gs: false
+    api_version: 17.1.1
   tasks:
   - name: create GS
     avi_gslbservice:
       controller: '{{ controller }}'
       password: '{{ password }}'
       username: '{{ username }}'
-      name: gs-3
+      api_version: '{{ api_version }}'
+      name: gs-ansible
       domain_names:
       - cloud5.avi.com
       - cloud6.avi.com
@@ -64,7 +66,11 @@
       controller: '{{ controller }}'
       password: '{{ password }}'
       username: '{{ username }}'
-      name: gs-3
+      api_version: '{{ api_version }}'
+      name: gs-ansible
+      domain_names:
+      - cloud5.avi.com
+      - cloud6.avi.com
     register: gs
 
   - name: GS Object
@@ -75,6 +81,7 @@
       controller: '{{ controller }}'
       password: '{{ password }}'
       username: '{{ username }}'
+      api_version: '{{ api_version }}'
       http_method: patch
       path: "gslbservice/{{ gs.obj.uuid }}"
       data:
@@ -90,6 +97,12 @@
                 - enabled: true
                   ip:
                     addr: 10.30.10.45
+                    type: V4
+                  ratio: 3
+                - enabled: true
+                  fqdn: x.cloud6.avi.com
+                  ip:
+                    addr: 10.30.10.145
                     type: V4
                   ratio: 3
               name: foo
@@ -180,6 +193,7 @@
       controller: '{{ controller }}'
       password: '{{ password }}'
       username: '{{ username }}'
+      api_version: '{{ api_version }}'
       http_method: patch
       path: "gslbservice/{{ gs.obj.uuid }}"
       data:
@@ -198,7 +212,8 @@
       controller: '{{ controller }}'
       password: '{{ password }}'
       username: '{{ username }}'
-      name: gs-3
+      api_version: '{{ api_version }}'
+      name: gs-ansible
       data:
         group:
           name: foo
@@ -217,7 +232,8 @@
       controller: '{{ controller }}'
       password: '{{ password }}'
       username: '{{ username }}'
-      name: gs-3
+      api_version: '{{ api_version }}'
+      name: gs-ansible
       data:
         group:
           name: newfoo
@@ -235,7 +251,8 @@
       controller: '{{ controller }}'
       password: '{{ password }}'
       username: '{{ username }}'
-      name: gs-3
+      api_version: '{{ api_version }}'
+      name: gs-ansible
       state: absent
       data:
         group:
@@ -253,7 +270,8 @@
       controller: '{{ controller }}'
       password: '{{ password }}'
       username: '{{ username }}'
-      name: gs-3
+      api_version: '{{ api_version }}'
+      name: gs-ansible
       state: absent
       data:
         group:

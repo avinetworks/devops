@@ -1,0 +1,345 @@
+# Auto-generated from Avi Configuration
+# Usage: ansible-playbook -M ~/workspace/build/ansible gslb.yml --extra-vars "controller=10.10.24.207 create_gs=false username=admin password=avi123"
+---
+- connection: local
+  hosts: localhost
+  vars:
+    group_obj: ''
+    member_obj: ''
+    member_ip: 10.30.10.10
+    group_name: 'bar'
+    priority: 42
+    member_index: -1
+    create_gs: false
+    api_version: 17.1.1
+  tasks:
+  - name: create GS
+    tags:
+      - debug1
+    avi_gslbservice:
+      controller: '{{ controller }}'
+      password: '{{ password }}'
+      username: '{{ username }}'
+      api_version: '{{ api_version }}'
+      #state: absent
+      name: gs-ansible
+      domain_names:
+      - gsa1.avi.com
+      - gsa2.avi.com
+      groups:
+      - algorithm: GSLB_ALGORITHM_CONSISTENT_HASH
+        members:
+        - enabled: true
+          ip:
+            addr: 10.30.10.1
+            type: V4
+          ratio: 1
+        - enabled: true
+          ip:
+            addr: 10.30.10.10
+            type: V4
+          ratio: 1
+        name: sc
+        priority: 20
+      - algorithm: GSLB_ALGORITHM_ROUND_ROBIN
+        members:
+        - enabled: true
+          ip:
+            addr: 10.30.10.2
+            type: V4
+          ratio: 1
+        name: cn
+        priority: 14
+      - algorithm: GSLB_ALGORITHM_ROUND_ROBIN
+        members:
+        - enabled: true
+          ip:
+            addr: 10.30.10.3
+            type: V4
+          ratio: 1
+        name: in
+        priority: 15
+      health_monitor_scope: GSLB_SERVICE_HEALTH_MONITOR_ALL_MEMBERS
+      num_dns_ip: 2
+    register: gs
+    when:
+      - create_gs|bool == true
+  - name: Get GS
+    avi_gslbservice:
+      controller: '{{ controller }}'
+      password: '{{ password }}'
+      username: '{{ username }}'
+      api_version: '{{ api_version }}'
+      name: gs-ansible
+      domain_names:
+      - gsa1.avi.com
+      - gsa2.avi.com
+    register: gs
+
+  - name: GS Object
+    debug: msg="{{ gs }}"
+
+  - name: Patch GS using new module
+    tags:
+      - debug1
+    avi_gslbservice_patch_member:
+      controller: '{{ controller }}'
+      password: '{{ password }}'
+      username: '{{ username }}'
+      api_version: '{{ api_version }}'
+      name: gs-ansible
+      data:
+        group:
+          name: foo
+          priority: 30
+          members:
+            - enabled: true
+              ip:
+                addr:  10.30.10.44 #"{{ vs.obj.ip_address.addr }}"
+                type: V4
+              ratio: 3
+
+  - name: Patch GS using new member and group
+    tags:
+      - debug1
+    avi_gslbservice_patch_member:
+      controller: '{{ controller }}'
+      password: '{{ password }}'
+      username: '{{ username }}'
+      api_version: '{{ api_version }}'
+      name: gs-ansible
+      data:
+        group:
+          name: newfoo
+          priority: 60
+          members:
+            - enabled: true
+              ip:
+                addr:  10.30.10.66 #"{{ vs.obj.ip_address.addr }}"
+                type: V4
+              ratio: 3
+
+  - name: Patch GS using new member and group using fqdn
+    tags:
+      - debug
+    avi_gslbservice_patch_member:
+      controller: '{{ controller }}'
+      password: '{{ password }}'
+      username: '{{ username }}'
+      api_version: '{{ api_version }}'
+      name: gs-ansible
+      #state: absent
+      data:
+        group:
+          name: sc
+          priority: 60
+          members:
+            - enabled: true
+              fqdn: www.google.com
+              ip:
+                addr: "{{ lookup('dig', 'www.google.com')}}"
+                type: V4
+              ratio: 3
+            - enabled: true
+              fqdn: www.facebook.com
+              ip:
+                addr: "{{ lookup('dig', 'www.facebook.com')}}"
+                type: V4
+              ratio: 3
+
+  - name: Patch GS using new member and group using fqdn again
+    tags:
+      - debug
+    avi_gslbservice_patch_member:
+      controller: '{{ controller }}'
+      password: '{{ password }}'
+      username: '{{ username }}'
+      api_version: '{{ api_version }}'
+      name: gs-ansible
+      #state: absent
+      data:
+        group:
+          name: sc
+          priority: 60
+          members:
+            - enabled: true
+              fqdn: www.google.com
+              ip:
+                addr: "{{ lookup('dig', 'www.google.com')}}"
+                type: V4
+              ratio: 3
+
+  - name: Patch GS by removing an fqdn member
+    tags:
+      - debug
+    avi_gslbservice_patch_member:
+      controller: '{{ controller }}'
+      password: '{{ password }}'
+      username: '{{ username }}'
+      api_version: '{{ api_version }}'
+      name: gs-ansible
+      state: absent
+      data:
+        group:
+          name: sc
+          priority: 60
+          members:
+            - enabled: true
+              fqdn: www.google.com
+              ip:
+                addr: "{{ lookup('dig', 'www.google.com')}}"
+                type: V4
+              ratio: 3
+  - name: Patch GS by removing another fqdn member
+    tags:
+      - debug
+    avi_gslbservice_patch_member:
+      controller: '{{ controller }}'
+      password: '{{ password }}'
+      username: '{{ username }}'
+      api_version: '{{ api_version }}'
+      name: gs-ansible
+      state: absent
+      data:
+        group:
+          name: sc
+          priority: 60
+          members:
+            - enabled: true
+              fqdn: www.facebook.com
+              ip:
+                addr: 0.0.0.0
+              ratio: 3
+
+  - name: Patch GS by removing another fqdn member again
+    tags:
+      - debug
+    avi_gslbservice_patch_member:
+      controller: '{{ controller }}'
+      password: '{{ password }}'
+      username: '{{ username }}'
+      api_version: '{{ api_version }}'
+      name: gs-ansible
+      state: absent
+      data:
+        group:
+          name: sc
+          priority: 60
+          members:
+            - enabled: true
+              fqdn: www.facebook.com
+              ip:
+                addr: 0.0.0.0
+              ratio: 3
+
+  - name: Patch GS delete non existing member
+    tags:
+      - delete
+    avi_gslbservice_patch_member:
+      controller: '{{ controller }}'
+      password: '{{ password }}'
+      username: '{{ username }}'
+      api_version: '{{ api_version }}'
+      name: gs-ansible
+      state: absent
+      data:
+        group:
+          name: newfoo
+          members:
+            - enabled: true
+              ip:
+                addr:  10.30.10.60 #"{{ vs.obj.ip_address.addr }}"
+                type: V4
+              ratio: 3
+  - name: Patch GS delete an existing member
+    tags:
+      - delete
+    avi_gslbservice_patch_member:
+      controller: '{{ controller }}'
+      password: '{{ password }}'
+      username: '{{ username }}'
+      api_version: '{{ api_version }}'
+      name: gs-ansible
+      state: absent
+      data:
+        group:
+          name: sc
+          members:
+            - enabled: true
+              ip:
+                addr:  10.30.10.44 #"{{ vs.obj.ip_address.addr }}"
+                type: V4
+              ratio: 3
+
+
+  - name: Patch GS using new group and member with fqdn
+    tags:
+      - debug
+    avi_gslbservice_patch_member:
+      controller: '{{ controller }}'
+      password: '{{ password }}'
+      username: '{{ username }}'
+      api_version: '{{ api_version }}'
+      name: gs-ansible
+      data:
+        group:
+          name: newfoo
+          priority: 60
+          members:
+            - enabled: true
+              fqdn: www.google.com
+              ip:
+                addr: "{{ lookup('dig', 'www.google.com')}}"
+                type: V4
+              ratio: 3
+
+  - name: Patch GS using new group and member with fqdn again
+    tags:
+      - debug
+    avi_gslbservice_patch_member:
+      controller: '{{ controller }}'
+      password: '{{ password }}'
+      username: '{{ username }}'
+      api_version: '{{ api_version }}'
+      name: gs-ansible
+      data:
+        group:
+          name: newfoo
+          priority: 60
+          members:
+            - enabled: true
+              fqdn: www.google.com
+              ip:
+                addr: "{{ lookup('dig', 'www.google.com')}}"
+                type: V4
+              ratio: 3
+
+  - name: Patch GS using delete last member
+    tags:
+      - debug
+    avi_gslbservice_patch_member:
+      controller: '{{ controller }}'
+      password: '{{ password }}'
+      username: '{{ username }}'
+      api_version: '{{ api_version }}'
+      name: gs-ansible
+      state: absent
+      data:
+        group:
+          name: newfoo
+          priority: 60
+          members:
+            - enabled: true
+              fqdn: www.google.com
+              ip:
+                addr: "{{ lookup('dig', 'www.google.com')}}"
+                type: V4
+              ratio: 3
+
+
+
+
+
+
+
+
