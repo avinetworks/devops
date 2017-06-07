@@ -6,12 +6,7 @@
 #
 # Please make sure your hosts are in your Inventory (/etc/ansible/hosts) or are in a supplied hosts file to ansible using `-i`
 ---
-- hosts: avicontroller
-  vars:
-    interface_1: "{{ interface_1 }}"
-    interface_2: "{{ interface_2 }}"
-    rhn_username: "{{ rhn_username }}"
-    rhn_password: "{{ rhn_password }}"
+- hosts: all
   # Enable these if you need to provide a proxy environment to the server for internet access
   # environment:
   #   http_proxy: "{{ http_proxy }}"
@@ -19,29 +14,31 @@
   pre_tasks:
     - name: Enable ipv4 forwarding
       sysctl: name="net.ipv4.ip_forward" value=1 sysctl_set=yes state=present reload=yes
+
     - name: Disable and stop Firewalld
       service: name="firewalld" state="stopped" enabled="no"
+
     - name: Disable and stop NetworkManager
       service: name="NetworkManager" state="stopped" enabled="no"
+
     - name: Make sure yum-cron is removed
       yum: name=yum-cron state=absent
+
     - name: Find the docker-thinpool device
       shell: df -h | grep docker-thinpool | awk '{print $1}'
       register: block_device_var
+
     - name: Unmount docker-thinpool
       mount: name=/docker-thinpool state=unmounted
+
     - name: Remove docker-thinpool mount
       mount: name=/docker-thinpool state=absent
-    # http://docs.ansible.com/ansible/redhat_subscription_module.html
-    - redhat_subscription:
-        state: present
-        username: "{{ rhn_username }}"
-        password: "{{ rhn_password }}"
-        autosubscribe: true
+
   roles:
     - role: avinetworks.docker
       storage_driver: devicemapper
       block_device: "{{ block_device_var.stdout }}"
+
     - role: avinetworks.network_interface
       network_bond_interfaces:
         - device: bond0

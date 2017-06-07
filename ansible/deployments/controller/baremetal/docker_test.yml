@@ -1,7 +1,0 @@
----
-- hosts: all
-  roles:
-    - role: avinetworks.docker
-      docker_storage_driver: aufs
-      docker_live_restore: true
-#    - role: avinetworks.controller
