@@ -12,12 +12,6 @@
   #   http_proxy: "{{ http_proxy }}"
   #   https_proxy: "{{ https_proxy }}"
   pre_tasks:
-    - redhat_subscription:
-        state: present
-        username: "{{ rhn_username }}"
-        password: "{{ rhn_password }}"
-        autosubscribe: true
-
     - name: Enable ipv4 forwarding
       sysctl: name="net.ipv4.ip_forward" value=1 sysctl_set=yes state=present reload=yes
 
@@ -30,6 +24,7 @@
     - name: Make sure yum-cron is removed
       yum: name=yum-cron state=absent
 
+# These steps expect that you've already built the partitions on initial installation. They also expect you to have specified the mount as /docker-thinpool. If you do not have these, you can either create the partition and mount point, or create a partition and reference the partition (ex /dev/sda3) in the avinetworks.docker role variable docker_block_device
     - name: Find the docker-thinpool device
       shell: df -h | grep docker-thinpool | awk '{print $1}'
       register: block_device_var
@@ -44,8 +39,6 @@
 
     - name: Remove docker-thinpool mount
       mount: name=/docker-thinpool state=absent
-
-    # http://docs.ansible.com/ansible/redhat_subscription_module.html
 
   roles:
     - role: avinetworks.docker
