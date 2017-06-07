@@ -43,8 +43,8 @@
 
   roles:
     - role: avinetworks.docker
-      storage_driver: devicemapper
-      block_device: "{{ block_device_var.stdout }}"
+      docker_storage_driver: devicemapper
+      docker_block_device: "{{ block_device_var.stdout }}"
 
     - role: avinetworks.network_interface
       network_bond_interfaces:

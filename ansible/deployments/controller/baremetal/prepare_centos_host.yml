@@ -24,6 +24,7 @@
     - name: Make sure yum-cron is removed
       yum: name=yum-cron state=absent
 
+# These steps expect that you've already built the partitions on initial installation. They also expect you to have specified the mount as /docker-thinpool. If you do not have these, you can either create the partition and mount point, or create a partition and reference the partition (ex /dev/sda3) in the avinetworks.docker role variable docker_block_device
     - name: Find the docker-thinpool device
       shell: df -h | grep docker-thinpool | awk '{print $1}'
       register: block_device_var
@@ -36,8 +37,8 @@
 
   roles:
     - role: avinetworks.docker
-      storage_driver: devicemapper
-      block_device: "{{ block_device_var.stdout }}"
+      docker_storage_driver: devicemapper
+      docker_block_device: "{{ block_device_var.stdout }}"
 
     - role: avinetworks.network_interface
       network_bond_interfaces:
