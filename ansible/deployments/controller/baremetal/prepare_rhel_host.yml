@@ -12,6 +12,12 @@
   #   http_proxy: "{{ http_proxy }}"
   #   https_proxy: "{{ https_proxy }}"
   pre_tasks:
+    - redhat_subscription:
+        state: present
+        username: "{{ rhn_username }}"
+        password: "{{ rhn_password }}"
+        autosubscribe: true
+
     - name: Enable ipv4 forwarding
       sysctl: name="net.ipv4.ip_forward" value=1 sysctl_set=yes state=present reload=yes
 
@@ -28,6 +34,11 @@
       shell: df -h | grep docker-thinpool | awk '{print $1}'
       register: block_device_var
 
+    - name: Prompt the user for a block device when not found
+      pause: prompt="Block device not automatically found, please enter block device."
+      when: block_device_var == ''
+      register: block_device_var
+
     - name: Unmount docker-thinpool
       mount: name=/docker-thinpool state=unmounted
 
@@ -35,11 +46,6 @@
       mount: name=/docker-thinpool state=absent
 
     # http://docs.ansible.com/ansible/redhat_subscription_module.html
-    - redhat_subscription:
-        state: present
-        username: "{{ rhn_username }}"
-        password: "{{ rhn_password }}"
-        autosubscribe: true
 
   roles:
     - role: avinetworks.docker
