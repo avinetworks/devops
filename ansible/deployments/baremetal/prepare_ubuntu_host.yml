@@ -1,0 +1,15 @@
+# ansible-playbook playbook.yml --extra-vars "rhn_username=myuser rhn_password=foo interface_1=ens10001 interface_2=ens10002"
+# for this playbook to work it requires Ansible 2.1.0
+# Notes:
+#   Requirements:
+#     yum install -y libselinux-python
+#
+# Please make sure your hosts are in your Inventory (/etc/ansible/hosts) or are in a supplied hosts file to ansible using `-i`
+---
+- hosts: all
+  pre_tasks:
+    - name: Enable ipv4 forwarding
+      sysctl: name="net.ipv4.ip_forward" value=1 sysctl_set=yes state=present reload=yes
+  roles:
+    - role: avinetworks.docker
+      docker_storage_driver: aufs

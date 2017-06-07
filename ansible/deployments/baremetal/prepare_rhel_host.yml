@@ -1,0 +1,65 @@
+# ansible-playbook playbook.yml --extra-vars "rhn_username=myuser rhn_password=foo interface_1=ens10001 interface_2=ens10002"
+# for this playbook to work it requires Ansible 2.2.1
+# Notes:
+#   Requirements:
+#     yum install -y libselinux-python
+#
+# Please make sure your hosts are in your Inventory (/etc/ansible/hosts) or are in a supplied hosts file to ansible using `-i`
+---
+- hosts: all
+  # Enable these if you need to provide a proxy environment to the server for internet access
+  # environment:
+  #   http_proxy: "{{ http_proxy }}"
+  #   https_proxy: "{{ https_proxy }}"
+  pre_tasks:
+    - redhat_subscription:
+        state: present
+        username: "{{ rhn_username }}"
+        password: "{{ rhn_password }}"
+        autosubscribe: true
+
+    - name: Enable ipv4 forwarding
+      sysctl: name="net.ipv4.ip_forward" value=1 sysctl_set=yes state=present reload=yes
+
+    - name: Disable and stop Firewalld
+      service: name="firewalld" state="stopped" enabled="no"
+
+    - name: Disable and stop NetworkManager
+      service: name="NetworkManager" state="stopped" enabled="no"
+
+    - name: Make sure yum-cron is removed
+      yum: name=yum-cron state=absent
+
+    - name: Find the docker-thinpool device
+      shell: df -h | grep docker-thinpool | awk '{print $1}'
+      register: block_device_var
+
+    - name: Prompt the user for a block device when not found
+      pause: prompt="Block device not automatically found, please enter block device."
+      when: block_device_var == ''
+      register: block_device_var
+
+    - name: Unmount docker-thinpool
+      mount: name=/docker-thinpool state=unmounted
+
+    - name: Remove docker-thinpool mount
+      mount: name=/docker-thinpool state=absent
+
+    # http://docs.ansible.com/ansible/redhat_subscription_module.html
+
+  roles:
+    - role: avinetworks.docker
+      docker_storage_driver: devicemapper
+      docker_block_device: "{{ block_device_var.stdout }}"
+
+    - role: avinetworks.network_interface
+      network_bond_interfaces:
+        - device: bond0
+          onboot: yes
+          bootproto: none
+          nm_controlled: 'no'
+          bond_slaves: ["{{ interface_1 }}", "{{ interface_2 }}"]
+          bond_miimon: 100
+          bond_mode: 4
+          bond_xmit_hash_policy: layer3+4
+          bond_use_carrier: 1
