@@ -2,7 +2,9 @@
 # It has following characterstics
 # Pool with two servers and HTTP health monitor
 # Single VIP
-# HTTP application
+# HTTPS application
+# Uses secured HTTPS profile.
+# Automatic Re-direct to HTTPS - SSL Everywhere
 ---
 - hosts: localhost
   connection: local
@@ -65,6 +67,7 @@
         ssl_key_and_certificate_refs:
           - '/api/sslkeyandcertificate?name={{app_name}}-cert'
         ssl_profile_ref: '/api/sslprofile?name=System-Standard'
+        application_profile_ref: '/api/applicationprofile?name=System-Secure-HTTP'
         services:
           - port: 80
           - port: 443
