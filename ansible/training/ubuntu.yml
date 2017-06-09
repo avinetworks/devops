@@ -1,0 +1,12 @@
+- name: Docker | CE | APT | Add Docker GPG Key
+  apt_key:
+    id: 0EBFCD88
+    url: https://download.docker.com/linux/ubuntu/gpg
+    state: present
+
+- name: Docker | CE | APT | Configure Docker repository
+  apt_repository:
+    repo: "deb [arch=amd64] https://download.docker.com/linux/ubuntu {{ ansible_distribution_release }} stable"
+    state: present
+
+

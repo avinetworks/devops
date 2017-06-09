@@ -1,0 +1,15 @@
+---
+- hosts: localhost
+  connection: local
+  roles:
+    - role: avinetworks.avisdk
+  vars:
+    fqdn: myapp.com
+  tasks:
+    - name: Print Hello
+      debug: msg="Hello"
+    - name: create self-signed SSL cert
+      command: openssl req -new -nodes -x509 -subj "/C=US/ST=CA/L=San Francisco/O=IT/CN={{ fqdn }}" -days 3650 -keyout server.key -out server.crt -extensions v3_ca creates=server.crt
+    - name: print cert that can be used in ssl_key_cert of vs
+      debug: msg="{{ lookup('file', 'server.crt') }}"
+

@@ -1,0 +1,7 @@
+- name: Master play playbook
+  hosts: localhost
+  connection: local
+  tasks:
+    - name: Docker | CE | APT | Ubuntu
+      include: ubuntu.yml
+      when: ansible_distribution == "Ubuntu"

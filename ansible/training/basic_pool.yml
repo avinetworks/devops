@@ -1,0 +1,29 @@
+# Simple application name foo
+# It has following characterstics
+# Pool with two servers and HTTP health monitor
+# Single VIP
+# HTTP application
+---
+- hosts: localhost
+  connection: local
+  vars:
+    api_version: 17.1.2
+    app_name: foo
+  roles:
+    - role: avinetworks.avisdk
+  tasks:
+    - name: Create or Update Pool
+      avi_pool:
+        controller: 10.10.25.42
+        username: admin
+        password: avi123
+        api_version: "{{ api_version }}"
+        name: "foo-pool"
+        health_monitor_refs: '/api/healthmonitor?name=System-HTTP'
+        servers:
+          - ip:
+               addr: '10.90.64.16'
+               type: 'V4'
+          - ip:
+               addr: '10.90.64.14'
+               type: 'V4'
