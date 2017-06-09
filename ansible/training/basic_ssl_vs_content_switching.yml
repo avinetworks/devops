@@ -5,6 +5,7 @@
 # HTTPS application
 # Uses secured HTTPS profile.
 # Automatic Re-direct to HTTPS - SSL Everywhere
+# Content switching to pool bar if it matches /bar and pool foo if it match /foo
 ---
 - hosts: localhost
   connection: local
