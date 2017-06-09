@@ -7,7 +7,7 @@
 - hosts: localhost
   connection: local
   vars_files:
-    - "vars/creds.yml"
+    - "vars/creds_unsecure.yml"
   vars:
     api_version: 17.1.2
     app_name: foo
