@@ -45,7 +45,7 @@
 
               addr: '10.90.64.222'
               type: 'V4'
-            vip_id: 1
+            vip_id: '1'
         services:
           - port: 80
 
