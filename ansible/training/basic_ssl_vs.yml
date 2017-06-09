@@ -9,7 +9,7 @@
 - hosts: localhost
   connection: local
   vars_files:
-    - "creds_unsecure.yml"
+    - "vars/creds_unsecure.yml"
   vars:
     api_version: 17.1.2
     app_name: securedfoo
@@ -17,11 +17,11 @@
     - role: avinetworks.avisdk
   tasks:
     - name: create self-signed SSL cert
-      command: openssl req -new -nodes -x509 -subj "/C=US/ST=CA/L=San Francisco/O=IT/CN={{ app_name }}.com" -days 3650 -keyout {{app_name}}.key -out {{app_name}}.crt -extensions v3_ca creates={{app_name}}.crt
+      command: openssl req -new -nodes -x509 -subj "/C=US/ST=CA/L=San Francisco/O=IT/CN={{ app_name }}.com" -days 3650 -keyout ssl_certs/{{app_name}}.key -out ssl_certs/{{app_name}}.crt -extensions v3_ca creates=ssl_certs/{{app_name}}.crt
     - name: Printing Private Key
-      debug: msg="Private Key is {{ lookup('file', app_name~'.key') }}"
+      debug: msg="Private Key is {{ lookup('file', 'ssl_certs/'~app_name~'.key') }}"
     - name: Printing Public Certificate
-      debug: msg="Public Cert is {{ lookup('file', app_name~'.crt')}}"
+      debug: msg="Public Cert is {{ lookup('file', 'ssl_certs/'~app_name~'.crt')}}"
     - name: Upload or Update SSL certificate - always changed due to sensitve field
       avi_sslkeyandcertificate:
         controller: "{{ avi_controller}}"
@@ -29,10 +29,10 @@
         password: "{{ avi_password }}"
         api_version: "{{ api_version }}"
         tenant: admin
-        key: "{{ lookup('file', app_name~'.key') }}"
+        key: "{{ lookup('file', 'ssl_certs/'~app_name~'.key') }}"
         certificate:
           self_signed: true
-          certificate: "{{ lookup('file', app_name~'.crt')}}"
+          certificate: "{{ lookup('file', 'ssl_certs/'~app_name~'.crt')}}"
         type: SSL_CERTIFICATE_TYPE_VIRTUALSERVICE
         name: "{{app_name}}-cert"
 

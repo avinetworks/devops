@@ -9,14 +9,17 @@
   vars:
     api_version: 17.1.2
     app_name: foo
+    avi_controller: 10.10.25.42
+    avi_username: admin
+    avi_password: avi123
   roles:
     - role: avinetworks.avisdk
   tasks:
     - name: Create or Update Pool
       avi_pool:
-        controller: 10.10.25.42
-        username: admin
-        password: avi123
+        controller: "{{ avi_controller}}"
+        username: "{{ avi_username }}"
+        password: "{{ avi_password }}"
         api_version: "{{ api_version }}"
         name: "foo-pool"
         health_monitor_refs: '/api/healthmonitor?name=System-HTTP'

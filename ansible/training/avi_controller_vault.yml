@@ -3,7 +3,7 @@
 - hosts: localhost
   connection: local
   vars_files:
-    - "creds.yml"
+    - "vars/creds.yml"
   vars:
     tenant: admin
   roles:
