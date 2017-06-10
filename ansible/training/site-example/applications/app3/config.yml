@@ -1,0 +1,76 @@
+avi_pool_objs:
+  - name: app3-pool-A
+    lb_algorithm: LB_ALGORITHM_ROUND_ROBIN
+    servers:
+      - ip:
+           addr: '10.90.64.16'
+           type: 'V4'
+  - name: app3-pool-B
+    lb_algorithm: LB_ALGORITHM_LEAST_CONNECTIONS
+    servers:
+      - ip:
+           addr: '10.90.64.16'
+           type: 'V4'
+
+avi_httppolicyset_objs:
+  - api_version: 17.1.2
+    name: "app3-httppolicy"
+    http_request_policy:
+      rules:
+        - index: 1
+          enable: true
+          name: "app3-pool-A"
+          match:
+            path:
+              match_case: INSENSITIVE
+              match_str:
+                - /foo
+              match_criteria: EQUALS
+          switching_action:
+            action: HTTP_SWITCHING_SELECT_POOL
+            status_code: HTTP_LOCAL_RESPONSE_STATUS_CODE_200
+            pool_ref: "/api/pool?name=app3-pool-A"
+        - index: 2
+          enable: true
+          name: app3-pool-B
+          match:
+            path:
+              match_case: INSENSITIVE
+              match_str:
+                - /bar
+              match_criteria: CONTAINS
+          switching_action:
+            action: HTTP_SWITCHING_SELECT_POOL
+            status_code: HTTP_LOCAL_RESPONSE_STATUS_CODE_200
+            pool_ref: "/api/pool?name=app3-pool-B"
+    is_internal_policy: false
+
+avi_virtualservice_objs:
+  - name: app3
+    services:
+      - port: 80
+    pool_ref: '/api/pool?name=app3-pool-A'
+    vip:
+      - ip_address:
+          addr: 10.90.64.243
+          type: 'V4'
+        vip_id: '1'
+    cloud_ref: '/api/cloud?name=Default-Cloud'
+    ssl_key_and_certificate_refs:
+      - '/api/sslkeyandcertificate?name=app3-cert'
+    ssl_profile_ref: '/api/sslprofile?name=System-Standard'
+    application_profile_ref: '/api/applicationprofile?name=System-Secure-HTTP'
+    services:
+      - port: 80
+      - port: 443
+        enable_ssl: true
+    http_policies:
+      - index: 11
+        http_policy_set_ref: '/api/httppolicyset?name=app3-httppolicy'
+
+
+avi_sslkeyandcertificate_objs:
+  - name: app3-cert
+    certificate:
+      self_signed: true
+
