@@ -81,6 +81,18 @@
         vrf_ref: "{{item.vrf_ref | default(omit)}}"
       with_items: "{{ avi_pool_objs }}"
 
+    - name: Avi HTTP Policyset | Create or update HTTP Policies
+      avi_httppolicyset:
+        controller: "{{ avi_controller}}"
+        username: "{{ avi_username }}"
+        password: "{{ avi_password }}"
+        tenant_ref: "{{ tenant_ref | default(omit)}}"
+        api_version: "{{ api_version }}"
+        name: "{{item.name}}"
+        http_request_policy: "{{ item.http_request_policy }}"
+        is_internal_policy: "{{ item.is_internal_policy| default(omit)}}"
+      with_items: "{{ avi_httppolicyset_objs | default([]) }} "
+
     - name: Avi Virtualservice | Create Virtual Serviceacru
       avi_virtualservice:
         controller: "{{ avi_controller}}"
@@ -92,5 +104,6 @@
         cloud_ref: "{{item.cloud_ref | default(omit)}}"
         vip: "{{item.vip}}"
         services: "{{item.services}}"
+        http_policies: "{{ item.http_policies | default(omit)}}"
       with_items: "{{ avi_virtualservice_objs}}"
 

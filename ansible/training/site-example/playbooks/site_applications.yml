@@ -1,7 +1,20 @@
-- include: setup_basic_vs.yml
+- name: setup app1
+  tags:
+    - app1
+  include: setup_basic_vs.yml
   vars:
     app_name: app1
 
-- include: setup_ssl_vs.yml
+- name: setup app2
+  tags:
+    - app2
+  include: setup_ssl_vs.yml
   vars:
     app_name: app2
+
+- name: setup app3
+  tags:
+    - app3
+  include: setup_ssl_vs.yml
+  vars:
+    app_name: app3
