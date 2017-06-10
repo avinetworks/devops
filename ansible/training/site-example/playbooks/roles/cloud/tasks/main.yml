@@ -1,0 +1,62 @@
+---
+  - name: Avi Cloud | Running Cloud Role with Params
+    debug: msg="{{ cloud_config}} {{cloud_creds}}"
+
+  - name: Avi Cloud | Update vcenter password
+    set_fact:
+      vcenter_config: "{{vcenter_config|default(cloud_config.avi_cloud_obj.vcenter_configuration)|combine({'password': cloud_creds.vcenter_password})}}"
+
+  - name: Avi Cloud | Updated vcenter password
+    debug: msg="{{ vcenter_config}}"
+
+
+  - name: Avi Cloud | Create VMware Cloud
+    avi_cloud:
+      controller: "{{ avi_controller}}"
+      username: "{{ avi_username }}"
+      password: "{{ avi_password }}"
+      api_version: "{{ api_version | default(omit) }}"
+      apic_mode: "{{ cloud_config.avi_cloud_obj.apic_mode | default(omit)}}"
+      dhcp_enabled: "{{ cloud_config.avi_cloud_obj.dhcp_enabled | default(omit)}}"
+      enable_vip_static_routes: "{{ cloud_config.avi_cloud_obj.enable_vip_static_routes | default(omit)}}"
+      license_type: "{{ cloud_config.avi_cloud_obj.license_type }}"
+      mtu: "{{ cloud_config.avi_cloud_obj.mtu | default(omit)}}"
+      name: "{{ cloud_config.avi_cloud_obj.name }}"
+      prefer_static_routes: "{{ cloud_config.avi_cloud_obj.prefer_static_routes | default(omit)}}"
+      tenant_ref: "{{ cloud_config.avi_cloud_obj.tenant_ref | default('admin') }}"
+      vcenter_configuration:
+        datacenter: "{{ vcenter_config.datacenter }}"
+        username: "{{vcenter_config.username }}"
+        password: "{{ vcenter_config.password }}"
+        vcenter_url: "{{ vcenter_config.vcenter_url }}"
+      vtype: "{{cloud_config.avi_cloud_obj.vtype}}"
+      state: "{{ cloud_config.avi_cloud_obj.state | default(omit)}}"
+    when: cloud_config.avi_cloud_obj.vtype == "CLOUD_VCENTER"
+
+  # Add when loop with api_session
+  #
+  - name: Avi Cloud | Waiting 3 minutes for VMware network discovery
+    wait_for:
+      timeout: 180
+    when:
+      - cloud_config.avi_cloud_obj.vtype == "CLOUD_VCENTER"
+
+  - name: Avi Cloud | Create VMware Cloud
+    avi_cloud:
+      controller: "{{ avi_controller}}"
+      username: "{{ avi_username }}"
+      password: "{{ avi_password }}"
+      api_version: "{{ api_version | default(omit) }}"
+      apic_mode: "{{ cloud_config.avi_cloud_obj.apic_mode | default(omit)}}"
+      dhcp_enabled: "{{ cloud_config.avi_cloud_obj.dhcp_enabled | default(omit)}}"
+      enable_vip_static_routes: "{{ cloud_config.avi_cloud_obj.enable_vip_static_routes | default(omit)}}"
+      license_type: "{{ cloud_config.avi_cloud_obj.license_type }}"
+      mtu: "{{ cloud_config.avi_cloud_obj.mtu | default(omit)}}"
+      name: "{{ cloud_config.avi_cloud_obj.name }}"
+      prefer_static_routes: "{{ cloud_config.avi_cloud_obj.prefer_static_routes | default(omit)}}"
+      tenant_ref: "{{ cloud_config.avi_cloud_obj.tenant_ref | default('admin') }}"
+      vcenter_configuration: "{{vcenter_config}}"
+      vtype: "{{cloud_config.avi_cloud_obj.vtype}}"
+      state: "{{ cloud_config.avi_cloud_obj.state | default(omit)}}"
+    when: cloud_config.avi_cloud_obj.vtype == "CLOUD_VCENTER"
+

@@ -7,26 +7,18 @@
   roles:
     - role: avinetworks.avisdk
   tasks:
-    - name: Testing Task
-      debug: msg="Setting up Cloud"
-    - name: Load vmware cloud creds
+    - name: Avi Cloud | Load vmware cloud creds
       include_vars:
         file: ../clouds/vmware/creds.yml
         name: vmware_cloud_creds
-    - name: Setup VMWare Cloud with Write Access
-      avi_cloud:
-        controller: "{{ avi_controller}}"
-        username: "{{ avi_username }}"
-        password: "{{ avi_password }}"
-        api_version: "{{ api_version }}"
-        name: Default-Cloud
-        vtype: "CLOUD_VCENTER"
-        dhcp_enabled: true
-        license_type: "LIC_CORES"
-        vcenter_configuration:
-          username: "root"
-          datacenter: "10GTest"
-          management_network: "/api/vimgrnwruntime?name=Mgmt_Arista"
-          privilege: "WRITE_ACCESS"
-          vcenter_url: "10.10.2.10"
-          password: "{{ vmware_cloud_creds.cloud_password }}"
+    - name: Avi Cloud | Load vmware cloud config
+      include_vars:
+        file: ../clouds/vmware/config.yml
+        name: vmware_cloud_config
+    - name: Avi Cloud | Cloud config debug
+      debug: msg="Setting up Cloud {{vmware_cloud_config}} password {{vmware_cloud_creds}} "
+    - name: Avi Cloud | Setup VMWare Cloud with Write Access
+      include_role:
+        name: cloud
+        cloud_config: "{{vmware_cloud_config}}"
+        cloud_creds: "{{vmware_cloud_creds}}"
