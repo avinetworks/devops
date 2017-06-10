@@ -1,0 +1,16 @@
+# This is example of using vault for storing controller credentials"
+---
+- hosts: localhost
+  connection: local
+  vars_files:
+    - "vars/creds.yml"
+  vars:
+    tenant: admin
+  roles:
+    - role: avinetworks.avisdk
+  tasks:
+    - name: Print Hello
+      debug: msg="Hello"
+
+    - name: Print Controller
+      debug: msg="{{username}}@{{ controller }} tenant {{tenant}}"

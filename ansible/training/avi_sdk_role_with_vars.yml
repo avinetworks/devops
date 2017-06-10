@@ -1,0 +1,14 @@
+---
+- hosts: localhost
+  connection: local
+  vars:
+    controller: 10.10.25.42
+    username: admin
+  roles:
+    - role: avinetworks.avisdk
+  tasks:
+    - name: Print Hello
+      debug: msg="Hello"
+
+    - name: Print Controller
+      debug: msg="{{username}}@{{ controller }}"

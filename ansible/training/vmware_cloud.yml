@@ -1,0 +1,29 @@
+# This is example of using vault for storing controller credentials"
+---
+- hosts: localhost
+  connection: local
+  vars_files:
+    - "vars/creds_unsecure.yml"
+  vars:
+    tenant: admin
+    api_version: 17.1.2
+  roles:
+    - role: avinetworks.avisdk
+  tasks:
+    - name: Setup VMWare Cloud with Write Access
+      avi_cloud:
+        controller: "{{ avi_controller}}"
+        username: "{{ avi_username }}"
+        password: "{{ avi_password }}"
+        api_version: "{{ api_version }}"
+        name: Default-Cloud
+        vtype: "CLOUD_VCENTER"
+        dhcp_enabled: true
+        license_type: "LIC_CORES"
+        vcenter_configuration:
+          username: "root"
+          datacenter: "10GTest"
+          management_network: "/api/vimgrnwruntime?name=Mgmt_Arista"
+          privilege: "WRITE_ACCESS"
+          vcenter_url: "10.10.2.10"
+          password: vmware

@@ -1,0 +1,63 @@
+
+# @author: Gaurav Rastogi grastogi@avinetworks.com
+# Simple playbook to create virtualservice and get on it using
+# avi_api_session module
+# ansible-playbook -M <location of avi ansible modules> --extra-vars "enable=true index=1 tenant=admin policyset_name=policyname" enable_disable_rule.yml
+---
+- hosts: localhost
+  connection: local
+  vars:
+    group_name: group_foo
+    member_name: foo1
+    group_obj: ''
+    member_obj: ''
+    nested_obj:
+      - f1: something
+        name: group_foo
+        f2:
+          - name: foo
+          - name: bar
+      - f1: somethingelse
+        name: group_bar
+        f2:
+          - name: moo
+          - name: goo
+  tasks:
+  - name: print args
+    debug: msg="{{nested_obj}}"
+
+  - name: walk with indexed
+    debug: msg="{{item.0}} {{item.1.name}}"
+    with_indexed_items: "{{ nested_obj }}"
+    tags:
+      - indexed
+
+  - name: walk sub elements
+    debug: msg="{{ item.0.name}} -> {{ item.1.name}}"
+    with_subelements:
+      - "{{ nested_obj }}"
+      - f2
+    tags:
+      - subelements
+
+  - name: extract group and member sub elements
+    set_fact:
+      group_obj: "{{item.0}}"
+      member_obj: "{{item.1}}"
+    with_subelements:
+      - "{{ nested_obj }}"
+      - f2
+    when:
+      - item.0.name == "{{ group_name }}"
+      - item.1.name == "{{ member_name }}"
+
+  - name: print group
+    debug: msg="{{group_obj}}"
+
+  - name: print member
+    debug: msg="{{member_obj}}"
+
+  - name: walk items
+    debug: msg="{{ item }}"
+    with_items:
+      - "{{nested_obj}}"
