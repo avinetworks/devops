@@ -11,7 +11,7 @@
   roles:
     - role: avinetworks.avisdk
   tasks:
-    - name: Create or Update Pool
+    - name: Avi Pool | Create or Update Pool
       avi_pool:
         controller: "{{ avi_controller}}"
         username: "{{ avi_username }}"
@@ -30,7 +30,7 @@
         vrf_ref: "{{item.vrf_ref | default(omit)}}"
       with_items: "{{ avi_pool_objs }}"
 
-    - name: Create Virtual Service
+    - name: Avi Virtualservice |Create Virtual Service
       avi_virtualservice:
         controller: "{{ avi_controller}}"
         username: "{{ avi_username }}"

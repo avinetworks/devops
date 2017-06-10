@@ -1,26 +1,32 @@
 avi_pool_objs:
-  - name: testpool
+  - name: app2-pool
     lb_algorithm: LB_ALGORITHM_ROUND_ROBIN
     servers:
       - ip:
            addr: '10.90.64.16'
            type: 'V4'
-      - ip:
-           addr: '10.90.64.14'
-           type: 'V4'
 
 avi_virtualservice_objs:
-  - name: testvs
+  - name: app2
     services:
       - port: 80
-    pool_ref: '/api/pool?name=testpool'
+    pool_ref: '/api/pool?name=app2-pool'
     vip:
       - ip_address:
-          addr: 10.90.64.240
+          addr: 10.90.64.242
           type: 'V4'
         vip_id: '1'
+    cloud_ref: '/api/cloud?name=Default-Cloud'
+    ssl_key_and_certificate_refs:
+      - '/api/sslkeyandcertificate?name=app2-cert'
+    ssl_profile_ref: '/api/sslprofile?name=System-Standard'
+    application_profile_ref: '/api/applicationprofile?name=System-Secure-HTTP'
+    services:
+      - port: 80
+      - port: 443
+        enable_ssl: true
 
 avi_sslkeyandcertificate_objs:
-  - name: testvs-cert
+  - name: app2-cert
     certificate:
       self_signed: true

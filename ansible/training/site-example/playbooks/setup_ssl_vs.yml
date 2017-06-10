@@ -11,7 +11,58 @@
   roles:
     - role: avinetworks.avisdk
   tasks:
-    - name: Create or Update Pool
+
+    - name: Avi SSLKeyAndCertificate | Upload or Update SSL certificate - always changed due to sensitve field
+      avi_sslkeyandcertificate:
+        controller: "{{ avi_controller}}"
+        username: "{{ avi_username }}"
+        password: "{{ avi_password }}"
+        api_version: "{{ api_version }}"
+        key: "{{item.key}}"
+        certificate: "{{item.certificate}}"
+        type: "{{item.type | default('SSL_CERTIFICATE_TYPE_VIRTUALSERVICE')}}"
+        name: "{{item.name}}"
+      with_items: "{{ avi_sslkeyandcertificate_objs }}"
+      when: (not item.certificate.self_signed or item.certificate.certificate is defined)
+      register: ssl_certs
+
+    - name: Avi SSLKeyAndCertificate | create self-signed SSL cert if not present
+      command: openssl req -new -nodes -x509 -subj "/C=US/ST=CA/L=San Francisco/O=IT/CN={{ item.name }}" -days 3650 -keyout ../applications/"{{ app_name }}"/"{{item.name}}".key -out ../applications/"{{ app_name }}"/"{{item.name}}".crt -extensions v3_ca creates=../applications/"{{ app_name }}"/"{{item.name}}".crt
+      with_items: "{{ avi_sslkeyandcertificate_objs }}"
+      when:
+        - item.certificate.self_signed
+        - item.certificate.certificate is undefined
+
+    - name: Avi SSLKeyAndCertificate | Add self signed certificates
+      set_fact:
+        keycert:
+          api_version: "{{ api_version }}"
+          tenant: admin
+          key: "{{ lookup('file', '../applications/'~app_name~'/'~item.name~'.key') }}"
+          certificate:
+            self_signed: true
+            certificate: "{{ lookup('file', '../applications/'~app_name~'/'~item.name~'.crt')}}"
+          type: SSL_CERTIFICATE_TYPE_VIRTUALSERVICE
+          name: "{{item.name}}"
+      with_items: "{{ avi_sslkeyandcertificate_objs }}"
+      register: self_signed_certs
+      when:
+        - item.certificate.self_signed
+        - item.certificate.certificate is undefined
+
+    - name: Avi SSLKeyAndCertificate | Create / Update self signed certs
+      avi_sslkeyandcertificate:
+        controller: "{{ avi_controller}}"
+        username: "{{ avi_username }}"
+        password: "{{ avi_password }}"
+        api_version: "{{ api_version }}"
+        key: "{{item.ansible_facts.keycert.key}}"
+        certificate: "{{item.ansible_facts.keycert.certificate}}"
+        type: "{{item.ansible_facts.keycert.type | default('SSL_CERTIFICATE_TYPE_VIRTUALSERVICE')}}"
+        name: "{{item.ansible_facts.keycert.name}}"
+      with_items: "{{self_signed_certs.results}}"
+
+    - name: Avi Pool | Create or Update Pool
       avi_pool:
         controller: "{{ avi_controller}}"
         username: "{{ avi_username }}"
@@ -30,23 +81,7 @@
         vrf_ref: "{{item.vrf_ref | default(omit)}}"
       with_items: "{{ avi_pool_objs }}"
 
-    - name: Upload or Update SSL certificate - always changed due to sensitve field
-      avi_sslkeyandcertificate:
-        controller: "{{ avi_controller}}"
-        username: "{{ avi_username }}"
-        password: "{{ avi_password }}"
-        api_version: "{{ api_version }}"
-        key: "{{item.key}}"
-        certificate: "{{item.certificate}}"
-        type: "{{item.type | default('SSL_CERTIFICATE_TYPE_VIRTUALSERVICE')}}"
-        name: "{{item.name}}"
-      with_items: "{{ avi_sslkeyandcertificate_objs }}"
-      register: ssl_certs
-
-    - name: SSL Certs
-      debug: msg="{{ ssl_certs }}"
-
-    - name: Create Virtual Serviceacru
+    - name: Avi Virtualservice | Create Virtual Serviceacru
       avi_virtualservice:
         controller: "{{ avi_controller}}"
         username: "{{ avi_username }}"

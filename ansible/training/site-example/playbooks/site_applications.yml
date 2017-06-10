@@ -1,3 +1,7 @@
 - include: setup_basic_vs.yml
   vars:
     app_name: app1
+
+- include: setup_ssl_vs.yml
+  vars:
+    app_name: app2
