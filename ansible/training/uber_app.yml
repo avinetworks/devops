@@ -6,6 +6,7 @@
 # Uses secured HTTPS profile.
 # Automatic Re-direct to HTTPS - SSL Everywhere
 # Content switching to pool bar if it matches /bar and pool foo if it match /foo
+# application persistency profile
 ---
 - hosts: localhost
   connection: local
@@ -13,7 +14,7 @@
     - "vars/creds_unsecure.yml"
   vars:
     api_version: 17.1.2
-    app_name: secured_pool_switcher
+    app_name: mega
   roles:
     - role: avinetworks.avisdk
   tasks:
@@ -62,19 +63,21 @@
                addr: '10.90.64.16'
                type: 'V4'
 
-    - name: Create or Update Default
+    - name: Create or Update Default Pool
       avi_pool:
         controller: "{{ avi_controller}}"
         username: "{{ avi_username }}"
         password: "{{ avi_password }}"
         api_version: "{{ api_version }}"
         name: "{{app_name}}-pool"
-        health_monitor_refs: '/api/healthmonitor?name=System-HTTP'
+        health_monitor_refs:
+          - '/api/healthmonitor?name=System-HTTP'
         cloud_ref: '/api/cloud?name=Default-Cloud'
         servers:
           - ip:
                addr: '10.90.64.16'
                type: 'V4'
+        application_persistence_profile_ref: "/api/applicationpersistenceprofile?name=System-Persistence-Client-IP"
 
     - name: Create HTTP PolicySet
       avi_httppolicyset:
@@ -123,7 +126,7 @@
         cloud_ref: '/api/cloud?name=Default-Cloud'
         vip:
           - ip_address:
-              addr: '10.90.64.230'
+              addr: '10.90.64.235'
               type: 'V4'
             vip_id: '1'
         ssl_key_and_certificate_refs:
