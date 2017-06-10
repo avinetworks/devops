@@ -24,4 +24,4 @@
 #- include: site1_system_configuration.yml
 
 # App config
-# - include: playbooks/site_applications.yml
+- include: playbooks/site_applications.yml

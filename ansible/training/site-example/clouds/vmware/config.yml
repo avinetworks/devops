@@ -11,3 +11,4 @@ avi_cloud_obj:
     privilege: "WRITE_ACCESS"
     vcenter_url: "10.10.2.10"
 
+cloud_discovery_wait: 5

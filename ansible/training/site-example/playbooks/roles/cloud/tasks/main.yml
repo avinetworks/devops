@@ -40,9 +40,9 @@
 
   # Add when loop with api_session
   #
-  - name: Avi Cloud | Waiting 3 minutes for VMware network discovery
+  - name: Avi Cloud | Waiting for VMware network discovery
     wait_for:
-      timeout: 180
+      timeout: "{{cloud_config.cloud_discovery_wait}}"
     when:
       - cloud_config.avi_cloud_obj.vtype == "CLOUD_VCENTER"
 
