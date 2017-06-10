@@ -22,7 +22,8 @@
         password: "{{ avi_password }}"
         api_version: "{{ api_version }}"
         name: "foo-pool"
-        health_monitor_refs: '/api/healthmonitor?name=System-HTTP'
+        health_monitor_refs:
+          - '/api/healthmonitor?name=System-HTTP'
         servers:
           - ip:
                addr: '10.90.64.16'

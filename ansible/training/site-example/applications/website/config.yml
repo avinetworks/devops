@@ -1,0 +1,21 @@
+avi_pool_objs:
+  - name: testpool
+    lb_algorithm: LB_ALGORITHM_ROUND_ROBIN
+    servers:
+      - ip:
+           addr: '10.90.64.16'
+           type: 'V4'
+      - ip:
+           addr: '10.90.64.14'
+           type: 'V4'
+
+avi_virtualservice_objs:
+  - name: testvs
+    services:
+      - port: 80
+    pool_ref: '/api/pool?name=testpool'
+    vip:
+      - ip_address:
+          addr: 10.90.64.240
+          type: 'V4'
+        vip_id: '1'
