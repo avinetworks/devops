@@ -7,18 +7,8 @@
   roles:
     - role: avinetworks.avisdk
   tasks:
-    - name: Avi Cloud | Load vmware cloud creds
-      include_vars:
-        file: ../clouds/vmware/creds.yml
-        name: vmware_cloud_creds
-    - name: Avi Cloud | Load vmware cloud config
-      include_vars:
-        file: ../clouds/vmware/config.yml
-        name: vmware_cloud_config
-    - name: Avi Cloud | Cloud config debug
-      debug: msg="Setting up Cloud {{vmware_cloud_config}} password {{vmware_cloud_creds}} "
     - name: Avi Cloud | Setup VMWare Cloud with Write Access
       include_role:
         name: cloud
-        cloud_config: "{{vmware_cloud_config}}"
-        cloud_creds: "{{vmware_cloud_creds}}"
+      vars:
+        cloud_name: vmware
