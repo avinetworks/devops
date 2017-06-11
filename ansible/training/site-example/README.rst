@@ -27,6 +27,16 @@ Usage for just applications setup. This would setup all the applications that ar
   ansible-playbook playbooks/site_applications.yml
 
 ************
+Playbooks
+************
+
+The playbooks directory contains all the resusable playbooks and role to setup site.
+
+* `setup_basic_vs.yml <playbooks/setup_basic_vs.yml>`_: Contains playbook to setup basic pool and vs
+* `setup_ssl_vs.yml <playbooks/setup_ssl_vs.yml>`_: Playbook to setup SSL VS with HTTP policies like content swtiching etc.
+* `role <playbooks/role>`_: local roles like cloud to setup cloud configurations
+
+************
 Clouds
 ************
 All site clouds are registered to the site.yml via `site_clouds.yml <playbooks/site_clouds.yml>`_. Each cloud has a directory with a configuration file config.yml. The cloud settings for the site are perform via a cloud role that contains playbook to setup Avi Cloud object, service engine group and cloud networks. It also allows for a separate cloud credential files that is automatically merged by the cloud role before applying it to the Avi Controller.
@@ -72,7 +82,7 @@ Applications
 All the site applications are registered in the `site_applications.yml <playbooks/site_applications.yml>`_. The configuration files for the applications are kept in the `applications <applications>`_ directory. Each applications directory contains `config.yml <applications/app1/config.yml>`_ that represents all Avi RESTful objects that are needed for the application. For example `app1 <applications/app1>`_ contains one pool and one l7 virtualservice with VIP 10.90.64.240. In order to enable the application Here are the step
 
 -------------------
-Add New Basic Application
+Basic Application
 -------------------
 
 Register in the `site_applications.yml <playbooks/site_applications.yml>`_:
@@ -113,7 +123,7 @@ Create app1 directory under applications and create `config.yml <applications/ap
             vip_id: '1'
 
 -------------------
-Add SSL Application with Content Switching 
+SSL Application with Content Switching 
 -------------------
 
 Register in the `site_applications.yml <playbooks/site_applications.yml>`_
