@@ -12,3 +12,47 @@ avi_cloud_obj:
     vcenter_url: "10.10.2.10"
 
 cloud_discovery_wait: 1
+
+avi_network_objs:
+  - name: PG-732
+    cloud_ref: '/api/cloud?name=Default-Cloud'
+    # exclude_discovered_subnets: true
+    dhcp_enabled: false
+    configured_subnets:
+      - prefix:
+          ip_addr:
+            addr: 10.70.32.0
+            type: V4
+          mask: 24
+        static_ranges:
+          - begin:
+              addr: 10.70.32.101
+              type: V4
+            end:
+              addr: 10.70.32.149
+              type: V4
+    vcenter_dvs: true
+    synced_from_se: true
+    tenant_ref: '/api/tenant?name=admin'
+
+  - name: PG-733
+    cloud_ref: '/api/cloud?name=Default-Cloud'
+    exclude_discovered_subnets: true
+    dhcp_enabled: false
+
+    configured_subnets:
+      - prefix:
+          ip_addr:
+            addr: 10.70.33.0
+            type: V4
+          mask: 24
+        static_ranges:
+          - begin:
+              addr: 10.70.33.101
+              type: V4
+            end:
+              addr: 10.70.33.149
+              type: V4
+    vcenter_dvs: true
+    synced_from_se: true
+    tenant_ref: '/api/tenant?name=admin'

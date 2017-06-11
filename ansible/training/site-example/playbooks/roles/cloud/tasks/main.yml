@@ -8,18 +8,18 @@
     include_vars:
       file: "../clouds/{{cloud_name}}/config.yml"
       name: cloud_config
-  - name: Avi Cloud | Cloud config debug
-    debug: msg="Setting up Cloud {{cloud_config}} password {{cloud_creds}} "
-
+#  - name: Avi Cloud | Cloud config debug
+#    debug: msg="Setting up Cloud {{cloud_config}} password {{cloud_creds}} "
   - name: Avi Cloud | Update vcenter password
     set_fact:
       vcenter_config: "{{vcenter_config|default(cloud_config.avi_cloud_obj.vcenter_configuration)|combine({'password': cloud_creds.vcenter_password})}}"
 
-  - name: Avi Cloud | Create VMware Cloud
+  - name: Avi Cloud | Create / Update VMware Cloud
     avi_cloud:
       controller: "{{ avi_controller}}"
       username: "{{ avi_username }}"
       password: "{{ avi_password }}"
+      tenant: "{{ tenant | default(omit) }}"
       api_version: "{{ api_version | default(omit) }}"
       apic_mode: "{{ cloud_config.avi_cloud_obj.apic_mode | default(omit)}}"
       dhcp_enabled: "{{ cloud_config.avi_cloud_obj.dhcp_enabled | default(omit)}}"
@@ -51,6 +51,7 @@
       controller: "{{ avi_controller}}"
       username: "{{ avi_username }}"
       password: "{{ avi_password }}"
+      tenant: "{{ tenant | default(omit) }}"
       api_version: "{{ api_version | default(omit) }}"
       apic_mode: "{{ cloud_config.avi_cloud_obj.apic_mode | default(omit)}}"
       dhcp_enabled: "{{ cloud_config.avi_cloud_obj.dhcp_enabled | default(omit)}}"
@@ -64,3 +65,22 @@
       vtype: "{{cloud_config.avi_cloud_obj.vtype}}"
       state: "{{ cloud_config.avi_cloud_obj.state | default(omit)}}"
     when: cloud_config.avi_cloud_obj.vtype == "CLOUD_VCENTER"
+
+  - name: Avi Cloud | Setup Networks
+    avi_network:
+      controller: "{{ avi_controller}}"
+      username: "{{ avi_username }}"
+      password: "{{ avi_password }}"
+      tenant: "{{ tenant | default(omit) }}"
+      api_version: "{{ api_version | default(omit) }}"
+      name: "{{ item.name }}"
+      cloud_ref: "{{ item.cloud_ref | default(omit)}}"
+      exclude_discovered_subnets: "{{ item.exclude_discovered_subnets | default(omit)}}"
+      dhcp_enabled: "{{ item.dhcp_enabled | default(omit)}}"
+      configured_subnets: "{{ item.configured_subnets | default(omit)}}"
+      vcenter_dvs: "{{ item.vcenter_dvs | default(omit)}}"
+      synced_from_se: "{{ item.synced_from_se | default(omit)}}"
+      state: "{{ item.state | default(omit)}}"
+      tenant_ref: "{{ item.tenant_ref | default(omit) }}"
+    with_items: "{{cloud_config.avi_network_objs | default([])}}"
+

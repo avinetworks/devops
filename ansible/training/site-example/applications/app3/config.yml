@@ -71,6 +71,8 @@ avi_virtualservice_objs:
 
 avi_sslkeyandcertificate_objs:
   - name: app3-cert
+    key: "{{ lookup('file', '../applications/app3/app3-cert.key') }}"
     certificate:
       self_signed: true
-
+      certificate: "{{ lookup('file', '../applications/app3/app3-cert.crt')}}"
+    type: SSL_CERTIFICATE_TYPE_VIRTUALSERVICE

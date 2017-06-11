@@ -17,6 +17,9 @@
         controller: "{{ avi_controller}}"
         username: "{{ avi_username }}"
         password: "{{ avi_password }}"
+        tenant: "{{ tenant | default(omit)}}"
+        tenant_ref: "{{item.tenant_ref | default(omit)}}"
+        state: "{{item.state | default(omit)}}"
         api_version: "{{ api_version }}"
         key: "{{item.key}}"
         certificate: "{{item.certificate}}"
@@ -26,18 +29,32 @@
       when: (not item.certificate.self_signed or item.certificate.certificate is defined)
       register: ssl_certs
 
-    - name: Avi SSLKeyAndCertificate | create self-signed SSL cert if not present
-      command: openssl req -new -nodes -x509 -subj "/C=US/ST=CA/L=San Francisco/O=IT/CN={{ item.name }}" -days 3650 -keyout ../applications/"{{ app_name }}"/"{{item.name}}".key -out ../applications/"{{ app_name }}"/"{{item.name}}".crt -extensions v3_ca creates=../applications/"{{ app_name }}"/"{{item.name}}".crt
-      with_items: "{{ avi_sslkeyandcertificate_objs }}"
+    - name: check certs
+      stat:
+        path: "../applications/{{app_name}}/{{item.name}}.crt"
+      register: check_certs
+      with_items: "{{ avi_sslkeyandcertificate_objs | default([])}}"
       when:
         - item.certificate.self_signed
         - item.certificate.certificate is undefined
+
+    - name: Avi SSLKeyAndCertificate | create self-signed SSL cert if not present
+      command: openssl req -new -nodes -x509 -subj "/C=US/ST=CA/L=San Francisco/O=IT/CN={{ item.1.name }}" -days 3650 -keyout ../applications/"{{ app_name }}"/"{{item.1.name}}".key -out ../applications/"{{ app_name }}"/"{{item.1.name}}".crt -extensions v3_ca creates=../applications/"{{ app_name }}"/"{{item.1.name}}".crt
+      args:
+        creates: "{{../applications/app_name/item.1.name.crt}}"
+      with_indexed_items: "{{ avi_sslkeyandcertificate_objs | default([])}}"
+      when:
+        - item.1.certificate.self_signed
+        - item.1.certificate.certificate is undefined
+        - not "{{check_certs.results[item.0].stat.exists}}"
 
     - name: Avi SSLKeyAndCertificate | Add self signed certificates
       set_fact:
         keycert:
           api_version: "{{ api_version }}"
-          tenant: admin
+          tenant: "{{ tenant | default(omit)}}"
+          tenant_ref: "{{item.tenant_ref | default(omit)}}"
+          state: "{{item.state | default(omit)}}"
           key: "{{ lookup('file', '../applications/'~app_name~'/'~item.name~'.key') }}"
           certificate:
             self_signed: true
@@ -55,12 +72,17 @@
         controller: "{{ avi_controller}}"
         username: "{{ avi_username }}"
         password: "{{ avi_password }}"
+        tenant: "{{ tenant | default(omit)}}"
+        tenant_ref: "{{item.tenant_ref | default(omit)}}"
+        state: "{{item.state | default(omit)}}"
         api_version: "{{ api_version }}"
         key: "{{item.ansible_facts.keycert.key}}"
         certificate: "{{item.ansible_facts.keycert.certificate}}"
         type: "{{item.ansible_facts.keycert.type | default('SSL_CERTIFICATE_TYPE_VIRTUALSERVICE')}}"
         name: "{{item.ansible_facts.keycert.name}}"
-      with_items: "{{self_signed_certs.results}}"
+      with_items: "{{self_signed_certs.results | default([])}}"
+      when:
+        - item.ansible_facts is defined
 
     - name: Avi Pool | Create or Update Pool
       avi_pool:
@@ -69,6 +91,9 @@
         password: "{{ avi_password }}"
         api_version: "{{ api_version }}"
         name: "{{item.name}}"
+        tenant: "{{ tenant | default(omit)}}"
+        tenant_ref: "{{item.tenant_ref | default(omit)}}"
+        state: "{{item.state | default(omit)}}"
         health_monitor_refs: "{{ item.health_monitor_refs | default([]) }} "
         cloud_ref: "{{item.cloud_ref | default(omit)}}"
         servers: "{{item.servers | default([])}}"
@@ -77,15 +102,16 @@
         lb_algorithm: "{{item.lb_algorithm | default(omit)}}"
         ssl_key_and_certificate_ref: "{{item.ssl_key_and_certificate_ref | default(omit)}}"
         ssl_profile_ref: "{{item.ssl_profile_ref|default(omit)}}"
-        state: "{{item.state | default(omit)}}"
         vrf_ref: "{{item.vrf_ref | default(omit)}}"
-      with_items: "{{ avi_pool_objs }}"
+      with_items: "{{ avi_pool_objs | default([])}}"
 
     - name: Avi HTTP Policyset | Create or update HTTP Policies
       avi_httppolicyset:
         controller: "{{ avi_controller}}"
         username: "{{ avi_username }}"
         password: "{{ avi_password }}"
+        tenant: "{{ tenant | default(omit)}}"
+        state: "{{item.state | default(omit)}}"
         tenant_ref: "{{ tenant_ref | default(omit)}}"
         api_version: "{{ api_version }}"
         name: "{{item.name}}"
@@ -102,8 +128,11 @@
         name: "{{item.name}}"
         pool_ref: "{{item.pool_ref | default(omit)}}"
         cloud_ref: "{{item.cloud_ref | default(omit)}}"
+        tenant: "{{ tenant | default(omit)}}"
+        tenant_ref: "{{item.tenant_ref | default(omit)}}"
+        state: "{{item.state | default(omit)}}"
         vip: "{{item.vip}}"
         services: "{{item.services}}"
         http_policies: "{{ item.http_policies | default(omit)}}"
-      with_items: "{{ avi_virtualservice_objs}}"
+      with_items: "{{ avi_virtualservice_objs | default([])}}"
 
