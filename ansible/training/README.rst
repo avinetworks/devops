@@ -16,7 +16,7 @@ Playbook Examples
 ********************
 
 -------------------
-1. `Include AviSDK Role <https://github.com/avinetworks/devops/blob/master/ansible/training/avi_sdk_role.yml>`_
+`Include AviSDK Role <https://github.com/avinetworks/devops/blob/master/ansible/training/avi_sdk_role.yml>`_
 -------------------
 This shows example of how to include avisdk role in playbook and test that it works.
 
@@ -32,7 +32,7 @@ This shows example of how to include avisdk role in playbook and test that it wo
         debug: msg="Hello"
       
 ---------------
-2. `Use Avi Credentials in a Vault <https://github.com/avinetworks/devops/blob/master/ansible/training/avi_controller_vault.yml>`_
+`Use Avi Credentials in a Vault <https://github.com/avinetworks/devops/blob/master/ansible/training/avi_controller_vault.yml>`_
 ---------------
 Example playbook using Avi Controller credentials in an Ansible vault
 
@@ -49,7 +49,7 @@ Example playbook using Avi Controller credentials in an Ansible vault
         - role: avinetworks.avisdk
 
 -------------
-3. `Basic Avi Pool Setup <https://github.com/avinetworks/devops/blob/master/ansible/training/basic_pool.yml>`_
+`Basic Avi Pool Setup <https://github.com/avinetworks/devops/blob/master/ansible/training/basic_pool.yml>`_
 -------------
 Example to setup a simple Avi Pool with two servers
 
@@ -74,7 +74,7 @@ Example to setup a simple Avi Pool with two servers
                type: 'V4'
 
 -------------
-4. `Basic Avi VirtualService Setup <https://github.com/avinetworks/devops/blob/master/ansible/training/basic_vs.yml>`_
+`Basic Avi VirtualService Setup <https://github.com/avinetworks/devops/blob/master/ansible/training/basic_vs.yml>`_
 -------------
 Example to setup a simple Avi Virtualservice and Pool with two servers
 
@@ -120,7 +120,7 @@ Example to setup a simple Avi Virtualservice and Pool with two servers
           
  
 -------------
-5. `Basic SSL VirtualService Setup <https://github.com/avinetworks/devops/blob/master/ansible/training/basic_ssl_vs.yml>`_
+`Basic SSL VirtualService Setup <https://github.com/avinetworks/devops/blob/master/ansible/training/basic_ssl_vs.yml>`_
 -------------
 Example to setup a simple Avi SSL Virtualservice and Pool with two servers. In this case SSL key and Certificate object needs to be created first. Here is example of how to create a self signed certificate and register it to Avi. The playbook creates the ssl certs in ssl_certs directory which is then lookedup by the avi_sslkeyandcertificate module. 
 
@@ -175,7 +175,7 @@ Once the SSL certificate object is uploaded to Avi. The SSL virtualservice can b
             enable_ssl: true
 
 -------------
-6. `SSL Virtualservice with Content Switching <https://github.com/avinetworks/devops/blob/master/ansible/training/basic_ssl_vs_content_switching.yml>`_
+`SSL Virtualservice with Content Switching <https://github.com/avinetworks/devops/blob/master/ansible/training/basic_ssl_vs_content_switching.yml>`_
 -------------
 Example to perform content swtiching to two pools A and B using HTTP Policysets. Here is a simple task representing setup of such a HTTP Policyset.
 
