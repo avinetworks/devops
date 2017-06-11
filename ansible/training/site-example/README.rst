@@ -26,13 +26,56 @@ Usage for just applications setup. This would setup all the applications that ar
   
   ansible-playbook playbooks/site_applications.yml
 
+************
+Clouds
+************
+All site clouds are registered to the site.yml via `site_clouds.yml <playbooks/site_clouds.yml>`_. Each cloud has a directory with a configuration file config.yml. The cloud settings for the site are perform via a cloud role that contains playbook to setup Avi Cloud object, service engine group and cloud networks. It also allows for a separate cloud credential files that is automatically merged by the cloud role before applying it to the Avi Controller.
+
+-------------------
+Add a VMWare Cloud setup
+-------------------
+
+Register in the `site_applications.yml <playbooks/site_applications.yml>`_:
+
+.. code-block:: yaml
+
+  - name: Avi Cloud | Setup VMWare Cloud with Write Access
+    include_role:
+      name: cloud
+    vars:
+      cloud_name: vmware
+
+Create vmware cloud `config.yml <clouds/vmware/config.yml>`_:
+
+The config.yml has a Avi Cloud object that represents the cloud configuration. It also has a setting to customize wait times for the cloud discovery. Note, that the vmware cloud password is not included here but provided via a separate creds.yml file. 
+
+.. code-block:: yaml
+
+  avi_cloud_obj:
+    api_version: 17.1.2
+    name: Default-Cloud
+    vtype: CLOUD_VCENTER
+    dhcp_enabled: true
+    license_type: "LIC_CORES"
+    vcenter_configuration:
+      username: "root"
+      datacenter: "10GTest"
+      management_network: "/api/vimgrnwruntime?name=Mgmt_Arista"
+      privilege: "WRITE_ACCESS"
+      vcenter_url: "10.10.2.10"
+
+  cloud_discovery_wait: 1
+
+************
+Applications
+************
+All the site applications are registered in the `site_applications.yml <playbooks/site_applications.yml>`_. The configuration files for the applications are kept in the `applications <applications>`_ directory. Each applications directory contains `config.yml <applications/app1/config.yml>`_ that represents all Avi RESTful objects that are needed for the application. For example `app1 <applications/app1>`_ contains one pool and one l7 virtualservice with VIP 10.90.64.240. In order to enable the application Here are the step
 
 -------------------
 Add New Basic Application
 -------------------
-All the site applications are registered in the `site_applications.yml <playbooks/site_applications.yml>`_. The configuration files for the applications are kept in the `applications <applications>`_ directory. Each applications directory contains `config.yml <applications/app1/config.yml>`_ that represents all Avi RESTful objects that are needed for the application. For example `app1 <applications/app1>`_ contains one pool and one l7 virtualservice with VIP 10.90.64.240. In order to enable the application Here are the step
 
-1. Register in the `site_applications.yml <playbooks/site_applications.yml>`_
+Register in the `site_applications.yml <playbooks/site_applications.yml>`_:
 
 .. code-block:: yaml
 
@@ -43,31 +86,59 @@ All the site applications are registered in the `site_applications.yml <playbook
     vars:
       app_name: app1
 
-2. Create app1 directory under applications and create `config.yml <applications/app1/config.yml>`_ for the application.
+Create app1 directory under applications and create `config.yml <applications/app1/config.yml>`_ for the application.
 
 .. code-block:: yaml
 
-  avi_pool_objs:
-    - name: app1-pool
-      lb_algorithm: LB_ALGORITHM_ROUND_ROBIN
-      servers:
-        - ip:
-             addr: '10.90.64.16'
-             type: 'V4'
-        - ip:
-             addr: '10.90.64.14'
-             type: 'V4'
+    avi_pool_objs:
+      - name: app1-pool
+        lb_algorithm: LB_ALGORITHM_ROUND_ROBIN
+        servers:
+          - ip:
+               addr: '10.90.64.16'
+               type: 'V4'
+          - ip:
+               addr: '10.90.64.14'
+               type: 'V4'
 
-  avi_virtualservice_objs:
-    - name: app1
-      services:
-        - port: 80
-      pool_ref: '/api/pool?name=app1-pool'
-      vip:
-        - ip_address:
-            addr: 10.90.64.240
-            type: 'V4'
-          vip_id: '1'
+    avi_virtualservice_objs:
+      - name: app1
+        services:
+          - port: 80
+        pool_ref: '/api/pool?name=app1-pool'
+        vip:
+          - ip_address:
+              addr: 10.90.64.240
+              type: 'V4'
+            vip_id: '1'
 
+-------------------
+Add SSL Application with Content Switching 
+-------------------
 
-      
+Register in the `site_applications.yml <playbooks/site_applications.yml>`_
+
+.. code-block:: yaml
+
+    - name: setup app3
+      tags:
+        - app3
+      include: setup_ssl_vs.yml
+      vars:
+        app_name: app3
+
+Create app1 directory under applications and create `config.yml <applications/app3/config.yml>`_ for the application.
+
+.. code-block:: yaml
+
+    avi_pool_objs:
+      - name: app3-pool-A
+      - name: app3-pool-B
+
+    avi_httppolicyset_objs:
+      - api_version: 17.1.2
+        name: "app3-httppolicy"
+        http_request_policy: ...
+
+    avi_virtualservice_objs:
+      - name: app3
