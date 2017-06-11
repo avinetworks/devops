@@ -73,3 +73,52 @@ Example to setup a simple Avi Pool with two servers
                addr: '10.90.64.14'
                type: 'V4'
 
+-------------
+4. `Basic Avi VirtualService Setup <https://github.com/avinetworks/devops/blob/master/ansible/training/basic_vs.yml>`_
+-------------
+Example to setup a simple Avi Virtualservice and Pool with two servers
+
+.. code-block:: yaml
+
+  tasks:
+    - name: Create or Update Pool
+      avi_pool:
+        controller: "{{ avi_controller}}"
+        username: "{{ avi_username }}"
+        password: "{{ avi_password }}"
+        api_version: "{{ api_version }}"
+        name: "{{app_name}}-pool"
+        health_monitor_refs:
+          - '/api/healthmonitor?name=System-HTTP'
+          - '/api/healthmonitor?name=System-Ping'
+        cloud_ref: '/api/cloud?name=Default-Cloud'
+        servers:
+          - ip:
+               addr: '10.90.64.16'
+               type: 'V4'
+          - ip:
+               addr: '10.90.64.14'
+               type: 'V4'
+
+    - name: Create Virtual Service
+      avi_virtualservice:
+        controller: "{{ avi_controller}}"
+        username: "{{ avi_username }}"
+        password: "{{ avi_password }}"
+        api_version: "{{ api_version }}"
+        name: "{{app_name}}"
+        pool_ref: "/api/pool?name={{app_name}}-pool"
+        cloud_ref: '/api/cloud?name=Default-Cloud'
+        vip:
+          - ip_address:
+
+              addr: '10.90.64.222'
+              type: 'V4'
+            vip_id: '1'
+        services:
+          - port: 80
+          
+ 
+
+
+
