@@ -174,5 +174,78 @@ Once the SSL certificate object is uploaded to Avi. The SSL virtualservice can b
           - port: 443
             enable_ssl: true
 
+-------------
+6. `SSL Virtualservice with Content Switching <https://github.com/avinetworks/devops/blob/master/ansible/training/basic_ssl_vs_content_switching.yml>`_
+-------------
+Example to perform content swtiching to two pools A and B using HTTP Policysets. Here is a simple task representing setup of such a HTTP Policyset.
 
+.. code-block:: yaml
+
+  tasks:
+    - name: Create HTTP PolicySet
+      avi_httppolicyset:
+        controller: "{{ avi_controller}}"
+        username: "{{ avi_username }}"
+        password: "{{ avi_password }}"
+        api_version: "{{ api_version }}"
+        name: "{{app_name}}-httppolicy"
+        http_request_policy:
+          rules:
+            - index: 1
+              enable: true
+              name: "{{app_name}}-pool-foo"
+              match:
+                path:
+                  match_case: INSENSITIVE
+                  match_str:
+                    - /foo
+                  match_criteria: EQUALS
+              switching_action:
+                action: HTTP_SWITCHING_SELECT_POOL
+                status_code: HTTP_LOCAL_RESPONSE_STATUS_CODE_200
+                pool_ref: "/api/pool?name={{app_name}}-pool-foo"
+            - index: 2
+              enable: true
+              name: test-test2
+              match:
+                path:
+                  match_case: INSENSITIVE
+                  match_str:
+                    - /bar
+                  match_criteria: CONTAINS
+              switching_action:
+                action: HTTP_SWITCHING_SELECT_POOL
+                status_code: HTTP_LOCAL_RESPONSE_STATUS_CODE_200
+                pool_ref: "/api/pool?name={{app_name}}-pool-bar"
+        is_internal_policy: false
+
+The above HTTP Policyset can be configured in the virtualservice as
+
+.. code-block:: yaml
+
+    - name: Create Virtual Service with HTTP Policies
+      avi_virtualservice:
+        controller: "{{ avi_controller}}"
+        username: "{{ avi_username }}"
+        password: "{{ avi_password }}"
+        api_version: "{{ api_version }}"
+        name: "{{app_name}}"
+        pool_ref: "/api/pool?name={{app_name}}-pool"
+        cloud_ref: '/api/cloud?name=Default-Cloud'
+        vip:
+          - ip_address:
+              addr: '10.90.64.230'
+              type: 'V4'
+            vip_id: '1'
+        ssl_key_and_certificate_refs:
+          - '/api/sslkeyandcertificate?name={{app_name}}-cert'
+        ssl_profile_ref: '/api/sslprofile?name=System-Standard'
+        application_profile_ref: '/api/applicationprofile?name=System-Secure-HTTP'
+        services:
+          - port: 80
+          - port: 443
+            enable_ssl: true
+        http_policies:
+          - index: 11
+            http_policy_set_ref: '/api/httppolicyset?name={{app_name}}-httppolicy'
 
