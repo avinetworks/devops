@@ -249,3 +249,8 @@ The above HTTP Policyset can be configured in the virtualservice as
           - index: 11
             http_policy_set_ref: '/api/httppolicyset?name={{app_name}}-httppolicy'
 
+********
+`Full Site Example <site-example>`_
+********
+
+This has example of a full featured site automation for Avi configuration. It show how to setup clouds and applications for the full site. 
