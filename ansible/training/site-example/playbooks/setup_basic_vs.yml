@@ -32,7 +32,7 @@
         vrf_ref: "{{item.vrf_ref | default(omit)}}"
       with_items: "{{ avi_pool_objs | default([])}}"
 
-    - name: Avi Virtualservice |Create Virtual Service
+    - name: Avi Virtualservice | Create Virtualservices
       avi_virtualservice:
         controller: "{{ avi_controller}}"
         username: "{{ avi_username }}"
