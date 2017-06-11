@@ -119,7 +119,7 @@
         is_internal_policy: "{{ item.is_internal_policy| default(omit)}}"
       with_items: "{{ avi_httppolicyset_objs | default([]) }} "
 
-    - name: Avi Virtualservice | Create Virtual Serviceacru
+    - name: Avi Virtualservice | Create Virtualservices
       avi_virtualservice:
         controller: "{{ avi_controller}}"
         username: "{{ avi_username }}"

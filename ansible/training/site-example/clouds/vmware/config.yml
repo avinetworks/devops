@@ -56,3 +56,14 @@ avi_network_objs:
     vcenter_dvs: true
     synced_from_se: true
     tenant_ref: '/api/tenant?name=admin'
+
+avi_serviceenginegroup_objs:
+  - name: Default-Group
+    cloud_ref: '/api/cloud?name=Default-Cloud'
+    vcenter_folder: AviSeFolder
+    vcenter_clusters:
+      cluster_refs:
+        - '/api/vimgrclusterruntime?name=Arista'
+      include: True
+    max_se: 4
+    buffer_se: 1
