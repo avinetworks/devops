@@ -80,7 +80,9 @@
         certificate: "{{item.ansible_facts.keycert.certificate}}"
         type: "{{item.ansible_facts.keycert.type | default('SSL_CERTIFICATE_TYPE_VIRTUALSERVICE')}}"
         name: "{{item.ansible_facts.keycert.name}}"
-      with_items: "{{self_signed_certs.results}}"
+      with_items: "{{self_signed_certs.results | default([])}}"
+      when:
+        - item.ansible_facts is defined
 
     - name: Avi Pool | Create or Update Pool
       avi_pool:
@@ -101,7 +103,7 @@
         ssl_key_and_certificate_ref: "{{item.ssl_key_and_certificate_ref | default(omit)}}"
         ssl_profile_ref: "{{item.ssl_profile_ref|default(omit)}}"
         vrf_ref: "{{item.vrf_ref | default(omit)}}"
-      with_items: "{{ avi_pool_objs }}"
+      with_items: "{{ avi_pool_objs | default([])}}"
 
     - name: Avi HTTP Policyset | Create or update HTTP Policies
       avi_httppolicyset:
@@ -132,5 +134,5 @@
         vip: "{{item.vip}}"
         services: "{{item.services}}"
         http_policies: "{{ item.http_policies | default(omit)}}"
-      with_items: "{{ avi_virtualservice_objs}}"
+      with_items: "{{ avi_virtualservice_objs | default([])}}"
 
