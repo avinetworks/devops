@@ -12,16 +12,19 @@ Here are the main components of the site example.
 - `site.yml <https://github.com/avinetworks/devops/blob/master/ansible/training/site-example/site.yml>`_: This describes the playbooks for setup of the site. It includes sections for cloud setup and application setup.
 
 Usage for full site setup
+
 .. code-block:: shell
   
   ansible-playbook site.yml
 
 Usage for just cloud setup
+
 .. code-block:: shell
   
   ansible-playbook playbooks/site_clouds.yml
 
 Usage for just applications setup. This would setup all the applications that are registered in site_applications.yml
+
 .. code-block:: shell
   
   ansible-playbook playbooks/site_applications.yml
