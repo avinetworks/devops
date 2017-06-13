@@ -4,14 +4,13 @@
 - hosts: localhost
   connection: local
   vars_files:
-    - "../vars/creds_unsecure.yml"
-    - "../applications/{{ app_name }}/config.yml"
-  vars:
-    api_version: 17.1.2
+    - "{{site_dir}}/vars/creds_unsecure.yml"
+    - "{{site_dir}}/applications/{{ app_name }}/config.yml"
   roles:
     - role: avinetworks.avisdk
+    - role: profiles
+    - role: system
   tasks:
-
     - name: Avi SSLKeyAndCertificate | Upload or Update SSL certificate - always changed due to sensitve field
       avi_sslkeyandcertificate:
         controller: "{{ avi_controller}}"
@@ -20,12 +19,12 @@
         tenant: "{{ tenant | default(omit)}}"
         tenant_ref: "{{item.tenant_ref | default(omit)}}"
         state: "{{item.state | default(omit)}}"
-        api_version: "{{ api_version }}"
+        api_version: "{{ api_version | default(omit)}}"
         key: "{{item.key}}"
         certificate: "{{item.certificate}}"
         type: "{{item.type | default('SSL_CERTIFICATE_TYPE_VIRTUALSERVICE')}}"
         name: "{{item.name}}"
-      with_items: "{{ avi_sslkeyandcertificate_objs }}"
+      with_items: "{{ avi_sslkeyandcertificate_objs | default([])}}"
       when: (not item.certificate.self_signed or item.certificate.certificate is defined)
       register: ssl_certs
 
@@ -51,7 +50,7 @@
     - name: Avi SSLKeyAndCertificate | Add self signed certificates
       set_fact:
         keycert:
-          api_version: "{{ api_version }}"
+          api_version: "{{ api_version | default(omit)}}"
           tenant: "{{ tenant | default(omit)}}"
           tenant_ref: "{{item.tenant_ref | default(omit)}}"
           state: "{{item.state | default(omit)}}"
@@ -61,7 +60,7 @@
             certificate: "{{ lookup('file', '../applications/'~app_name~'/'~item.name~'.crt')}}"
           type: SSL_CERTIFICATE_TYPE_VIRTUALSERVICE
           name: "{{item.name}}"
-      with_items: "{{ avi_sslkeyandcertificate_objs }}"
+      with_items: "{{ avi_sslkeyandcertificate_objs | default([])}}"
       register: self_signed_certs
       when:
         - item.certificate.self_signed
@@ -75,7 +74,7 @@
         tenant: "{{ tenant | default(omit)}}"
         tenant_ref: "{{item.tenant_ref | default(omit)}}"
         state: "{{item.state | default(omit)}}"
-        api_version: "{{ api_version }}"
+        api_version: "{{ api_version | default(omit)}}"
         key: "{{item.ansible_facts.keycert.key}}"
         certificate: "{{item.ansible_facts.keycert.certificate}}"
         type: "{{item.ansible_facts.keycert.type | default('SSL_CERTIFICATE_TYPE_VIRTUALSERVICE')}}"
@@ -89,7 +88,7 @@
         controller: "{{ avi_controller}}"
         username: "{{ avi_username }}"
         password: "{{ avi_password }}"
-        api_version: "{{ api_version }}"
+        api_version: "{{ api_version | default(omit)}}"
         name: "{{item.name}}"
         tenant: "{{ tenant | default(omit)}}"
         tenant_ref: "{{item.tenant_ref | default(omit)}}"
@@ -113,7 +112,7 @@
         tenant: "{{ tenant | default(omit)}}"
         state: "{{item.state | default(omit)}}"
         tenant_ref: "{{ tenant_ref | default(omit)}}"
-        api_version: "{{ api_version }}"
+        api_version: "{{ api_version | default(omit)}}"
         name: "{{item.name}}"
         http_request_policy: "{{ item.http_request_policy }}"
         is_internal_policy: "{{ item.is_internal_policy| default(omit)}}"
@@ -124,7 +123,7 @@
         controller: "{{ avi_controller}}"
         username: "{{ avi_username }}"
         password: "{{ avi_password }}"
-        api_version: "{{ api_version }}"
+        api_version: "{{ api_version | default(omit)}}"
         name: "{{item.name}}"
         pool_ref: "{{item.pool_ref | default(omit)}}"
         cloud_ref: "{{item.cloud_ref | default(omit)}}"
@@ -135,4 +134,21 @@
         services: "{{item.services}}"
         http_policies: "{{ item.http_policies | default(omit)}}"
       with_items: "{{ avi_virtualservice_objs | default([])}}"
+
+    - name: Avi GSLB Service | Create GSLB Service
+      avi_gslbservice:
+        controller: "{{ avi_controller}}"
+        username: "{{ avi_username }}"
+        password: "{{ avi_password }}"
+        api_version: "{{ api_version | default(omit) }}"
+        name: "{{item.name}}"
+        enabled: "{{ item.enabled | default(omit) }}"
+        health_monitor_scope: "{{ item.health_monitor_scope | default(omit) }}"
+        down_response: "{{ item.down_response | default(omit) }}"
+        controller_health_status_enabled: "{{ item.controller_health_status_enabled | default(omit) }}"
+        groups: "{{ gslb_groups | default(omit) }}"
+        health_monitor_refs: "{{ health_monitor_refs | default(omit) }}"
+        domain_names: "{{ domain_names | default(omit) }}"
+        state: "{{ state | default(omit) }}"
+      with_items: {{ avi_gslbservice_objs | default([]) }}
 

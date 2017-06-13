@@ -6,7 +6,7 @@
 # Base infra config
 
 # Configure the clouds
-- include: playbooks/site_clouds.yml
+- include: site_clouds.yml site_dir=.
 
 # Configure static routes needed for SE management reachability
 # - include: site_vrf_static_routes.yml
@@ -24,4 +24,4 @@
 #- include: site1_system_configuration.yml
 
 # App config
-- include: playbooks/site_applications.yml
+- include: site_applications.yml site_dir=.

@@ -1,0 +1,31 @@
+---
+
+# This will setup basic VS based on the
+# Configuration passed.
+---
+- hosts: localhost
+  connection: local
+  vars_files:
+    - "{{site_dir}}/vars/creds_unsecure.yml"
+  roles:
+    - role: avinetworks.avisdk
+  vars:
+    profiles_dir: "{{ profiles_dir | default(site_dir~'/profiles')}}"
+  tasks:
+    - name: Avi Profiles | Include application profiles
+      include_vars:
+        - "{{site_dir}}/{{ profiles_dir }}/config.yml"
+
+    - name: Avi Datascript | Create Datascripts
+      avi_vsdatascriptset:
+        controller: "{{ avi_controller}}"
+        username: "{{ avi_username }}"
+        password: "{{ avi_password }}"
+        api_version: "{{ api_version | default(omit)}}"
+        name: "{{item.name}}"
+        datascript: "{{item.datascript }}"
+        pool_refs: "{{ item.pool_refs | default(omit)}}"
+        pool_group_refs: "{{item.pool_group_refs | default(omit)}}"
+        ipgroup_refs: "{{item.ipgroup_refs | default(omit)}}"
+        string_group_refs: "{{item.string_group_refs | default(omit)}}"
+      with_items: "{{ avi_vsdatascript_objs | default([])}}"

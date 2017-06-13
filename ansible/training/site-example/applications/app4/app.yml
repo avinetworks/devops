@@ -1,0 +1,30 @@
+# This is playbook for an application.
+# This can invoke any of the avi roles like application, profile or cloud
+#
+
+- hosts: localhost
+  connection: local
+  vars_files:
+    - "{{ site_dir }}/vars/creds_unsecure.yml"
+  vars:
+    api_version: 17.1.2
+    app_name: app4
+  roles:
+    - role: avinetworks.avisdk
+
+  tasks:
+    - name: Avi Profiles | Setup any application specific profiles
+      include_role:
+        name: "{{ site_dir }}"/roles/profiles
+      vars:
+        site_dir: "{{ site_dir }}"
+        app_name: "{{ app_name }}"
+        profiles_dir: "{{ site_dir }}/{{ app_name }}"
+
+    - name: Avi Application | Setup VMWare Cloud with Write Access
+      include_role:
+        name: "{{ site_dir }}"/roles/application
+      vars:
+        site_dir: "{{ site_dir }}"
+        app_name: "{{ app_name }}"
+

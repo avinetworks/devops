@@ -12,3 +12,4 @@
         name: cloud
       vars:
         cloud_name: vmware
+        site_dir: ../
