@@ -30,7 +30,7 @@
         msg: "{{new_path}} -> {{another_path}}"
 
     # Do the above example using ~ operator
-
+    # "{{tmp_folder_data.stat.path ~ '/newpath'}}"
     - debug: msg="{{ my_string | default('You didnt provide a string')}}"
 
     - name: copy a file

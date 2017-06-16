@@ -6,6 +6,7 @@
     - "vars/creds.yml"
   vars:
     tenant: admin
+    avi_controller: localhost
   roles:
     - role: avinetworks.avisdk
   tasks:
@@ -13,4 +14,4 @@
       debug: msg="Hello"
 
     - name: Print Controller
-      debug: msg="{{username}}@{{ controller }} tenant {{tenant}}"
+      debug: msg="{{avi_username}}@{{ avi_controller }} tenant {{tenant}}"
