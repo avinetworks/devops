@@ -25,7 +25,7 @@
         certificate: "{{item.certificate}}"
         type: "{{item.type | default('SSL_CERTIFICATE_TYPE_VIRTUALSERVICE')}}"
         name: "{{item.name}}"
-      with_items: "{{ avi_sslkeyandcertificate_objs }}"
+      with_items: "{{ avi_sslkeyandcertificate_objs | default([])}}"
       when: (not item.certificate.self_signed or item.certificate.certificate is defined)
       register: ssl_certs
 
@@ -61,7 +61,7 @@
             certificate: "{{ lookup('file', '../applications/'~app_name~'/'~item.name~'.crt')}}"
           type: SSL_CERTIFICATE_TYPE_VIRTUALSERVICE
           name: "{{item.name}}"
-      with_items: "{{ avi_sslkeyandcertificate_objs }}"
+      with_items: "{{ avi_sslkeyandcertificate_objs | default([])}}"
       register: self_signed_certs
       when:
         - item.certificate.self_signed
@@ -134,5 +134,9 @@
         vip: "{{item.vip}}"
         services: "{{item.services}}"
         http_policies: "{{ item.http_policies | default(omit)}}"
+        ip_address: "{{item.ip_address | default(omit)}}"
+        se_group_ref: "{{item.se_group_ref | default(omit)}}"
+        dns_info: "{{item.dns_info | default(omit)}}"
+        vsvip_ref: "{{item.vsvsip_ref | default(omit)}}"
+        ipam_network_subnet: "{{item.ipam_network_subnet | default(omit)}}"
       with_items: "{{ avi_virtualservice_objs | default([])}}"
-
