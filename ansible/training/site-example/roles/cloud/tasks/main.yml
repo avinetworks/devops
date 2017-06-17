@@ -2,11 +2,11 @@
 
   - name: Avi Cloud | Load vmware cloud creds
     include_vars:
-      file: "../clouds/{{cloud_name}}/creds.yml"
+      file: "{{site_dir}}/clouds/{{cloud_name}}/creds.yml"
       name: cloud_creds
   - name: Avi Cloud | Load vmware cloud config
     include_vars:
-      file: "../clouds/{{cloud_name}}/config.yml"
+      file: "{{site_dir}}/clouds/{{cloud_name}}/config.yml"
       name: cloud_config
 #  - name: Avi Cloud | Cloud config debug
 #    debug: msg="Setting up Cloud {{cloud_config}} password {{cloud_creds}} "
