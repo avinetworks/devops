@@ -113,7 +113,7 @@
       password: "{{ avi_password }}"
       tenant: "{{ tenant | default(omit)}}"
       state: "{{item.state | default(omit)}}"
-      tenant_ref: "{{ tenant_ref | default(omit)}}"
+      tenant_ref: "{{item.tenant_ref | default(omit)}}"
       api_version: "{{ api_version | default(omit)}}"
       name: "{{item.name}}"
       http_request_policy: "{{ item.http_request_policy }}"
