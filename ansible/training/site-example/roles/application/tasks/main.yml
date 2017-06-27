@@ -12,6 +12,13 @@
     include_vars:
       file: "{{site_dir}}/applications/{{ app_name }}/config.yml"
       #name: cloud_config
+  - name: load playbooks
+    include: "{{outer_item}}.yml"
+    when:
+      - avi_config[outer_item] is defined
+    with_items: "{{ avi_resource_types}}"
+    loop_control:
+      loop_var: outer_item
 
   - name: Avi SSLKeyAndCertificate | Upload or Update SSL certificate - always changed due to sensitve field
     avi_sslkeyandcertificate:
