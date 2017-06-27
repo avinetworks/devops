@@ -1,7 +1,7 @@
 ---
 # When running on Ubuntu 16.04.2 you will need to change python to python3
 # ansible-playbook -i 10.70.160.51, docker.yml -u ubuntu --ask-pass -e 'ansible_python_interpreter=/usr/bin/python3' --ask-become-pass
-- hosts: all
+- hosts: controllers
   become: yes
   pre_tasks:
     - name: Enable ipv4 forwarding
