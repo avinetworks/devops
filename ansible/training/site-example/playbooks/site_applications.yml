@@ -1,7 +1,7 @@
 - name: setup app1
   tags:
     - app1
-  include: setup_basic_vs.yml
+  include: setup_ssl_vs.yml
   vars:
     app_name: app1
 

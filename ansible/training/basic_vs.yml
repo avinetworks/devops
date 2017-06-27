@@ -9,8 +9,8 @@
   vars_files:
     - "vars/creds_unsecure.yml"
   vars:
-    api_version: 17.1.2
     app_name: foo
+    api_version: 17.1.2
   roles:
     - role: avinetworks.avisdk
   tasks:
@@ -33,7 +33,7 @@
                addr: '10.90.64.14'
                type: 'V4'
 
-    - name: Create Virtual Service
+    - name: Create Virtual Service >= 17
       avi_virtualservice:
         controller: "{{ avi_controller}}"
         username: "{{ avi_username }}"
@@ -44,10 +44,27 @@
         cloud_ref: '/api/cloud?name=Default-Cloud'
         vip:
           - ip_address:
-
               addr: '10.90.64.222'
               type: 'V4'
             vip_id: '1'
         services:
-          - port: 80
+          - port: 4242
+      when:
+        - api_version >= "17"
 
+    - name: Create Virtual Service < 17
+      avi_virtualservice:
+        controller: "{{ avi_controller}}"
+        username: "{{ avi_username }}"
+        password: "{{ avi_password }}"
+        api_version: "{{ api_version }}"
+        name: "{{app_name}}"
+        pool_ref: "/api/pool?name={{app_name}}-pool"
+        cloud_ref: '/api/cloud?name=Default-Cloud'
+        ip_address:
+          addr: '10.90.64.222'
+          type: 'V4'
+        services:
+          - port: 80
+      when:
+        - api_version < "17"
