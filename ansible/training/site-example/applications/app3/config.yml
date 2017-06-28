@@ -5,13 +5,13 @@ avi_config:
       lb_algorithm: LB_ALGORITHM_ROUND_ROBIN
       servers:
         - ip:
-             addr: '10.90.64.16'
+             addr: "{{pool_server1}}"
              type: 'V4'
     - name: app3-pool-B
       lb_algorithm: LB_ALGORITHM_LEAST_CONNECTIONS
       servers:
         - ip:
-             addr: '10.90.64.16'
+             addr: "{{pool_server2}}"
              type: 'V4'
 
   httppolicyset:
@@ -54,7 +54,7 @@ avi_config:
       pool_ref: '/api/pool?name=app3-pool-A'
       vip:
         - ip_address:
-            addr: 10.90.64.243
+            addr: "{{app3_vip}}"
             type: 'V4'
           vip_id: '1'
       cloud_ref: '/api/cloud?name=Default-Cloud'

@@ -4,7 +4,7 @@ avi_config:
       lb_algorithm: LB_ALGORITHM_ROUND_ROBIN
       servers:
         - ip:
-             addr: '10.90.64.16'
+             addr: "{{pool_server1}}"
              type: 'V4'
 
   virtualservice:
@@ -14,7 +14,7 @@ avi_config:
       pool_ref: '/api/pool?name=app4-pool'
       vip:
         - ip_address:
-            addr: 10.90.64.244
+            addr: "{{app4_vip}}"
             type: 'V4'
           vip_id: '1'
 
