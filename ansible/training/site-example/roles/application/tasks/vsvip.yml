@@ -1,0 +1,21 @@
+# Automatically Generated File
+# Copywrite Avi Networks
+
+  - name: Avi VsVip | Setup VsVip
+    avi_vsvip:
+      controller: "{{ avi_controller}}"
+      username: "{{ avi_username }}"
+      password: "{{ avi_password }}"
+      tenant: "{{ tenant | default(omit)}}"
+      state: "{{item.state | default(omit)}}"
+      api_version: "{{ api_version | default(omit)}}"
+      name: "{{item.name}}"
+      cloud_ref: "{{ item.cloud_ref | default(omit) }}"
+      dns_info: "{{ item.dns_info | default(omit) }}"
+      east_west_placement: "{{ item.east_west_placement | default(omit) }}"
+      tenant_ref: "{{ item.tenant_ref | default(omit) }}"
+      uuid: "{{ item.uuid | default(omit) }}"
+      vip: "{{ item.vip | default(omit) }}"
+      vrf_context_ref: "{{ item.vrf_context_ref | default(omit) }}"
+    with_items: "{{ avi_config.vsvip | default([]) }}"
+

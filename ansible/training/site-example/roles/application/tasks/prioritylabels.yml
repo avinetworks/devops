@@ -1,0 +1,19 @@
+# Automatically Generated File
+# Copywrite Avi Networks
+
+  - name: Avi PriorityLabels | Setup PriorityLabels
+    avi_prioritylabels:
+      controller: "{{ avi_controller}}"
+      username: "{{ avi_username }}"
+      password: "{{ avi_password }}"
+      tenant: "{{ tenant | default(omit)}}"
+      state: "{{item.state | default(omit)}}"
+      api_version: "{{ api_version | default(omit)}}"
+      name: "{{item.name}}"
+      cloud_ref: "{{ item.cloud_ref | default(omit) }}"
+      description: "{{ item.description | default(omit) }}"
+      equivalent_labels: "{{ item.equivalent_labels | default(omit) }}"
+      tenant_ref: "{{ item.tenant_ref | default(omit) }}"
+      uuid: "{{ item.uuid | default(omit) }}"
+    with_items: "{{ avi_config.prioritylabels | default([]) }}"
+

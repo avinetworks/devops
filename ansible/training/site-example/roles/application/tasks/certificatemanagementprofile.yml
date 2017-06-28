@@ -1,0 +1,18 @@
+# Automatically Generated File
+# Copywrite Avi Networks
+
+  - name: Avi CertificateManagementProfile | Setup CertificateManagementProfile
+    avi_certificatemanagementprofile:
+      controller: "{{ avi_controller}}"
+      username: "{{ avi_username }}"
+      password: "{{ avi_password }}"
+      tenant: "{{ tenant | default(omit)}}"
+      state: "{{item.state | default(omit)}}"
+      api_version: "{{ api_version | default(omit)}}"
+      name: "{{item.name}}"
+      script_params: "{{ item.script_params | default(omit) }}"
+      script_path: "{{ item.script_path | default(omit) }}"
+      tenant_ref: "{{ item.tenant_ref | default(omit) }}"
+      uuid: "{{ item.uuid | default(omit) }}"
+    with_items: "{{ avi_config.certificatemanagementprofile | default([]) }}"
+

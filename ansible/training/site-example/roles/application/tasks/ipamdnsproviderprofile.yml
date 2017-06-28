@@ -1,0 +1,24 @@
+# Automatically Generated File
+# Copywrite Avi Networks
+
+  - name: Avi IpamDnsProviderProfile | Setup IpamDnsProviderProfile
+    avi_ipamdnsproviderprofile:
+      controller: "{{ avi_controller}}"
+      username: "{{ avi_username }}"
+      password: "{{ avi_password }}"
+      tenant: "{{ tenant | default(omit)}}"
+      state: "{{item.state | default(omit)}}"
+      api_version: "{{ api_version | default(omit)}}"
+      name: "{{item.name}}"
+      aws_profile: "{{ item.aws_profile | default(omit) }}"
+      custom_profile: "{{ item.custom_profile | default(omit) }}"
+      gcp_profile: "{{ item.gcp_profile | default(omit) }}"
+      infoblox_profile: "{{ item.infoblox_profile | default(omit) }}"
+      internal_profile: "{{ item.internal_profile | default(omit) }}"
+      openstack_profile: "{{ item.openstack_profile | default(omit) }}"
+      proxy_configuration: "{{ item.proxy_configuration | default(omit) }}"
+      tenant_ref: "{{ item.tenant_ref | default(omit) }}"
+      type: "{{ item.type | default(omit) }}"
+      uuid: "{{ item.uuid | default(omit) }}"
+    with_items: "{{ avi_config.ipamdnsproviderprofile | default([]) }}"
+

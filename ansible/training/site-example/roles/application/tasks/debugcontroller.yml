@@ -1,0 +1,20 @@
+# Automatically Generated File
+# Copywrite Avi Networks
+
+  - name: Avi DebugController | Setup DebugController
+    avi_debugcontroller:
+      controller: "{{ avi_controller}}"
+      username: "{{ avi_username }}"
+      password: "{{ avi_password }}"
+      tenant: "{{ tenant | default(omit)}}"
+      state: "{{item.state | default(omit)}}"
+      api_version: "{{ api_version | default(omit)}}"
+      name: "{{item.name}}"
+      filters: "{{ item.filters | default(omit) }}"
+      log_level: "{{ item.log_level | default(omit) }}"
+      sub_module: "{{ item.sub_module | default(omit) }}"
+      tenant_ref: "{{ item.tenant_ref | default(omit) }}"
+      trace_level: "{{ item.trace_level | default(omit) }}"
+      uuid: "{{ item.uuid | default(omit) }}"
+    with_items: "{{ avi_config.debugcontroller | default([]) }}"
+

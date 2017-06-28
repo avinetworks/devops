@@ -1,0 +1,31 @@
+# Automatically Generated File
+# Copywrite Avi Networks
+
+  - name: Avi AlertConfig | Setup AlertConfig
+    avi_alertconfig:
+      controller: "{{ avi_controller}}"
+      username: "{{ avi_username }}"
+      password: "{{ avi_password }}"
+      tenant: "{{ tenant | default(omit)}}"
+      state: "{{item.state | default(omit)}}"
+      api_version: "{{ api_version | default(omit)}}"
+      name: "{{item.name}}"
+      action_group_ref: "{{ item.action_group_ref | default(omit) }}"
+      alert_rule: "{{ item.alert_rule | default(omit) }}"
+      autoscale_alert: "{{ item.autoscale_alert | default(omit) }}"
+      category: "{{ item.category | default(omit) }}"
+      description: "{{ item.description | default(omit) }}"
+      enabled: "{{ item.enabled | default(omit) }}"
+      expiry_time: "{{ item.expiry_time | default(omit) }}"
+      obj_uuid: "{{ item.obj_uuid | default(omit) }}"
+      object_type: "{{ item.object_type | default(omit) }}"
+      recommendation: "{{ item.recommendation | default(omit) }}"
+      rolling_window: "{{ item.rolling_window | default(omit) }}"
+      source: "{{ item.source | default(omit) }}"
+      summary: "{{ item.summary | default(omit) }}"
+      tenant_ref: "{{ item.tenant_ref | default(omit) }}"
+      threshold: "{{ item.threshold | default(omit) }}"
+      throttle: "{{ item.throttle | default(omit) }}"
+      uuid: "{{ item.uuid | default(omit) }}"
+    with_items: "{{ avi_config.alertconfig | default([]) }}"
+

@@ -1,0 +1,25 @@
+# Automatically Generated File
+# Copywrite Avi Networks
+
+  - name: Avi PoolGroup | Setup PoolGroup
+    avi_poolgroup:
+      controller: "{{ avi_controller}}"
+      username: "{{ avi_username }}"
+      password: "{{ avi_password }}"
+      tenant: "{{ tenant | default(omit)}}"
+      state: "{{item.state | default(omit)}}"
+      api_version: "{{ api_version | default(omit)}}"
+      name: "{{item.name}}"
+      cloud_config_cksum: "{{ item.cloud_config_cksum | default(omit) }}"
+      cloud_ref: "{{ item.cloud_ref | default(omit) }}"
+      created_by: "{{ item.created_by | default(omit) }}"
+      deployment_policy_ref: "{{ item.deployment_policy_ref | default(omit) }}"
+      description: "{{ item.description | default(omit) }}"
+      fail_action: "{{ item.fail_action | default(omit) }}"
+      members: "{{ item.members | default(omit) }}"
+      min_servers: "{{ item.min_servers | default(omit) }}"
+      priority_labels_ref: "{{ item.priority_labels_ref | default(omit) }}"
+      tenant_ref: "{{ item.tenant_ref | default(omit) }}"
+      uuid: "{{ item.uuid | default(omit) }}"
+    with_items: "{{ avi_config.poolgroup | default([]) }}"
+

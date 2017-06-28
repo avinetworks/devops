@@ -1,0 +1,18 @@
+# Automatically Generated File
+# Copywrite Avi Networks
+
+  - name: Avi SecureChannelToken | Setup SecureChannelToken
+    avi_securechanneltoken:
+      controller: "{{ avi_controller}}"
+      username: "{{ avi_username }}"
+      password: "{{ avi_password }}"
+      tenant: "{{ tenant | default(omit)}}"
+      state: "{{item.state | default(omit)}}"
+      api_version: "{{ api_version | default(omit)}}"
+      name: "{{item.name}}"
+      expiry_time: "{{ item.expiry_time | default(omit) }}"
+      metadata: "{{ item.metadata | default(omit) }}"
+      node_uuid: "{{ item.node_uuid | default(omit) }}"
+      uuid: "{{ item.uuid | default(omit) }}"
+    with_items: "{{ avi_config.securechanneltoken | default([]) }}"
+

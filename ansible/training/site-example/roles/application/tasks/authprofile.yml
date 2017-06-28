@@ -1,0 +1,21 @@
+# Automatically Generated File
+# Copywrite Avi Networks
+
+  - name: Avi AuthProfile | Setup AuthProfile
+    avi_authprofile:
+      controller: "{{ avi_controller}}"
+      username: "{{ avi_username }}"
+      password: "{{ avi_password }}"
+      tenant: "{{ tenant | default(omit)}}"
+      state: "{{item.state | default(omit)}}"
+      api_version: "{{ api_version | default(omit)}}"
+      name: "{{item.name}}"
+      description: "{{ item.description | default(omit) }}"
+      http: "{{ item.http | default(omit) }}"
+      ldap: "{{ item.ldap | default(omit) }}"
+      tacacs_plus: "{{ item.tacacs_plus | default(omit) }}"
+      tenant_ref: "{{ item.tenant_ref | default(omit) }}"
+      type: "{{ item.type | default(omit) }}"
+      uuid: "{{ item.uuid | default(omit) }}"
+    with_items: "{{ avi_config.authprofile | default([]) }}"
+

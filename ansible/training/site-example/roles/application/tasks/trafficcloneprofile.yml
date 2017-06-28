@@ -1,0 +1,19 @@
+# Automatically Generated File
+# Copywrite Avi Networks
+
+  - name: Avi TrafficCloneProfile | Setup TrafficCloneProfile
+    avi_trafficcloneprofile:
+      controller: "{{ avi_controller}}"
+      username: "{{ avi_username }}"
+      password: "{{ avi_password }}"
+      tenant: "{{ tenant | default(omit)}}"
+      state: "{{item.state | default(omit)}}"
+      api_version: "{{ api_version | default(omit)}}"
+      name: "{{item.name}}"
+      clone_servers: "{{ item.clone_servers | default(omit) }}"
+      cloud_ref: "{{ item.cloud_ref | default(omit) }}"
+      preserve_client_ip: "{{ item.preserve_client_ip | default(omit) }}"
+      tenant_ref: "{{ item.tenant_ref | default(omit) }}"
+      uuid: "{{ item.uuid | default(omit) }}"
+    with_items: "{{ avi_config.trafficcloneprofile | default([]) }}"
+
