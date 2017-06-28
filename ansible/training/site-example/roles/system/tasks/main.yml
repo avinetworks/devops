@@ -1,4 +1,0 @@
----
-  - name: Placeholder task
-    debug: msg=Placeholder task for system
-

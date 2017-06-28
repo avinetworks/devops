@@ -1,3 +1,0 @@
----
-dependencies:
-  - { role: avinetworks.avisdk }
