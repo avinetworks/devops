@@ -15,19 +15,19 @@ Usage for full site setup
 
 .. code-block:: shell
   
-  ansible-playbook site.yml
+  ansible-playbook site.yml --extra-vars "site_dir=`pwd`"
 
 Usage for just cloud setup
 
 .. code-block:: shell
   
-  ansible-playbook site_clouds.yml
+  ansible-playbook site_clouds.yml --extra-vars "site_dir=`pwd`"
 
 Usage for just applications setup. This would setup all the applications that are registered in site_applications.yml
 
 .. code-block:: shell
   
-  ansible-playbook site_applications.yml
+  ansible-playbook site_applications.yml --extra-vars "site_dir=`pwd`"
 
 ************
 Roles
