@@ -3,14 +3,11 @@
 ---
   - name: Avi Application | Load AVi controller creds
     include_vars:
-      file: "{{site_dir}}/vars/creds.yml"
-
-  - name:  setting up app name
-    debug: msg="{{app_name}}"
+      file: "{{avi_creds_file}}"
 
   - name: Avi Application | Load Application configurations
     include_vars:
-      file: "{{site_dir}}/applications/{{ app_name }}/config.yml"
+      file: "{{avi_config_file}}"
 
   - name: Include Avi Resource Tasks
     include: "{{ outer_item }}.yml"

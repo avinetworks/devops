@@ -8,20 +8,5 @@
 # Configure the clouds
 - include: site_clouds.yml
 
-# Configure static routes needed for SE management reachability
-# - include: site_vrf_static_routes.yml
-
-# Configure Service Engine Groups
-# - include: site_service_engine_groups.yml
-
-# Configure networks with static ranges
-# - include: site_networks.yml
-
-# Configure DNS virtual services
-# - include: site_virtual_services_dns.yml
-
-# Set system configuration with DNS virtual services
-#- include: site1_system_configuration.yml
-
 # App config
 - include: site_applications.yml

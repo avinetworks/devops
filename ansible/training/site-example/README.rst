@@ -63,21 +63,21 @@ Create vmware cloud `config.yml <clouds/vmware/config.yml>`_:
 The config.yml has a Avi Cloud object that represents the cloud configuration. It also has a setting to customize wait times for the cloud discovery. Note, that the vmware cloud password is not included here but provided via a separate creds.yml file. 
 
 .. code-block:: yaml
-
-  avi_cloud_obj:
-    api_version: 17.1.2
-    name: Default-Cloud
-    vtype: CLOUD_VCENTER
-    dhcp_enabled: true
-    license_type: "LIC_CORES"
-    vcenter_configuration:
-      username: "root"
-      datacenter: "10GTest"
-      management_network: "/api/vimgrnwruntime?name=Mgmt_Arista"
-      privilege: "WRITE_ACCESS"
-      vcenter_url: "10.10.2.10"
-
-  cloud_discovery_wait: 1
+    avi_cloud:
+      cloud:
+        - api_version: 17.1.2
+          name: Default-Cloud
+          vtype: CLOUD_VCENTER
+          dhcp_enabled: true
+          license_type: "LIC_CORES"
+          vcenter_configuration:
+            username: "root"
+            password: xxxx
+            datacenter: "10GTest"
+            management_network: "/api/vimgrnwruntime?name=Mgmt_Arista"
+            privilege: "WRITE_ACCESS"
+            vcenter_url: "10.10.2.10"
+    avi_cloud_discovery_wait: 1
 
 ************
 Applications
@@ -92,38 +92,39 @@ Register in the `site_applications.yml <playbooks/site_applications.yml>`_:
 
 .. code-block:: yaml
 
-  - name: setup app1
-    tags:
-      - app1
-    include: setup_basic_vs.yml
-    vars:
-      app_name: app1
+    - include: applications/app1/app.yml
+
+    - include: applications/app2/app.yml
+
+    - include: applications/app3/app.yml
+
+    - include: applications/app4/app.yml
 
 Create app1 directory under applications and create `config.yml <applications/app1/config.yml>`_ for the application.
 
 .. code-block:: yaml
+    avi_config:
+        pool:
+          - name: app1-pool
+            lb_algorithm: LB_ALGORITHM_ROUND_ROBIN
+            servers:
+              - ip:
+                   addr: '10.90.64.16'
+                   type: 'V4'
+              - ip:
+                   addr: '10.90.64.14'
+                   type: 'V4'
 
-    avi_pool_objs:
-      - name: app1-pool
-        lb_algorithm: LB_ALGORITHM_ROUND_ROBIN
-        servers:
-          - ip:
-               addr: '10.90.64.16'
-               type: 'V4'
-          - ip:
-               addr: '10.90.64.14'
-               type: 'V4'
-
-    avi_virtualservice_objs:
-      - name: app1
-        services:
-          - port: 80
-        pool_ref: '/api/pool?name=app1-pool'
-        vip:
-          - ip_address:
-              addr: 10.90.64.240
-              type: 'V4'
-            vip_id: '1'
+        virtualservice:
+          - name: app1
+            services:
+              - port: 80
+            pool_ref: '/api/pool?name=app1-pool'
+            vip:
+              - ip_address:
+                  addr: 10.90.64.240
+                  type: 'V4'
+                vip_id: '1'
 
 -------------------
 SSL Application with Content Switching 

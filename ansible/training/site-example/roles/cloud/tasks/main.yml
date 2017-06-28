@@ -1,5 +1,4 @@
 ---
-
   - name: Avi Cloud | Load vmware cloud creds
     include_vars:
       file: "{{site_dir}}/clouds/{{cloud_name}}/creds.yml"
