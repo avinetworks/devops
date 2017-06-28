@@ -115,6 +115,7 @@ Basic Application
 2. Create app1 directory under applications and create `config.yml <applications/app1/config.yml>`_ for the application.
 
 .. code-block:: yaml
+
     avi_config:
       pool:
         - name: app1-pool
