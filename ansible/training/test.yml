@@ -1,0 +1,144 @@
+---
+- hosts: localhost
+  connection: local
+  #roles:
+  #  - role: avinetworks.avisdk
+  vars:
+    msg: "Hello world"
+    int_ex: 4
+    cloud_type: vmware
+    fqdn: "something.com"
+    pool_servers: '10.10.10.10,20.20.20.20,30.30.30.30'
+  tasks:
+    - name: Print Hello
+      debug: msg="{{ msg }}"
+
+    - name: print temp folder stat
+      stat: path=/tmp
+      register: tmp_folder_data
+
+    - debug: msg="{{ tmp_folder_data.stat.size }} - {{ int_ex | default(0) | int}}"
+      # int(int_ex)
+
+    - name: concatenate strings.
+      set_fact:
+        new_path: "{{tmp_folder_data.stat.path}}/newpath"
+        another_path: "{{tmp_folder_data.stat.path}}/foo"
+      # int(int_ex)
+    - name: multiple debugs
+      debug:
+        msg: "{{new_path}} -> {{another_path}}"
+
+    # Do the above example using ~ operator
+    # "{{tmp_folder_data.stat.path ~ '/newpath'}}"
+    - debug: msg="{{ my_string | default('You didnt provide a string')}}"
+
+    - name: copy a file
+      copy:
+        src: /home/grastogi/vs.yml
+        dest: /tmp/vs.yml
+
+    - name: read a file
+      debug: msg="{{lookup('file', tmp_folder_data.stat.path ~ '/vs.yml')}}"
+
+    - name: dns lookup of bnpp
+      debug: msg="{{lookup('dig', 'www.google.com')}}"
+
+
+    - name: split a string
+      set_fact:
+        s: "{{pool_servers.split(',')}}"
+    - name: print splitted string
+      debug: msg="{{s}}"
+
+    # Take two variables ip_addr and fqdn and return
+    # s1 = {
+    #    'ip': ip_addr
+    #    'fqdn': fqdn
+    # }
+    #- name: Create server with ip address and fqdn
+
+    - name: Create dictionary
+      tags:
+        - debug1
+      set_fact:
+        s1:
+          ip: "{{ ip_addr | default('10.10.2.10') }}"
+          fqdn: "{{ fqdn }}"
+      when:
+        - fqdn is defined
+
+    - debug: msg="{{s1}}"
+      tags:
+        - debug1
+
+    #
+    - name: print debugs from a list of args
+      tags:
+        - debug
+      debug: msg="{{ item }}"
+      with_items:
+        - test1
+        - test2
+
+
+    - name: build server list
+      tags:
+        - servers
+      set_fact:
+        servers: "{{servers|default([]) + [{'ip': {'addr': item, 'type': 'V4'}}] }}"
+      with_items: "{{pool_servers.split(',')}}"
+
+    - name: print servers
+      tags:
+        - servers
+      debug: msg="{{servers}}"
+
+    - name: give multiple users access to multiple databases
+      tags:
+        - nested
+      debug:
+        msg:
+          name: "{{ item[0] }}"
+          priv: "{{ item[1] }}.*:ALL"
+          append_privs: yes
+          password: "password"
+      with_nested:
+        - [ 'user1', 'user2' ]
+        - [ 'database1', 'database2', 'database3' ]
+      register: results
+
+    - debug: msg="{{results}}"
+      tags:
+        - nested
+
+    - name: dictionary example
+      tags:
+        - dict
+      set_fact:
+        pools:
+          pool1:
+            servers:
+              - { "ip": { "addr": "10.90.130.13", "type": "V4"}}
+              - { "ip": { "addr": "10.90.130.15", "type": "V4"}}
+            name: p1
+          pool2:
+            servers:
+              - { "ip": { "addr": "10.90.132.13", "type": "V4"}}
+              - { "ip": { "addr": "10.90.132.15", "type": "V4"}}
+            name: p2
+
+    - name: dictionary print k,v
+      tags:
+        - dict
+      debug:
+        msg: "{{ item.key }} -> {{item.value}}"
+      with_dict: "{{pools}}"
+
+    - name: block example
+      block:
+      - debug: msg="setting up vmware cloud"
+
+      when:
+        - cloud_type == "os"
+

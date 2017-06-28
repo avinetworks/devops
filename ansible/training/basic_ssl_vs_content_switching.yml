@@ -112,7 +112,7 @@
                 status_code: HTTP_LOCAL_RESPONSE_STATUS_CODE_200
                 pool_ref: "/api/pool?name={{app_name}}-pool-bar"
         is_internal_policy: false
-    - name: Create Virtual Service
+    - name: Create Virtual Service > 17.1
       avi_virtualservice:
         controller: "{{ avi_controller}}"
         username: "{{ avi_username }}"
@@ -137,3 +137,31 @@
         http_policies:
           - index: 11
             http_policy_set_ref: '/api/httppolicyset?name={{app_name}}-httppolicy'
+      when:
+        - api_version > '17'
+
+    - name: Create Virtual Service < 17.x
+      avi_virtualservice:
+        controller: "{{ avi_controller}}"
+        username: "{{ avi_username }}"
+        password: "{{ avi_password }}"
+        api_version: "{{ api_version }}"
+        name: "{{app_name}}"
+        pool_ref: "/api/pool?name={{app_name}}-pool"
+        cloud_ref: '/api/cloud?name=Default-Cloud'
+        ip_address:
+          addr: '10.90.64.230'
+          type: 'V4'
+        ssl_key_and_certificate_refs:
+          - '/api/sslkeyandcertificate?name={{app_name}}-cert'
+        ssl_profile_ref: '/api/sslprofile?name=System-Standard'
+        application_profile_ref: '/api/applicationprofile?name=System-Secure-HTTP'
+        services:
+          - port: 80
+          - port: 443
+            enable_ssl: true
+        http_policies:
+          - index: 11
+            http_policy_set_ref: '/api/httppolicyset?name={{app_name}}-httppolicy'
+      when:
+        - api_version < '17'
