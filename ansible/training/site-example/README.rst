@@ -21,49 +21,59 @@ Usage for just cloud setup
 
 .. code-block:: shell
   
-  ansible-playbook playbooks/site_clouds.yml
+  ansible-playbook site_clouds.yml
 
 Usage for just applications setup. This would setup all the applications that are registered in site_applications.yml
 
 .. code-block:: shell
   
-  ansible-playbook playbooks/site_applications.yml
+  ansible-playbook site_applications.yml
 
 ************
-Playbooks
+Roles
 ************
 
-The playbooks directory contains all the resusable playbooks and role to setup site.
-
-* `setup_basic_vs.yml <playbooks/setup_basic_vs.yml>`_: Contains playbook to setup basic pool and vs
-* `setup_ssl_vs.yml <playbooks/setup_ssl_vs.yml>`_: Playbook to setup SSL VS with HTTP policies like content swtiching etc.
-* `role <playbooks/role>`_: local roles like cloud to setup cloud configurations
+The roles directory contains AviConfig role that has ability to process a configuration file with avi configurations that is listed on a per-resource type. It performs the configuration in the right order as required by the object dependencies.
 
 ************
 Clouds
 ************
-All site clouds are registered to the site.yml via `site_clouds.yml <playbooks/site_clouds.yml>`_. Each cloud has a directory with a configuration file config.yml. The cloud settings for the site are perform via a cloud role that contains playbook to setup Avi Cloud object, service engine group and cloud networks. It also allows for a separate cloud credential files that is automatically merged by the cloud role before applying it to the Avi Controller.
+All site clouds are registered to the site.yml via `site_clouds.yml <site_clouds.yml>`_. Each cloud has a directory with a configuration file config.yml. The cloud settings for the site are perform via a cloud role that contains playbook to setup Avi Cloud object, service engine group and cloud networks. It also allows for a separate cloud credential files that is automatically merged by the cloud role before applying it to the Avi Controller.
 
 -------------------
 Add a VMWare Cloud setup
 -------------------
 
-Register in the `site_applications.yml <playbooks/site_applications.yml>`_:
+Add a new directory for vmware cloud in `clouds <clouds>` directory. The following lists the steps to create a new cloud
+
+1. Playbook for the cloud as `cloud.yml <clouds/vmware/cloud.yml>`_
 
 .. code-block:: yaml
 
-  - name: Avi Cloud | Setup VMWare Cloud with Write Access
-    include_role:
-      name: cloud
-    vars:
-      cloud_name: vmware
-
-Create vmware cloud `config.yml <clouds/vmware/config.yml>`_:
-
-The config.yml has a Avi Cloud object that represents the cloud configuration. It also has a setting to customize wait times for the cloud discovery. Note, that the vmware cloud password is not included here but provided via a separate creds.yml file. 
+    - hosts: localhost
+      connection: local
+      vars:
+        api_version: 17.1.2
+        # this will pick up config from the clouds/vmware directory
+        cloud_name: vmware
+      roles:
+        - role: avinetworks.avisdk
+      tasks:
+        - name: Setting up cloud
+          debug: msg="{{cloud_name}}"
+        - name: Avi Cloud | Setup VMWare Cloud with Write Access
+          include_role:
+            name: "{{ site_dir }}/roles/aviconfig"
+          vars:
+            avi_config_file: "{{ site_dir }}/clouds/{{cloud_name}}/config.yml"
+            avi_creds_file: "{{ site_dir }}/vars/creds.yml"
+            
+ 
+2. Provide cloud configuration settings as `config.yml <clouds/vmware/config.yml>`_
 
 .. code-block:: yaml
-    avi_cloud:
+
+  avi_config:
       cloud:
         - api_version: 17.1.2
           name: Default-Cloud
@@ -71,24 +81,30 @@ The config.yml has a Avi Cloud object that represents the cloud configuration. I
           dhcp_enabled: true
           license_type: "LIC_CORES"
           vcenter_configuration:
-            username: "root"
-            password: xxxx
+            username: root
+            password: vmware
             datacenter: "10GTest"
             management_network: "/api/vimgrnwruntime?name=Mgmt_Arista"
             privilege: "WRITE_ACCESS"
             vcenter_url: "10.10.2.10"
-    avi_cloud_discovery_wait: 1
+
+
+3. Register in the `site_cloud.yml <site_clouds.yml>`_:
+
+.. code-block:: yaml
+
+  - include: clouds/vmware/cloud.yml
 
 ************
 Applications
 ************
-All the site applications are registered in the `site_applications.yml <playbooks/site_applications.yml>`_. The configuration files for the applications are kept in the `applications <applications>`_ directory. Each applications directory contains `config.yml <applications/app1/config.yml>`_ that represents all Avi RESTful objects that are needed for the application. For example `app1 <applications/app1>`_ contains one pool and one l7 virtualservice with VIP 10.90.64.240. In order to enable the application Here are the step
+All the site applications are registered in the `site_applications.yml <site_applications.yml>`_. The configuration files for the applications are kept in the `applications <applications>`_ directory. Each applications directory contains `config.yml <applications/app1/config.yml>`_ that represents all Avi RESTful objects that are needed for the application. For example `app1 <applications/app1>`_ contains one pool and one l7 virtualservice with VIP 10.90.64.240. In order to enable the application Here are the step
 
 -------------------
 Basic Application
 -------------------
 
-Register in the `site_applications.yml <playbooks/site_applications.yml>`_:
+Register in the `site_applications.yml <site_applications.yml>`_:
 
 .. code-block:: yaml
 
@@ -130,7 +146,7 @@ Create app1 directory under applications and create `config.yml <applications/ap
 SSL Application with Content Switching 
 -------------------
 
-Register in the `site_applications.yml <playbooks/site_applications.yml>`_
+Register in the `site_applications.yml <site_applications.yml>`_
 
 .. code-block:: yaml
 
