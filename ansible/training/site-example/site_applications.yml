@@ -9,3 +9,5 @@
 - include: applications/app3/app.yml
 
 - include: applications/app4/app.yml
+
+- include: applications/complex_app/app.yml

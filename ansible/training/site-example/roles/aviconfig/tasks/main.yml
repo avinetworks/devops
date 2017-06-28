@@ -4,10 +4,14 @@
   - name: Avi Application | Load AVi controller creds
     include_vars:
       file: "{{avi_creds_file}}"
+    when:
+      - avi_creds_file is defined
 
   - name: Avi Application | Load Application configurations
     include_vars:
       file: "{{avi_config_file}}"
+    when:
+      - avi_config_file is defined
 
   - name: Include Avi Resource Tasks
     include: "{{ outer_item }}.yml"
