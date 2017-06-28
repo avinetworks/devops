@@ -1,0 +1,17 @@
+# Automatically Generated File
+# Copywrite Avi Networks
+---
+  - name: Avi Application | Load AVi controller creds
+    include_vars:
+      file: "{{avi_creds_file}}"
+
+  - name: Avi Application | Load Application configurations
+    include_vars:
+      file: "{{avi_config_file}}"
+
+  - name: Include Avi Resource Tasks
+    include: "{{ outer_item }}.yml"
+    when: avi_config[outer_item] is defined
+    with_items: "{{ avi_resource_types }}"
+    loop_control:
+      loop_var: outer_item

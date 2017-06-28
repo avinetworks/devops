@@ -1,0 +1,24 @@
+# Automatically Generated File
+# Copywrite Avi Networks
+
+  - name: Avi ActionGroupConfig | Setup ActionGroupConfig
+    avi_actiongroupconfig:
+      controller: "{{ avi_controller}}"
+      username: "{{ avi_username }}"
+      password: "{{ avi_password }}"
+      tenant: "{{ tenant | default(omit)}}"
+      state: "{{item.state | default(omit)}}"
+      api_version: "{{ api_version | default(omit)}}"
+      name: "{{item.name}}"
+      action_script_config_ref: "{{ item.action_script_config_ref | default(omit) }}"
+      autoscale_trigger_notification: "{{ item.autoscale_trigger_notification | default(omit) }}"
+      description: "{{ item.description | default(omit) }}"
+      email_config_ref: "{{ item.email_config_ref | default(omit) }}"
+      external_only: "{{ item.external_only | default(omit) }}"
+      level: "{{ item.level | default(omit) }}"
+      snmp_trap_profile_ref: "{{ item.snmp_trap_profile_ref | default(omit) }}"
+      syslog_config_ref: "{{ item.syslog_config_ref | default(omit) }}"
+      tenant_ref: "{{ item.tenant_ref | default(omit) }}"
+      uuid: "{{ item.uuid | default(omit) }}"
+    with_items: "{{ avi_config.actiongroupconfig | default([]) }}"
+

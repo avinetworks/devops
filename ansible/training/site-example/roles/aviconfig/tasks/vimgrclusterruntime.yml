@@ -1,0 +1,22 @@
+# Automatically Generated File
+# Copywrite Avi Networks
+
+  - name: Avi VIMgrClusterRuntime | Setup VIMgrClusterRuntime
+    avi_vimgrclusterruntime:
+      controller: "{{ avi_controller}}"
+      username: "{{ avi_username }}"
+      password: "{{ avi_password }}"
+      tenant: "{{ tenant | default(omit)}}"
+      state: "{{item.state | default(omit)}}"
+      api_version: "{{ api_version | default(omit)}}"
+      name: "{{item.name}}"
+      cloud_ref: "{{ item.cloud_ref | default(omit) }}"
+      datacenter_managed_object_id: "{{ item.datacenter_managed_object_id | default(omit) }}"
+      datacenter_uuid: "{{ item.datacenter_uuid | default(omit) }}"
+      host_refs: "{{ item.host_refs | default(omit) }}"
+      managed_object_id: "{{ item.managed_object_id | default(omit) }}"
+      tenant_ref: "{{ item.tenant_ref | default(omit) }}"
+      type: "{{ item.type | default(omit) }}"
+      uuid: "{{ item.uuid | default(omit) }}"
+    with_items: "{{ avi_config.vimgrclusterruntime | default([]) }}"
+

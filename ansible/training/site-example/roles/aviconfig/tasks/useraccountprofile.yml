@@ -1,0 +1,20 @@
+# Automatically Generated File
+# Copywrite Avi Networks
+
+  - name: Avi UserAccountProfile | Setup UserAccountProfile
+    avi_useraccountprofile:
+      controller: "{{ avi_controller}}"
+      username: "{{ avi_username }}"
+      password: "{{ avi_password }}"
+      tenant: "{{ tenant | default(omit)}}"
+      state: "{{item.state | default(omit)}}"
+      api_version: "{{ api_version | default(omit)}}"
+      name: "{{item.name}}"
+      account_lock_timeout: "{{ item.account_lock_timeout | default(omit) }}"
+      credentials_timeout_threshold: "{{ item.credentials_timeout_threshold | default(omit) }}"
+      max_concurrent_sessions: "{{ item.max_concurrent_sessions | default(omit) }}"
+      max_login_failure_count: "{{ item.max_login_failure_count | default(omit) }}"
+      max_password_history_count: "{{ item.max_password_history_count | default(omit) }}"
+      uuid: "{{ item.uuid | default(omit) }}"
+    with_items: "{{ avi_config.useraccountprofile | default([]) }}"
+

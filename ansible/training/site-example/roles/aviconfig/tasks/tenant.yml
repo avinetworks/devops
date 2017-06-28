@@ -1,0 +1,19 @@
+# Automatically Generated File
+# Copywrite Avi Networks
+
+  - name: Avi Tenant | Setup Tenant
+    avi_tenant:
+      controller: "{{ avi_controller}}"
+      username: "{{ avi_username }}"
+      password: "{{ avi_password }}"
+      tenant: "{{ tenant | default(omit)}}"
+      state: "{{item.state | default(omit)}}"
+      api_version: "{{ api_version | default(omit)}}"
+      name: "{{item.name}}"
+      config_settings: "{{ item.config_settings | default(omit) }}"
+      created_by: "{{ item.created_by | default(omit) }}"
+      description: "{{ item.description | default(omit) }}"
+      local: "{{ item.local | default(omit) }}"
+      uuid: "{{ item.uuid | default(omit) }}"
+    with_items: "{{ avi_config.tenant | default([]) }}"
+

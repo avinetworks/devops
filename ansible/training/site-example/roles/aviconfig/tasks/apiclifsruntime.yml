@@ -1,0 +1,26 @@
+# Automatically Generated File
+# Copywrite Avi Networks
+
+  - name: Avi APICLifsRuntime | Setup APICLifsRuntime
+    avi_apiclifsruntime:
+      controller: "{{ avi_controller}}"
+      username: "{{ avi_username }}"
+      password: "{{ avi_password }}"
+      tenant: "{{ tenant | default(omit)}}"
+      state: "{{item.state | default(omit)}}"
+      api_version: "{{ api_version | default(omit)}}"
+      name: "{{item.name}}"
+      auto_allocated: "{{ item.auto_allocated | default(omit) }}"
+      cifs: "{{ item.cifs | default(omit) }}"
+      lif_label: "{{ item.lif_label | default(omit) }}"
+      multi_vrf: "{{ item.multi_vrf | default(omit) }}"
+      network: "{{ item.network | default(omit) }}"
+      se_uuid: "{{ item.se_uuid | default(omit) }}"
+      subnet: "{{ item.subnet | default(omit) }}"
+      tenant_name: "{{ item.tenant_name | default(omit) }}"
+      tenant_ref: "{{ item.tenant_ref | default(omit) }}"
+      transaction_uuid: "{{ item.transaction_uuid | default(omit) }}"
+      uuid: "{{ item.uuid | default(omit) }}"
+      vs_uuid: "{{ item.vs_uuid | default(omit) }}"
+    with_items: "{{ avi_config.apiclifsruntime | default([]) }}"
+

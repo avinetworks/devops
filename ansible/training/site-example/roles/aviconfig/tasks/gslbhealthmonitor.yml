@@ -1,0 +1,29 @@
+# Automatically Generated File
+# Copywrite Avi Networks
+
+  - name: Avi GslbHealthMonitor | Setup GslbHealthMonitor
+    avi_gslbhealthmonitor:
+      controller: "{{ avi_controller}}"
+      username: "{{ avi_username }}"
+      password: "{{ avi_password }}"
+      tenant: "{{ tenant | default(omit)}}"
+      state: "{{item.state | default(omit)}}"
+      api_version: "{{ api_version | default(omit)}}"
+      name: "{{item.name}}"
+      description: "{{ item.description | default(omit) }}"
+      dns_monitor: "{{ item.dns_monitor | default(omit) }}"
+      external_monitor: "{{ item.external_monitor | default(omit) }}"
+      failed_checks: "{{ item.failed_checks | default(omit) }}"
+      http_monitor: "{{ item.http_monitor | default(omit) }}"
+      https_monitor: "{{ item.https_monitor | default(omit) }}"
+      monitor_port: "{{ item.monitor_port | default(omit) }}"
+      receive_timeout: "{{ item.receive_timeout | default(omit) }}"
+      send_interval: "{{ item.send_interval | default(omit) }}"
+      successful_checks: "{{ item.successful_checks | default(omit) }}"
+      tcp_monitor: "{{ item.tcp_monitor | default(omit) }}"
+      tenant_ref: "{{ item.tenant_ref | default(omit) }}"
+      type: "{{ item.type | default(omit) }}"
+      udp_monitor: "{{ item.udp_monitor | default(omit) }}"
+      uuid: "{{ item.uuid | default(omit) }}"
+    with_items: "{{ avi_config.gslbhealthmonitor | default([]) }}"
+

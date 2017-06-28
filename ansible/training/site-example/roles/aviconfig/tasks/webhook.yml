@@ -1,0 +1,19 @@
+# Automatically Generated File
+# Copywrite Avi Networks
+
+  - name: Avi Webhook | Setup Webhook
+    avi_webhook:
+      controller: "{{ avi_controller}}"
+      username: "{{ avi_username }}"
+      password: "{{ avi_password }}"
+      tenant: "{{ tenant | default(omit)}}"
+      state: "{{item.state | default(omit)}}"
+      api_version: "{{ api_version | default(omit)}}"
+      name: "{{item.name}}"
+      callback_url: "{{ item.callback_url | default(omit) }}"
+      description: "{{ item.description | default(omit) }}"
+      tenant_ref: "{{ item.tenant_ref | default(omit) }}"
+      uuid: "{{ item.uuid | default(omit) }}"
+      verification_token: "{{ item.verification_token | default(omit) }}"
+    with_items: "{{ avi_config.webhook | default([]) }}"
+

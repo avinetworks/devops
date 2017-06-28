@@ -1,0 +1,94 @@
+  - name: Avi SSLKeyAndCertificate | Upload or Update SSL certificate - always changed due to sensitve field
+    avi_sslkeyandcertificate:
+
+      controller: "{{ avi_controller}}"
+      username: "{{ avi_username }}"
+      password: "{{ avi_password }}"
+      tenant: "{{ tenant | default(omit)}}"
+      state: "{{item.state | default(omit)}}"
+      api_version: "{{ api_version | default(omit)}}"
+      name: "{{item.name}}"
+      ca_certs: "{{ item.ca_certs | default(omit) }}"
+      certificate: "{{ item.certificate | default(omit) }}"
+      certificate_management_profile_ref: "{{ item.certificate_management_profile_ref | default(omit) }}"
+      created_by: "{{ item.created_by | default(omit) }}"
+      dynamic_params: "{{ item.dynamic_params | default(omit) }}"
+      enckey_base64: "{{ item.enckey_base64 | default(omit) }}"
+      enckey_name: "{{ item.enckey_name | default(omit) }}"
+      hardwaresecuritymodulegroup_ref: "{{ item.hardwaresecuritymodulegroup_ref | default(omit) }}"
+      key: "{{ item.key | default(omit) }}"
+      key_params: "{{ item.key_params | default(omit) }}"
+      status: "{{ item.status | default(omit) }}"
+      tenant_ref: "{{ item.tenant_ref | default(omit) }}"
+      type: "{{ item.type | default(omit) }}"
+      uuid: "{{ item.uuid | default(omit) }}"
+    with_items: "{{ avi_config.sslkeyandcertificate | default([]) }}"
+    when: (not item.certificate.self_signed or item.certificate.certificate is defined)
+    register: ssl_certs
+
+
+  - name: check certs
+    stat:
+      path: "{{site_dir}}/applications/{{app_name}}/{{item.name}}.crt"
+    register: check_certs
+    with_items: "{{ avi_config.sslkeyandcertificate | default([]) }}"
+    when:
+      - item.certificate.self_signed
+      - item.certificate.certificate is undefined
+
+  - name: Avi SSLKeyAndCertificate | create self-signed SSL cert if not present
+    command: openssl req -new -nodes -x509 -subj "/C=US/ST=CA/L=San Francisco/O=IT/CN={{ item.1.name }}" -days 3650 -keyout ../applications/"{{ app_name }}"/"{{item.1.name}}".key -out "{{site_dir}}"/applications/"{{ app_name }}"/"{{item.1.name}}".crt -extensions v3_ca creates="{{site_dir}}"/applications/"{{ app_name }}"/"{{item.1.name}}".crt
+    args:
+      creates: "{{site_dir/applications/app_name/item.1.name.crt}}"
+    with_indexed_items: "{{ avi_config.sslkeyandcertificate | default([])}}"
+    when:
+      - item.1.certificate.self_signed
+      - item.1.certificate.certificate is undefined
+      - not "{{check_certs.results[item.0].stat.exists}}"
+
+  - name: Avi SSLKeyAndCertificate | Add self signed certificates
+    set_fact:
+      keycert:
+        api_version: "{{ api_version | default(omit)}}"
+        tenant: "{{ tenant | default(omit)}}"
+        tenant_ref: "{{item.tenant_ref | default(omit)}}"
+        state: "{{item.state | default(omit)}}"
+        key: "{{ lookup('file', site_dir~'/applications/'~app_name~'/'~item.name~'.key') }}"
+        certificate:
+          self_signed: true
+          certificate: "{{ lookup('file', site_dir~'/applications/'~app_name~'/'~item.name~'.crt')}}"
+        type: SSL_CERTIFICATE_TYPE_VIRTUALSERVICE
+        name: "{{item.name}}"
+    with_items: "{{ avi_config.sslkeyandcertificate | default([])}}"
+    register: self_signed_certs
+    when:
+      - item.certificate.self_signed
+      - item.certificate.certificate is undefined
+
+  - name: Avi SSLKeyAndCertificate | Create / Update self signed certs
+    avi_sslkeyandcertificate:
+
+      controller: "{{ avi_controller}}"
+      username: "{{ avi_username }}"
+      password: "{{ avi_password }}"
+      tenant: "{{ tenant | default(omit)}}"
+      state: "{{item.ansible_facts.state | default(omit)}}"
+      api_version: "{{ api_version | default(omit)}}"
+      name: "{{item.ansible_facts.keycert.name}}"
+      ca_certs: "{{ item.ansible_facts.keycert.ca_certs | default(omit) }}"
+      certificate: "{{ item.ansible_facts.keycert.certificate | default(omit) }}"
+      certificate_management_profile_ref: "{{ item.ansible_facts.keycert.certificate_management_profile_ref | default(omit) }}"
+      created_by: "{{ item.ansible_facts.keycert.created_by | default(omit) }}"
+      dynamic_params: "{{ item.ansible_facts.keycert.dynamic_params | default(omit) }}"
+      enckey_base64: "{{ item.ansible_facts.keycert.enckey_base64 | default(omit) }}"
+      enckey_name: "{{ item.ansible_facts.keycert.enckey_name | default(omit) }}"
+      hardwaresecuritymodulegroup_ref: "{{ item.ansible_facts.keycert.hardwaresecuritymodulegroup_ref | default(omit) }}"
+      key: "{{ item.ansible_facts.keycert.key | default(omit) }}"
+      key_params: "{{ item.ansible_facts.keycert.key_params | default(omit) }}"
+      status: "{{ item.ansible_facts.keycert.status | default(omit) }}"
+      tenant_ref: "{{ item.ansible_facts.keycert.tenant_ref | default(omit) }}"
+      type: "{{ item.ansible_facts.keycert.type | default(omit) }}"
+      uuid: "{{ item.ansible_facts.keycert.uuid | default(omit) }}"
+    with_items: "{{ self_signed_certs.results | default([]) }}"
+    when:
+      - item.ansible_facts is defined

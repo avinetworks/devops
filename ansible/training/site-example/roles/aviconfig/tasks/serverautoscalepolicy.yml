@@ -1,0 +1,29 @@
+# Automatically Generated File
+# Copywrite Avi Networks
+
+  - name: Avi ServerAutoScalePolicy | Setup ServerAutoScalePolicy
+    avi_serverautoscalepolicy:
+      controller: "{{ avi_controller}}"
+      username: "{{ avi_username }}"
+      password: "{{ avi_password }}"
+      tenant: "{{ tenant | default(omit)}}"
+      state: "{{item.state | default(omit)}}"
+      api_version: "{{ api_version | default(omit)}}"
+      name: "{{item.name}}"
+      description: "{{ item.description | default(omit) }}"
+      intelligent_autoscale: "{{ item.intelligent_autoscale | default(omit) }}"
+      intelligent_scalein_margin: "{{ item.intelligent_scalein_margin | default(omit) }}"
+      intelligent_scaleout_margin: "{{ item.intelligent_scaleout_margin | default(omit) }}"
+      max_scalein_adjustment_step: "{{ item.max_scalein_adjustment_step | default(omit) }}"
+      max_scaleout_adjustment_step: "{{ item.max_scaleout_adjustment_step | default(omit) }}"
+      max_size: "{{ item.max_size | default(omit) }}"
+      min_size: "{{ item.min_size | default(omit) }}"
+      scalein_alertconfig_refs: "{{ item.scalein_alertconfig_refs | default(omit) }}"
+      scalein_cooldown: "{{ item.scalein_cooldown | default(omit) }}"
+      scaleout_alertconfig_refs: "{{ item.scaleout_alertconfig_refs | default(omit) }}"
+      scaleout_cooldown: "{{ item.scaleout_cooldown | default(omit) }}"
+      tenant_ref: "{{ item.tenant_ref | default(omit) }}"
+      use_predicted_load: "{{ item.use_predicted_load | default(omit) }}"
+      uuid: "{{ item.uuid | default(omit) }}"
+    with_items: "{{ avi_config.serverautoscalepolicy | default([]) }}"
+

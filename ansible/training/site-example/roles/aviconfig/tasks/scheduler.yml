@@ -1,0 +1,25 @@
+# Automatically Generated File
+# Copywrite Avi Networks
+
+  - name: Avi Scheduler | Setup Scheduler
+    avi_scheduler:
+      controller: "{{ avi_controller}}"
+      username: "{{ avi_username }}"
+      password: "{{ avi_password }}"
+      tenant: "{{ tenant | default(omit)}}"
+      state: "{{item.state | default(omit)}}"
+      api_version: "{{ api_version | default(omit)}}"
+      name: "{{item.name}}"
+      backup_config_ref: "{{ item.backup_config_ref | default(omit) }}"
+      enabled: "{{ item.enabled | default(omit) }}"
+      end_date_time: "{{ item.end_date_time | default(omit) }}"
+      frequency: "{{ item.frequency | default(omit) }}"
+      frequency_unit: "{{ item.frequency_unit | default(omit) }}"
+      run_mode: "{{ item.run_mode | default(omit) }}"
+      run_script_ref: "{{ item.run_script_ref | default(omit) }}"
+      scheduler_action: "{{ item.scheduler_action | default(omit) }}"
+      start_date_time: "{{ item.start_date_time | default(omit) }}"
+      tenant_ref: "{{ item.tenant_ref | default(omit) }}"
+      uuid: "{{ item.uuid | default(omit) }}"
+    with_items: "{{ avi_config.scheduler | default([]) }}"
+

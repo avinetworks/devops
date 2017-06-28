@@ -1,0 +1,19 @@
+# Automatically Generated File
+# Copywrite Avi Networks
+
+  - name: Avi SCVsStateInfo | Setup SCVsStateInfo
+    avi_scvsstateinfo:
+      controller: "{{ avi_controller}}"
+      username: "{{ avi_username }}"
+      password: "{{ avi_password }}"
+      tenant: "{{ tenant | default(omit)}}"
+      state: "{{item.state | default(omit)}}"
+      api_version: "{{ api_version | default(omit)}}"
+      name: "{{item.name}}"
+      oper_status: "{{ item.oper_status | default(omit) }}"
+      tenant_ref: "{{ item.tenant_ref | default(omit) }}"
+      uuid: "{{ item.uuid | default(omit) }}"
+      vip_id: "{{ item.vip_id | default(omit) }}"
+      vs_ref: "{{ item.vs_ref | default(omit) }}"
+    with_items: "{{ avi_config.scvsstateinfo | default([]) }}"
+

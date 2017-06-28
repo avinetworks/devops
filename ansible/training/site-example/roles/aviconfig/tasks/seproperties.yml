@@ -1,0 +1,18 @@
+# Automatically Generated File
+# Copywrite Avi Networks
+
+  - name: Avi SeProperties | Setup SeProperties
+    avi_seproperties:
+      controller: "{{ avi_controller}}"
+      username: "{{ avi_username }}"
+      password: "{{ avi_password }}"
+      tenant: "{{ tenant | default(omit)}}"
+      state: "{{item.state | default(omit)}}"
+      api_version: "{{ api_version | default(omit)}}"
+      name: "{{item.name}}"
+      se_agent_properties: "{{ item.se_agent_properties | default(omit) }}"
+      se_bootup_properties: "{{ item.se_bootup_properties | default(omit) }}"
+      se_runtime_properties: "{{ item.se_runtime_properties | default(omit) }}"
+      uuid: "{{ item.uuid | default(omit) }}"
+    with_items: "{{ avi_config.seproperties | default([]) }}"
+

@@ -1,0 +1,23 @@
+# Automatically Generated File
+# Copywrite Avi Networks
+
+  - name: Avi HTTPPolicySet | Setup HTTPPolicySet
+    avi_httppolicyset:
+      controller: "{{ avi_controller}}"
+      username: "{{ avi_username }}"
+      password: "{{ avi_password }}"
+      tenant: "{{ tenant | default(omit)}}"
+      state: "{{item.state | default(omit)}}"
+      api_version: "{{ api_version | default(omit)}}"
+      name: "{{item.name}}"
+      cloud_config_cksum: "{{ item.cloud_config_cksum | default(omit) }}"
+      created_by: "{{ item.created_by | default(omit) }}"
+      description: "{{ item.description | default(omit) }}"
+      http_request_policy: "{{ item.http_request_policy | default(omit) }}"
+      http_response_policy: "{{ item.http_response_policy | default(omit) }}"
+      http_security_policy: "{{ item.http_security_policy | default(omit) }}"
+      is_internal_policy: "{{ item.is_internal_policy | default(omit) }}"
+      tenant_ref: "{{ item.tenant_ref | default(omit) }}"
+      uuid: "{{ item.uuid | default(omit) }}"
+    with_items: "{{ avi_config.httppolicyset | default([]) }}"
+

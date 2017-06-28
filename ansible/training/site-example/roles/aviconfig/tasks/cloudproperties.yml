@@ -1,0 +1,19 @@
+# Automatically Generated File
+# Copywrite Avi Networks
+
+  - name: Avi CloudProperties | Setup CloudProperties
+    avi_cloudproperties:
+      controller: "{{ avi_controller}}"
+      username: "{{ avi_username }}"
+      password: "{{ avi_password }}"
+      tenant: "{{ tenant | default(omit)}}"
+      state: "{{item.state | default(omit)}}"
+      api_version: "{{ api_version | default(omit)}}"
+      name: "{{item.name}}"
+      cc_props: "{{ item.cc_props | default(omit) }}"
+      cc_vtypes: "{{ item.cc_vtypes | default(omit) }}"
+      hyp_props: "{{ item.hyp_props | default(omit) }}"
+      info: "{{ item.info | default(omit) }}"
+      uuid: "{{ item.uuid | default(omit) }}"
+    with_items: "{{ avi_config.cloudproperties | default([]) }}"
+

@@ -1,0 +1,23 @@
+# Automatically Generated File
+# Copywrite Avi Networks
+
+  - name: Avi ApplicationProfile | Setup ApplicationProfile
+    avi_applicationprofile:
+      controller: "{{ avi_controller}}"
+      username: "{{ avi_username }}"
+      password: "{{ avi_password }}"
+      tenant: "{{ tenant | default(omit)}}"
+      state: "{{item.state | default(omit)}}"
+      api_version: "{{ api_version | default(omit)}}"
+      name: "{{item.name}}"
+      description: "{{ item.description | default(omit) }}"
+      dns_service_profile: "{{ item.dns_service_profile | default(omit) }}"
+      dos_rl_profile: "{{ item.dos_rl_profile | default(omit) }}"
+      http_profile: "{{ item.http_profile | default(omit) }}"
+      preserve_client_ip: "{{ item.preserve_client_ip | default(omit) }}"
+      tcp_app_profile: "{{ item.tcp_app_profile | default(omit) }}"
+      tenant_ref: "{{ item.tenant_ref | default(omit) }}"
+      type: "{{ item.type | default(omit) }}"
+      uuid: "{{ item.uuid | default(omit) }}"
+    with_items: "{{ avi_config.applicationprofile | default([]) }}"
+
