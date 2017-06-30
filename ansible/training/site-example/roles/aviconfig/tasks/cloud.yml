@@ -59,6 +59,8 @@
     wait_for:
       timeout: "{{avi_cloud_discovery_wait | default(1)}}"
     when:
+      - item.obj is defined
+      - item.obj.results is defined
       - item.obj.results[0].config.vtype == "CLOUD_VCENTER"
       - item.obj.results[0].status.state != "CLOUD_STATE_PLACEMENT_READY"
     with_items: "{{ cloud_inventory.results | default([]) }}"
