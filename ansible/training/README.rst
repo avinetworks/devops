@@ -11,6 +11,37 @@ via Ansible Galaxy as
 
     ansible-galaxy install avinetworks.avisdk 
 
+
+********************
+Setup and Installation
+********************
+Here are simple steps to try Avi Ansible Integration
+
+1. Install Avi SDK with version >= 17.1.2
+
+.. code-block:: shell 
+
+    pip install --upgrade avisdk>=17.1.2
+
+2. Install Ansible if not already present
+
+.. code-block:: shell 
+
+    pip install ansible==2.3
+
+3. Update Avi controller's credentials
+
+.. code-block:: shell 
+
+    update controller credentials in vars/cred_unsecure.yml
+
+4. Run Avi Ansible Example to create a sample VS. Note that the VIPs would be down as the example server IPs may not be up.
+
+.. code-block:: shell 
+
+    ansible-playbook basic_vs.yml 
+
+
 ********************
 Playbook Examples
 ********************
