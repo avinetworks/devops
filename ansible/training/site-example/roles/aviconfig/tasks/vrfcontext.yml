@@ -7,7 +7,7 @@
       username: "{{ avi_username }}"
       password: "{{ avi_password }}"
       tenant: "{{ tenant | default(omit)}}"
-      state: "{{item.state | default(omit)}}"
+      state: "{{ avi_role_state_mode }}"
       api_version: "{{ api_version | default(omit)}}"
       name: "{{item.name}}"
       bgp_profile: "{{ item.bgp_profile | default(omit) }}"
@@ -16,10 +16,11 @@
       description: "{{ item.description | default(omit) }}"
       gateway_mon: "{{ item.gateway_mon | default(omit) }}"
       internal_gateway_monitor: "{{ item.internal_gateway_monitor | default(omit) }}"
-      routemap: "{{ item.routemap | default(omit) }}"
       static_routes: "{{ item.static_routes | default(omit) }}"
       system_default: "{{ item.system_default | default(omit) }}"
       tenant_ref: "{{ item.tenant_ref | default(omit) }}"
       uuid: "{{ item.uuid | default(omit) }}"
+    when:
+      - (item.state | default("present") == avi_role_state_mode or avi_config_state == "absent")
     with_items: "{{ avi_config.vrfcontext | default([]) }}"
 

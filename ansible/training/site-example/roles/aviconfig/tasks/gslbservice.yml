@@ -7,7 +7,7 @@
       username: "{{ avi_username }}"
       password: "{{ avi_password }}"
       tenant: "{{ tenant | default(omit)}}"
-      state: "{{item.state | default(omit)}}"
+      state: "{{ avi_role_state_mode }}"
       api_version: "{{ api_version | default(omit)}}"
       name: "{{item.name}}"
       controller_health_status_enabled: "{{ item.controller_health_status_enabled | default(omit) }}"
@@ -19,11 +19,14 @@
       groups: "{{ item.groups | default(omit) }}"
       health_monitor_refs: "{{ item.health_monitor_refs | default(omit) }}"
       health_monitor_scope: "{{ item.health_monitor_scope | default(omit) }}"
+      is_federated: "{{ item.is_federated | default(omit) }}"
       num_dns_ip: "{{ item.num_dns_ip | default(omit) }}"
       tenant_ref: "{{ item.tenant_ref | default(omit) }}"
       ttl: "{{ item.ttl | default(omit) }}"
       use_edns_client_subnet: "{{ item.use_edns_client_subnet | default(omit) }}"
       uuid: "{{ item.uuid | default(omit) }}"
       wildcard_match: "{{ item.wildcard_match | default(omit) }}"
+    when:
+      - (item.state | default("present") == avi_role_state_mode or avi_config_state == "absent")
     with_items: "{{ avi_config.gslbservice | default([]) }}"
 

@@ -7,7 +7,7 @@
       username: "{{ avi_username }}"
       password: "{{ avi_password }}"
       tenant: "{{ tenant | default(omit)}}"
-      state: "{{item.state | default(omit)}}"
+      state: "{{ avi_role_state_mode }}"
       api_version: "{{ api_version | default(omit)}}"
       name: "{{item.name}}"
       description: "{{ item.description | default(omit) }}"
@@ -16,6 +16,7 @@
       failed_checks: "{{ item.failed_checks | default(omit) }}"
       http_monitor: "{{ item.http_monitor | default(omit) }}"
       https_monitor: "{{ item.https_monitor | default(omit) }}"
+      is_federated: "{{ item.is_federated | default(omit) }}"
       monitor_port: "{{ item.monitor_port | default(omit) }}"
       receive_timeout: "{{ item.receive_timeout | default(omit) }}"
       send_interval: "{{ item.send_interval | default(omit) }}"
@@ -25,5 +26,7 @@
       type: "{{ item.type | default(omit) }}"
       udp_monitor: "{{ item.udp_monitor | default(omit) }}"
       uuid: "{{ item.uuid | default(omit) }}"
+    when:
+      - (item.state | default("present") == avi_role_state_mode or avi_config_state == "absent")
     with_items: "{{ avi_config.healthmonitor | default([]) }}"
 

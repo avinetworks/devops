@@ -7,7 +7,7 @@
       username: "{{ avi_username }}"
       password: "{{ avi_password }}"
       tenant: "{{ tenant | default(omit)}}"
-      state: "{{item.state | default(omit)}}"
+      state: "{{ avi_role_state_mode }}"
       api_version: "{{ api_version | default(omit)}}"
       name: "{{item.name}}"
       a_pool: "{{ item.a_pool | default(omit) }}"
@@ -39,6 +39,7 @@
       ipaddrgroup_ref: "{{ item.ipaddrgroup_ref | default(omit) }}"
       lb_algorithm: "{{ item.lb_algorithm | default(omit) }}"
       lb_algorithm_consistent_hash_hdr: "{{ item.lb_algorithm_consistent_hash_hdr | default(omit) }}"
+      lb_algorithm_core_nonaffinity: "{{ item.lb_algorithm_core_nonaffinity | default(omit) }}"
       lb_algorithm_hash: "{{ item.lb_algorithm_hash | default(omit) }}"
       max_concurrent_connections_per_server: "{{ item.max_concurrent_connections_per_server | default(omit) }}"
       max_conn_rate_per_server: "{{ item.max_conn_rate_per_server | default(omit) }}"
@@ -63,5 +64,7 @@
       use_service_port: "{{ item.use_service_port | default(omit) }}"
       uuid: "{{ item.uuid | default(omit) }}"
       vrf_ref: "{{ item.vrf_ref | default(omit) }}"
+    when:
+      - (item.state | default("present") == avi_role_state_mode or avi_config_state == "absent")
     with_items: "{{ avi_config.pool | default([]) }}"
 

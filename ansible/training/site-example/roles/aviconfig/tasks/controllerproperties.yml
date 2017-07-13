@@ -7,7 +7,7 @@
       username: "{{ avi_username }}"
       password: "{{ avi_password }}"
       tenant: "{{ tenant | default(omit)}}"
-      state: "{{item.state | default(omit)}}"
+      state: "{{ avi_role_state_mode }}"
       api_version: "{{ api_version | default(omit)}}"
       name: "{{item.name}}"
       allow_ip_forwarding: "{{ item.allow_ip_forwarding | default(omit) }}"
@@ -53,5 +53,7 @@
       vs_se_vnic_fail: "{{ item.vs_se_vnic_fail | default(omit) }}"
       vs_se_vnic_ip_fail: "{{ item.vs_se_vnic_ip_fail | default(omit) }}"
       warmstart_se_reconnect_wait_time: "{{ item.warmstart_se_reconnect_wait_time | default(omit) }}"
+    when:
+      - (item.state | default("present") == avi_role_state_mode or avi_config_state == "absent")
     with_items: "{{ avi_config.controllerproperties | default([]) }}"
 

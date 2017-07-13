@@ -1,21 +1,48 @@
 # Automatically Generated File
 # Copywrite Avi Networks
 ---
-  - name: Avi Application | Load AVi controller creds
+  - name: Avi Config | Load Avi controller creds
     include_vars:
       file: "{{avi_creds_file}}"
     when:
       - avi_creds_file is defined
 
-  - name: Avi Application | Load Application configurations
+  - name: Avi Config | Load Application configurations
     include_vars:
       file: "{{avi_config_file}}"
     when:
       - avi_config_file is defined
 
-  - name: Include Avi Resource Tasks
-    include: "{{ outer_item }}.yml"
-    when: avi_config[outer_item] is defined
+  - name: Build Avi module includes
+    set_fact:
+      config_resources: "{{ config_resources | default([]) + [outer_item]}}"
+    when:
+      - avi_config | default({})
+      - avi_config[outer_item] is defined
     with_items: "{{ avi_resource_types }}"
     loop_control:
       loop_var: outer_item
+
+  - name: Include Avi Resource Tasks
+    include: "{{ outer_item }}.yml"
+    vars:
+      avi_role_state_mode: present
+    when:
+      - avi_config_state == "present"
+      - avi_config | default({})
+      - avi_config[outer_item] is defined
+    with_items: "{{ config_resources }}"
+    loop_control:
+      loop_var: outer_item
+
+  - name: Include Avi Resource Deletion Tasks
+    include: "{{ outer_item }}.yml"
+    vars:
+      avi_role_state_mode: absent
+    when:
+      - avi_config | default({})
+      - avi_config[outer_item] is defined
+    with_items: "{{ config_resources[::-1] }}"
+    loop_control:
+      loop_var: outer_item
+

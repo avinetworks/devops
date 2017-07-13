@@ -7,12 +7,14 @@
       username: "{{ avi_username }}"
       password: "{{ avi_password }}"
       tenant: "{{ tenant | default(omit)}}"
-      state: "{{item.state | default(omit)}}"
+      state: "{{ avi_role_state_mode }}"
       api_version: "{{ api_version | default(omit)}}"
       name: "{{item.name}}"
       script_params: "{{ item.script_params | default(omit) }}"
       script_path: "{{ item.script_path | default(omit) }}"
       tenant_ref: "{{ item.tenant_ref | default(omit) }}"
       uuid: "{{ item.uuid | default(omit) }}"
+    when:
+      - (item.state | default("present") == avi_role_state_mode or avi_config_state == "absent")
     with_items: "{{ avi_config.certificatemanagementprofile | default([]) }}"
 

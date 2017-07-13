@@ -5,7 +5,7 @@
       username: "{{ avi_username }}"
       password: "{{ avi_password }}"
       tenant: "{{ tenant | default(omit)}}"
-      state: "{{item.state | default(omit)}}"
+      state: "{{ avi_role_state_mode }}"
       api_version: "{{ api_version | default(omit)}}"
       name: "{{item.name}}"
       apic_configuration: "{{ item.apic_configuration | default(omit) }}"
@@ -35,6 +35,8 @@
       vca_configuration: "{{ item.vca_configuration | default(omit) }}"
       vcenter_configuration: "{{ item.vcenter_configuration | default(omit) }}"
       vtype: "{{ item.vtype | default(omit) }}"
+    when:
+      - (item.state | default("present") == avi_role_state_mode or avi_config_state == "absent")
     with_items: "{{ avi_config.cloud | default([]) }}"
 
 
@@ -51,6 +53,7 @@
         name: "{{ item.name }}"
     with_items: "{{ avi_config.cloud | default([]) }}"
     when:
+      - avi_config_state | default("present") == "present"
       - item.vtype == "CLOUD_VCENTER"
       - item.state | default("present") == "present"
     register: cloud_inventory
@@ -59,6 +62,7 @@
     wait_for:
       timeout: "{{avi_cloud_discovery_wait | default(1)}}"
     when:
+      - avi_config_state == "present"
       - item.obj is defined
       - item.obj.results is defined
       - item.obj.results[0].config.vtype == "CLOUD_VCENTER"
@@ -71,7 +75,7 @@
       username: "{{ avi_username }}"
       password: "{{ avi_password }}"
       tenant: "{{ tenant | default(omit)}}"
-      state: "{{item.state | default(omit)}}"
+      state: "{{ avi_role_state_mode }}"
       api_version: "{{ api_version | default(omit)}}"
       name: "{{item.name}}"
       apic_configuration: "{{ item.apic_configuration | default(omit) }}"
@@ -103,5 +107,9 @@
       vtype: "{{ item.vtype | default(omit) }}"
     with_items: "{{ avi_config.cloud | default([]) }}"
     when:
+      - avi_role_state_mode == 'present'
+      - item.state | default('present') == avi_role_state_mode
+      - item.obj is defined
+      - item.obj.results is defined
       - item.vtype == "CLOUD_VCENTER"
       - item.state | default("present") == "present"

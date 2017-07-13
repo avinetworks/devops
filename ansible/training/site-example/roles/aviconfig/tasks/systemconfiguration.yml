@@ -7,7 +7,7 @@
       username: "{{ avi_username }}"
       password: "{{ avi_password }}"
       tenant: "{{ tenant | default(omit)}}"
-      state: "{{item.state | default(omit)}}"
+      state: "{{ avi_role_state_mode }}"
       api_version: "{{ api_version | default(omit)}}"
       name: "{{item.name}}"
       admin_auth_configuration: "{{ item.admin_auth_configuration | default(omit) }}"
@@ -25,5 +25,7 @@
       ssh_ciphers: "{{ item.ssh_ciphers | default(omit) }}"
       ssh_hmacs: "{{ item.ssh_hmacs | default(omit) }}"
       uuid: "{{ item.uuid | default(omit) }}"
+    when:
+      - (item.state | default("present") == avi_role_state_mode or avi_config_state == "absent")
     with_items: "{{ avi_config.systemconfiguration | default([]) }}"
 

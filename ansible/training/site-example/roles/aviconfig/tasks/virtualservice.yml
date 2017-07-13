@@ -7,7 +7,7 @@
       username: "{{ avi_username }}"
       password: "{{ avi_password }}"
       tenant: "{{ tenant | default(omit)}}"
-      state: "{{item.state | default(omit)}}"
+      state: "{{ avi_role_state_mode }}"
       api_version: "{{ api_version | default(omit)}}"
       name: "{{item.name}}"
       active_standby_se_tag: "{{ item.active_standby_se_tag | default(omit) }}"
@@ -87,5 +87,7 @@
       vs_datascripts: "{{ item.vs_datascripts | default(omit) }}"
       vsvip_ref: "{{ item.vsvip_ref | default(omit) }}"
       weight: "{{ item.weight | default(omit) }}"
+    when:
+      - (item.state | default("present") == avi_role_state_mode or avi_config_state == "absent")
     with_items: "{{ avi_config.virtualservice | default([]) }}"
 
