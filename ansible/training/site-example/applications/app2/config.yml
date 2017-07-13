@@ -10,8 +10,6 @@ avi_config:
 
   virtualservice:
     - name: app2
-      services:
-        - port: 80
       pool_ref: '/api/pool?name=app2-pool'
       vip:
         - ip_address:

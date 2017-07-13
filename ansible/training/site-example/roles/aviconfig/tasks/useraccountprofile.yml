@@ -7,7 +7,7 @@
       username: "{{ avi_username }}"
       password: "{{ avi_password }}"
       tenant: "{{ tenant | default(omit)}}"
-      state: "{{item.state | default(omit)}}"
+      state: "{{ avi_role_state_mode }}"
       api_version: "{{ api_version | default(omit)}}"
       name: "{{item.name}}"
       account_lock_timeout: "{{ item.account_lock_timeout | default(omit) }}"
@@ -16,5 +16,7 @@
       max_login_failure_count: "{{ item.max_login_failure_count | default(omit) }}"
       max_password_history_count: "{{ item.max_password_history_count | default(omit) }}"
       uuid: "{{ item.uuid | default(omit) }}"
+    when:
+      - (item.state | default("present") == avi_role_state_mode or avi_config_state == "absent")
     with_items: "{{ avi_config.useraccountprofile | default([]) }}"
 

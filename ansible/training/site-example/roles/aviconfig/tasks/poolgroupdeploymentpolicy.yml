@@ -7,7 +7,7 @@
       username: "{{ avi_username }}"
       password: "{{ avi_password }}"
       tenant: "{{ tenant | default(omit)}}"
-      state: "{{item.state | default(omit)}}"
+      state: "{{ avi_role_state_mode }}"
       api_version: "{{ api_version | default(omit)}}"
       name: "{{item.name}}"
       auto_disable_old_prod_pools: "{{ item.auto_disable_old_prod_pools | default(omit) }}"
@@ -21,5 +21,7 @@
       test_traffic_ratio_rampup: "{{ item.test_traffic_ratio_rampup | default(omit) }}"
       uuid: "{{ item.uuid | default(omit) }}"
       webhook_ref: "{{ item.webhook_ref | default(omit) }}"
+    when:
+      - (item.state | default("present") == avi_role_state_mode or avi_config_state == "absent")
     with_items: "{{ avi_config.poolgroupdeploymentpolicy | default([]) }}"
 

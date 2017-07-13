@@ -142,3 +142,7 @@
       when:
         - cloud_type == "os"
 
+    - name: test default variables
+      debug: msg="It worked"
+      when:
+        - cloud_type_foo | default("os") == "os"

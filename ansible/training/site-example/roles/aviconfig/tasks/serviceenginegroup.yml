@@ -7,7 +7,7 @@
       username: "{{ avi_username }}"
       password: "{{ avi_password }}"
       tenant: "{{ tenant | default(omit)}}"
-      state: "{{item.state | default(omit)}}"
+      state: "{{ avi_role_state_mode }}"
       api_version: "{{ api_version | default(omit)}}"
       name: "{{item.name}}"
       active_standby: "{{ item.active_standby | default(omit) }}"
@@ -59,6 +59,7 @@
       mgmt_subnet: "{{ item.mgmt_subnet | default(omit) }}"
       min_cpu_usage: "{{ item.min_cpu_usage | default(omit) }}"
       min_scaleout_per_vs: "{{ item.min_scaleout_per_vs | default(omit) }}"
+      non_significant_log_throttle: "{{ item.non_significant_log_throttle | default(omit) }}"
       num_flow_cores_sum_changes_to_ignore: "{{ item.num_flow_cores_sum_changes_to_ignore | default(omit) }}"
       openstack_availability_zone: "{{ item.openstack_availability_zone | default(omit) }}"
       openstack_availability_zones: "{{ item.openstack_availability_zones | default(omit) }}"
@@ -80,7 +81,9 @@
       se_vs_hb_max_pkts_in_batch: "{{ item.se_vs_hb_max_pkts_in_batch | default(omit) }}"
       se_vs_hb_max_vs_in_pkt: "{{ item.se_vs_hb_max_vs_in_pkt | default(omit) }}"
       service_ip_subnets: "{{ item.service_ip_subnets | default(omit) }}"
+      significant_log_throttle: "{{ item.significant_log_throttle | default(omit) }}"
       tenant_ref: "{{ item.tenant_ref | default(omit) }}"
+      udf_log_throttle: "{{ item.udf_log_throttle | default(omit) }}"
       uuid: "{{ item.uuid | default(omit) }}"
       vcenter_clusters: "{{ item.vcenter_clusters | default(omit) }}"
       vcenter_datastore_mode: "{{ item.vcenter_datastore_mode | default(omit) }}"
@@ -93,5 +96,7 @@
       vs_scalein_timeout: "{{ item.vs_scalein_timeout | default(omit) }}"
       vs_scalein_timeout_for_upgrade: "{{ item.vs_scalein_timeout_for_upgrade | default(omit) }}"
       vs_scaleout_timeout: "{{ item.vs_scaleout_timeout | default(omit) }}"
+    when:
+      - (item.state | default("present") == avi_role_state_mode or avi_config_state == "absent")
     with_items: "{{ avi_config.serviceenginegroup | default([]) }}"
 

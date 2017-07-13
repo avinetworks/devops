@@ -7,7 +7,7 @@
       username: "{{ avi_username }}"
       password: "{{ avi_password }}"
       tenant: "{{ tenant | default(omit)}}"
-      state: "{{item.state | default(omit)}}"
+      state: "{{ avi_role_state_mode }}"
       api_version: "{{ api_version | default(omit)}}"
       name: "{{item.name}}"
       cloud_ref: "{{ item.cloud_ref | default(omit) }}"
@@ -20,5 +20,7 @@
       vcenter_dvs: "{{ item.vcenter_dvs | default(omit) }}"
       vimgrnw_ref: "{{ item.vimgrnw_ref | default(omit) }}"
       vrf_context_ref: "{{ item.vrf_context_ref | default(omit) }}"
+    when:
+      - (item.state | default("present") == avi_role_state_mode or avi_config_state == "absent")
     with_items: "{{ avi_config.network | default([]) }}"
 

@@ -7,7 +7,7 @@
       username: "{{ avi_username }}"
       password: "{{ avi_password }}"
       tenant: "{{ tenant | default(omit)}}"
-      state: "{{item.state | default(omit)}}"
+      state: "{{ avi_role_state_mode }}"
       api_version: "{{ api_version | default(omit)}}"
       name: "{{item.name}}"
       ca_certs: "{{ item.ca_certs | default(omit) }}"
@@ -15,8 +15,11 @@
       crl_check: "{{ item.crl_check | default(omit) }}"
       crls: "{{ item.crls | default(omit) }}"
       ignore_peer_chain: "{{ item.ignore_peer_chain | default(omit) }}"
+      is_federated: "{{ item.is_federated | default(omit) }}"
       tenant_ref: "{{ item.tenant_ref | default(omit) }}"
       uuid: "{{ item.uuid | default(omit) }}"
       validate_only_leaf_crl: "{{ item.validate_only_leaf_crl | default(omit) }}"
+    when:
+      - (item.state | default("present") == avi_role_state_mode or avi_config_state == "absent")
     with_items: "{{ avi_config.pkiprofile | default([]) }}"
 

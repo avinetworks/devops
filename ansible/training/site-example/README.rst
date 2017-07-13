@@ -29,6 +29,12 @@ Usage for just applications setup. This would setup all the applications that ar
   
   ansible-playbook site_applications.yml --extra-vars "site_dir=`pwd`"
 
+Usage to delete all applications in the site_applications.yml. The flag avi_config_state=absent will override the individual object state for deletion purpose.
+
+.. code-block:: shell
+  
+  ansible-playbook site_applications.yml --extra-vars "site_dir=`pwd` avi_config_state=absent"
+
 ************
 Roles
 ************

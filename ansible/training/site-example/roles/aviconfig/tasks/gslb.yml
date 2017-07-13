@@ -7,13 +7,14 @@
       username: "{{ avi_username }}"
       password: "{{ avi_password }}"
       tenant: "{{ tenant | default(omit)}}"
-      state: "{{item.state | default(omit)}}"
+      state: "{{ avi_role_state_mode }}"
       api_version: "{{ api_version | default(omit)}}"
       name: "{{item.name}}"
       clear_on_max_retries: "{{ item.clear_on_max_retries | default(omit) }}"
       client_ip_addr_group: "{{ item.client_ip_addr_group | default(omit) }}"
       description: "{{ item.description | default(omit) }}"
       dns_configs: "{{ item.dns_configs | default(omit) }}"
+      is_federated: "{{ item.is_federated | default(omit) }}"
       leader_cluster_uuid: "{{ item.leader_cluster_uuid | default(omit) }}"
       send_interval: "{{ item.send_interval | default(omit) }}"
       sites: "{{ item.sites | default(omit) }}"
@@ -21,5 +22,7 @@
       third_party_sites: "{{ item.third_party_sites | default(omit) }}"
       uuid: "{{ item.uuid | default(omit) }}"
       view_id: "{{ item.view_id | default(omit) }}"
+    when:
+      - (item.state | default("present") == avi_role_state_mode or avi_config_state == "absent")
     with_items: "{{ avi_config.gslb | default([]) }}"
 
