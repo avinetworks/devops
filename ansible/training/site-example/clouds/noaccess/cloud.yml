@@ -11,7 +11,7 @@
       debug: msg="{{cloud_name}}"
     - name: Avi Cloud | Setup Cloud with No Access
       include_role:
-        name: "{{ site_dir }}/roles/aviconfig"
+        name: avinetworks.aviconfig
       vars:
         avi_config_file: "{{ site_dir }}/clouds/{{cloud_name}}/config.yml"
         avi_creds_file: "{{ site_dir }}/vars/creds.yml"
