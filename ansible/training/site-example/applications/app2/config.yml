@@ -1,5 +1,11 @@
 
 avi_config:
+  poolgroup:
+    - name: app2-poolgroup
+      members:
+        - pool_ref: "/api/pool?name=app2-pool"
+          ratio: 100
+
   pool:
     - name: app2-pool
       lb_algorithm: LB_ALGORITHM_ROUND_ROBIN
@@ -10,7 +16,7 @@ avi_config:
 
   virtualservice:
     - name: app2
-      pool_ref: '/api/pool?name=app2-pool'
+      pool_group_ref: '/api/poolgroup?name=app2-poolgroup'
       vip:
         - ip_address:
             addr: "{{ app2_vip }}"

@@ -6,6 +6,20 @@ Avi Ansible Training Site Example
 This is an example of setting up a full Avi Site with Cloud and applications. 
 
 *********
+Installation
+*********
+
+The site example requires avinetworks.avisdk and avinetworks.aviconfig roles.
+Please install them from Ansible galaxy using following command
+
+.. code-block:: shell
+
+  ansible-galaxy install avinetworks.avisdk
+  ansible-galaxy install avinetworks.aviconfig
+
+
+
+*********
 Site Layout 
 *********
 Here are the main components of the site example.
