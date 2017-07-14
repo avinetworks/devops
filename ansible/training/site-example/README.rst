@@ -83,7 +83,7 @@ Add a new directory for vmware cloud in `clouds <clouds>` directory. The followi
           debug: msg="{{cloud_name}}"
         - name: Avi Cloud | Setup VMWare Cloud with Write Access
           include_role:
-            name: "{{ site_dir }}/roles/aviconfig"
+            name: avinetworks.aviconfig
           vars:
             avi_config_file: "{{ site_dir }}/clouds/{{cloud_name}}/config.yml"
             avi_creds_file: "{{ site_dir }}/vars/creds.yml"
@@ -179,7 +179,7 @@ Basic Application
 
       - name: Avi Application | Setup VMWare Cloud with Write Access
         include_role:
-          name: "{{ site_dir }}/roles/aviconfig"
+          name: avinetworks.aviconfig
         vars:
           avi_config_file: "{{ site_dir }}/applications/{{app_name}}/config.yml"
           avi_creds_file: "{{ site_dir }}/vars/creds.yml"
@@ -231,7 +231,7 @@ SSL Application with Content Switching
 
       - name: Avi Application | Setup VMWare Cloud with Write Access
         include_role:
-          name: "{{ site_dir }}/roles/aviconfig"
+          name: avinetworks.aviconfig
         vars:
           avi_config_file: "{{ site_dir }}/applications/{{app_name}}/config.yml"
           avi_creds_file: "{{ site_dir }}/vars/creds.yml"
