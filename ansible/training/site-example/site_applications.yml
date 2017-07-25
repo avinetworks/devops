@@ -12,4 +12,4 @@
 
 - include: applications/complex_app/app.yml
 
-- include: applications/apptesttennat/app.yml
+- include: applications/apptesttenant/app.yml
