@@ -11,6 +11,8 @@ app2_vip: 10.90.64.201
 app3_vip: 10.90.64.202
 app4_vip: 10.90.64.203
 complex_app_vip: 10.90.64.204
+app_test_tenant_vip: 10.90.64.205
+
 
 pool_server1: 10.90.64.16
 pool_server2: 10.90.64.14
