@@ -1,0 +1,240 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "vmName": {
+      "type": "string",
+      "metadata": {
+        "description": "Name of the VM"
+      }
+    },    
+    "controllerVhdUri": {
+      "type": "string",
+      "metadata": {
+        "description": "Uri of the Controller VHD in ARM standard or premium storage"
+      }
+    },
+    "vmSize": {
+      "type": "string",
+      "defaultValue": "Standard_DS4_v2",
+            "allowedValues": [
+                "Standard_DS4_v2",
+                "Standard_DS5_v2"
+      ],
+      "metadata": {
+        "description": "Size of the Controller VM"
+      }
+    },
+    "controllerOSDiskSize": {
+        "defaultValue": 64,
+        "minValue": 64,
+        "maxValue": 500,
+        "type": "Int",
+        "metadata": {
+            "description": "Size of the Controller OS Disk Size in GB"
+        }
+    },
+    "controllerCount": {
+        "type": "int",
+        "defaultValue": 1,
+        "allowedValues": [
+              1,
+              3
+            ],
+        "metadata": {
+            "description": "Select 1 for single Controller VM or 3 for a Controller Cluster"
+        }
+    },
+    "controller1_IP": {
+        "type": "string",
+        "metadata": {
+            "description": "Static IP address of controller"
+        }
+    },
+    "controller2_IP": {
+        "type": "string",
+        "defaultValue": "0.0.0.0",
+        "metadata": {
+            "description": "Static IP address of controller 2.  Required only for cluster"
+        }
+    },
+    "controller3_IP": {
+        "type": "string",
+        "defaultValue": "0.0.0.0",
+        "metadata": {
+            "description": "Static IP address of controller 3.  Required only for cluster"
+        }
+    },
+    "adminUserName": {
+        "defaultValue": "aviadmin",
+        "type" : "string",
+        "metadata" : {
+            "description" : "secondary admin-user for this VM.  Note that primary admin login 'admin' will be automatically created by Avi controller during boot up"
+        }
+    },
+    "sshKeyData" : {
+        "type" : "string",
+        "metadata" : {
+            "description" : "ssh public key for the admin account.  This allows to ssh into the controller using the secondary admin-user account"
+        }
+    },
+    "existingVnetName": {
+      "type": "string",
+      "metadata": {
+        "description": "Name of the existing VNET where the controller NIC will be placed"
+      }
+    },
+    "existingVnetResourceGroup": {
+      "type": "string",
+      "metadata": {
+        "description": "Name of the resource group where the VNET is present"
+      }
+    },
+    "subnetName": {
+      "type": "string",
+      "metadata": {
+        "description": "Name of the subnet in the VNET "
+      }
+    }
+  },
+  "variables": {
+    "diagStorageAccountName": "[concat(uniquestring(resourceGroup().id), 'specvm')]",
+    "api-version": "2015-06-15",
+    "publicIPAddressType": "Dynamic",
+    "vnetID": "[resourceId(parameters('existingVnetResourceGroup'), 'Microsoft.Network/virtualNetworks', parameters('existingVnetName'))]",
+    "subnetRef": "[concat(variables('vnetID'),'/subnets/', parameters('subnetName'))]",
+    "nicName": "[parameters('vmName')]",
+    "publicIPAddressName": "[parameters('vmName')]",
+    "osType": "Linux",
+    "sshKeyPath": "[concat('/home/',parameters('adminUserName'),'/.ssh/authorized_keys')]",
+    "controllerIP": ["[parameters('controller1_IP')]","[parameters('controller2_IP')]","[parameters('controller3_IP')]"]
+  },
+  "resources": [{
+    "type": "Microsoft.Storage/storageAccounts",
+    "name": "[variables('diagStorageAccountName')]",
+    "apiVersion": "2016-01-01",
+    "location": "[resourceGroup().location]",
+    "sku": {
+      "name": "Standard_GRS"
+    },
+    "kind": "Storage",
+    "properties": {}
+  }, {
+    "apiVersion": "[variables('api-version')]",
+    "type": "Microsoft.Network/publicIPAddresses",
+    "name": "[concat(variables('publicIPAddressName'), copyIndex())]",
+    "location": "[resourceGroup().location]",
+    "copy":{
+        "name":"controllerpubip",
+        "count":"[parameters('controllerCount')]"
+      },
+    "tags": {
+      "displayName": "Avi ControllerPublicIPAddress"
+    },
+    "properties": {
+      "publicIPAllocationMethod": "[variables('publicIPAddressType')]",
+      "dnsSettings": {
+        "domainNameLabel": "[concat(parameters('vmName'),copyIndex())]"
+      }
+    }
+  }, {
+    "apiVersion": "[variables('api-version')]",
+    "type": "Microsoft.Network/networkInterfaces",
+    "name": "[concat(variables('nicName'),copyIndex())]",
+    "location": "[resourceGroup().location]",
+    "copy": {
+        "name": "controllerniccopy",
+        "count": "[parameters('controllerCount')]"
+    },
+    "dependsOn": [
+      "[concat('Microsoft.Network/publicIPAddresses/', concat(variables('publicIPAddressName'),copyIndex()))]"
+    ],
+    "tags": {
+      "displayName": "Avi Controller NetworkInterface"
+    },
+    "properties": {
+      "ipConfigurations": [{
+        "name": "ipconfig1",
+        "properties": {
+          "privateIPAllocationMethod": "Static",
+          "privateIPAddress": "[variables('controllerIP')[copyIndex()]]",
+          "publicIPAddress": {
+            "id": "[resourceId('Microsoft.Network/publicIPAddresses',concat(variables('publicIPAddressName'),copyIndex()))]"
+          },
+          "subnet": {
+            "id": "[variables('subnetRef')]"
+          }
+        }
+      }]
+    }
+  }, {
+    "apiVersion": "[variables('api-version')]",
+    "type": "Microsoft.Compute/virtualMachines",
+    "name": "[concat(parameters('vmName'),copyIndex())]",
+    "location": "[resourceGroup().location]",
+    "copy": {
+        "name": "controllervmcopy",
+        "count": "[parameters('controllerCount')]"
+    },
+    "tags": {
+      "displayName": "Avi Controller VirtualMachine"
+    },
+    "dependsOn": [
+      "[concat('Microsoft.Network/networkInterfaces/', concat(variables('nicName'),copyIndex()))]"
+    ],
+    "properties": {
+      "hardwareProfile": {
+        "vmSize": "[parameters('vmSize')]"
+      },
+      "osProfile": {
+            "computerName": "[concat(parameters('vmName'),copyIndex())]",
+            "adminUserName": "[parameters('adminUserName')]",
+            "linuxConfiguration": {
+              "ssh": {
+              "publicKeys": [
+                {
+                  "path": "[variables('sshKeyPath')]",
+                  "keyData": "[parameters('sshKeyData')]"
+                }
+              ]
+            }
+          }
+      },
+      "storageProfile": {
+        "osDisk": {
+          "name": "[concat(parameters('vmName'),copyIndex())]",
+          "osType": "[variables('osType')]",
+          "caching": "ReadWrite",
+          "diskSizeGB": "[parameters('controllerOsDiskSize')]",
+          "image" : {
+              "uri":"[parameters('controllerVhdUri')]"
+          },
+          "vhd": {
+            "uri": "[concat(parameters('controllerVhdUri'),parameters('vmName'),copyIndex(),'.vhd')]"
+          },
+          "createOption": "FromImage"
+        }
+      },
+      "networkProfile": {
+        "networkInterfaces": [{
+          "id": "[resourceId('Microsoft.Network/networkInterfaces',concat(variables('nicName'),copyIndex()))]"
+        }]
+      },
+      "diagnosticsProfile": {
+        "bootDiagnostics": {
+          "enabled": "true",
+          "storageUri": "[concat(reference(concat('Microsoft.Storage/storageAccounts/', variables('diagStorageAccountName')), '2016-01-01').primaryEndpoints.blob)]"
+        }
+      }
+    }
+  }],
+ "outputs": {
+        "controller0PrivateIp": {
+            "type": "String",
+            "value": "[reference(resourceId('Microsoft.Network/networkInterfaces',concat(variables('nicName'),0))).ipConfigurations[0].properties.privateIPAddress]"
+        },
+        "controllerFqdn": {
+            "type": "String",
+            "value": "[reference(resourceId('Microsoft.Network/publicIPAddresses',concat(variables('publicIPAddressName'),0)),'2016-10-01').dnsSettings.fqdn]"}
+  }
+}
