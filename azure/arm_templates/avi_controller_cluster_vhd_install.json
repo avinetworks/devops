@@ -168,6 +168,15 @@
       }]
     }
   }, {
+    "type": "Microsoft.Compute/availabilitySets",
+    "name": "[parameters('vmName')]",
+    "apiVersion": "2015-06-15",
+    "location": "[resourceGroup().location]",
+    "properties": {
+      "platformFaultDomainCount": "3",
+      "platformUpdateDomainCount": "3"
+    }
+  },{
     "apiVersion": "[variables('api-version')]",
     "type": "Microsoft.Compute/virtualMachines",
     "name": "[concat(parameters('vmName'),copyIndex())]",
@@ -225,7 +234,10 @@
           "enabled": "true",
           "storageUri": "[concat(reference(concat('Microsoft.Storage/storageAccounts/', variables('diagStorageAccountName')), '2016-01-01').primaryEndpoints.blob)]"
         }
-      }
+      },
+        "availabilitySet": {
+            "id": "[resourceId('Microsoft.Compute/availabilitySets', parameters('vmName'))]"
+        }
     }
   }],
  "outputs": {
