@@ -2,3 +2,5 @@
 - include: clouds/vmware/cloud.yml
 
 - include: clouds/noaccess/cloud.yml
+
+- include: clouds/aws/cloud.yml
