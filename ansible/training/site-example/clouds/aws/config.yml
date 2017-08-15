@@ -12,6 +12,7 @@ avi_config:
         access_key_id: "{{ aws_access_key_id }}"
         secret_access_key: "{{ aws_secret_access_key }}"
         region: us-west-2
+        asg_poll_interval: 30
         # from vault
         vpc: "AVI-WEST2-VPC"
         vpc_id: "vpc-19295f7c"
