@@ -23,4 +23,4 @@ avi_config:
           # "/api/network?name=2C-ext"
           subnet_uuid: "{{aws_app1_subnet_uuid1}}"
           #subnet_uuid: "subnet-4cea5215"
-          vip_id: 1
+          vip_id: "1"
