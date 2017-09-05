@@ -100,11 +100,9 @@
   "variables": {
     "diagStorageAccountName": "[concat(uniquestring(resourceGroup().id), 'specvm')]",
     "api-version": "2015-06-15",
-    "publicIPAddressType": "Dynamic",
     "vnetID": "[resourceId(parameters('existingVnetResourceGroup'), 'Microsoft.Network/virtualNetworks', parameters('existingVnetName'))]",
     "subnetRef": "[concat(variables('vnetID'),'/subnets/', parameters('subnetName'))]",
     "nicName": "[parameters('vmName')]",
-    "publicIPAddressName": "[parameters('vmName')]",
     "osType": "Linux",
     "sshKeyPath": "[concat('/home/',parameters('adminUserName'),'/.ssh/authorized_keys')]",
     "controllerIP": ["[parameters('controller1_IP')]","[parameters('controller2_IP')]","[parameters('controller3_IP')]"]
@@ -121,24 +119,6 @@
     "properties": {}
   }, {
     "apiVersion": "[variables('api-version')]",
-    "type": "Microsoft.Network/publicIPAddresses",
-    "name": "[concat(variables('publicIPAddressName'), copyIndex())]",
-    "location": "[resourceGroup().location]",
-    "copy":{
-        "name":"controllerpubip",
-        "count":"[parameters('controllerCount')]"
-      },
-    "tags": {
-      "displayName": "Avi ControllerPublicIPAddress"
-    },
-    "properties": {
-      "publicIPAllocationMethod": "[variables('publicIPAddressType')]",
-      "dnsSettings": {
-        "domainNameLabel": "[concat(parameters('vmName'),copyIndex())]"
-      }
-    }
-  }, {
-    "apiVersion": "[variables('api-version')]",
     "type": "Microsoft.Network/networkInterfaces",
     "name": "[concat(variables('nicName'),copyIndex())]",
     "location": "[resourceGroup().location]",
@@ -146,9 +126,6 @@
         "name": "controllerniccopy",
         "count": "[parameters('controllerCount')]"
     },
-    "dependsOn": [
-      "[concat('Microsoft.Network/publicIPAddresses/', concat(variables('publicIPAddressName'),copyIndex()))]"
-    ],
     "tags": {
       "displayName": "Avi Controller NetworkInterface"
     },
@@ -158,9 +135,6 @@
         "properties": {
           "privateIPAllocationMethod": "Static",
           "privateIPAddress": "[variables('controllerIP')[copyIndex()]]",
-          "publicIPAddress": {
-            "id": "[resourceId('Microsoft.Network/publicIPAddresses',concat(variables('publicIPAddressName'),copyIndex()))]"
-          },
           "subnet": {
             "id": "[variables('subnetRef')]"
           }
@@ -234,7 +208,7 @@
           "enabled": "true",
           "storageUri": "[concat(reference(concat('Microsoft.Storage/storageAccounts/', variables('diagStorageAccountName')), '2016-01-01').primaryEndpoints.blob)]"
         }
-      },
+      },  
         "availabilitySet": {
             "id": "[resourceId('Microsoft.Compute/availabilitySets', parameters('vmName'))]"
         }
@@ -244,9 +218,6 @@
         "controller0PrivateIp": {
             "type": "String",
             "value": "[reference(resourceId('Microsoft.Network/networkInterfaces',concat(variables('nicName'),0))).ipConfigurations[0].properties.privateIPAddress]"
-        },
-        "controllerFqdn": {
-            "type": "String",
-            "value": "[reference(resourceId('Microsoft.Network/publicIPAddresses',concat(variables('publicIPAddressName'),0)),'2016-10-01').dnsSettings.fqdn]"}
+        }
   }
 }
