@@ -34,6 +34,17 @@
             "description": "Size of the Controller OS Disk Size in GB"
         }
     },
+    "controllerCount": {
+        "type": "int",
+        "defaultValue": 1,
+        "allowedValues": [
+              1,
+              3
+            ],
+            "metadata": {
+                "description": "Select 1 for single Controller VM or 3 for a Controller Cluster"
+            }
+        },
     "adminUserName": {
         "defaultValue": "aviadmin",
         "type" : "string",
@@ -64,22 +75,14 @@
       "metadata": {
         "description": "Name of the subnet in the virtual network you want to use"
       }
-    },
-    "dnsNameForPublicIP": {
-      "type": "string",
-      "metadata": {
-        "description": "Unique DNS Name for the Public IP used to access the Virtual Machine."
-      }
     }
   },
   "variables": {
     "diagStorageAccountName": "[concat(uniquestring(resourceGroup().id), 'specvm')]",
     "api-version": "2015-06-15",
-    "publicIPAddressType": "Dynamic",
     "vnetID": "[resourceId(parameters('existingVirtualNetworkResourceGroup'), 'Microsoft.Network/virtualNetworks', parameters('existingVirtualNetworkName'))]",
     "subnetRef": "[concat(variables('vnetID'),'/subnets/', parameters('subnetName'))]",
     "nicName": "[parameters('vmName')]",
-    "publicIPAddressName": "[parameters('vmName')]",
     "osType": "Linux",
     "sshKeyPath": "[concat('/home/',parameters('adminUserName'),'/.ssh/authorized_keys')]"
   },
@@ -95,26 +98,9 @@
     "properties": {}
   }, {
     "apiVersion": "[variables('api-version')]",
-    "type": "Microsoft.Network/publicIPAddresses",
-    "name": "[variables('publicIPAddressName')]",
-    "location": "[resourceGroup().location]",
-    "tags": {
-      "displayName": "PublicIPAddress"
-    },
-    "properties": {
-      "publicIPAllocationMethod": "[variables('publicIPAddressType')]",
-      "dnsSettings": {
-        "domainNameLabel": "[parameters('dnsNameForPublicIP')]"
-      }
-    }
-  }, {
-    "apiVersion": "[variables('api-version')]",
     "type": "Microsoft.Network/networkInterfaces",
     "name": "[variables('nicName')]",
     "location": "[resourceGroup().location]",
-    "dependsOn": [
-      "[concat('Microsoft.Network/publicIPAddresses/', variables('publicIPAddressName'))]"
-    ],
     "tags": {
       "displayName": "NetworkInterface"
     },
@@ -123,9 +109,6 @@
         "name": "ipconfig1",
         "properties": {
           "privateIPAllocationMethod": "Dynamic",
-          "publicIPAddress": {
-            "id": "[resourceId('Microsoft.Network/publicIPAddresses',variables('publicIPAddressName'))]"
-          },
           "subnet": {
             "id": "[variables('subnetRef')]"
           }
@@ -193,9 +176,6 @@
         "controllerPrivateIp": {
             "type": "String",
             "value": "[reference(resourceId('Microsoft.Network/networkInterfaces',variables('nicName'))).ipConfigurations[0].properties.privateIPAddress]"
-        },
-        "controllerFqdn": {
-            "type": "String",
-            "value": "[reference(resourceId('Microsoft.Network/publicIPAddresses',variables('publicIPAddressName')),'2016-10-01').dnsSettings.fqdn]"}
+        }
     }
 }
