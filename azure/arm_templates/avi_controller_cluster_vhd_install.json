@@ -18,9 +18,33 @@
       "type": "string",
       "defaultValue": "Standard_DS4_v2",
             "allowedValues": [
+                "Standard_DS3_v2",
                 "Standard_DS4_v2",
-                "Standard_DS5_v2"
-      ],
+                "Standard_DS5_v2",
+                "Standard_D3_v2",
+                "Standard_D4_v2",
+                "Standard_D5_v2",
+                "Standard_DS3",
+                "Standard_DS4",
+                "Standard_D3",
+                "Standard_D4",
+                "Standard_A4_v2",
+                "Standard_A8_v2",
+                "Standard_A4m_v2",
+                "Standard_A8m_v2",
+                "Standard_A3",
+                "Standard_A4",
+                "Standard_A6",
+                "Standard_A7",
+                "Standard_F4s",
+                "Standard_F8s",
+                "Standard_F16s",
+                "Standard_F4",
+                "Standard_F8",
+                "Standard_F16",
+                "Standard_D4s_v3 (HT)",
+                "Standard_D8s_v3 (HT)"
+              ],
       "metadata": {
         "description": "Size of the Controller VM"
       }
