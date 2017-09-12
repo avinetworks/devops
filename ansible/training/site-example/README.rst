@@ -14,6 +14,7 @@ Please install them from Ansible galaxy using following command
 
 .. code-block:: shell
 
+  pip install avisdk
   ansible-galaxy install avinetworks.avisdk
   ansible-galaxy install avinetworks.aviconfig
 
