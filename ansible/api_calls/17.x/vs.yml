@@ -12,8 +12,8 @@
     password: avi123
     tenant: Metrics_Test_Tenant
   connection: local
-  #roles:
-  #  - role: avinetworks.avisdk
+  roles:
+    - role: avinetworks.avisdk
   tasks:
     - avi_pool:
         controller: "{{ controller }}"
@@ -49,4 +49,3 @@
               addr: '10.90.64.252'
               type: 'V4'
       register: testvs
-

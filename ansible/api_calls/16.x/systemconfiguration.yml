@@ -12,7 +12,6 @@
     password: avi123
     dontskip: false
   tasks:
-
     - name: Test systemconfiguration
       avi_systemconfiguration:
         controller: "{{ controller }}"
@@ -20,4 +19,3 @@
         password: "{{ password }}"
         tech_support_uploader_configuration:
           auto_upload: false
-
