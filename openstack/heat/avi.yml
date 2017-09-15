@@ -1,0 +1,237 @@
+heat_template_version: 2017-02-24
+
+description: Deploy for AVI management
+
+parameters:
+  avi_controller_image:
+    type: string
+    description: Name of AVI controller image
+    constraints:
+      - custom_constraint: glance.image
+  avi_controller_flavor:
+    type: string
+    description: Controller instance flavor
+    constraints:
+      - custom_constraint: nova.flavor
+  avi_controller_disk_size:
+    type: string
+    label: Controller disk size
+    description: Disk size in GB for controllers
+  external_network:
+    type: string
+    description: External network name
+    constraints:
+      - custom_constraint: neutron.network
+  mgmt_subnet_cidr:
+    type: string
+    label: mgmt network
+    description: AVI management network address(CIDR)
+    constraints:
+      - custom_constraint: net_cidr
+  se_subnet_cidr:
+    type: string
+    label: se network
+    description: SE network address(CIDR)
+    constraints:
+      - custom_constraint: net_cidr
+  se_subnet_pool_start:
+    type: string
+    label: SE pool-start
+    description: Start of SE network IP allocation pool
+    constraints:
+      - custom_constraint: ip_addr
+  se_subnet_pool_end:
+    type: string
+    label: SE pool-end
+    description: End of SE network IP allocation pool
+    constraints:
+      - custom_constraint: ip_addr
+
+resources:
+  mgmt_net:
+    type: OS::Neutron::Net
+    properties:
+      name: avi-net
+      shared: true
+
+  mgmt_subnet:
+    type: OS::Neutron::Subnet
+    properties:
+      name: avi-mgmt-subnet
+      network: { get_resource: mgmt_net }
+      cidr: { get_param: mgmt_subnet_cidr }
+
+  mgmt_sg:
+    type: OS::Neutron::SecurityGroup
+    properties:
+      description: AVI Controllers SecurityGroup
+      name: avi-mgmt-sg
+      rules:
+        - protocol: tcp
+          port_range_min: 22
+          port_range_max: 22
+        - protocol: tcp
+          port_range_min: 80
+          port_range_max: 80
+        - protocol: tcp
+          port_range_min: 443
+          port_range_max: 443
+        - protocol: tcp
+          port_range_min: 5054
+          port_range_max: 5054
+        - protocol: tcp
+          port_range_min: 8443
+          port_range_max: 8443
+        - protocol: udp
+          port_range_min: 123
+          port_range_max: 123
+
+  se_subnet:
+    type: OS::Neutron::Subnet
+    properties:
+      name: avi-se-subnet
+      network: { get_resource: mgmt_net }
+      cidr: { get_param: se_subnet_cidr }
+      allocation_pools:
+        - start: { get_param: se_subnet_pool_start }
+          end: { get_param: se_subnet_pool_end }
+
+  router:
+    type: OS::Neutron::Router
+    properties:
+      name: avi-net-router
+      external_gateway_info:
+        network: { get_param: external_network }
+
+  mgmt_router_interface:
+    type: OS::Neutron::RouterInterface
+    properties:
+      router_id: { get_resource: router }
+      subnet_id: { get_resource: mgmt_subnet }
+
+  se_router_interface:
+    type: OS::Neutron::RouterInterface
+    properties:
+      router_id: { get_resource: router }
+      subnet_id: { get_resource: se_subnet }
+
+  controller_cluster_ip:
+    type: OS::Neutron::Port
+    properties:
+      security_groups:
+        - default
+        - { get_resource: mgmt_sg }
+      network: { get_resource: mgmt_net }
+      fixed_ips:
+        - subnet_id: { get_resource: mgmt_subnet}
+
+  controller_public_ip:
+    type: OS::Neutron::FloatingIP
+    properties:
+      floating_network: { get_param: external_network }
+      port_id: { get_resource: controller_cluster_ip }
+
+  controller_group:
+    type:  OS::Nova::ServerGroup
+    properties:
+      name: avi-controller-group
+      policies:
+        - anti-affinity
+
+  controller_1_port:
+    type: OS::Neutron::Port
+    properties:
+      security_groups:
+        - default
+        - { get_resource: mgmt_sg }
+      network: { get_resource: mgmt_net }
+      fixed_ips:
+        - subnet: { get_resource: mgmt_subnet }
+
+  controller_2_port:
+    type: OS::Neutron::Port
+    properties:
+      security_groups:
+        - default
+        - { get_resource: mgmt_sg }
+      network_id: { get_resource: mgmt_net }
+      fixed_ips:
+        - subnet: { get_resource: mgmt_subnet }
+
+  controller_3_port:
+    type: OS::Neutron::Port
+    properties:
+      security_groups:
+        - default
+        - { get_resource: mgmt_sg }
+      network: { get_resource: mgmt_net }
+      fixed_ips:
+        - subnet: { get_resource: mgmt_subnet }
+
+  controller_1:
+    type: OS::Nova::Server
+    properties:
+      name: controller-1
+      availability_zone: overflow
+      flavor: { get_param: avi_controller_flavor }
+      block_device_mapping_v2:
+        - device_name: vda
+          image: { get_param: avi_controller_image }
+          volume_size: { get_param: avi_controller_disk_size }
+          delete_on_termination: false
+      networks:
+        - port: { get_resource: controller_1_port }
+      scheduler_hints:
+        group:
+          { get_resource: controller_group }
+
+  controller_2:
+    type: OS::Nova::Server
+    properties:
+      name: controller-2
+      availability_zone: overflow
+      flavor: { get_param: avi_controller_flavor }
+      block_device_mapping_v2:
+        - device_name: vda
+          image: { get_param: avi_controller_image }
+          volume_size: { get_param: avi_controller_disk_size }
+          delete_on_termination: false
+      networks:
+        - port: { get_resource: controller_2_port }
+      scheduler_hints:
+        group:
+          { get_resource: controller_group }
+
+  controller_3:
+    type: OS::Nova::Server
+    properties:
+      name: controller-3
+      availability_zone: overflow
+      flavor: { get_param: avi_controller_flavor }
+      block_device_mapping_v2:
+        - device_name: vda
+          image: { get_param: avi_controller_image }
+          volume_size: { get_param: avi_controller_disk_size }
+          delete_on_termination: false
+      networks:
+        - port: { get_resource: controller_3_port }
+      scheduler_hints:
+        group:
+          { get_resource: controller_group }
+
+outputs:
+  cluster_public_ip:
+    description: Floating IP address of AVI controller cluster
+    value: { get_attr: [controller_public_ip, floating_ip_address] }
+  cluster_internal_ip:
+    description: Internal IP address of AVI controller cluster
+    value: { get_attr: [controller_cluster_ip, fixed_ips] }
+  controller_1_ip:
+    description: Internal IP address of controller 1
+    value: { get_attr: [controller_1_port, fixed_ips] }
+  controller_2_ip:
+    description: Internal IP address of controller 2
+    value: { get_attr: [controller_2_port, fixed_ips] }
+  controller_3_ip:
+    description: Internal IP address of controller 3
+    value: { get_attr: [controller_3_port, fixed_ips] }

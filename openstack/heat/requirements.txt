@@ -1,0 +1,2 @@
+python-openstackclient==3.11.0 # Provides the openstack cli
+python-heatclient==1.10.0 # Provides the heat cli
