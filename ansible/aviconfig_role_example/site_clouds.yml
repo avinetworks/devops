@@ -1,0 +1,7 @@
+
+- include: clouds/vmware/cloud.yml
+
+- include: clouds/noaccess/cloud.yml
+
+# Pl. update the cloud_creds before enabling this
+#- include: clouds/aws/cloud.yml

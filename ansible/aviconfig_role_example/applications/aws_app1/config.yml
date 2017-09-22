@@ -1,0 +1,26 @@
+avi_config:
+  pool:
+    - name: aws-app1-pool
+      #state: absent
+      lb_algorithm: LB_ALGORITHM_ROUND_ROBIN
+      external_autoscale_groups:
+        - grastogi-demo-asg
+      cloud_ref: '/api/cloud?name=aws'
+  virtualservice:
+    - name: aws_app1
+      services:
+        - port: 80
+      pool_ref: '/api/pool?name=aws-app1-pool'
+      cloud_ref: '/api/cloud?name=aws'
+      vsvip_ref: '/api/vsvip?name=aws_app1_vsvip'
+  vsvip:
+    - name: aws_app1_vsvip
+      cloud_ref: '/api/cloud?name=aws'
+      vip:
+        - auto_allocate_ip: True
+          #network_ref:
+          #  state: absent
+          # "/api/network?name=2C-ext"
+          subnet_uuid: "{{aws_app1_subnet_uuid1}}"
+          #subnet_uuid: "subnet-4cea5215"
+          vip_id: "1"

@@ -1,0 +1,12 @@
+#/usr/bin/env ansible-playbook
+#
+# site.yml
+#
+
+# Base infra config
+
+# Configure the clouds
+- include: site_clouds.yml
+
+# App config
+- include: site_applications.yml

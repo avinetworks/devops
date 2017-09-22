@@ -17,4 +17,4 @@
         name: avinetworks.aviconfig
       vars:
         avi_config_file: "{{ site_dir }}/clouds/{{cloud_name}}/config.yml"
-        avi_creds_file: "{{ site_dir }}/vars/creds.yml"
+        avi_creds_file: "{{ site_dir }}/vars/{{deployment_target | default('staging')}}/creds.yml"

@@ -1,0 +1,22 @@
+# This is playbook for an application.
+# This can invoke any of the avi roles like application, profile or cloud
+#
+---
+- hosts: localhost
+  connection: local
+  vars:
+    api_version: 17.1.2
+    avi_credentials:
+      controller: 10.10.24.202
+      username: admin
+      password: avi123$%
+      api_version: 17.1.2
+  roles:
+    - role: avinetworks.avisdk
+  tasks:
+    - name: Avi Application | Setup App1
+      include_role:
+        name: avinetworks.aviconfig
+      vars:
+        avi_config_file: "avi_config.yml"
+        avi_creds_file: "vars/creds.yml"

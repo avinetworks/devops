@@ -15,7 +15,7 @@
 
     - name: Load vars
       include_vars:
-        file: "{{ site_dir }}/vars/creds.yml"
+        file: "{{ site_dir }}/vars/{{deployment_target | default('staging')}}/creds.yml"
 
     - name: Compose Avi Config
       set_fact:
