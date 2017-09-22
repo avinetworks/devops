@@ -9,16 +9,17 @@
     app_name: complex_app
   roles:
     - role: avinetworks.avisdk
-
   tasks:
     - name: Setting up Application
       debug: msg="{{ app_name }}"
+
     - name: Load vars
       include_vars:
         file: "{{ site_dir }}/vars/creds.yml"
-    - name: defining avi config
+
+    - name: Compose Avi Config
       set_fact:
-        avi_config:
+        avi_config_var:
           pool:
             - name: "{{ app_name}}-pool"
               lb_algorithm: LB_ALGORITHM_ROUND_ROBIN
@@ -43,3 +44,4 @@
     - name: Avi Application | Setup complex_app
       include_role:
         name: avinetworks.aviconfig
+        avi_config: "{{avi_config_var}}"

@@ -1,0 +1,787 @@
+# Auto-generated from Avi Configuration
+---
+avi_config:
+  applicationprofile:
+  - api_version: 17.1.5
+    dos_rl_profile:
+      rl_profile:
+        client_ip_connections_rate_limit:
+          action:
+            status_code: HTTP_LOCAL_RESPONSE_STATUS_CODE_429
+            type: RL_ACTION_NONE
+          burst_sz: 0
+          count: 0
+          explicit_tracking: false
+          fine_grain: false
+          period: 1
+    http_profile:
+      allow_dots_in_header_name: false
+      cache_config:
+        age_header: true
+        aggressive: true
+        date_header: true
+        default_expire: 600
+        enabled: true
+        heuristic_expire: true
+        max_cache_size: 0
+        max_object_size: 4194304
+        min_object_size: 100
+        query_cacheable: true
+        xcache_header: true
+      client_body_timeout: 30000
+      client_header_timeout: 10000
+      client_max_body_size: 0
+      client_max_header_size: 12
+      client_max_request_size: 48
+      compression_profile:
+        compressible_content_ref: /api/stringgroup/?tenant=AVI-LBaaS&name=httpcompression-content_type
+        compression: true
+        remove_accept_encoding_header: false
+        type: AUTO_COMPRESSION
+      connection_multiplexing_enabled: true
+      disable_keepalive_posts_msie6: true
+      enable_request_body_buffering: false
+      hsts_enabled: true
+      hsts_max_age: 365
+      http_to_https: true
+      httponly_enabled: false
+      keepalive_header: false
+      keepalive_timeout: 30000
+      max_bad_rps_cip: 0
+      max_bad_rps_cip_uri: 0
+      max_bad_rps_uri: 0
+      max_rps_cip: 0
+      max_rps_cip_uri: 0
+      max_rps_unknown_cip: 0
+      max_rps_unknown_uri: 0
+      max_rps_uri: 0
+      post_accept_timeout: 30000
+      secure_cookie_enabled: false
+      server_side_redirect_to_https: true
+      spdy_enabled: false
+      spdy_fwd_proxy_mode: false
+      ssl_client_certificate_mode: SSL_CLIENT_CERTIFICATE_NONE
+      ssl_everywhere_enabled: false
+      use_app_keepalive_timeout: false
+      websockets_enabled: true
+      x_forwarded_proto_enabled: true
+      xff_alternate_name: X-Forwarded-For
+      xff_enabled: true
+    name: http-compression-and-caching
+    preserve_client_ip: false
+    tenant: AVI-LBaaS
+    tenant_ref: /api/tenant/?name=AVI-LBaaS
+    type: APPLICATION_PROFILE_TYPE_HTTP
+  healthmonitor:
+  - api_version: 17.1.5
+    failed_checks: 1
+    https_monitor:
+      http_request: "GET /files/basic/api/myuserlibrary/feed?pageSize=1 HTTP/1.0\r\
+        \\nAuthorization: Basic OXgxMzAwQHVzLmlibS5jb206eHByczRicA==\r\\nUser-agent:\
+        \ F5Monitor\r\\nConnection: Close"
+      http_response_code:
+      - HTTP_2XX
+      - HTTP_5XX
+      ssl_attributes:
+        ssl_profile_ref: /api/sslprofile/?tenant=AVI-LBaaS&name=System-Standard
+    is_federated: false
+    name: w3-ic-sso-monitor-files
+    receive_timeout: 14
+    send_interval: 15
+    successful_checks: 3
+    tenant: AVI-LBaaS
+    tenant_ref: /api/tenant/?name=AVI-LBaaS
+    type: HEALTH_MONITOR_HTTPS
+  httppolicyset:
+  - api_version: 17.1.5
+    http_request_policy:
+      rules:
+      - all_headers: true
+        enable: true
+        index: 1
+        log: true
+        match:
+          path:
+            match_case: INSENSITIVE
+            match_criteria: EQUALS
+            match_str:
+            - /profiles/html/editMyProfileView
+        name: w3-ic-cell01-rule-redirect-profiles-html-editMyProfileView
+        redirect_action:
+          host:
+            tokens:
+            - str_value: w3.ibm.com
+              type: URI_TOKEN_TYPE_STRING
+            type: URI_PARAM_TYPE_TOKENIZED
+          keep_query: true
+          path:
+            tokens:
+            - str_value: bluepages/editprofile.html
+              type: URI_TOKEN_TYPE_STRING
+            type: URI_PARAM_TYPE_TOKENIZED
+          port: 80
+          protocol: HTTP
+          status_code: HTTP_REDIRECT_STATUS_CODE_302
+      - all_headers: true
+        enable: true
+        index: 2
+        log: true
+        match:
+          path:
+            match_case: INSENSITIVE
+            match_criteria: EQUALS
+            match_str:
+            - /connections/activities
+        name: w3-ic-cell01-rule-redirect-connections-activities
+        rewrite_url_action:
+          host_hdr:
+            tokens:
+            - end_index: 65535
+              start_index: 0
+              type: URI_TOKEN_TYPE_HOST
+            type: URI_PARAM_TYPE_TOKENIZED
+          path:
+            tokens:
+            - str_value: activities
+              type: URI_TOKEN_TYPE_STRING
+            type: URI_PARAM_TYPE_TOKENIZED
+          query:
+            keep_query: true
+      - all_headers: true
+        enable: true
+        index: 3
+        log: true
+        match:
+          path:
+            match_case: INSENSITIVE
+            match_criteria: EQUALS
+            match_str:
+            - /connections/blogs
+        name: w3-ic-cell01-rule-redirect-connections-blogs
+        rewrite_url_action:
+          host_hdr:
+            tokens:
+            - end_index: 65535
+              start_index: 0
+              type: URI_TOKEN_TYPE_HOST
+            type: URI_PARAM_TYPE_TOKENIZED
+          path:
+            tokens:
+            - str_value: blogs
+              type: URI_TOKEN_TYPE_STRING
+            type: URI_PARAM_TYPE_TOKENIZED
+          query:
+            keep_query: true
+      - all_headers: true
+        enable: true
+        index: 4
+        log: true
+        match:
+          path:
+            match_case: INSENSITIVE
+            match_criteria: EQUALS
+            match_str:
+            - /connections/communities
+        name: w3-ic-cell01-rule-redirect-connections-communities
+        rewrite_url_action:
+          host_hdr:
+            tokens:
+            - end_index: 65535
+              start_index: 0
+              type: URI_TOKEN_TYPE_HOST
+            type: URI_PARAM_TYPE_TOKENIZED
+          path:
+            tokens:
+            - str_value: communities
+              type: URI_TOKEN_TYPE_STRING
+            type: URI_PARAM_TYPE_TOKENIZED
+          query:
+            keep_query: true
+      - all_headers: true
+        enable: true
+        index: 5
+        log: true
+        match:
+          path:
+            match_case: INSENSITIVE
+            match_criteria: EQUALS
+            match_str:
+            - /connections/dogear
+        name: w3-ic-cell01-rule-redirect-connections-dogear
+        rewrite_url_action:
+          host_hdr:
+            tokens:
+            - end_index: 65535
+              start_index: 0
+              type: URI_TOKEN_TYPE_HOST
+            type: URI_PARAM_TYPE_TOKENIZED
+          path:
+            tokens:
+            - str_value: dogear
+              type: URI_TOKEN_TYPE_STRING
+            type: URI_PARAM_TYPE_TOKENIZED
+          query:
+            keep_query: true
+      - all_headers: true
+        enable: true
+        index: 6
+        log: true
+        match:
+          path:
+            match_case: INSENSITIVE
+            match_criteria: EQUALS
+            match_str:
+            - /connections/files
+        name: w3-ic-cell01-rule-redirect-connections-files
+        rewrite_url_action:
+          host_hdr:
+            tokens:
+            - end_index: 65535
+              start_index: 0
+              type: URI_TOKEN_TYPE_HOST
+            type: URI_PARAM_TYPE_TOKENIZED
+          path:
+            tokens:
+            - str_value: files
+              type: URI_TOKEN_TYPE_STRING
+            type: URI_PARAM_TYPE_TOKENIZED
+          query:
+            keep_query: true
+      - all_headers: true
+        enable: true
+        index: 7
+        log: true
+        match:
+          path:
+            match_case: INSENSITIVE
+            match_criteria: EQUALS
+            match_str:
+            - /connections/homepage
+        name: w3-ic-cell01-rule-redirect-connections-homepage
+        rewrite_url_action:
+          host_hdr:
+            tokens:
+            - end_index: 65535
+              start_index: 0
+              type: URI_TOKEN_TYPE_HOST
+            type: URI_PARAM_TYPE_TOKENIZED
+          path:
+            tokens:
+            - str_value: homepage/
+              type: URI_TOKEN_TYPE_STRING
+            type: URI_PARAM_TYPE_TOKENIZED
+          query:
+            keep_query: true
+      - all_headers: true
+        enable: true
+        index: 8
+        log: true
+        match:
+          path:
+            match_case: INSENSITIVE
+            match_criteria: EQUALS
+            match_str:
+            - /connections/profiles
+        name: w3-ic-cell01-rule-redirect-connections-profiles
+        rewrite_url_action:
+          host_hdr:
+            tokens:
+            - end_index: 65535
+              start_index: 0
+              type: URI_TOKEN_TYPE_HOST
+            type: URI_PARAM_TYPE_TOKENIZED
+          path:
+            tokens:
+            - str_value: profiles
+              type: URI_TOKEN_TYPE_STRING
+            type: URI_PARAM_TYPE_TOKENIZED
+          query:
+            keep_query: true
+      - all_headers: true
+        enable: true
+        index: 9
+        log: true
+        match:
+          path:
+            match_case: INSENSITIVE
+            match_criteria: EQUALS
+            match_str:
+            - /connections/wikis
+        name: w3-ic-cell01-rule-redirect-connections-wikis
+        rewrite_url_action:
+          host_hdr:
+            tokens:
+            - end_index: 65535
+              start_index: 0
+              type: URI_TOKEN_TYPE_HOST
+            type: URI_PARAM_TYPE_TOKENIZED
+          path:
+            tokens:
+            - str_value: wikis
+              type: URI_TOKEN_TYPE_STRING
+            type: URI_PARAM_TYPE_TOKENIZED
+          query:
+            keep_query: true
+      - all_headers: true
+        enable: true
+        index: 10
+        log: true
+        match:
+          path:
+            match_case: INSENSITIVE
+            match_criteria: BEGINS_WITH
+            match_str:
+            - /wikis
+        name: w3-ic-cell01-rule-route-wikis
+        switching_action:
+          action: HTTP_SWITCHING_SELECT_POOL
+          pool_ref: /api/pool/?tenant=AVI-LBaaS&name=w3-ic-cell01-pool-wikis&cloud=Default-Cloud
+      - all_headers: true
+        enable: true
+        index: 11
+        log: true
+        match:
+          path:
+            match_case: INSENSITIVE
+            match_criteria: BEGINS_WITH
+            match_str:
+            - /viewer
+        name: w3-ic-cell01-rule-route-viewer
+        switching_action:
+          action: HTTP_SWITCHING_SELECT_POOL
+          pool_ref: /api/pool/?tenant=AVI-LBaaS&name=w3-ic-cell01-pool-viewer&cloud=Default-Cloud
+      - all_headers: true
+        enable: true
+        index: 12
+        log: true
+        match:
+          path:
+            match_case: INSENSITIVE
+            match_criteria: BEGINS_WITH
+            match_str:
+            - /sitereports
+        name: w3-ic-cell01-rule-route-sitereports
+        switching_action:
+          action: HTTP_SWITCHING_SELECT_POOL
+          pool_ref: /api/pool/?tenant=AVI-LBaaS&name=w3-ic-prod-pool-sitereports&cloud=Default-Cloud
+      - all_headers: true
+        enable: true
+        index: 13
+        log: true
+        match:
+          path:
+            match_case: INSENSITIVE
+            match_criteria: BEGINS_WITH
+            match_str:
+            - /search
+        name: w3-ic-cell01-rule-route-search
+        switching_action:
+          action: HTTP_SWITCHING_SELECT_POOL
+          pool_ref: /api/pool/?tenant=AVI-LBaaS&name=w3-ic-cell01-pool-search&cloud=Default-Cloud
+      - all_headers: true
+        enable: true
+        index: 14
+        log: true
+        match:
+          path:
+            match_case: INSENSITIVE
+            match_criteria: BEGINS_WITH
+            match_str:
+            - /samlsps
+        name: w3-ic-cell01-rule-route-samlsps
+        switching_action:
+          action: HTTP_SWITCHING_SELECT_POOL
+          pool_ref: /api/pool/?tenant=AVI-LBaaS&name=w3-ic-cell01-pool-samlsps&cloud=Default-Cloud
+      - all_headers: true
+        enable: true
+        index: 15
+        log: true
+        match:
+          path:
+            match_case: INSENSITIVE
+            match_criteria: BEGINS_WITH
+            match_str:
+            - /profiles
+        name: w3-ic-cell01-rule-route-profiles
+        switching_action:
+          action: HTTP_SWITCHING_SELECT_POOL
+          pool_ref: /api/pool/?tenant=AVI-LBaaS&name=w3-ic-cell01-pool-profiles&cloud=Default-Cloud
+      - all_headers: true
+        enable: true
+        index: 16
+        log: true
+        match:
+          path:
+            match_case: INSENSITIVE
+            match_criteria: BEGINS_WITH
+            match_str:
+            - /oauth2
+        name: w3-ic-cell01-rule-route-oauth2
+        switching_action:
+          action: HTTP_SWITCHING_SELECT_POOL
+          pool_ref: /api/pool/?tenant=AVI-LBaaS&name=w3-ic-cell01-pool-oauth2&cloud=Default-Cloud
+      - all_headers: true
+        enable: true
+        index: 17
+        log: true
+        match:
+          path:
+            match_case: INSENSITIVE
+            match_criteria: BEGINS_WITH
+            match_str:
+            - /news
+        name: w3-ic-cell01-rule-route-news
+        switching_action:
+          action: HTTP_SWITCHING_SELECT_POOL
+          pool_ref: /api/pool/?tenant=AVI-LBaaS&name=w3-ic-cell01-pool-news&cloud=Default-Cloud
+      - all_headers: true
+        enable: true
+        index: 18
+        log: true
+        match:
+          path:
+            match_case: INSENSITIVE
+            match_criteria: BEGINS_WITH
+            match_str:
+            - /mobileAdmin
+        name: w3-ic-cell01-rule-route-mobileAdmin
+        switching_action:
+          action: HTTP_SWITCHING_SELECT_POOL
+          pool_ref: /api/pool/?tenant=AVI-LBaaS&name=w3-ic-cell01-pool-mobileAdmin&cloud=Default-Cloud
+      - all_headers: true
+        enable: true
+        index: 19
+        log: true
+        match:
+          path:
+            match_case: INSENSITIVE
+            match_criteria: BEGINS_WITH
+            match_str:
+            - /mobile
+        name: w3-ic-cell01-rule-route-mobile
+        switching_action:
+          action: HTTP_SWITCHING_SELECT_POOL
+          pool_ref: /api/pool/?tenant=AVI-LBaaS&name=w3-ic-cell01-pool-mobile&cloud=Default-Cloud
+      - all_headers: true
+        enable: true
+        index: 20
+        log: true
+        match:
+          path:
+            match_case: INSENSITIVE
+            match_criteria: BEGINS_WITH
+            match_str:
+            - /metrics
+        name: w3-ic-cell01-rule-route-metrics
+        switching_action:
+          action: HTTP_SWITCHING_SELECT_POOL
+          pool_ref: /api/pool/?tenant=AVI-LBaaS&name=w3-ic-cell01-pool-metrics&cloud=Default-Cloud
+      - all_headers: true
+        enable: true
+        index: 22
+        log: true
+        match:
+          path:
+            match_case: INSENSITIVE
+            match_criteria: BEGINS_WITH
+            match_str:
+            - /homepage
+        name: w3-ic-cell01-rule-route-homepage
+        switching_action:
+          action: HTTP_SWITCHING_SELECT_POOL
+          pool_ref: /api/pool/?tenant=AVI-LBaaS&name=w3-ic-cell01-pool-homepage&cloud=Default-Cloud
+      - all_headers: true
+        enable: true
+        index: 23
+        log: true
+        match:
+          path:
+            match_case: INSENSITIVE
+            match_criteria: BEGINS_WITH
+            match_str:
+            - /help
+        name: w3-ic-cell01-rule-route-help
+        switching_action:
+          action: HTTP_SWITCHING_SELECT_POOL
+          pool_ref: /api/pool/?tenant=AVI-LBaaS&name=w3-ic-cell01-pool-help&cloud=Default-Cloud
+      - all_headers: true
+        enable: true
+        index: 24
+        log: true
+        match:
+          path:
+            match_case: INSENSITIVE
+            match_criteria: BEGINS_WITH
+            match_str:
+            - /forums
+        name: w3-ic-cell01-rule-route-forums
+        switching_action:
+          action: HTTP_SWITCHING_SELECT_POOL
+          pool_ref: /api/pool/?tenant=AVI-LBaaS&name=w3-ic-cell01-pool-forums&cloud=Default-Cloud
+      - all_headers: true
+        enable: true
+        index: 25
+        log: true
+        match:
+          path:
+            match_case: INSENSITIVE
+            match_criteria: BEGINS_WITH
+            match_str:
+            - /files
+        name: w3-ic-cell01-rule-route-files
+        switching_action:
+          action: HTTP_SWITCHING_SELECT_POOL
+          pool_ref: /api/pool/?tenant=AVI-LBaaS&name=w3-ic-cell01-pool-files&cloud=Default-Cloud
+      - all_headers: true
+        enable: true
+        index: 26
+        log: true
+        match:
+          path:
+            match_case: INSENSITIVE
+            match_criteria: BEGINS_WITH
+            match_str:
+            - /feedback
+        name: w3-ic-cell01-rule-route-feedback
+        switching_action:
+          action: HTTP_SWITCHING_SELECT_POOL
+          pool_ref: /api/pool/?tenant=AVI-LBaaS&name=w3-ic-cell01-pool-feedback&cloud=Default-Cloud
+      - all_headers: true
+        enable: true
+        index: 27
+        log: true
+        match:
+          path:
+            match_case: INSENSITIVE
+            match_criteria: BEGINS_WITH
+            match_str:
+            - /dogear
+        name: w3-ic-cell01-rule-route-dogear
+        switching_action:
+          action: HTTP_SWITCHING_SELECT_POOL
+          pool_ref: /api/pool/?tenant=AVI-LBaaS&name=w3-ic-cell01-pool-dogear&cloud=Default-Cloud
+      - all_headers: true
+        enable: true
+        index: 28
+        log: true
+        match:
+          path:
+            match_case: INSENSITIVE
+            match_criteria: BEGINS_WITH
+            match_str:
+            - /docs
+        name: w3-ic-cell01-rule-route-docs
+        switching_action:
+          action: HTTP_SWITCHING_SELECT_POOL
+          pool_ref: /api/pool/?tenant=AVI-LBaaS&name=w3-ic-prod-pool-docs&cloud=Default-Cloud
+      - all_headers: true
+        enable: true
+        index: 29
+        log: true
+        match:
+          path:
+            match_case: INSENSITIVE
+            match_criteria: BEGINS_WITH
+            match_str:
+            - /conversion
+        name: w3-ic-cell01-rule-route-conversion
+        switching_action:
+          action: HTTP_SWITCHING_SELECT_POOL
+          pool_ref: /api/pool/?tenant=AVI-LBaaS&name=w3-ic-prod-pool-conversion&cloud=Default-Cloud
+      - all_headers: true
+        enable: true
+        index: 30
+        log: true
+        match:
+          path:
+            match_case: INSENSITIVE
+            match_criteria: BEGINS_WITH
+            match_str:
+            - /connections
+        name: w3-ic-cell01-rule-route-connections
+        switching_action:
+          action: HTTP_SWITCHING_SELECT_POOL
+          pool_ref: /api/pool/?tenant=AVI-LBaaS&name=w3-ic-cell01-pool-connections&cloud=Default-Cloud
+      - all_headers: true
+        enable: true
+        index: 31
+        log: true
+        match:
+          path:
+            match_case: INSENSITIVE
+            match_criteria: BEGINS_WITH
+            match_str:
+            - /communities
+        name: w3-ic-cell01-rule-route-communities
+        switching_action:
+          action: HTTP_SWITCHING_SELECT_POOL
+          pool_ref: /api/pool/?tenant=AVI-LBaaS&name=w3-ic-cell01-pool-communities&cloud=Default-Cloud
+      - all_headers: true
+        enable: true
+        index: 32
+        log: true
+        match:
+          path:
+            match_case: INSENSITIVE
+            match_criteria: BEGINS_WITH
+            match_str:
+            - /common
+        name: w3-ic-cell01-rule-route-common
+        switching_action:
+          action: HTTP_SWITCHING_SELECT_POOL
+          pool_ref: /api/pool/?tenant=AVI-LBaaS&name=w3-ic-cell01-pool-common&cloud=Default-Cloud
+      - all_headers: true
+        enable: true
+        index: 33
+        log: true
+        match:
+          path:
+            match_case: INSENSITIVE
+            match_criteria: BEGINS_WITH
+            match_str:
+            - /blogs
+        name: w3-ic-cell01-rule-route-blogs
+        switching_action:
+          action: HTTP_SWITCHING_SELECT_POOL
+          pool_ref: /api/pool/?tenant=AVI-LBaaS&name=w3-ic-cell01-pool-blogs&cloud=Default-Cloud
+      - all_headers: true
+        enable: true
+        index: 34
+        log: true
+        match:
+          path:
+            match_case: INSENSITIVE
+            match_criteria: BEGINS_WITH
+            match_str:
+            - /activities
+        name: w3-ic-cell01-rule-route-activities
+        switching_action:
+          action: HTTP_SWITCHING_SELECT_POOL
+          pool_ref: /api/pool/?tenant=AVI-LBaaS&name=w3-ic-cell01-pool-activities&cloud=Default-Cloud
+      - all_headers: true
+        enable: true
+        index: 35
+        log: true
+        match:
+          path:
+            match_case: INSENSITIVE
+            match_criteria: EQUALS
+            match_str:
+            - /
+        name: w3-ic-cell01-rule-redirect-root
+        redirect_action:
+          keep_query: true
+          path:
+            tokens:
+            - str_value: homepage
+              type: URI_TOKEN_TYPE_STRING
+            type: URI_PARAM_TYPE_TOKENIZED
+          port: 443
+          protocol: HTTPS
+          status_code: HTTP_REDIRECT_STATUS_CODE_302
+    is_internal_policy: false
+    name: w3-ic.ahe.boulder.ibm.com_443-Default-Cloud-HTTP-Policy-Set
+    tenant: AVI-LBaaS
+    tenant_ref: /api/tenant/?name=AVI-LBaaS
+  networkprofile:
+  - api_version: 17.1.5
+    name: w3-ic-wam-wan-optimized-tcp
+    profile:
+      tcp_proxy_profile:
+        aggressive_congestion_avoidance: false
+        automatic: true
+        cc_algo: CC_ALGO_NEW_RENO
+        idle_connection_timeout: 0
+        idle_connection_type: CLOSE_IDLE
+        ignore_time_wait: false
+        ip_dscp: 0
+        max_retransmissions: 3
+        max_syn_retransmissions: 3
+        nagles_algorithm: false
+        receive_window: 32
+        time_wait_delay: 0
+        use_interface_mtu: true
+      type: PROTOCOL_TYPE_TCP_PROXY
+    tenant: AVI-LBaaS
+    tenant_ref: /api/tenant/?name=AVI-LBaaS
+  networksecuritypolicy:
+  - api_version: 17.1.5
+    name: vs-w3-ic.ahe.boulder.ibm.com_443-Default-Cloud-ns
+    tenant: AVI-LBaaS
+    tenant_ref: /api/tenant/?name=AVI-LBaaS
+  pool:
+  - api_version: 17.1.5
+    application_persistence_profile_ref: /api/applicationpersistenceprofile/?tenant=AVI-LBaaS&name=System-Persistence-Http-Cookie
+    capacity_estimation: false
+    cloud_ref: /api/cloud?name=Default-Cloud
+    connection_ramp_duration: 300
+    default_server_port: 80
+    enabled: true
+    fail_action:
+      redirect:
+        host: w3-connections.ibm.com
+        path: /connections/static/html/activities/activities_lc_maintenance.htm
+        protocol: HTTPS
+        status_code: HTTP_REDIRECT_STATUS_CODE_302
+      type: FAIL_ACTION_HTTP_REDIRECT
+    fewest_tasks_feedback_delay: 10
+    graceful_disable_timeout: 1
+    health_monitor_refs:
+    - /api/healthmonitor/?tenant=AVI-LBaaS&name=w3-ic-monitor-wikis
+    host_check_enabled: false
+    inline_health_monitor: true
+    lb_algorithm: LB_ALGORITHM_LEAST_CONNECTIONS
+    lb_algorithm_core_nonaffinity: 2
+    max_concurrent_connections_per_server: 0
+    name: w3-ic-cell01-pool-wikis
+    request_queue_depth: 128
+    request_queue_enabled: false
+    rewrite_host_header_to_server_name: false
+    rewrite_host_header_to_sni: false
+    server_auto_scale: false
+    server_count: 2
+    servers:
+    - description: ''
+      discovered_networks:
+      - network_ref: /api/network/3b574a72-8ec2-480f-a2fd-90f434d0828e
+        subnet:
+        - ip_addr:
+            addr: 192.168.203.0
+            type: V4
+          mask: 24
+      enabled: true
+      hostname: 9.17.159.60
+      ip:
+        addr: 9.17.159.60
+        type: V4
+      port: 14444
+      ratio: 1
+      resolve_server_by_dns: false
+      rewrite_host_header: false
+      static: false
+      verify_network: false
+    - description: ''
+      discovered_networks:
+      - network_ref: /api/network/3b574a72-8ec2-480f-a2fd-90f434d0828e
+        subnet:
+        - ip_addr:
+            addr: 192.168.203.0
+            type: V4
+          mask: 24
+      enabled: true
+      hostname: 9.17.159.61
+      ip:
+        addr: 9.17.159.61
+        type: V4
+      port: 14444
+      ratio: 1
+      resolve_server_by_dns: false
+      rewrite_host_header: false
+      static: false
+      verify_network: false
+    sni_enabled: false
+    ssl_profile_ref: /api/sslprofile/?tenant=AVI-LBaaS&name=crypto-client-default-serverssl
+    tenant: AVI-LBaaS
+    tenant_ref: /api/tenant/?name=AVI-LBaaS
+    use_service_port: false
+    vrf_ref: /api/vrfcontext/?name=global
