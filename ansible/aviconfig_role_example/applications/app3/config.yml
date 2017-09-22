@@ -1,0 +1,106 @@
+
+avi_config:
+  pool:
+    - name: app3-pool-A
+      lb_algorithm: LB_ALGORITHM_ROUND_ROBIN
+      servers:
+        - ip:
+             addr: "{{pool_server1}}"
+             type: 'V4'
+    - name: app3-pool-B
+      lb_algorithm: LB_ALGORITHM_LEAST_CONNECTIONS
+      health_monitor_refs:
+        - '/api/healthmonitor?name=app3-hm'
+      servers:
+        - ip:
+             addr: "{{pool_server2}}"
+             type: 'V4'
+
+  healthmonitor:
+    - name: app3-hm
+      http_monitor:
+        http_request: "HEAD / HTTP/1.0"
+        http_response_code:
+          - HTTP_2XX
+          - HTTP_3XX
+      receive_timeout: 4
+      failed_checks: 3
+      send_interval: 10
+      successful_checks: 3
+      type: HEALTH_MONITOR_HTTP
+
+    - name: app3-hm-tcp-ecv
+      receive_timeout: 4
+      failed_checks: 2
+      monitor_port: 22222
+      send_interval: 10
+      successful_checks: 2
+      type: HEALTH_MONITOR_TCP
+      tcp_monitor:
+        tcp_half_open: false
+        tcp_response: "ECV Control: In"
+        tcp_request: "GET / \r\n HTTP/1.0\r\n\r\n"
+
+  httppolicyset:
+    - api_version: 17.1.2
+      name: "app3-httppolicy"
+      http_request_policy:
+        rules:
+          - index: 1
+            enable: true
+            name: "app3-pool-A"
+            match:
+              path:
+                match_case: INSENSITIVE
+                match_str:
+                  - /foo
+                match_criteria: EQUALS
+            switching_action:
+              action: HTTP_SWITCHING_SELECT_POOL
+              status_code: HTTP_LOCAL_RESPONSE_STATUS_CODE_200
+              pool_ref: "/api/pool?name=app3-pool-A"
+          - index: 2
+            enable: true
+            name: app3-pool-B
+            match:
+              path:
+                match_case: INSENSITIVE
+                match_str:
+                  - /bar
+                match_criteria: CONTAINS
+            switching_action:
+              action: HTTP_SWITCHING_SELECT_POOL
+              status_code: HTTP_LOCAL_RESPONSE_STATUS_CODE_200
+              pool_ref: "/api/pool?name=app3-pool-B"
+      is_internal_policy: false
+
+  virtualservice:
+    - name: app3
+      services:
+        - port: 80
+      pool_ref: '/api/pool?name=app3-pool-A'
+      vip:
+        - ip_address:
+            addr: "{{app3_vip}}"
+            type: 'V4'
+          vip_id: '1'
+      cloud_ref: '/api/cloud?name=Default-Cloud'
+      ssl_key_and_certificate_refs:
+        - '/api/sslkeyandcertificate?name=app3-cert'
+      ssl_profile_ref: '/api/sslprofile?name=System-Standard'
+      application_profile_ref: '/api/applicationprofile?name=System-Secure-HTTP'
+      services:
+        - port: 80
+        - port: 443
+          enable_ssl: true
+      http_policies:
+        - index: 11
+          http_policy_set_ref: '/api/httppolicyset?name=app3-httppolicy'
+
+  sslkeyandcertificate:
+    - name: app3-cert
+      key: "{{ lookup('file', site_dir~'/applications/app3/app3-cert.key') }}"
+      certificate:
+        self_signed: true
+        certificate: "{{ lookup('file', site_dir~'/applications/app3/app3-cert.crt')}}"
+      type: SSL_CERTIFICATE_TYPE_VIRTUALSERVICE

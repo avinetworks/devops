@@ -1,0 +1,16 @@
+# List of applications to be included as part of the site.
+# This can be converted into a while loop over the directories.
+#
+
+- include: applications/app1/app.yml
+
+- include: applications/app2/app.yml
+
+- include: applications/app3/app.yml
+
+- include: applications/app4/app.yml
+
+- include: applications/complex_app/app.yml
+
+- include: applications/apptesttenant/app.yml
+

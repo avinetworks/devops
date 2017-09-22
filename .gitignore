@@ -1,0 +1,194 @@
+# Object files
+*.o
+*.swp
+*.swo
+# Libraries
+*.lib
+*.a
+
+# Editor Artifacts
+*~
+.ropeproject
+
+# Shared objects (inc. Windows DLLs)
+*.dll
+*.so
+*.so.*
+*.dylib
+
+# Executables
+*.exe
+*.out
+*.app
+*.orig
+*.rej
+*.egg
+
+#Cmake auto generated
+CMakeCache.txt
+CMakeFiles
+MakeFiles
+make_install.cmake
+CTestTestfile.cmake
+cmake_install.cmake
+Makefile
+build
+build_coverage
+*.rdb
+
+# dev environment files
+tags
+TAGS
+*.tags
+*.tgz
+cscope*
+
+# python 
+*.pyc
+*.pyo
+.cproject
+.project
+.pydevproject
+.metafiles*
+*.BAK
+.DS_Store
+._.DS_Store
+debug.txt
+CMAKE_BUILD_DIR
+.coverage
+
+# robot framework generated output files
+avibot.log
+log.html
+output.html
+report.html
+output.xml
+trace.html
+.settings
+.metadata
+.classpath
+.project
+*.class
+logcfile
+service_engine/scripts/CMAKE_BUILD_DIR
+ID
+test/robot/lib/dist/
+test/robot/lib/build/
+test/robot/lib/avirobot.egg-info/
+service_engine/vmxnet3-usermap/kmod/.*
+service_engine/vmxnet3-usermap/kmod/Module.symvers
+service_engine/vmxnet3-usermap/kmod/modules.order
+service_engine/vmxnet3-usermap/kmod/vmxnet3-usermap
+service_engine/vmxnet3-usermap/kmod/vmxnet3-usermap.ko
+service_engine/vmxnet3-usermap/kmod/vmxnet3-usermap.mod.c
+service_engine/vmxnet3-usermap/vmxnet3-usermap.ko
+test/robot/lib/avirobot/IXIA/fabfile_*
+test/robot/lib/avirobot/IXIA/ixlogs_*
+test/robot/lib/avirobot/IXIA/run_ixwish_*
+test/scripts/mb-scripts/url*.txt
+test/scripts/lmantha-scripts/make-mesos-cluster-nodes/*.iso
+test/scripts/lmantha-scripts/make-mesos-cluster-nodes/*.ova
+test/scripts/custom_*
+test/scripts/avibot_debug.log
+test/scripts/*.xml
+protobuf/c_gen/
+protobuf/cpp_gen/
+protobuf/java_gen/
+
+# selenium generated files
+ghostdriver.log
+ss_*.png
+
+# tests
+paul.conf
+setup_proxy.py
+
+#os x
+._.DS_Store
+
+# fsm autogen files
+controller/loadbalancer/Vs.pdf
+controller/loadbalancer/Vs.svg
+controller/loadbalancer/Vs_sm.cc
+controller/loadbalancer/Vs_sm.dot
+controller/loadbalancer/Vs_sm.h
+controller/loadbalancer/VsEw.pdf
+controller/loadbalancer/VsEw.svg
+controller/loadbalancer/VsEw_sm.cc
+controller/loadbalancer/VsEw_sm.dot
+controller/loadbalancer/VsEw_sm.h
+controller/loadbalancer/Vip.pdf
+controller/loadbalancer/Vip.svg
+controller/loadbalancer/Vip_sm.cc
+controller/loadbalancer/Vip_sm.dot
+controller/loadbalancer/Vip_sm.h
+controller/loadbalancer/VipEw.pdf
+controller/loadbalancer/VipEw.svg
+controller/loadbalancer/VipEw_sm.cc
+controller/loadbalancer/VipEw_sm.dot
+controller/loadbalancer/VipEw_sm.h
+controller/se_mgr/semgr.pdf
+controller/se_mgr/semgr.svg
+controller/se_mgr/semgr_sm.dot
+controller/se_mgr/semgr_sm.h
+controller/se_mgr/semgr_sm.cc
+controller/aci/avi-device-package/device_specification.xml
+service_engine/agent/SeAgent_sm.cc
+service_engine/agent/SeAgent.pdf
+service_engine/agent/SeAgent.svg
+
+# builds
+build-distcc
+build-distcc-efence
+build-distccache
+obuild
+build-dist
+build-efence
+buildp
+
+.zedstate
+.idea
+
+service_engine/include/se_log_str_lens.h
+
+# ACI scriptdir
+controller/aci/scriptdir
+
+# Protobuf checking output
+*dumped_protobuf_spec.bin
+previous_protobufs
+
+# Twistd logging files (produced during testing)
+*twistd.log
+*twistd.pid
+
+# lbaas installer/packager
+python/bin/openstack_lbplugin/venv/
+python/bin/openstack_lbplugin/avi_os_setup.log
+python/bin/openstack_lbplugin/envpkg/env_install.log
+
+#DJANGO tacacs+
+python/lib/django_auth_tac_plus/
+
+#UI components
+python/bin/portal/static/src/less/email.css
+thirdparty/pb/protobuf/python/.eggs/
+
+#Controller Stuff
+!packaging/controller/etc/avi-registry-test.tgz
+
+#modsec
+service_engine/modsec/test/modsec-shared-collections
+service_engine/modsec/test/modsec-shared-collections-lock
+service_engine/modsec/src/parser/location.hh
+service_engine/modsec/src/parser/position.hh
+service_engine/modsec/src/parser/seclang-parser.hh
+service_engine/modsec/src/parser/seclang-parser.cc
+service_engine/modsec/src/parser/stack.hh
+service_engine/modsec/src/parser/seclang-scanner.cc
+
+# SMB mount files
+._*
+
+# Ansible
+*.retry

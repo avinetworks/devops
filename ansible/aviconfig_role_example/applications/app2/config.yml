@@ -1,0 +1,38 @@
+
+avi_config:
+  poolgroup:
+    - name: app2-poolgroup
+      members:
+        - pool_ref: "/api/pool?name=app2-pool"
+          ratio: 100
+
+  pool:
+    - name: app2-pool
+      lb_algorithm: LB_ALGORITHM_ROUND_ROBIN
+      servers:
+        - ip:
+             addr: "{{ pool_server1 }}"
+             type: 'V4'
+
+  virtualservice:
+    - name: app2
+      pool_group_ref: '/api/poolgroup?name=app2-poolgroup'
+      vip:
+        - ip_address:
+            addr: "{{ app2_vip }}"
+            type: 'V4'
+          vip_id: '1'
+      cloud_ref: '/api/cloud?name=Default-Cloud'
+      ssl_key_and_certificate_refs:
+        - '/api/sslkeyandcertificate?name=app2-cert'
+      ssl_profile_ref: '/api/sslprofile?name=System-Standard'
+      application_profile_ref: '/api/applicationprofile?name=System-Secure-HTTP'
+      services:
+        - port: 80
+        - port: 443
+          enable_ssl: true
+
+  sslkeyandcertificate:
+    - name: app2-cert
+      certificate:
+        self_signed: true

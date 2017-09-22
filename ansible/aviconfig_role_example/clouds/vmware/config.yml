@@ -1,0 +1,70 @@
+avi_cloud_discovery_wait: 180
+
+avi_config:
+  cloud:
+    - api_version: 17.2.3
+      name: Default-Cloud
+      vtype: CLOUD_VCENTER
+      dhcp_enabled: true
+      license_type: "LIC_CORES"
+      vcenter_configuration:
+        username: root
+        password: vmware
+        datacenter: "10GTest"
+        management_network: "/api/vimgrnwruntime?name=Mgmt_Arista_3"
+        privilege: "WRITE_ACCESS"
+        vcenter_url: "10.10.2.10"
+
+  network:
+    - name: PG-732
+      cloud_ref: '/api/cloud?name=Default-Cloud'
+      #exclude_discovered_subnets: true
+      dhcp_enabled: false
+      configured_subnets:
+        - prefix:
+            ip_addr:
+              addr: 10.70.32.0
+              type: V4
+            mask: 24
+          static_ranges:
+            - begin:
+                addr: 10.70.32.101
+                type: V4
+              end:
+                addr: 10.70.32.149
+                type: V4
+      vcenter_dvs: true
+      synced_from_se: true
+      tenant_ref: '/api/tenant?name=admin'
+
+    - name: PG-733
+      cloud_ref: '/api/cloud?name=Default-Cloud'
+      #exclude_discovered_subnets: true
+      dhcp_enabled: false
+      configured_subnets:
+        - prefix:
+            ip_addr:
+              addr: 10.70.33.0
+              type: V4
+            mask: 24
+          static_ranges:
+            - begin:
+                addr: 10.70.33.101
+                type: V4
+              end:
+                addr: 10.70.33.149
+                type: V4
+      vcenter_dvs: true
+      synced_from_se: true
+      tenant_ref: '/api/tenant?name=admin'
+
+  serviceenginegroup:
+    - name: Default-Group
+      cloud_ref: '/api/cloud?name=Default-Cloud'
+      vcenter_folder: AviSeFolder
+      vcenter_clusters:
+        cluster_refs:
+          - '/api/vimgrclusterruntime?name=Arista'
+        include: True
+      max_se: 4
+      buffer_se: 1

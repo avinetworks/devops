@@ -1,0 +1,23 @@
+avi_cloud_discovery_wait: 180
+
+avi_config:
+  cloud:
+    - api_version: 17.2.3
+      name: aws
+      vtype: CLOUD_AWS
+      dhcp_enabled: true
+      license_type: "LIC_CORES"
+      aws_configuration:
+        # from vault
+        access_key_id: "{{ aws_access_key_id }}"
+        secret_access_key: "{{ aws_secret_access_key }}"
+        region: us-west-2
+        asg_poll_interval: 30
+        # from vault
+        vpc: "AVI-WEST2-VPC"
+        vpc_id: "vpc-19295f7c"
+        zones:
+          - availability_zone: us-west-2c
+            mgmt_network_name: 2C-ext
+          - availability_zone: us-west-2a
+            mgmt_network_name: 2A-public

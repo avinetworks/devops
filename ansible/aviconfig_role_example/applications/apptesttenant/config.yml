@@ -1,0 +1,30 @@
+avi_config:
+  tenant:
+    - api_version: 17.1.2
+      name: TestTenant
+  pool:
+    - name: app_testtenant-pool
+      tenant: TestTenant
+      tenant_ref: '/api/tenant?name=TestTenant'
+      lb_algorithm: LB_ALGORITHM_ROUND_ROBIN
+      servers:
+        - ip:
+             addr: "{{ pool_server1 }}"
+             type: 'V4'
+        - ip:
+             addr: "{{ pool_server2 }}"
+             type: 'V4'
+
+  virtualservice:
+    - name: app_testtenant
+      tenant: TestTenant
+      tenant_ref: '/api/tenant?name=TestTenant'
+      services:
+        - port: 80
+        - port: 8080
+      pool_ref: '/api/pool?name=app_testtenant-pool'
+      vip:
+        - ip_address:
+            addr: "{{ app_test_tenant_vip }}"
+            type: 'V4'
+          vip_id: '1'

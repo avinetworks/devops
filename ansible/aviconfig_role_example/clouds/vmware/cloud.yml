@@ -1,0 +1,17 @@
+- hosts: localhost
+  connection: local
+  vars:
+    api_version: 17.2.3
+    # this will pick up config from the clouds/vmware directory
+    cloud_name: vmware
+  roles:
+    - role: avinetworks.avisdk
+  tasks:
+    - name: Setting up cloud
+      debug: msg="{{cloud_name}}"
+    - name: Avi Cloud | Setup VMWare Cloud with Write Access
+      include_role:
+        name: avinetworks.aviconfig
+      vars:
+        avi_config_file: "{{ site_dir }}/clouds/{{cloud_name}}/config.yml"
+        avi_creds_file: "{{ site_dir }}/vars/{{deployment_target | default('staging')}}/creds.yml"
