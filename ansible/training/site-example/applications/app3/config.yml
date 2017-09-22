@@ -9,10 +9,37 @@ avi_config:
              type: 'V4'
     - name: app3-pool-B
       lb_algorithm: LB_ALGORITHM_LEAST_CONNECTIONS
+      health_monitor_refs:
+        - '/api/healthmonitor?name=app3-hm'
       servers:
         - ip:
              addr: "{{pool_server2}}"
              type: 'V4'
+
+  healthmonitor:
+    - name: app3-hm
+      http_monitor:
+        http_request: "HEAD / HTTP/1.0"
+        http_response_code:
+          - HTTP_2XX
+          - HTTP_3XX
+      receive_timeout: 4
+      failed_checks: 3
+      send_interval: 10
+      successful_checks: 3
+      type: HEALTH_MONITOR_HTTP
+
+    - name: app3-hm-tcp-ecv
+      receive_timeout: 4
+      failed_checks: 2
+      monitor_port: 22222
+      send_interval: 10
+      successful_checks: 2
+      type: HEALTH_MONITOR_TCP
+      tcp_monitor:
+        tcp_half_open: false
+        tcp_response: "ECV Control: In"
+        tcp_request: "GET / \r\n HTTP/1.0\r\n\r\n"
 
   httppolicyset:
     - api_version: 17.1.2

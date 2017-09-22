@@ -2,7 +2,7 @@ avi_cloud_discovery_wait: 180
 
 avi_config:
   cloud:
-    - api_version: 17.1.2
+    - api_version: 17.2.3
       name: Default-Cloud
       vtype: CLOUD_VCENTER
       dhcp_enabled: true
@@ -11,7 +11,7 @@ avi_config:
         username: root
         password: vmware
         datacenter: "10GTest"
-        management_network: "/api/vimgrnwruntime?name=Mgmt_Arista"
+        management_network: "/api/vimgrnwruntime?name=Mgmt_Arista_3"
         privilege: "WRITE_ACCESS"
         vcenter_url: "10.10.2.10"
 
