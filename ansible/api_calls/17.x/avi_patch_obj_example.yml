@@ -1,0 +1,33 @@
+# Author: Gaurav Rastogi
+# Example to show how to use patch with the object.
+---
+- hosts: localhost
+  vars:
+    avi_credentials:
+      controller: "{{ controller }}"
+      username: admin
+      password: "{{ password }}"
+      api_version: 17.2.3
+  connection: local
+  tasks:
+  - name: Create pool with just name
+    avi_pool:
+      avi_credentials: "{{avi_credentials}}"
+      name: test-pool
+      state: "{{ state | default('present')}}"
+    register: pool
+  - name: Patch pool with a single server using patch op
+    avi_pool:
+      avi_api_update_method: patch
+      avi_api_patch_op: delete
+      avi_credentials: "{{avi_credentials}}"
+      name: test-pool
+      servers:
+        - ip:
+            addr: 10.90.64.13
+            type: 'V4'
+    register: pool
+    when:
+      - state | default("present") == "present"
+  - name: New Pool with Server
+    debug: msg="{{pool}}"
