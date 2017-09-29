@@ -5,13 +5,13 @@
     "vmName": {
       "type": "string",
       "metadata": {
-        "description": "Name of the VM"
+        "description": "Name of the VM. Only special character allowed in the name is dash (-)"
       }
     },    
     "controllerImageId": {
       "type": "string",
       "metadata": {
-          "description": "Controller Image Id in the format /subscriptions/SUBSCRIPTION/resourceGroups/RESOURCEGROUP/providers/Microsoft.Compute/images/IMAGENAME"
+          "description": "Controller Image Id in the format /subscriptions/{subscription id}/resourceGroups/{resource group name}/providers/Microsoft.Compute/images/{image name}.  Note that image should be in the same subscription and location where the controller VM is being deployed"
       }
     },
     "vmSize": {
@@ -119,14 +119,22 @@
       "metadata": {
         "description": "Name of the subnet in the VNET "
       }
+    },
+    "faultDomainCount": {
+        "type" : "int",
+        "defaultValue" : 2,
+        "metadata" : {
+            "description": "Number of fault domains. This is typically either 2 or 3, depending on the region"
+        }
     }
   },
   "variables": {
     "diagStorageAccountName": "[concat(uniquestring(resourceGroup().id), 'specvm')]",
     "api-version": "2017-06-01",
+    "vmName": "[concat(parameters('vmName'),'-')]",
     "vnetID": "[resourceId(parameters('existingVnetResourceGroup'), 'Microsoft.Network/virtualNetworks', parameters('existingVnetName'))]",
     "subnetRef": "[concat(variables('vnetID'),'/subnets/', parameters('subnetName'))]",
-    "nicName": "[parameters('vmName')]",
+    "nicName": "[variables('vmName')]",
     "osType": "Linux",
     "sshKeyPath": "[concat('/home/',parameters('adminUserName'),'/.ssh/authorized_keys')]",
     "controllerIP": ["[parameters('controller1_IP')]","[parameters('controller2_IP')]","[parameters('controller3_IP')]"]
@@ -174,8 +182,8 @@
     "apiVersion": "2016-04-30-preview",
     "location": "[resourceGroup().location]",
     "properties": {
-      "platformFaultDomainCount": "3",
-      "platformUpdateDomainCount": "3",
+      "platformFaultDomainCount": "[parameters('faultDomainCount')]",
+      "platformUpdateDomainCount": "[parameters('faultDomainCount')]",
       "managed": true
     },
     "tags": {
@@ -184,7 +192,7 @@
   },{
     "apiVersion": "2016-04-30-preview",
     "type": "Microsoft.Compute/virtualMachines",
-    "name": "[concat(parameters('vmName'),'-',copyIndex())]",
+    "name": "[concat(variables('vmName'),copyIndex())]",
     "location": "[resourceGroup().location]",
     "copy": {
         "name": "controllervmcopy",
@@ -201,7 +209,7 @@
         "vmSize": "[parameters('vmSize')]"
       },
       "osProfile": {
-            "computerName": "[concat(parameters('vmName'),'-',copyIndex())]",
+            "computerName": "[concat(variables('vmName'),copyIndex())]",
             "adminUserName": "[parameters('adminUserName')]",
             "linuxConfiguration": {
               "ssh": {
@@ -219,7 +227,7 @@
          "id":"[parameters('controllerImageId')]"
     },
         "osDisk": {
-          "name": "[concat(parameters('vmName'),'-',copyIndex())]",
+          "name": "[concat(variables('vmName'),copyIndex())]",
           "osType": "[variables('osType')]",
           "caching": "ReadWrite",
           "diskSizeGB": "[parameters('controllerOsDiskSize')]",
