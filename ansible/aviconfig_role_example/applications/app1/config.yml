@@ -23,15 +23,3 @@ avi_config:
             addr: "{{ app1_vip }}"
             type: 'V4'
           vip_id: '1'
-
-  healthmonitor:
-    - name: multiline_hm
-      failed_checks: 1
-      https_monitor:
-        http_request: |-
-          GET /index.html HTTP/1.0
-          Connection: Close
-        http_response_code:
-        - HTTP_2XX
-        - HTTP_3XX
-      type: HEALTH_MONITOR_HTTP
