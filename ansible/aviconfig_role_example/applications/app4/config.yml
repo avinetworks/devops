@@ -12,6 +12,9 @@ avi_config:
       services:
         - port: 80
       pool_ref: '/api/pool?name=app4-pool'
+      vs_datascripts:
+        - index: 42
+          vs_datascript_set_ref: '/api/vsdatascriptset?name=app-4-ds'
       vip:
         - ip_address:
             addr: "{{app4_vip}}"
