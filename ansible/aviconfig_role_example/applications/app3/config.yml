@@ -11,6 +11,9 @@ avi_config:
       lb_algorithm: LB_ALGORITHM_LEAST_CONNECTIONS
       health_monitor_refs:
         - '/api/healthmonitor?name=app3-hm'
+        - '/api/healthmonitor?name=app3_multiline_hm'
+        - '/api/healthmonitor?name=app3-hm-tcp-ecv'
+
       servers:
         - ip:
              addr: "{{pool_server2}}"
@@ -40,6 +43,17 @@ avi_config:
         tcp_half_open: false
         tcp_response: "ECV Control: In"
         tcp_request: "GET / \r\n HTTP/1.0\r\n\r\n"
+
+    - name: app3_multiline_hm
+      failed_checks: 1
+      https_monitor:
+        http_request: |-
+          GET /index.html HTTP/1.0
+          Connection: Close
+        http_response_code:
+        - HTTP_2XX
+        - HTTP_3XX
+      type: HEALTH_MONITOR_HTTP
 
   httppolicyset:
     - api_version: 17.1.2
