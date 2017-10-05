@@ -1,0 +1,49 @@
+# This is playbook for an application.
+# This can invoke any of the avi roles like application, profile or cloud
+#
+---
+- hosts: localhost
+  connection: local
+  vars:
+    controller: 10.10.25.42
+    username: admin
+    password: avi123
+    api_version: 17.2.3
+  roles:
+    - role: avinetworks.avisdk
+  tasks:
+
+    - name: Fetch System Waf Policy
+      avi_wafpolicy:
+        name: System-WAF-Policy
+        controller: "{{controller}}"
+        username: "{{username}}"
+        password: "{{password}}"
+        api_version: "{{api_version}}"
+      register: system_waf_policy
+
+    - name: Create new_waf_policy
+      set_fact:
+        new_policy:
+          name: foo
+
+    - name: copy relevant fields from system waf
+      set_fact:
+        waf_policy: "{{ waf_policy | default(new_policy) | combine({item.key: item.value})}}"
+      when:
+        - item.key not in new_policy
+        - item.key not in ['uuid', 'name', 'url']
+      with_dict: "{{system_waf_policy.obj}}"
+
+    - name: Create new System Waf Policy
+      avi_api_session:
+        controller: "{{controller}}"
+        username: "{{username}}"
+        password: "{{password}}"
+        api_version: "{{api_version}}"
+        path: wafpolicy
+        data: "{{waf_policy}}"
+        http_method: post
+      register: np
+
+
