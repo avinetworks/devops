@@ -12,9 +12,6 @@ import random
 from requests_toolbelt.adapters import source
 
 # Login Defaults
-controller = "10.130.163.117"
-username = "admin"
-password = "avi123$%"
 dvwa_server = "demo.waf.avi.local"
 dvwa_username = "admin"
 dvwa_password = "password"
