@@ -1058,8 +1058,11 @@ class avi_metrics():
                         class graphite_class(): pass
                         x = graphite_class()
                         cert_name = s['name'].replace('.','_')
-                        expires = datetime.strptime(s['certificate']['not_after'],"%Y-%m-%d %H:%M:%S")
-                        days_to_expire = (expires - current_time).days
+                        if 'not_after' in s['certificate']:
+                            expires = datetime.strptime(s['certificate']['not_after'],"%Y-%m-%d %H:%M:%S")
+                            days_to_expire = (expires - current_time).days
+                        elif s['certificate']['expiry_status'] == 'SSL_CERTIFICATE_EXPIRED':
+                            days_to_expire = 0
                         if days_to_expire <= 30:
                             x.name_space = 'network-script.avi.'+self.host_location+'.'+self.host_environment+'.'+self.avi_controller.replace('.','_')+'.sslcerts.%s.expires' %cert_name
                             x.value = days_to_expire
