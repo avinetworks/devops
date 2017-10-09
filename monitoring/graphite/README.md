@@ -19,7 +19,7 @@ All 3 files are required and must exist within the same directory for successful
 
 
 # Usage
-##avi-metrics-script-graphite.py
+## avi-metrics-script-graphite.py
 
 Below are the available arguments that can be provided.  None of these are required.
 
@@ -59,7 +59,7 @@ $ avi-metric-script-graphite.py -n
 ```
 
 
-##avi_controllers.json
+## avi_controllers.json
 
 To Add an Additional Controller to Monitor this file will need to modified.  Password is base64 encoded.
 
@@ -88,7 +88,7 @@ EXAMPLE:
 ```
 
 
-##graphite_host.json
+## graphite_host.json
 
 Define the grahite server host name/ip and the tcp port carbon cache is listening on
 
