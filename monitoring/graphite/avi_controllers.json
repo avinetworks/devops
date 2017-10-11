@@ -1,0 +1,19 @@
+{"controllers":[
+    {
+    "avi_controller":"169.254.0.1",
+    "location":"dc1",
+    "environment":"prod",
+    "avi_user":"user",
+    "_comment":"BASE64 ENCODED PASSWORD",
+    "avi_pass":"dGVzdA=="
+    },
+    {
+    "avi_controller":"169.254.0.2",
+    "location":"nj",
+    "environment":"dev",
+    "avi_user":"user",
+    "_comment":"BASE64 ENCODED PASSWORD",
+    "avi_pass":"dGVzdA=="
+    }
+  ]
+}

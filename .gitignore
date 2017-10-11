@@ -192,3 +192,4 @@ service_engine/modsec/src/parser/seclang-scanner.cc
 
 # Ansible
 *.retry
+monitoring/graphite/avi-metric-script-graphite-OLD.py
