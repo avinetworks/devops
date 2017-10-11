@@ -7,7 +7,7 @@
   vars:
     CONTROLLER: 10.10.23.1
     USERNAME: admin
-    PASSWORD: avi123
+    PASSWORD: password
     APP: bar
     LB_persistence: ''
   #roles:

@@ -9,7 +9,7 @@
   vars:
     controller: 10.10.25.42
     username: admin
-    password: avi123
+    password: password
     dontskip: false
   tasks:
     - name: Test systemconfiguration

@@ -4,7 +4,7 @@
   vars:
     LB_host: 10.10.25.42
     LB_user: admin
-    LB_password: avi123$%
+    LB_password: password$%
   tasks:
     - avi_healthmonitor:
         controller: "{{ LB_host }}"

@@ -7,7 +7,7 @@
   vars:
     controller: 10.10.25.42
     username: admin
-    password: avi123
+    password: password
     api_version: 17.2.3
   roles:
     - role: avinetworks.avisdk

@@ -11,7 +11,7 @@ Please reference `setup.sh` to install the integration.
 ## Zabbix Discovery Rule
 This is to be entered into the `Discovery rules` section of the Zabbix Template
 - Zabbix External Script Key
-  - `avi_zabbix_discovery.py[pool,-t,Demo,-c,10.130.129.34,-u,common,-p,avi123]`
+  - `avi_zabbix_discovery.py[pool,-t,Demo,-c,10.130.129.34,-u,common,-p,password]`
 
 ## Zabbix Trapper
 
@@ -20,7 +20,7 @@ avi_zabbix_trapper.py [-h] [-t TENANT] [-c CONTROLLER] [-u USER] [-p PASSWORD] [
 
 ### Example
 - To run trapper from Zabbix External Script
-  - `avi_zabbix_trapper.py[{HOST.HOST},pool,-t,Demo,-c,10.130.129.34,-u,common,-p,avi123,-z,10.10.10.200]`
+  - `avi_zabbix_trapper.py[{HOST.HOST},pool,-t,Demo,-c,10.130.129.34,-u,common,-p,password,-z,10.10.10.200]`
 
 - To run trapper from Cron Job
   - `/usr/lib/zabbix/externalscripts/avi_zabbix_trapper.py ${hostname} ${pool} -t ${tenant} -c ${controller_ip} -u ${user} -p ${password} -z ${zabbix_server}`
