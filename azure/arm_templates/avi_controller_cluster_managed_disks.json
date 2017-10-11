@@ -202,7 +202,8 @@
       "displayName": "Avi Controller VirtualMachine"
     },
     "dependsOn": [
-      "[concat('Microsoft.Network/networkInterfaces/', concat(variables('nicName'),copyIndex()))]"
+      "[concat('Microsoft.Network/networkInterfaces/', concat(variables('nicName'),copyIndex()))]",
+      "[concat('Microsoft.Compute/availabilitySets/', parameters('vmName'))]"
     ],
     "properties": {
       "hardwareProfile": {
