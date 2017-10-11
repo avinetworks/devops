@@ -4,7 +4,7 @@
 # This playbook takes a list of comma separated pool servers
 # and adds them to existing Pool
 # Usage:
-#   ansible-playbook  -M network/avi --extra-vars "username=admin password=avi123 controller=10.10.25.42 pool=p1 pool_servers_ip=10.10.10.10,20.20.20.20"
+#   ansible-playbook  -M network/avi --extra-vars "username=admin password=password controller=10.10.25.42 pool=p1 pool_servers_ip=10.10.10.10,20.20.20.20"
 #
 ---
 - hosts: localhost

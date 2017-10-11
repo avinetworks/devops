@@ -9,7 +9,7 @@
   vars:
     controller: 10.10.25.42
     username: admin
-    password: avi123
+    password: password
     dontskip: true
   tasks:
     - name: Pool test
@@ -104,7 +104,7 @@
     - avi_virtualservice:
         controller: 10.10.25.42
         username: admin
-        password: avi123
+        password: password
         name: testvs
         state: present
         services:

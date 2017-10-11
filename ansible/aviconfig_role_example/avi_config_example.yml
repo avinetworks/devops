@@ -9,7 +9,7 @@
     avi_credentials:
       controller: 10.10.24.202
       username: admin
-      password: avi123$%
+      password: password$%
       api_version: 17.1.2
   roles:
     - role: avinetworks.avisdk

@@ -3,12 +3,12 @@
 
 avi_controller: 10.10.24.202
 avi_username: admin
-avi_password: avi123$%
+avi_password: password$%
 
 avi_credentials:
   avi_controller: 10.10.24.202
   avi_username: admin
-  avi_password: avi123$%
+  avi_password: password$%
   api_version: 17.2.3
 
 # all apps use the same backend servers

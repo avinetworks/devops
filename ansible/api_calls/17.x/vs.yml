@@ -9,7 +9,7 @@
     state: absent
     controller: 10.10.25.42
     username: admin
-    password: avi123
+    password: password
     tenant: Metrics_Test_Tenant
   connection: local
   roles:

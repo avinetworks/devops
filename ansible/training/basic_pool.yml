@@ -11,7 +11,7 @@
     app_name: foo
     avi_controller: 10.10.25.42
     avi_username: admin
-    avi_password: avi123
+    avi_password: password
   roles:
     - role: avinetworks.avisdk
   tasks:

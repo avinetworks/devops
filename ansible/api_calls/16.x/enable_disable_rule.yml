@@ -9,7 +9,7 @@
   vars:
     controller: 10.10.24.105
     username: admin
-    password: avi123!@#
+    password: password!@#
     policyset_name: "{{ policyset_name }}"
     enable: "{{ enable }}"
     index: "{{ index }}"
