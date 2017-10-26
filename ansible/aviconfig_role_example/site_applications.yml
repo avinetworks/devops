@@ -2,15 +2,14 @@
 # This can be converted into a while loop over the directories.
 #
 
-- include: applications/app1/app.yml
+- import_playbook: applications/app1/app.yml
 
-- include: applications/app2/app.yml
+- import_playbook: applications/app2/app.yml
 
-- include: applications/app3/app.yml
+- import_playbook: applications/app3/app.yml
 
-- include: applications/app4/app.yml
+- import_playbook: applications/app4/app.yml
 
-- include: applications/complex_app/app.yml
+- import_playbook: applications/apptesttenant/app.yml
 
-- include: applications/apptesttenant/app.yml
-
+- import_playbook: applications/complex_app/app.yml

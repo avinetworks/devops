@@ -16,7 +16,7 @@
       debug: msg="{{ app_name }}"
 
     - name: Avi Application | Setup App1
-      include_role:
+      import_role:
         name: avinetworks.aviconfig
       vars:
         avi_config_file: "{{ site_dir }}/applications/{{app_name}}/config.yml"

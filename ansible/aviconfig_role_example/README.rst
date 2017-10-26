@@ -3,7 +3,7 @@ Avi Ansible Training Site Example
 .. contents::
   :local:
 
-This is an example of setting up a full Avi Site with Cloud and applications. 
+This is an example of setting up a full Avi Site with Cloud and applications. Note This version is compatible with Ansible 2.4 only.
 
 *********
 Installation
