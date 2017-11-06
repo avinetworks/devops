@@ -3,6 +3,7 @@
 
 version = 'v2017-11-06'
 
+
 #########################################################################################
 #                                                                                       #
 #                                                                                       #
@@ -93,6 +94,7 @@ def send_class_list_graphite(class_list):
             print '=====> NAMESPACE:  '+entry.name_space
         sock.send('%s %d %d\n' % (entry.name_space, entry.value, entry.timestamp))
     sock.close()
+
 
 
 
@@ -438,6 +440,7 @@ class avi_metrics():
 
     #-----------------------------------
 
+
     def srvc_engn_dispatcher_cpu_usage(self):
         try:
             temp_start_time = time.time()
@@ -471,7 +474,6 @@ class avi_metrics():
             print(str(datetime.now())+' '+self.avi_controller+': '+exception_text)
 
     #-----------------------------------
-
 
     def se_bgp_peer_state(self):
         try:

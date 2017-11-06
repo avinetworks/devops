@@ -1,5 +1,5 @@
 # Auto-generated from Avi Configuration
-# Usage: ansible-playbook -M ~/workspace/build/ansible gslb.yml --extra-vars "controller=10.10.24.207 create_gs=false username=admin password=avi123"
+# Usage: ansible-playbook -M ~/workspace/build/ansible gslb.yml --extra-vars "controller=10.10.24.207 create_gs=false username=admin password=password"
 ---
 - connection: local
   hosts: localhost
