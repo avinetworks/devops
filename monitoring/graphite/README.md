@@ -172,6 +172,7 @@ EXAMPLE:
 - How many Service Engines hosted on an ESX host
 - Service Engine Virtual Service hosted used capacity
 - How many Service Engines have debug enabled
+- Service Engine individual Dispatcher CPU usage
 
 
 
@@ -204,6 +205,8 @@ EXAMPLE:
     - l4_client.avg_tx_pkts
     - l4_client.avg_rx_bytes
     - l4_client.avg_tx_bytes
+    - l4_server.avg_total_rtt
+    - l4_client.avg_total_rtt
     - l4_client.avg_rx_pkts_dropped
     - l4_client.sum_packet_dropped_user_bandwidth_limit
     - l4_client.max_open_conns
@@ -212,6 +215,7 @@ EXAMPLE:
     - l7_client.avg_resp_5xx_avi_errors
     - l7_client.avg_resp_4xx
     - l7_client.avg_resp_5xx
+    - l7_client.avg_clien_data_transfer_time
     - l7_server.avg_resp_4xx
     - l7_server.avg_resp_5xx
     - l7_server.avg_resp_latency
