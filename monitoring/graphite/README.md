@@ -61,7 +61,7 @@ $ avi-metric-script-graphite.py -n
 
 ## avi_controllers.json
 
-To Add an Additional Controller to Monitor this file will need to modified.  Password is base64 encoded.
+To Add an Additional Controller to Monitor this file will need to modified.  Password can be plaintext or base64 encoded.
 
 EXAMPLE:
 
@@ -72,7 +72,7 @@ EXAMPLE:
     "location":"dc1",
     "environment":"prod",
     "avi_user":"user",
-    "_comment":"BASE64 ENCODED PASSWORD",
+    "_comment":"ACCEPTS PLAINTEXT OR BASE64 ENCODED PASSWORD",
     "avi_pass":"dGVzdA=="
     },
     {
@@ -80,8 +80,8 @@ EXAMPLE:
     "location":"nj",
     "environment":"dev",
     "avi_user":"user",
-    "_comment":"BASE64 ENCODED PASSWORD",
-    "avi_pass":"dGVzdA=="
+    "_comment":"ACCEPTS PLAINTEXT OR BASE64 ENCODED PASSWORD",
+    "avi_pass":"test"
     }
   ]
 }
@@ -90,7 +90,7 @@ EXAMPLE:
 
 ## graphite_host.json
 
-Define the grahite server host name/ip and the tcp port carbon cache is listening on
+Define the graphite server host name/ip and the tcp port carbon cache is listening on
 
 EXAMPLE:
 

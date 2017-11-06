@@ -4,7 +4,7 @@
     "location":"dc1",
     "environment":"prod",
     "avi_user":"user",
-    "_comment":"BASE64 ENCODED PASSWORD",
+    "_comment":"PLAINTEXT OR BASE64 ENCODED PASSWORD",
     "avi_pass":"dGVzdA=="
     },
     {
@@ -12,8 +12,8 @@
     "location":"nj",
     "environment":"dev",
     "avi_user":"user",
-    "_comment":"BASE64 ENCODED PASSWORD",
-    "avi_pass":"dGVzdA=="
+    "_comment":"PLAINTEXT OR BASE64 ENCODED PASSWORD",
+    "avi_pass":"test"
     }
   ]
 }

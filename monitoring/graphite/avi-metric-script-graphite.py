@@ -1,7 +1,7 @@
 #!/usr/bin/python
 
 
-version = 'v2017-09-03'
+version = 'v2017-11-03'
 
 #########################################################################################
 #                                                                                       #
@@ -96,6 +96,19 @@ def send_class_list_graphite(class_list):
 
 
 
+#----- This function allows for passwords to be either plaintext or base64 encoded
+def isBase64(password):
+    try:
+        if base64.b64encode(base64.b64decode(password)) == password:
+            return base64.b64decode(password)
+        else:
+            return password
+    except Exception:
+        return password
+
+
+
+
 
 #----- This class is where all the test methods/functions exist and are executed
 class avi_metrics():
@@ -120,6 +133,7 @@ class avi_metrics():
             'l4_server.sum_sack_retransmits',
             'l4_server.sum_timeout_retransmits',
             'l4_server.apdexc',
+            'l4_server.avg_total_rtt',
             'l4_client.apdexc',
             'l4_client.avg_bandwidth',
             'l4_client.avg_application_dos_attacks',
@@ -135,10 +149,12 @@ class avi_metrics():
             'l4_client.sum_packet_dropped_user_bandwidth_limit',
             'l4_client.max_open_conns',
             'l7_client.avg_complete_responses',
+            'l7_client.avg_client_data_transfer_time',
             'l7_client.avg_resp_4xx_avi_errors',
             'l7_client.avg_resp_5xx_avi_errors',
             'l7_client.avg_resp_4xx',
             'l7_client.avg_resp_5xx',
+            'l4_client.avg_total_rtt',
             'l7_server.avg_resp_4xx',
             'l7_server.avg_resp_5xx',
             'l7_server.avg_resp_latency',
@@ -421,6 +437,41 @@ class avi_metrics():
             print(str(datetime.now())+' '+self.avi_controller+': '+exception_text)
 
     #-----------------------------------
+
+    def srvc_engn_dispatcher_cpu_usage(self):
+        try:
+            temp_start_time = time.time()
+            srvc_engn_dict = {}
+            graphite_class_list = []
+            for t in self.tenants:
+                srvc_engn_list = self.avi_request('serviceengine?page_size=1000',t['name']).json()['results']
+                if len(srvc_engn_list) > 0:
+                    for entry in srvc_engn_list:
+                        if entry['uuid'] not in srvc_engn_dict:
+                            srvc_engn_dict[entry['uuid']] = entry['name']
+                            dispatcher_usage = self.avi_request('serviceengine/%s/cpu' %entry['uuid'],t['name']).json()[0]['process_cpu_utilization']
+                            for cpu_resp in dispatcher_usage:
+                                if 'dp' in cpu_resp['process_name']:
+                                    class graphite_class(): pass
+                                    metric_name = cpu_resp['process_name'].replace('.','_')
+                                    metric_value = cpu_resp['process_cpu_usage']
+                                    x = graphite_class
+                                    x.name_space = 'network-script.avi.'+self.host_location+'.'+self.host_environment+'.'+self.avi_controller.replace('.','_')+'.serviceengine.%s.dispatcher_usage.%s' %(entry['name'], metric_name)
+                                    x.value = metric_value
+                                    x.timestamp = int(time.time())
+                                    graphite_class_list.append(x)
+            if len(graphite_class_list) > 0:
+                send_class_list_graphite(graphite_class_list)
+            temp_total_time = str(time.time()-temp_start_time)
+            if args.debug == True:
+                print(str(datetime.now())+' '+self.avi_controller+': func srvc_engn_dispatcher_cpu_usage completed, executed in '+temp_total_time+' seconds')
+        except:
+            print(str(datetime.now())+' '+self.avi_controller+': func srvc_engn_dispatcher_cpu_usage encountered an error')
+            exception_text = traceback.format_exc()
+            print(str(datetime.now())+' '+self.avi_controller+': '+exception_text)
+
+    #-----------------------------------
+
 
     def se_bgp_peer_state(self):
         try:
@@ -1634,6 +1685,7 @@ class avi_metrics():
             test_functions.append(self.srvc_engn_vs_count)
             test_functions.append(self.srvc_engn_count)
             test_functions.append(self.srvc_engn_stats)
+            test_functions.append(self.srvc_engn_dispatcher_cpu_usage)
             test_functions.append(self.se_bgp_peer_state)
             test_functions.append(self.virtual_service_stats_threaded)
             test_functions.append(self.vs_metrics_per_se_threaded)
@@ -1713,7 +1765,7 @@ def main():
         avi_controller = entry['avi_controller']
         host_location = entry['location']
         host_environment = entry['environment']
-        c = avi_metrics(avi_controller, host_location, host_environment, entry['avi_user'], base64.b64decode(entry['avi_pass']))
+        c = avi_metrics(avi_controller, host_location, host_environment, entry['avi_user'], isBase64(entry['avi_pass']))
         p = Process(target = c.run, args = ())
         p.start()
         proc.append(p)
