@@ -1,0 +1,73 @@
+---
+- hosts: localhost
+  connection: local
+  roles:
+    - role: avinetworks.avisdk
+  tasks:
+    - name: update system configuration
+      avi_systemconfiguration:
+        controller: 10.91.12.11
+        username: admin
+        password: XXXX
+        api_version: 17.1.4
+        tenant: admin
+        state: present
+        email_configuration:
+          smtp_type: SMTP_LOCAL_HOST
+          from_email: admin@avicontroller.net
+        global_tenant_config:
+          se_in_provider_context: true
+          tenant_access_to_provider_se: true
+          tenant_vrf: false
+        ntp_configuration:
+          ntp_servers:
+          - server:
+              type: DNS
+              addr: 0.us.pool.ntp.org
+          - server:
+              type: DNS
+              addr: 1.us.pool.ntp.org
+          - server:
+              type: DNS
+              addr: 2.us.pool.ntp.org
+          - server:
+              type: DNS
+              addr: 3.us.pool.ntp.org
+        portal_configuration:
+          allow_basic_authentication: true
+          disable_remote_cli_shell: false
+          enable_clickjacking_protection: true
+          enable_http: true
+          enable_https: true
+          password_strength_check: true
+          redirect_to_https: true
+          sslprofile_ref: "/api/sslprofile?name=System-Standard"
+          use_uuid_from_input: false
+        admin_auth_configuration:
+          auth_profile_ref: "/api/authprofile/?name=auth_prof_test"
+          mapping_rules:
+          - index: 1
+            group_match:
+              groups:
+              - DL-XXXX-Ops
+              criteria: AUTH_MATCH_CONTAINS
+            is_superuser: true
+            role_refs:
+              - "/api/role/?name=System-Admin"
+          - index: 2
+            group_match:
+              groups:
+              - DL-YYYY-Admin
+              criteria: AUTH_MATCH_CONTAINS
+            assign_role: ASSIGN_FROM_SELECT_LIST
+            is_superuser: false
+            role_refs:
+              - "/api/role/?name=Application-Operator"
+          - index: 3
+            group_match:
+              groups:
+              - DL-ZZZZ-Operator
+              criteria: AUTH_MATCH_CONTAINS
+            assign_role: ASSIGN_FROM_SELECT_LIST
+            is_superuser: false
+            allow_local_user_login: true
