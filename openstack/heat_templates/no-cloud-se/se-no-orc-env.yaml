@@ -1,0 +1,9 @@
+parameters:
+  se_networks: avimgmt,my-int
+  num_se_networks: 2
+  allowed_address_cidr: 11.10.0.0/24
+  avi_se_name: myse
+  auth_token: 9df25b83-d8bd-432a-9af5-b023a86f4c1f
+  controller_ip: 10.10.25.202
+  avi_se_flavor: m1.small
+  avi_se_image: Avi-SE-17.1.10-9000-cloud-86cf8733-6a31-41a7-bf0d-d06a190ba99d-cluster-330a61e5-d7ba-4195-9441-3cd54e7b42d5

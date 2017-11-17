@@ -1,0 +1,38 @@
+heat_template_version: 2015-10-15
+
+description: Template for creating Avi SE Port
+
+parameters:
+  se_networks:
+    type: comma_delimited_list
+    description: A network for SE interface
+  net_index:
+    type: number
+  allowed_address_cidr:
+    type: string
+    description: Allowed Address Pair CIDR to add on interface
+    constraints:
+      - custom_constraint: net_cidr
+  #security_group:
+  #  type: string
+
+resources:
+  port:
+    type: OS::Neutron::Port
+    properties:
+      name:
+        str_replace:
+          template: set_port_netname
+          params:
+            netname: { get_param: [ se_networks, { get_param: net_index } ] }
+      security_groups:
+        - default
+      #  - { get_param: security_group }
+      network: { get_param: [ se_networks, { get_param: net_index } ] }
+      allowed_address_pairs:
+        - ip_address: {  get_param: allowed_address_cidr }
+
+outputs:
+  port_id:
+    value: 
+      port: {get_resource: port}

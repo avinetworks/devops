@@ -1,0 +1,70 @@
+heat_template_version: 2015-10-15
+
+description: Template for creating Avi SE
+
+parameters:
+  avi_se_name:
+    type: string
+    description: Name for the Avi SE to be created
+  avi_se_image:
+    type: string
+    description: Name of the Avi se image
+    constraints:
+      - custom_constraint: glance.image
+  avi_se_flavor:
+    type: string
+    description: SE instance flavor
+    constraints:
+      - custom_constraint: nova.flavor
+  #security_group:
+  #  type: string
+  #  description: Security Group to use for the interfaces
+  #  constraints:
+  #    - custom_constraint: neutron.security_group
+  controller_ip:
+    type: string
+    description: Controller's IP address
+    constraints:
+      - custom_constraint: ip_addr
+  auth_token:
+    type: string
+    description: Auth token to establish trust with Avi Controller. Please check https://avinetworks.com/docs/17.2/manually-deploy-service-engines-in-non-default-tenantcloud/
+  se_networks:
+    type: comma_delimited_list
+    description: List of networks for SE interfaces, first one should be the management network
+  num_se_networks:
+    type: number
+  allowed_address_cidr:
+    type: string
+    description: Allowed Address Pair CIDR to add on all interfaces
+    constraints:
+      - custom_constraint: net_cidr
+
+
+resources:
+  ports:
+    type: OS::Heat::ResourceGroup
+    properties:
+      count: { get_param: num_se_networks }
+      index_var: blahblah
+      resource_def:
+        type: se-no-orc-port.yaml
+        properties:
+          #security_group: { get_param: security_group }
+          se_networks: { get_param: se_networks }
+          net_index: blahblah
+          allowed_address_cidr: { get_param: allowed_address_cidr }
+ 
+  se:
+    type: OS::Nova::Server
+    depends_on: ports
+    properties:
+      name: { get_param: avi_se_name }
+      # availability_zone: overflow
+      flavor: { get_param: avi_se_flavor }
+      networks: { get_attr: [ ports, port_id ] }
+      image: { get_param: avi_se_image }
+      config_drive: True
+      metadata:
+        AVICNTRL_AUTHTOKEN: { get_param: auth_token }
+        AVICNTRL: { get_param: controller_ip }
