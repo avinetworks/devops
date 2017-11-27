@@ -1,7 +1,7 @@
 #!/usr/bin/python
 
 
-version = 'v2017-11-06'
+version = 'v2017-11-27'
 
 
 #########################################################################################
@@ -169,6 +169,8 @@ class avi_metrics():
             'l7_server.pct_response_errors',
             'l7_server.avg_frustrated_responses',
             'l7_client.avg_frustrated_responses',
+            'l7_client.avg_waf_attacks',
+            'l7_client.pct_waf_attacks',
             'dns_client.avg_complete_queries',
             'dns_client.avg_domain_lookup_failures',
             'dns_client.avg_tcp_queries',
