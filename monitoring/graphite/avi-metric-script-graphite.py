@@ -3,7 +3,6 @@
 
 version = 'v2017-11-27'
 
-
 #########################################################################################
 #                                                                                       #
 #                                                                                       #
@@ -97,7 +96,6 @@ def send_class_list_graphite(class_list):
 
 
 
-
 #----- This function allows for passwords to be either plaintext or base64 encoded
 def isBase64(password):
     try:
@@ -107,7 +105,6 @@ def isBase64(password):
             return password
     except Exception:
         return password
-
 
 
 
@@ -263,6 +260,14 @@ class avi_metrics():
                         for v in entry['consumers']:
                             if entry['name']+v['con_uuid'] not in discovered_vs:
                                 discovered_vs.append(entry['name']+v['con_uuid'])
+                                if entry['name'] not in srvc_engn_dict:
+                                    srvc_engn_dict[entry['name']] = 1
+                                else:
+                                    srvc_engn_dict[entry['name']] +=1
+                    elif 'vs_uuids' in entry.keys(): #---- 17.2.4 api changed
+                        for v in entry['vs_uuids']:
+                            if entry['name']+v.rsplit('api/virtualservice/')[1] not in discovered_vs:
+                                discovered_vs.append(entry['name']+v.rsplit('api/virtualservice/')[1])
                                 if entry['name'] not in srvc_engn_dict:
                                     srvc_engn_dict[entry['name']] = 1
                                 else:
@@ -442,7 +447,6 @@ class avi_metrics():
 
     #-----------------------------------
 
-
     def srvc_engn_dispatcher_cpu_usage(self):
         try:
             temp_start_time = time.time()
@@ -492,6 +496,14 @@ class avi_metrics():
                                 peer_ip = p['peer_ip'].replace('.','_')
                                 if 'Established' in p['bgp_state']:
                                     peer_state = 100
+                                    if len(p['vs_names']) > 0:
+                                        for v in p['vs_names']:
+                                            class graphite_class(): pass
+                                            y = graphite_class
+                                            y.name_space = 'network-script.avi.'+self.host_location+'.'+self.host_environment+'.'+self.avi_controller.replace('.','_')+'.serviceengine.%s.advertised_vs.%s.%s' %(se_name, v.replace('.','_'), peer_ip)
+                                            y.value = 1
+                                            y.timestamp = int(time.time())
+                                            graphite_class_list.append(y)
                                 else:
                                     peer_state = 50
                                 #send_value_graphite('network-script.avi.'+self.host_location+'.'+self.host_environment+'.'+self.avi_controller.replace('.','_')+'.serviceengine.%s.bgp-peer.%s' %(se_name, peer_ip), peer_state, int(time.time()))
@@ -1170,6 +1182,14 @@ class avi_metrics():
                                     srvc_engn_dict[entry['name']] = 1
                                 else:
                                     srvc_engn_dict[entry['name']] +=1
+                    elif 'vs_uuids' in entry.keys(): #---- 17.2.4 api changed
+                        for v in entry['vs_uuids']:
+                            if entry['name']+v.rsplit('api/virtualservice/')[1] not in discovered_vs:
+                                discovered_vs.append(entry['name']+v.rsplit('api/virtualservice/')[1])
+                                if entry['name'] not in srvc_engn_dict:
+                                    srvc_engn_dict[entry['name']] = 1
+                                else:
+                                    srvc_engn_dict[entry['name']] +=1
                     else:
                         if entry['name'] not in srvc_engn_dict:
                             srvc_engn_dict[entry['name']] = 0
@@ -1232,6 +1252,17 @@ class avi_metrics():
                         if 'consumers' in s:
                             for e in s['consumers']:
                                 vs_name = vs_dict[e['con_uuid']].replace('.','_')
+                                class graphite_class(): pass
+                                x = graphite_class
+                                x.name_space = 'network-script.avi.'+self.host_location+'.'+self.host_environment+'.'+self.avi_controller.replace('.','_')+'.virtualservice.%s.serviceengine.%s' %(vs_name, se_name)
+                                x.value = 1
+                                if x not in discovered:
+                                    discovered.append(x)
+                                    x.timestamp = int(time.time())
+                                    graphite_class_list.append(x)
+                        elif 'vs_uuids' in s: #---- 17.2.4 api changed
+                            for e in s['vs_uuids']:
+                                vs_name = vs_dict[e.rsplit('api/virtualservice/')[1]].replace('.','_')
                                 class graphite_class(): pass
                                 x = graphite_class
                                 x.name_space = 'network-script.avi.'+self.host_location+'.'+self.host_environment+'.'+self.avi_controller.replace('.','_')+'.virtualservice.%s.serviceengine.%s' %(vs_name, se_name)
@@ -1304,6 +1335,12 @@ class avi_metrics():
                                 if se_name+v['con_uuid'] not in discovered_vs:
                                     discovered_vs.append(s['name']+v['con_uuid'])
                                     se_dict[se_name]['total_vs'] += 1
+                        elif 'vs_uuids' in s:
+                            for v in s['vs_uuids']:
+                                if se_name+v.rsplit('api/virtualservice/')[1] not in discovered_vs:
+                                    discovered_vs.append(s['name']+v.rsplit('api/virtualservice/')[1])
+                                    se_dict[se_name]['total_vs'] += 1
+
             for entry in se_dict:
                 vs_percentage_used = (se_dict[entry]['total_vs']/se_dict[entry]['max_vs'])*100
                 class graphite_class(): pass
