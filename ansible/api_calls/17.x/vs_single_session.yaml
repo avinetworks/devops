@@ -1,8 +1,6 @@
 #
-# @author: Gaurav Rastogi grastogi@avinetworks.com
-# Simple playbook to create virtualservice and get on it using
-# avi_api_session module
-# ansible-playbook -M <location of avi ansible modules> vs.yml
+# Simple playbook to create pool and virtualservice using single avi api session.
+# ansible-playbook -M <location of avi ansible modules> vs_single_session.yml
 ---
 - hosts: localhost
   vars:
@@ -19,7 +17,7 @@
         controller: "{{ controller }}"
         username: "{{ username }}"
         password: "{{ password }}"
-        #state: absent
+        state: "{{ state }}"
         tenant: "{{ tenant }}"
         api_version: 17.1.1
         name: testpool
