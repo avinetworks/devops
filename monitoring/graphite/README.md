@@ -61,7 +61,8 @@ $ avi-metric-script-graphite.py -n
 
 ## avi_controllers.json
 
-To Add an Additional Controller to Monitor this file will need to modified.  Password is base64 encoded.
+To Add an Additional Controller to Monitor this file will need to modified.  Password can be plaintext or base64 encoded.
+
 
 EXAMPLE:
 
@@ -72,7 +73,7 @@ EXAMPLE:
     "location":"dc1",
     "environment":"prod",
     "avi_user":"user",
-    "_comment":"BASE64 ENCODED PASSWORD",
+    "_comment":"ACCEPTS PLAINTEXT OR BASE64 ENCODED PASSWORD",
     "avi_pass":"dGVzdA=="
     },
     {
@@ -80,8 +81,8 @@ EXAMPLE:
     "location":"nj",
     "environment":"dev",
     "avi_user":"user",
-    "_comment":"BASE64 ENCODED PASSWORD",
-    "avi_pass":"dGVzdA=="
+    "_comment":"ACCEPTS PLAINTEXT OR BASE64 ENCODED PASSWORD",
+    "avi_pass":"test"
     }
   ]
 }
@@ -90,7 +91,7 @@ EXAMPLE:
 
 ## graphite_host.json
 
-Define the grahite server host name/ip and the tcp port carbon cache is listening on
+Define the graphite server host name/ip and the tcp port carbon cache is listening on
 
 EXAMPLE:
 
@@ -172,6 +173,7 @@ EXAMPLE:
 - How many Service Engines hosted on an ESX host
 - Service Engine Virtual Service hosted used capacity
 - How many Service Engines have debug enabled
+- Service Engine individual Dispatcher CPU usage
 
 
 
@@ -204,6 +206,8 @@ EXAMPLE:
     - l4_client.avg_tx_pkts
     - l4_client.avg_rx_bytes
     - l4_client.avg_tx_bytes
+    - l4_server.avg_total_rtt
+    - l4_client.avg_total_rtt
     - l4_client.avg_rx_pkts_dropped
     - l4_client.sum_packet_dropped_user_bandwidth_limit
     - l4_client.max_open_conns
@@ -212,6 +216,7 @@ EXAMPLE:
     - l7_client.avg_resp_5xx_avi_errors
     - l7_client.avg_resp_4xx
     - l7_client.avg_resp_5xx
+    - l7_client.avg_clien_data_transfer_time
     - l7_server.avg_resp_4xx
     - l7_server.avg_resp_5xx
     - l7_server.avg_resp_latency
