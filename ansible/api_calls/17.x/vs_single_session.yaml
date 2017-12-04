@@ -1,0 +1,49 @@
+#
+# Simple playbook to create pool and virtualservice using single avi api session.
+# ansible-playbook -M <location of avi ansible modules> vs_single_session.yml
+---
+- hosts: localhost
+  vars:
+    state: absent
+    controller: 10.10.25.42
+    username: admin
+    password: password
+    tenant: Metrics_Test_Tenant
+  connection: local
+  roles:
+    - role: avinetworks.avisdk
+  tasks:
+    - avi_pool:
+        controller: "{{ controller }}"
+        username: "{{ username }}"
+        password: "{{ password }}"
+        state: "{{ state }}"
+        tenant: "{{ tenant }}"
+        api_version: 17.1.1
+        name: testpool
+        health_monitor_refs:
+           - '/api/healthmonitor?name=System-HTTP'
+        servers:
+           - ip:
+               addr: '10.90.64.16'
+               type: 'V4'
+      register: results
+    - avi_virtualservice:
+        api_context: '{{results.api_context | default(omit)}}'
+        controller: "{{ controller }}"
+        username: "{{ username }}"
+        password: "{{ password }}"
+        tenant: "{{ tenant }}"
+        tenant_ref: '/api/tenant?name={{ tenant }}'
+        name: testvs
+        state: "{{ state }}"
+        services:
+           - port: 80
+        pool_ref: '/api/pool?name=testpool'
+        performance_limits:
+           max_concurrent_connections: 1000
+        api_version: 17.1.1
+        vip:
+          - ip_address:
+              addr: '10.90.64.252'
+              type: 'V4'
