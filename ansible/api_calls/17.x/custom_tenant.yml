@@ -1,0 +1,39 @@
+#
+# @author: Gaurav Rastogi grastogi@avinetworks.com
+# Simple playbook to create virtualservice and get on it using
+# avi_api_session module
+# ansible-playbook -M <location of avi ansible modules> vs.yml
+---
+- hosts: localhost
+  vars:
+    state: absent
+    controller: 10.10.25.42
+    username: admin
+    password: password
+    tenant: Metrics_Test_Tenant
+  roles:
+    - role: avinetworks.avisdk
+  tasks:
+    - name: Create or Update Custom Tenant
+      avi_tenant:
+        controller: "{{ controller }}"
+        username: "{{ username }}"
+        password: "{{ password }}"
+        name: Metrics_Test_Tenant
+    - name: Create Pool in the above tenant
+      avi_pool:
+        controller: "{{ controller }}"
+        username: "{{ username }}"
+        password: "{{ password }}"
+        #state: absent
+        tenant: "{{ tenant }}"
+        tenant_ref: '/api/tenant?name=Metrics_Test_Tenant'
+        api_version: 17.1.1
+        name: custom_tenant_pool
+        health_monitor_refs:
+           - '/api/healthmonitor?name=System-HTTP'
+        servers:
+           - ip:
+               addr: '10.90.64.16'
+               type: 'V4'
+      register: mypool
