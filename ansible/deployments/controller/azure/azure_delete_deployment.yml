@@ -1,0 +1,166 @@
+- hosts: localhost
+  connection: local
+  roles:
+    - { role: avinetworks.avisdk }
+    - { role: Azure.azure_modules }
+
+  tasks:
+
+  - name: Avi Application | Setup App1
+    include_role:
+      name: avinetworks.aviconfig
+    vars:
+      avi_config_file: "avi_config_role.yml"
+      avi_credentials:
+        controller: 40.121.203.176
+        username: 'admin'
+        password: 'password'
+        api_version: 17.2.5
+      avi_config_state: absent
+      server1v1: 10.20.0.4
+      server2v1: 10.20.0.6
+      server1v2: 10.20.0.7
+      server2v2: 10.20.0.8
+      virtual_network: ansible-demo-vn001
+      subnet: subnet001
+
+  - name: Delete Controller vm
+    azure_rm_virtualmachine:
+      resource_group: ansible-demo-rg
+      name: ansible-demo-controller
+      vm_size: "Standard_F4s"
+      storage_account: ansible-demo-storage001
+      admin_username: aviuser
+      admin_password: aviuser@Avi123
+      network_interfaces: cdnic001
+      state: absent
+      image:
+        offer: avi-vantage-adc
+        publisher: avi-networks
+        sku: avi-vantage-adc-byol
+        version: latest
+      plan:
+        name: avi-vantage-adc-byol
+        publisher: avi-networks
+        product: avi-vantage-adc
+
+  - name: Delete Server 1 of version 1 vm
+    azure_rm_virtualmachine:
+      resource_group: ansible-demo-rg
+      name: ansible-server1-v1
+      vm_size: "Standard_F1s"
+      storage_account: ansible-demo-storage001
+      admin_username: aviuser
+      admin_password: aviuser@Avi123
+      network_interfaces: cdnic001
+      state: absent
+      image:
+        offer: nginx-plus-v1
+        publisher: nginxinc
+        sku: nginx-plus-q1fy17
+        version: latest
+      plan:
+        name: nginx-plus-q1fy17
+        publisher: nginxinc
+        product: nginx-plus-v1
+
+  - name: Delete Server 2 of version 1 vm
+    azure_rm_virtualmachine:
+      resource_group: ansible-demo-rg
+      name: ansible-server2-v1
+      vm_size: "Standard_F1s"
+      storage_account: ansible-demo-storage001
+      admin_username: aviuser
+      admin_password: aviuser@Avi123
+      network_interfaces: cdnic001
+      state: absent
+      image:
+        offer: nginx-plus-v1
+        publisher: nginxinc
+        sku: nginx-plus-q1fy17
+        version: latest
+      plan:
+        name: nginx-plus-q1fy17
+        publisher: nginxinc
+        product: nginx-plus-v1
+
+  - name: Delete Server 1 of version 2 vm
+    azure_rm_virtualmachine:
+      resource_group: ansible-demo-rg
+      name: ansible-server1-v2
+      vm_size: "Standard_F1s"
+      storage_account: ansible-demo-storage001
+      admin_username: aviuser
+      admin_password: aviuser@Avi123
+      network_interfaces: cdnic001
+      state: absent
+      image:
+        offer: nginx-plus-v1
+        publisher: nginxinc
+        sku: nginx-plus-q1fy17
+        version: latest
+      plan:
+        name: nginx-plus-q1fy17
+        publisher: nginxinc
+        product: nginx-plus-v1
+
+  - name: Delete Server 2 of version 2 vm
+    azure_rm_virtualmachine:
+      resource_group: ansible-demo-rg
+      name: ansible-server2-v2
+      vm_size: "Standard_F1s"
+      storage_account: ansible-demo-storage001
+      admin_username: aviuser
+      admin_password: aviuser@Avi123
+      network_interfaces: cdnic001
+      state: absent
+      image:
+        offer: nginx-plus-v1
+        publisher: nginxinc
+        sku: nginx-plus-q1fy17
+        version: latest
+      plan:
+        name: nginx-plus-q1fy17
+        publisher: nginxinc
+        product: nginx-plus-v1
+
+  - name: Delete NIC
+    azure_rm_networkinterface:
+      resource_group: ansible-demo-rg
+      name: cdnic001
+      virtual_network: ansible-demo-vn001
+      subnet: subnet001
+      public_ip_name: publicip001
+      security_group_name: secgroup001
+      state: absent
+
+
+  - name: Delete public ip
+    azure_rm_publicipaddress:
+      resource_group: ansible-demo-rg
+      allocation_method: Static
+      name: publicip001
+      state: absent
+
+  - name: Add subnet
+    azure_rm_subnet:
+      resource_group: ansible-demo-rg
+      name: subnet001
+      address_prefix: "10.20.0.0/24"
+      virtual_network: ansible-demo-vn001
+      state: absent
+
+  - name: Delete storage account
+    azure_rm_storageaccount:
+      resource_group: ansible-demo-rg
+      name: ansible-demo-storage001
+      account_type: Standard_LRS
+      state: absent
+
+  - name: Delete virtual network
+    azure_rm_virtualnetwork:
+      resource_group: ansible-demo-rg
+      name: ansible-demo-vn001
+      address_prefixes: "10.20.0.0/16"
+      state: absent
+
