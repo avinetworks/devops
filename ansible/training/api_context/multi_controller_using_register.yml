@@ -1,0 +1,97 @@
+- hosts: localhost
+  connection: local
+  vars_files:
+    - "creds_unsecure_using_facts.yml"
+  vars:
+    app_name: app1
+    avi_credentials1:
+    avi_credentials2:
+    results1:
+    results2:
+
+  tasks:
+    - name: Create or Update Pool on controller 1
+      register: results1
+      avi_pool:
+        controller: "{{ avi_credentials1.avi_controller}}"
+        username: "{{ avi_credentials1.avi_username }}"
+        password: "{{ avi_credentials1.avi_password }}"
+        api_version: "{{ avi_credentials1.api_version }}"
+        avi_disable_session_cache_as_fact: "{{ avi_credentials1.avi_disable_session_cache_as_fact }}"
+        api_context: "{{results1.avi_api_context | default(omit)}}"
+        name: "{{app_name}}-pool"
+        health_monitor_refs:
+          - '/api/healthmonitor?name=System-HTTP'
+          - '/api/healthmonitor?name=System-Ping'
+        cloud_ref: '/api/cloud?name=Default-Cloud'
+        servers:
+          - ip:
+               addr: '10.90.64.16'
+               type: 'V4'
+          - ip:
+               addr: '10.90.64.14'
+               type: 'V4'
+
+
+    - name: Create Virtual Service on controller 1
+      register: results1
+      avi_virtualservice:
+        controller: "{{ avi_credentials1.avi_controller}}"
+        username: "{{ avi_credentials1.avi_username }}"
+        password: "{{ avi_credentials1.avi_password }}"
+        api_version: "{{ avi_credentials1.api_version }}"
+        avi_disable_session_cache_as_fact: "{{ avi_credentials1.avi_disable_session_cache_as_fact }}"
+        api_context: "{{results1.avi_api_context | default(omit)}}"
+        name: "{{app_name}}"
+        pool_ref: "/api/pool?name={{app_name}}-pool"
+        cloud_ref: '/api/cloud?name=Default-Cloud'
+        vip:
+          - ip_address:
+              addr: '10.90.64.222'
+              type: 'V4'
+            vip_id: '1'
+        services:
+          - port: 4242
+
+    - name: Create or Update Pool on controller 2
+      register: results2
+      avi_pool:
+        controller: "{{ avi_credentials2.avi_controller}}"
+        username: "{{ avi_credentials2.avi_username }}"
+        password: "{{ avi_credentials2.avi_password }}"
+        api_version: "{{ avi_credentials2.api_version }}"
+        avi_disable_session_cache_as_fact: "{{ avi_credentials2.avi_disable_session_cache_as_fact }}"
+        api_context: "{{results2.avi_api_context | default(omit)}}"
+        name: "{{app_name}}-pool"
+        health_monitor_refs:
+          - '/api/healthmonitor?name=System-HTTP'
+          - '/api/healthmonitor?name=System-Ping'
+        cloud_ref: '/api/cloud?name=Default-Cloud'
+        servers:
+          - ip:
+               addr: '10.90.64.16'
+               type: 'V4'
+          - ip:
+               addr: '10.90.64.14'
+               type: 'V4'
+
+
+    - name: Create Virtual Service on controller 2
+      register: results2
+      avi_virtualservice:
+        controller: "{{ avi_credentials2.avi_controller}}"
+        username: "{{ avi_credentials2.avi_username }}"
+        password: "{{ avi_credentials2.avi_password }}"
+        api_version: "{{ avi_credentials2.api_version }}"
+        avi_disable_session_cache_as_fact: "{{ avi_credentials2.avi_disable_session_cache_as_fact }}"
+        api_context: "{{results2.avi_api_context | default(omit)}}"
+        name: "{{app_name}}"
+        pool_ref: "/api/pool?name={{app_name}}-pool"
+        cloud_ref: '/api/cloud?name=Default-Cloud'
+        vip:
+          - ip_address:
+              addr: '10.90.64.222'
+              type: 'V4'
+            vip_id: '1'
+        services:
+          - port: 4242

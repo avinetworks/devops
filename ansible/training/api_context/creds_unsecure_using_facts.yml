@@ -1,0 +1,12 @@
+- avi_credentials1:
+  avi_controller: 10.10.28.4
+  avi_username: admin
+  avi_password: password
+  api_version: 17.2.1
+  avi_disable_session_cache_as_fact: false
+- avi_credentials2:
+  avi_controller: 10.10.26.133
+  avi_username: admin
+  avi_password: password
+  api_version: 17.2.1
+  avi_disable_session_cache_as_fact: false
