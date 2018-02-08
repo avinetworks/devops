@@ -192,6 +192,13 @@
       settings: '{"commandToExecute": "sudo apt-get -y update && sudo apt-get install -y apache2 && sudo wget --no-check-certificate https://demoavi.com/ && sudo cp index.html /var/www/html/index.html && sudo apachectl restart"}'
       auto_upgrade_minor_version: true
 
+  - name: Update admin password
+    avi_useraccount:
+      controller: '{{ controller }}'
+      username: admin
+      password: 'password'
+      api_version: 17.2.5
+
   - name: Avi Application | Setup App1
     include_role:
       name: avinetworks.aviconfig
@@ -200,7 +207,7 @@
       avi_credentials:
         controller: '{{ controller }}'
         username: 'admin'
-        password: '<default password>'
+        password: 'password'
         api_version: 17.2.5
 
   vars:
