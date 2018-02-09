@@ -1,0 +1,98 @@
+avi_config:
+  cloudconnectoruser:
+    - name: CD
+      azure_userpass:
+        password: "{{ lookup('env', 'AZURE_PASSWORD') }}"
+        tenant_name: "{{ lookup('env', 'AZURE_TENANT_NAME') }}"
+        username: "{{ lookup('env', 'AZURE_AD_USER') }}"
+      tenant: "{{ tenant | default('admin') }}"
+  cloud:
+    - name: azure
+      azure_configuration:
+        cloud_credentials_ref: /api/cloudconnectoruser/?name=CD
+        location: eastus
+        network_info:
+        - se_network_id: '{{ subnet }}'
+          virtual_network_id: "/subscriptions/{{ lookup('env', 'AZURE_SUBSCRIPTION_ID') }}/resourceGroups/{{ lookup('env', 'AZURE_RESOURCE_GROUP') }}/providers/Microsoft.Network/virtualNetworks/{{ virtual_network }}"
+        resource_group: "{{ lookup('env', 'AZURE_RESOURCE_GROUP') }}"
+        subscription_id: "{{ lookup('env', 'AZURE_SUBSCRIPTION_ID') }}"
+      tenant: "{{ tenant | default('admin') }}"
+      vtype: CLOUD_AZURE
+  pool:
+    - name: app1-pool-v2
+      cloud_ref: /api/cloud?name=azure
+      servers:
+      - enabled: true
+        hostname: '{{ server1v2 }}'
+        ip:
+          addr: '{{ server1v2 }}'
+          type: V4
+      - enabled: true
+        hostname: '{{ server2v2 }}'
+        ip:
+          addr: '{{ server2v2 }}'
+          type: V4
+      tenant: "{{ tenant | default('admin') }}"
+
+    - name: app1-pool-v1
+      cloud_ref: /api/cloud?name=azure
+      servers:
+      - hostname: '{{ server1v1 }}'
+        ip:
+          addr: '{{ server1v1 }}'
+          type: V4
+      - hostname: '{{ server2v1 }}'
+        ip:
+          addr: '{{ server2v1 }}'
+          type: V4
+      tenant: "{{ tenant | default('admin') }}"
+  poolgroup:
+    - name: app1-pool-group
+      cloud_ref: /api/cloud/?name=azure
+      members:
+      - cloud_ref: /api/cloud?name=azure
+        pool_ref: /api/pool/?name=app1-pool-v1
+        ratio: 100
+      - cloud_ref: /api/cloud?name=azure
+        pool_ref: /api/pool/?name=app1-pool-v2
+        ratio: 0
+      tenant: "{{ tenant | default('admin') }}"
+
+  vsvip:
+    - name: vsvip-app1-azure
+      cloud_ref: /api/cloud?name=azure
+      tenant: "{{ tenant | default('admin') }}"
+      vip:
+      - auto_allocate_floating_ip: true
+        auto_allocate_ip: true
+        avi_allocated_fip: true
+        avi_allocated_vip: true
+        ipam_network_subnet:
+          network_ref: /api/network/subnet001
+          subnet:
+            ip_addr:
+              addr: 10.20.0.0
+              type: V4
+            mask: 24
+          subnet_uuid: subnet001
+        network_ref: /api/network/subnet001
+        subnet:
+          ip_addr:
+            addr: 10.20.0.0
+            type: V4
+          mask: 24
+        subnet_uuid: subnet001
+        vip_id: '1'
+
+  virtualservice:
+    - name: app1
+      application_profile_ref: /api/applicationprofile/?name=System-HTTP
+      cloud_ref: /api/cloud?name=azure
+      cloud_type: CLOUD_AZURE
+      network_profile_ref: /api/networkprofile/?name=System-TCP-Proxy
+      pool_group_ref: /api/poolgroup/?name=app1-pool-group
+      services:
+      - enable_ssl: false
+        port: 80
+      tenant: "{{ tenant | default('admin') }}"
+      vsvip_ref: /api/vsvip/?name=vsvip-app1-azure

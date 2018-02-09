@@ -1,0 +1,215 @@
+- hosts: localhost
+  connection: local
+  roles:
+    - { role: avinetworks.avisdk }
+    - { role: Azure.azure_modules }
+
+  tasks:
+  - name: Create storage account
+    azure_rm_storageaccount:
+      resource_group: "{{ lookup('env', 'AZURE_RESOURCE_GROUP') }}"
+      name: ansibledemostrg1
+      account_type: Standard_LRS
+
+  - name: Create virtual network
+    azure_rm_virtualnetwork:
+      resource_group: "{{ lookup('env', 'AZURE_RESOURCE_GROUP') }}"
+      name: "{{ virtual_network }}"
+      address_prefixes: "10.20.0.0/16"
+
+  - name: Add subnet
+    azure_rm_subnet:
+      resource_group: "{{ lookup('env', 'AZURE_RESOURCE_GROUP') }}"
+      name: "{{ subnet }}"
+      address_prefix: "10.20.0.0/24"
+      virtual_network: "{{ virtual_network }}"
+
+  - name: Create public ip
+    azure_rm_publicipaddress:
+      resource_group: "{{ lookup('env', 'AZURE_RESOURCE_GROUP') }}"
+      allocation_method: Static
+      name: publicip001
+    register: publicip_result
+
+  - name: set fact for controller ip
+    set_fact:
+      controller: "{{ publicip_result.state.ip_address}}"
+
+  - name: Create NIC
+    azure_rm_networkinterface:
+      resource_group: "{{ lookup('env', 'AZURE_RESOURCE_GROUP') }}"
+      name: ansible-nic001
+      virtual_network: "{{ virtual_network }}"
+      subnet: "{{ subnet }}"
+      ip_configurations:
+        - name: ipconfig001
+          public_ip_name: publicip001
+          primary: True
+      open_ports:
+        - 80
+        - 443
+
+  - name: Create Controller vm
+    azure_rm_virtualmachine:
+      resource_group: "{{ lookup('env', 'AZURE_RESOURCE_GROUP') }}"
+      name: ansible-demo-controller
+      vm_size: "Standard_F4s"
+      storage_account: ansibledemostrg1
+      admin_username: aviuser
+      admin_password: aviuser@Avi123
+      network_interfaces: ansible-nic001
+      image:
+        offer: avi-vantage-adc
+        publisher: avi-networks
+        sku: avi-vantage-adc-byol
+        version: latest
+      plan:
+        name: avi-vantage-adc-byol
+        publisher: avi-networks
+        product: avi-vantage-adc
+
+  - name: Create Server 1 of version 1 vm
+    azure_rm_virtualmachine:
+      resource_group: "{{ lookup('env', 'AZURE_RESOURCE_GROUP') }}"
+      name: ansible-server1-v1
+      vm_size: "Standard_F1s"
+      storage_account: ansibledemostrg1
+      admin_username: aviuser
+      admin_password: aviuser@Avi123
+      image:
+        offer: UbuntuServer
+        publisher: Canonical
+        sku: 16.04-LTS
+        version: latest
+    register: server1_result
+
+  - name: set fact for Server 1 of v1 ip
+    set_fact:
+      server1v1: "{{ azure_vm.properties.networkProfile.networkInterfaces[0].properties.ipConfigurations[0].properties.privateIPAddress}}"
+
+
+
+  - name: Create VM Extension
+    azure_rm_virtualmachine_extension:
+      name: server1-v1-extension
+      location: eastus
+      resource_group: "{{ lookup('env', 'AZURE_RESOURCE_GROUP') }}"
+      virtual_machine_name: ansible-server1-v1
+      publisher: Microsoft.Azure.Extensions
+      virtual_machine_extension_type: CustomScript
+      type_handler_version: 2.0
+      settings: '{"commandToExecute": "sudo apt-get -y update && sudo apt-get install -y apache2 && sudo wget --no-check-certificate https://demoavi.com/ && sudo cp index.html /var/www/html/index.html && sudo apachectl restart"}'
+      auto_upgrade_minor_version: true
+
+  - name: Create Server 2 of version 1 vm
+    azure_rm_virtualmachine:
+      resource_group: "{{ lookup('env', 'AZURE_RESOURCE_GROUP') }}"
+      name: ansible-server2-v1
+      vm_size: "Standard_F1s"
+      storage_account: ansibledemostrg1
+      admin_username: aviuser
+      admin_password: aviuser@Avi123
+      image:
+        offer: UbuntuServer
+        publisher: Canonical
+        sku: 16.04-LTS
+        version: latest
+
+  - name: set fact for Server 2 of v1 ip
+    set_fact:
+      server2v1: "{{ azure_vm.properties.networkProfile.networkInterfaces[0].properties.ipConfigurations[0].properties.privateIPAddress}}"
+
+  - name: Create VM Extension
+    azure_rm_virtualmachine_extension:
+      name: server1-v1-extension
+      location: eastus
+      resource_group: "{{ lookup('env', 'AZURE_RESOURCE_GROUP') }}"
+      virtual_machine_name: ansible-server2-v1
+      publisher: Microsoft.Azure.Extensions
+      virtual_machine_extension_type: CustomScript
+      type_handler_version: 2.0
+      settings: '{"commandToExecute": "sudo apt-get -y update && sudo apt-get install -y apache2 && sudo wget --no-check-certificate https://demoavi.com/ && sudo cp index.html /var/www/html/index.html && sudo apachectl restart"}'
+      auto_upgrade_minor_version: true
+
+  - name: Create Server 1 of version 2 vm
+    azure_rm_virtualmachine:
+      resource_group: "{{ lookup('env', 'AZURE_RESOURCE_GROUP') }}"
+      name: ansible-server1-v2
+      vm_size: "Standard_F1s"
+      storage_account: ansibledemostrg1
+      admin_username: aviuser
+      admin_password: aviuser@Avi123
+      image:
+        offer: UbuntuServer
+        publisher: Canonical
+        sku: 16.04-LTS
+        version: latest
+
+  - name: set fact for Server 1 of v2 ip
+    set_fact:
+      server1v2: "{{ azure_vm.properties.networkProfile.networkInterfaces[0].properties.ipConfigurations[0].properties.privateIPAddress}}"
+
+
+  - name: Create VM Extension
+    azure_rm_virtualmachine_extension:
+      name: server1-v2-extension
+      location: eastus
+      resource_group: "{{ lookup('env', 'AZURE_RESOURCE_GROUP') }}"
+      virtual_machine_name: ansible-server1-v2
+      publisher: Microsoft.Azure.Extensions
+      virtual_machine_extension_type: CustomScript
+      type_handler_version: 2.0
+      settings: '{"commandToExecute": "sudo apt-get -y update && sudo apt-get install -y apache2 && sudo wget --no-check-certificate https://demoavi.com/ && sudo cp index.html /var/www/html/index.html && sudo apachectl restart"}'
+      auto_upgrade_minor_version: true
+
+  - name: Create Server 2 of version 2 vm
+    azure_rm_virtualmachine:
+      resource_group: "{{ lookup('env', 'AZURE_RESOURCE_GROUP') }}"
+      name: ansible-server2-v2
+      vm_size: "Standard_F1s"
+      storage_account: ansibledemostrg1
+      admin_username: aviuser
+      admin_password: aviuser@Avi123
+      image:
+        offer: UbuntuServer
+        publisher: Canonical
+        sku: 16.04-LTS
+        version: latest
+
+  - name: set fact for Server 2 of v2 ip
+    set_fact:
+      server2v2: "{{ azure_vm.properties.networkProfile.networkInterfaces[0].properties.ipConfigurations[0].properties.privateIPAddress}}"
+
+  - name: Create VM Extension
+    azure_rm_virtualmachine_extension:
+      name: server2-v2-extension
+      location: eastus
+      resource_group: "{{ lookup('env', 'AZURE_RESOURCE_GROUP') }}"
+      virtual_machine_name: ansible-server2-v2
+      publisher: Microsoft.Azure.Extensions
+      virtual_machine_extension_type: CustomScript
+      type_handler_version: 2.0
+      settings: '{"commandToExecute": "sudo apt-get -y update && sudo apt-get install -y apache2 && sudo wget --no-check-certificate https://demoavi.com/ && sudo cp index.html /var/www/html/index.html && sudo apachectl restart"}'
+      auto_upgrade_minor_version: true
+
+  - name: Update admin password
+    avi_useraccount:
+      controller: '{{ controller }}'
+      username: admin
+      password: 'password'
+      api_version: 17.2.5
+
+  - name: Avi Application | Setup App1
+    include_role:
+      name: avinetworks.aviconfig
+    vars:
+      avi_config_file: "avi_config_role.yml"
+      avi_credentials:
+        controller: '{{ controller }}'
+        username: 'admin'
+        password: 'password'
+        api_version: 17.2.5
+
+  vars:
+    virtual_network: ansible-demo-vn001
+    subnet: subnet001
