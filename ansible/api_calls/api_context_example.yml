@@ -18,6 +18,7 @@
         username: "{{ avi_username }}"
         password: "{{ avi_password }}"
         api_version: "{{ api_version }}"
+        api_context: "{{avi_api_context | default(omit)}}"
         name: "{{app_name}}-pool"
         health_monitor_refs:
           - '/api/healthmonitor?name=System-HTTP'
@@ -37,6 +38,7 @@
         username: "{{ avi_username }}"
         password: "{{ avi_password }}"
         api_version: "{{ api_version }}"
+        api_context: "{{avi_api_context | default(omit)}}"
         name: "{{app_name}}"
         pool_ref: "/api/pool?name={{app_name}}-pool"
         cloud_ref: '/api/cloud?name=Default-Cloud'
@@ -56,6 +58,7 @@
         username: "{{ avi_username }}"
         password: "{{ avi_password }}"
         api_version: "{{ api_version }}"
+        api_context: "{{avi_api_context | default(omit)}}"
         name: "{{app_name}}"
         pool_ref: "/api/pool?name={{app_name}}-pool"
         cloud_ref: '/api/cloud?name=Default-Cloud'
