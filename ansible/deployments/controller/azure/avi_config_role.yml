@@ -1,6 +1,6 @@
 avi_config:
   cloudconnectoruser:
-    - name: CD
+    - name: azureuser
       azure_userpass:
         password: "{{ lookup('env', 'AZURE_PASSWORD') }}"
         tenant_name: "{{ lookup('env', 'AZURE_TENANT_NAME') }}"
@@ -9,7 +9,7 @@ avi_config:
   cloud:
     - name: azure
       azure_configuration:
-        cloud_credentials_ref: /api/cloudconnectoruser/?name=CD
+        cloud_credentials_ref: /api/cloudconnectoruser/?name=azureuser
         location: eastus
         network_info:
         - se_network_id: '{{ subnet }}'

@@ -197,6 +197,7 @@
       controller: '{{ controller }}'
       username: admin
       password: 'password'
+      old_password: 'default_password'
       api_version: 17.2.5
 
   - name: Avi Application | Setup App1

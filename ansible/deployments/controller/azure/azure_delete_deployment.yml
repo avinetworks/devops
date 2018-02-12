@@ -24,26 +24,6 @@
       virtual_network: ansible-demo-vn001
       subnet: subnet001
 
-  - name: Delete Controller vm
-    azure_rm_virtualmachine:
-      resource_group: ansible-demo-rg
-      name: ansible-demo-controller
-      vm_size: "Standard_F4s"
-      storage_account: ansible-demo-storage001
-      admin_username: aviuser
-      admin_password: aviuser@Avi123
-      network_interfaces: cdnic001
-      state: absent
-      image:
-        offer: avi-vantage-adc
-        publisher: avi-networks
-        sku: avi-vantage-adc-byol
-        version: latest
-      plan:
-        name: avi-vantage-adc-byol
-        publisher: avi-networks
-        product: avi-vantage-adc
-
   - name: Delete Server 1 of version 1 vm
     azure_rm_virtualmachine:
       resource_group: ansible-demo-rg
@@ -123,6 +103,26 @@
         name: nginx-plus-q1fy17
         publisher: nginxinc
         product: nginx-plus-v1
+
+  - name: Delete Controller vm
+    azure_rm_virtualmachine:
+      resource_group: ansible-demo-rg
+      name: ansible-demo-controller
+      vm_size: "Standard_F4s"
+      storage_account: ansible-demo-storage001
+      admin_username: aviuser
+      admin_password: aviuser@Avi123
+      network_interfaces: cdnic001
+      state: absent
+      image:
+        offer: avi-vantage-adc
+        publisher: avi-networks
+        sku: avi-vantage-adc-byol
+        version: latest
+      plan:
+        name: avi-vantage-adc-byol
+        publisher: avi-networks
+        product: avi-vantage-adc
 
   - name: Delete NIC
     azure_rm_networkinterface:
