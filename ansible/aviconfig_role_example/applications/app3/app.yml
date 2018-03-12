@@ -5,12 +5,9 @@
 - hosts: localhost
   connection: local
   vars:
-    api_version: 17.1.2
     app_name: app3
-
   roles:
     - role: avinetworks.avisdk
-
   tasks:
     - name: Setting up Application
       debug: msg="{{ app_name }}"

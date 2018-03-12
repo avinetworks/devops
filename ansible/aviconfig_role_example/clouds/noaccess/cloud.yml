@@ -1,7 +1,6 @@
 - hosts: localhost
   connection: local
   vars:
-    api_version: 17.2.3
     # this will pick up config from the clouds/vmware directory
     cloud_name: noaccess
   roles:

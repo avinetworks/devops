@@ -1,9 +1,9 @@
 # These settings are for demo purpose only. Pl. modify it as per target
 # environment
 
-avi_controller: 10.10.24.202
-avi_username: admin
-avi_password: password$%
+# avi_controller: 10.10.24.202
+# avi_username: admin
+# avi_password: password$%
 
 # all apps use the same backend servers
 app1_vip: 10.90.64.200
@@ -16,4 +16,3 @@ app_test_tenant_vip: 10.90.64.205
 
 pool_server1: 10.90.64.16
 pool_server2: 10.90.64.14
-

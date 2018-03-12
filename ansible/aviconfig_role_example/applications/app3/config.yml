@@ -56,8 +56,7 @@ avi_config:
       type: HEALTH_MONITOR_HTTP
 
   httppolicyset:
-    - api_version: 17.1.2
-      name: "app3-httppolicy"
+    - name: "app3-httppolicy"
       http_request_policy:
         rules:
           - index: 1

@@ -1,7 +1,7 @@
 
-- include: clouds/vmware/cloud.yml
+- import_playbook: clouds/vmware/cloud.yml
 
-- include: clouds/noaccess/cloud.yml
+- import_playbook: clouds/noaccess/cloud.yml
 
 # Pl. update the cloud_creds before enabling this
-#- include: clouds/aws/cloud.yml
+# - import_playbook: clouds/aws/cloud.yml

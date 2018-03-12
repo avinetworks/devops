@@ -5,7 +5,6 @@
 - hosts: localhost
   connection: local
   vars:
-    api_version: 17.2.3
     app_name: app2
 
   roles:
