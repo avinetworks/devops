@@ -1,7 +1,6 @@
 avi_config:
   tenant:
-    - api_version: 17.1.2
-      name: TestTenant
+    - name: TestTenant
   pool:
     - name: app_testtenant-pool
       tenant: TestTenant

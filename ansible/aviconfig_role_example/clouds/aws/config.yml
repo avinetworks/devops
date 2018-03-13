@@ -2,8 +2,7 @@ avi_cloud_discovery_wait: 180
 
 avi_config:
   cloud:
-    - api_version: 17.2.3
-      name: aws
+    - name: aws
       vtype: CLOUD_AWS
       dhcp_enabled: true
       license_type: "LIC_CORES"

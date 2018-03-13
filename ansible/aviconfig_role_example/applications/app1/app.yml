@@ -5,9 +5,7 @@
 - hosts: localhost
   connection: local
   vars:
-    api_version: 17.2.3
     app_name: app1
-
   roles:
     - role: avinetworks.avisdk
 

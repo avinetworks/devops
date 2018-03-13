@@ -1,8 +1,7 @@
 avi_config:
   avi_cloud_discovery_wait: 300
   cloud:
-    - api_version: 17.2.4
-      name: Default-Cloud
+    - name: Default-Cloud
       vtype: CLOUD_VCENTER
       dhcp_enabled: true
       license_type: "LIC_CORES"
@@ -59,5 +58,5 @@ avi_config:
         sslkeyandcertificate_refs:
           - "/api/sslkeyandcertificate?name=System-Default-Portal-Cert"
           - "/api/sslkeyandcertificate?name=System-Default-Portal-Cert-EC256"
-        sslprofile_ref: "/api/sslprofile?name=System-Standard"
+        sslprofile_ref: "/api/sslprofile?name=System-Standard-Portal"
         use_uuid_from_input: false
