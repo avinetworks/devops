@@ -7,25 +7,31 @@
   vars:
     controller: 10.10.25.42
     username: admin
-    password: password
-    api_version: 17.2.3
+    password: "{{avi_password}}"
+    api_version: 18.1.1
+    tenant: admin
   roles:
     - role: avinetworks.avisdk
   tasks:
 
     - name: Fetch System Waf Policy
-      avi_wafpolicy:
-        name: System-WAF-Policy
+      avi_api_session:
         controller: "{{controller}}"
         username: "{{username}}"
         password: "{{password}}"
         api_version: "{{api_version}}"
-      register: system_waf_policy
+        tenant: "{{tenant}}"
+        path: wafpolicy
+        params:
+          name: System-WAF-Policy
+        http_method: get
+      register: api_results
 
     - name: Create new_waf_policy
       set_fact:
         new_policy:
           name: foo
+          mode: WAF_MODE_DETECTION_ONLY
 
     - name: copy relevant fields from system waf
       set_fact:
@@ -33,7 +39,10 @@
       when:
         - item.key not in new_policy
         - item.key not in ['uuid', 'name', 'url']
-      with_dict: "{{system_waf_policy.obj}}"
+      with_dict: "{{api_results.obj.results[0]}}"
+
+    - name: creating waf policy
+      debug: msg="{{waf_policy}}"
 
     - name: Create new System Waf Policy
       avi_api_session:

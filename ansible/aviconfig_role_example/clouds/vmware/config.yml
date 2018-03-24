@@ -1,5 +1,5 @@
 avi_config:
-  avi_cloud_discovery_wait: 300
+  avi_cloud_discovery_wait: 450
   cloud:
     - name: Default-Cloud
       vtype: CLOUD_VCENTER
@@ -53,7 +53,7 @@ avi_config:
         enable_clickjacking_protection: true
         enable_http: true
         enable_https: true
-        password_strength_check: true
+        password_strength_check: false
         redirect_to_https: true
         sslkeyandcertificate_refs:
           - "/api/sslkeyandcertificate?name=System-Default-Portal-Cert"
