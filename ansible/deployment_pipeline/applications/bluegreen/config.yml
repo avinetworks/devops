@@ -1,0 +1,58 @@
+
+avi_config:
+  poolgroup:
+    - name: bluegreen-poolgroup
+      members:
+        - pool_ref: "/api/pool?name=bluegreen-pool-v1"
+          #ratio: 100
+          ratio: 100
+          #deployment_state: IN_SERVICE
+          deployment_state: IN_SERVICE
+
+        - pool_ref: "/api/pool?name=bluegreen-pool-v2"
+          ratio: 0
+          deployment_state: OUT_OF_SERVICE
+
+  pool:
+    - name: bluegreen-pool-v1
+      lb_algorithm: LB_ALGORITHM_ROUND_ROBIN
+      servers:
+        - ip:
+             addr: "{{ pool_server1 }}"
+             type: 'V4'
+
+    - name: bluegreen-pool-v2
+      lb_algorithm: LB_ALGORITHM_ROUND_ROBIN
+      servers:
+        - ip:
+             addr: "{{ pool_server2 }}"
+             type: 'V4'
+
+  virtualservice:
+    - name: bluegreen
+      services:
+        - port: 80
+      vip:
+        - ip_address:
+            addr: "{{bluegreen_vip}}"
+            type: 'V4'
+          vip_id: '1'
+
+      pool_group_ref: '/api/poolgroup?name=bluegreen-poolgroup'
+      cloud_ref: '/api/cloud?name=Default-Cloud'
+      application_profile_ref: '/api/applicationprofile?name=System-Secure-HTTP'
+      analytics_policy:
+        metrics_realtime_update:
+          duration: 0
+          enabled: true
+
+  poolgroupdeploymentpolicy:
+    - name: bluegreen-deployment-policy
+      evaluation_duration: 60
+      scheme: "BLUE_GREEN"
+      target_test_traffic_ratio: 100
+      test_traffic_ratio_rampup: 100
+      rules:
+        - metric_id: l7_server.avg_resp_latency
+          operator: CO_LE
+          threshold: 200
