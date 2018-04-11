@@ -4,6 +4,7 @@
   "parameters": {
     "vmName": {
       "type": "string",
+      "defaultValue": "Avi-Controller",
       "metadata": {
         "description": "Name of the VM. Only special character allowed in the name is dash (-)"
       }
@@ -65,6 +66,7 @@
     },
     "customData": {
       "type": "string",
+      "defaultValue":"{}",
       "metadata": {
         "description": "User custom data for preDeployment"
       }
@@ -88,6 +90,18 @@
       "metadata": {
         "description": "Static IP address of controller 3.  Required only for cluster"
       }
+    }
+    ,
+    "public-IP": {
+      "type": "string",
+      "defaultValue": "No",
+      "allowedValues":[
+        "Yes",
+        "No"
+        ],
+      "metadata": {
+        "description": "Allocate public IP to controllers"
+      }
     },
     "adminUserName": {
       "defaultValue": "aviadmin",
@@ -105,7 +119,7 @@
     "existingVnetName": {
       "type": "string",
       "metadata": {
-        "description": "Name of the existing VNET where the controller NIC will be placed"
+        "description": "Name of the existing Vnet where the controller NIC will be placed"
       }
     },
     "existingVnetResourceGroup": {
@@ -117,7 +131,7 @@
     "subnetName": {
       "type": "string",
       "metadata": {
-        "description": "Name of the subnet in the VNET "
+        "description": "Name of the subnet to be used for controller IP allocation"
       }
     },
     "faultDomainCount": {
@@ -125,27 +139,6 @@
       "defaultValue": 2,
       "metadata": {
         "description": "Number of fault domains. This is typically either 2 or 3, depending on the region"
-      }
-    },
-    "publisher": {
-      "type": "string",
-      "defaultValue": "avi-networks",
-      "metadata": {
-        "description": "Name of the publisher e.g. avi-networks"
-      }
-    },
-    "offer": {
-      "type": "string",
-      "defaultValue": "avi-vantage-adc",
-      "metadata": {
-        "description": "Name of the provided offer"
-      }
-    },
-    "aviSKU": {
-      "type": "string",
-      "defaultValue": "avi-vantage-adc-byol",
-      "metadata": {
-        "description": "Name of the SKU"
       }
     },
     "aviVersion": {
@@ -162,16 +155,36 @@
     "vmName": "[concat(parameters('vmName'),'-')]",
     "vnetID": "[resourceId(parameters('existingVnetResourceGroup'), 'Microsoft.Network/virtualNetworks', parameters('existingVnetName'))]",
     "subnetRef": "[concat(variables('vnetID'),'/subnets/', parameters('subnetName'))]",
-    "nicName": "[variables('vmName')]",
+    "nicName": "[concat(variables('vmName'),'nic')]",
     "osType": "Linux",
     "sshKeyPath": "[concat('/home/',parameters('adminUserName'),'/.ssh/authorized_keys')]",
     "controllerIP": [
       "[parameters('controller1_IP')]",
       "[parameters('controller2_IP')]",
       "[parameters('controller3_IP')]"
-    ]
+    ],
+    "publisher":"avi-networks",
+    "offer":"avi-vantage-adc",
+    "aviSKU":"avi-vantage-adc-byol"
   },
   "resources": [
+    {
+      "condition": "[equals(parameters('public-IP'),'Yes')]",
+      "apiVersion": "2016-11-01",
+      "type": "Microsoft.Network/publicIPAddresses",
+      "name": "[concat(variables('vmName'), '-public-IP',copyIndex())]",
+      "copy":{
+        "name":"controllerpubip",
+        "count":"[parameters('controllerCount')]"
+      },
+      "location": "[resourceGroup().location]",
+      "properties": {
+        "publicIPAllocationMethod": "Dynamic",
+        "dnsSettings": {
+          "domainNameLabel": "[toLower(concat(variables('vmName'), 'dns', copyIndex()))]"
+        }
+      }
+    },
     {
       "type": "Microsoft.Storage/storageAccounts",
       "name": "[variables('diagStorageAccountName')]",
@@ -187,6 +200,7 @@
       "properties": {}
     },
     {
+      "condition": "[equals(parameters('public-IP'),'No')]",
       "apiVersion": "[variables('api-version')]",
       "type": "Microsoft.Network/networkInterfaces",
       "name": "[concat(variables('nicName'),copyIndex())]",
@@ -213,6 +227,41 @@
         ]
       }
     },
+        {
+          "condition": "[equals(parameters('public-IP'),'Yes')]",
+      "apiVersion": "[variables('api-version')]",
+      "type": "Microsoft.Network/networkInterfaces",
+      "name": "[concat(variables('nicName'),'-public-IP',copyIndex())]",
+      "location": "[resourceGroup().location]",
+      "copy": {
+        "name": "controllerniccopy",
+        "count": "[parameters('controllerCount')]"
+      },
+      "tags": {
+        "displayName": "Avi Controller NetworkInterface"
+      },
+            "dependsOn": [
+        "[resourceId('Microsoft.Network/publicIPAddresses/', concat(variables('vmName'),'-public-IP',copyIndex()))]"
+      ],
+      "properties": {
+        "ipConfigurations": [
+          {
+            "name": "ipconfig1",
+            "properties": {
+              "privateIPAllocationMethod": "Static",
+              "privateIPAddress": "[variables('controllerIP')[copyIndex()]]",
+              "publicIPAddress": {
+                "id": "[resourceId('Microsoft.Network/publicIPAddresses/', concat(variables('vmName'),'-public-IP',copyIndex()))]"
+              },
+              "subnet": {
+                "id": "[variables('subnetRef')]"
+              }
+            }
+          }
+        ]
+      }
+    }
+    ,
     {
       "type": "Microsoft.Compute/availabilitySets",
       "name": "[parameters('vmName')]",
@@ -228,6 +277,7 @@
       }
     },
     {
+      "condition": "[equals(parameters('public-IP'),'No')]",
       "apiVersion": "2016-04-30-preview",
       "type": "Microsoft.Compute/virtualMachines",
       "name": "[concat(variables('vmName'),copyIndex())]",
@@ -243,9 +293,9 @@
         "[concat('Microsoft.Network/networkInterfaces/', concat(variables('nicName'),copyIndex()))]"
       ],
       "plan": {
-        "name": "[parameters('aviSKU')]",
-        "publisher": "[parameters('publisher')]",
-        "product": "[parameters('offer')]"
+        "name": "[variables('aviSKU')]",
+        "publisher": "[variables('publisher')]",
+        "product": "[variables('offer')]"
       },
       "properties": {
         "hardwareProfile": {
@@ -268,9 +318,9 @@
         },
         "storageProfile": {
           "imageReference": {
-            "publisher": "[parameters('publisher')]",
-            "offer": "[parameters('offer')]",
-            "sku": "[parameters('aviSKU')]",
+            "publisher": "[variables('publisher')]",
+            "offer": "[variables('offer')]",
+            "sku": "[variables('aviSKU')]",
             "version": "[parameters('aviVersion')]"
           },
           "osDisk": {
@@ -301,12 +351,84 @@
           "id": "[resourceId('Microsoft.Compute/availabilitySets', parameters('vmName'))]"
         }
       }
+    },
+    {
+      "condition": "[equals(parameters('public-IP'),'Yes')]",
+      "apiVersion": "2016-04-30-preview",
+      "type": "Microsoft.Compute/virtualMachines",
+      "name": "[concat(variables('vmName'),'-public-IP', copyIndex())]",
+      "location": "[resourceGroup().location]",
+      "copy": {
+        "name": "controllervmcopy",
+        "count": "[parameters('controllerCount')]"
+      },
+      "tags": {
+        "displayName": "Avi Controller VirtualMachine"
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Network/publicIPAddresses/', concat(variables('vmName'),'-public-IP',copyIndex()))]",
+        "[concat('Microsoft.Network/networkInterfaces/', concat(variables('nicName'),'-public-IP',copyIndex()))]"
+      ],
+      "plan": {
+        "name": "[variables('aviSKU')]",
+        "publisher": "[variables('publisher')]",
+        "product": "[variables('offer')]"
+      },
+      "properties": {
+        "hardwareProfile": {
+          "vmSize": "[parameters('vmSize')]"
+        },
+        "osProfile": {
+          "computerName": "[concat(variables('vmName'),copyIndex())]",
+          "adminUserName": "[parameters('adminUserName')]",
+          "linuxConfiguration": {
+            "ssh": {
+              "publicKeys": [
+                {
+                  "path": "[variables('sshKeyPath')]",
+                  "keyData": "[parameters('sshKeyData')]"
+                }
+              ]
+            }
+          },
+	  "customData": "[base64(parameters('customData'))]"
+        },
+        "storageProfile": {
+          "imageReference": {
+            "publisher": "[variables('publisher')]",
+            "offer": "[variables('offer')]",
+            "sku": "[variables('aviSKU')]",
+            "version": "[parameters('aviVersion')]"
+          },
+          "osDisk": {
+            "name": "[concat(variables('vmName'),copyIndex())]",
+            "osType": "[variables('osType')]",
+            "caching": "ReadWrite",
+            "diskSizeGB": "[parameters('controllerOsDiskSize')]",
+            "createOption": "FromImage",
+            "managedDisk": {
+              "storageAccountType": "Premium_LRS"
+            }
+          }
+        },
+        "networkProfile": {
+          "networkInterfaces": [
+            {
+              "id": "[resourceId('Microsoft.Network/networkInterfaces',concat(variables('nicName'),'-public-IP',copyIndex()))]"
+            }
+          ]
+        },
+        "diagnosticsProfile": {
+          "bootDiagnostics": {
+            "enabled": "true",
+            "storageUri": "[concat(reference(concat('Microsoft.Storage/storageAccounts/', variables('diagStorageAccountName')), '2016-01-01').primaryEndpoints.blob)]"
+          }
+        },
+        "availabilitySet": {
+          "id": "[resourceId('Microsoft.Compute/availabilitySets', parameters('vmName'))]"
+        }
+      }
     }
-  ],
-  "outputs": {
-    "controller0PrivateIp": {
-      "type": "String",
-      "value": "[reference(resourceId('Microsoft.Network/networkInterfaces',concat(variables('nicName'),0))).ipConfigurations[0].properties.privateIPAddress]"
-    }
-  }
+    
+  ]
 }
