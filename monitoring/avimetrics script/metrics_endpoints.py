@@ -184,14 +184,18 @@ def send_value_elastic_stack(payload):
 
 
 def send_metriclist_to_endpoint(endpoint_list, payload):
-    for endpoint_info in endpoint_list:
-        if endpoint_info['type'] == 'graphite':
-            send_value_graphite(endpoint_info, payload)
-        elif endpoint_info['type'] == 'splunk':
-            send_value_splunk(endpoint_info, payload)
-        elif endpoint_info['type'] == 'appdynamics_http':
-            send_value_appdynamics_http(endpoint_info, payload)
-        elif endpoint_info['type'] == 'appdynamics_machine':
-            send_value_appdynamics_machine(endpoint_info, payload)
-        elif endpoint_info['type'] == 'datadog':
-            send_value_datadog(endpoint_info, payload)
+    try:
+        for endpoint_info in endpoint_list:
+            if endpoint_info['type'] == 'graphite':
+                send_value_graphite(endpoint_info, payload)
+            elif endpoint_info['type'] == 'splunk':
+                send_value_splunk(endpoint_info, payload)
+            elif endpoint_info['type'] == 'appdynamics_http':
+                send_value_appdynamics_http(endpoint_info, payload)
+            elif endpoint_info['type'] == 'appdynamics_machine':
+                send_value_appdynamics_machine(endpoint_info, payload)
+            elif endpoint_info['type'] == 'datadog':
+                send_value_datadog(endpoint_info, payload)
+    except:
+        exception_text = traceback.format_exc()
+        print exception_text

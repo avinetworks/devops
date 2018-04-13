@@ -10,7 +10,7 @@ This repository includes that necessary files to deploy the Appdynamics Avi Vant
     - **avi_controllers.json**:  This file contains the Avi Controller login information.  Any Avi controller that is desired to be monitored must be added to this file.
     - **monitor.xml**:  The Avi Vantage monitor extension configuration file
     - **avi_metrics.py**:  This python script containing all the API calls for metric values to be collected.
-    - **avi_metrics.sh**:  The shell script called by the Appdynamic standalone agent to execute the monitoring script.
+    - **avi_metrics.sh**:  The shell script called by the Appdynamics Standalone Machine Agent to execute the monitoring script.
 
 
 
@@ -96,21 +96,19 @@ Search the python script for the specific lists containing the metrics:
 
 
 # Metrics Being Collected
-```sh
+
 
 ###Controller Cluster Metrics
 
-- Cluster node leader
-- Number of cluster nodes
-- Vcenter cloud connector status
-- ACI APIC connectivity status
-- Network pool usage
-- Expiring certs
-- How many cores on each ESX host is being used for Service Engines
+- Cluster node roles
+- Network pool Usage
+- License Usage %
 - Days until license(s) expire
-- License usage percentage
 - Current Avi Vantage version
-
+- Cluster Node Performance Metrics
+    - controller_stats.avg_cpu_usage
+    - controller_stats.avg_disk_usage
+    - controller_stats.avg_mem_usage
 
 
 
@@ -119,54 +117,34 @@ Search the python script for the specific lists containing the metrics:
 
 - Virtual Server count per Service Engine
 - Service Engine count
-- Service Enging healthscore
+- Service Engine / Controller missed heartbeats
+- Service Engine healthscore
+- Service Engine Virtual Service hosted used capacity
 - Statistics for each Service Engine
-    - se_stats.avg_bandwidth
     - se_if.avg_bandwidth
     - se_stats.avg_connection_mem_usage
-    - se_stats.avg_connection_policy_drops
     - se_stats.avg_connections
     - se_stats.avg_connections_dropped
     - se_stats.avg_cpu_usage
     - se_stats.avg_disk1_usage
     - se_stats.avg_mem_usage
-    - se_stats.avg_persistent_table_size
     - se_stats.avg_persistent_table_usage
     - se_stats.avg_rx_bandwidth
     - se_if.avg_rx_bytes
-    - se_stats.avg_rx_pkts
     - se_if.avg_rx_pkts
-    - se_stats.avg_rx_pkts_dropped
     - se_if.avg_rx_pkts_dropped_non_vs
-    - se_stats.avg_tx_pkts
     - se_if.avg_tx_pkts
     - se_if.avg_tx_bytes
     - se_stats.avg_ssl_session_cache_usage
-    - se_stats.max_connection_mem_total
-    - se_stats.max_connection_table_size
     - se_if.avg_connection_table_usage
-    - se_stats.avg_ssl_session_cache
-    - se_stats.max_num_vs
     - se_stats.max_se_bandwidth
-    - se_stats.sum_connection_dropped_memory_limit
-    - se_stats.sum_connection_dropped_packet_buffer_stressed
-    - se_stats.sum_connection_dropped_persistence_table_limit
-    - se_stats.sum_packet_buffer_allocation_failure
-    - se_stats.sum_packet_dropped_packet_buffer_stressed
-    - se_stats.sum_cache_object_allocation_failure
-    - se_stats.avg_eth0_rx_pkts
-    - se_stats.avg_eth0_tx_pkts
     - se_stats.avg_eth0_bandwidth
     - se_stats.pct_syn_cache_usage
     - se_stats.avg_packet_buffer_usage
     - se_stats.avg_packet_buffer_header_usage
     - se_stats.avg_packet_buffer_large_usage
     - se_stats.avg_packet_buffer_small_usage
-- How many Service Engines hosted on an ESX host
-- Service Engine Virtual Service hosted % used capacity
-- How many Service Engines have debug enabled
-- Service Engine individual Dispatcher CPU usage
-- Service Engine BGP peer status
+
 
 
 
@@ -174,20 +152,17 @@ Search the python script for the specific lists containing the metrics:
 
 ###Virtual Service Stats
 
-- Statistics for each Virtual Service (provided total and per SE)
+- Virtual Service healthscore
+- Virtual Service operational status (Up/Down)
+- Pool member(s) operational status (Up/Down)
+- Which Service Engine the Virtual Service is hosted on
+- Statistics for each Virtual Service; total and broken down per Service Engine
     - l4_server.avg_errored_connections
     - l4_server.avg_rx_pkts
     - l4_server.avg_bandwidth
-    - l4_server.avg_server_count
     - l4_server.avg_open_conns
     - l4_server.avg_new_established_conns
     - l4_server.avg_pool_complete_conns
-    - l4_server.sum_num_state_changes
-    - l4_server.sum_rx_zero_window_size_events
-    - l4_server.sum_tx_zero_window_size_events
-    - l4_server.sum_out_of_orders
-    - l4_server.sum_sack_retransmits
-    - l4_server.sum_timeout_retransmits
     - l4_server.apdexc
     - l4_server.avg_total_rtt
     - l4_client.apdexc
@@ -201,9 +176,8 @@ Search the python script for the specific lists containing the metrics:
     - l4_client.avg_tx_pkts
     - l4_client.avg_rx_bytes
     - l4_client.avg_tx_bytes
-    - l4_client.avg_rx_pkts_dropped
-    - l4_client.sum_packet_dropped_user_bandwidth_limit
     - l4_client.max_open_conns
+    - l4_client.avg_lossy_connections
     - l7_client.avg_complete_responses
     - l7_client.avg_client_data_transfer_time
     - l7_client.avg_resp_4xx_avi_errors
@@ -211,8 +185,6 @@ Search the python script for the specific lists containing the metrics:
     - l7_client.avg_resp_4xx
     - l7_client.avg_resp_5xx
     - l4_client.avg_total_rtt
-    - l7_server.avg_resp_4xx
-    - l7_server.avg_resp_5xx
     - l7_server.avg_resp_latency
     - l7_server.apdexr
     - l7_client.avg_page_load_time
@@ -222,6 +194,10 @@ Search the python script for the specific lists containing the metrics:
     - l7_server.avg_application_response_time
     - l7_server.pct_response_errors
     - l7_server.avg_frustrated_responses
+    - l7_server.avg_total_requests
+    - l7_client.sum_get_reqs
+    - l7_client.sum_post_reqs
+    - l7_client.sum_other_reqs
     - l7_client.avg_frustrated_responses
     - l7_client.avg_waf_attacks
     - l7_client.pct_waf_attacks
@@ -238,31 +214,18 @@ Search the python script for the specific lists containing the metrics:
     - dns_server.avg_errored_queries
     - dns_server.avg_tcp_queries
     - dns_server.avg_udp_queries
-- Virtual Service healthscore
-- Virtual Service total count
-- Virtual Service total up
-- Virtual Service total down
-- Virtual Service Total Disabled
-- Virtual Service individual Operational status (Up/Down)
-- Significant Log count
-- Number of Pool members total/up/enabled
-- Which Service Engine the Virtual Service is hosted on
-- How many Virtual Services hosted on an ESX host
-- How many Virtual Services have full client logs enabled
-- How many Virtual Services have debug enabled
+
 
 
 
 
 ###Virtual Service Pool Server Metrics
 
-- Statistics for each Pool Server
-    - l4_server.max_rx_pkts_absolute
+- Statistics for each invidual Pool Server
     - l4_server.avg_rx_pkts
-    - l4_server.max_tx_pkts_absolute
     - l4_server.avg_tx_pkts
-    - l4_server.max_rx_bytes_absolute
-    - l4_server.max_tx_bytes_absolute
+    - l4_server.avg_rx_bytes
+    - l4_server.avg_tx_bytes
     - l4_server.avg_bandwidth
     - l7_server.avg_complete_responses
     - l4_server.avg_new_established_conns
