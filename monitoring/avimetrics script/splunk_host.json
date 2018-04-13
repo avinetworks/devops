@@ -1,0 +1,10 @@
+{"splunk_server":{
+    "server":"169.254.0.1",
+    "_comment":"HEC_PROTOCOL OPTIONS ARE HTTP OR HTTPS",
+    "hec_protocol":"https",
+    "hec_port": 8088,
+    "hec_token":"abcdefgh-ijkl-mnop-qrst-uvwxyz123456",
+    "index":"avimetrics"
+    }
+
+}

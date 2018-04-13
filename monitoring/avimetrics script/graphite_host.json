@@ -1,6 +1,6 @@
 {"graphite":
     {
-	    "server":"127.0.0.1",
+	    "server":"169.254.0.1",
 	    "server_port":2003
     }
 }

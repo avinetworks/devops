@@ -1,0 +1,17 @@
+{"controllers":[
+    {
+    "avi_controller":"10.130.162.180",
+    "location":"sc",
+    "environment":"lab",
+    "avi_user":"ro-user",
+    "avi_pass":"QXZpMTIzMTIz"
+    },
+    {
+    "avi_controller":"10.130.163.188",
+    "location":"sc",
+    "environment":"lab",
+    "avi_user":"ro-user",
+    "avi_pass":"QXZpMTIzMTIz"
+}]
+}
+
