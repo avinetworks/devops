@@ -1,0 +1,21 @@
+<monitor>
+    <name>AviMonitor</name>
+    <type>managed</type>
+    <description>Avi Monitor</description>
+    <monitor-configuration>
+    </monitor-configuration>
+    <monitor-run-task>
+        <execution-style>periodic</execution-style>
+        <execution-frequency-in-seconds>60</execution-frequency-in-seconds>
+        <name>Avi Monitor Run</name>
+        <display-name>Avi Monitor Run task</display-name>
+        <description>Avi Monitor Run task</description>
+        <type>executable</type>
+        <task-arguments>
+        </task-arguments>
+        <executable-task>
+            <type>file</type>
+            <file>avi-metrics.sh</file>
+        </executable-task>
+    </monitor-run-task>
+</monitor>

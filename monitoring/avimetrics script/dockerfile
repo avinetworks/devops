@@ -1,0 +1,38 @@
+############################################################
+# Dockerfile to build python avi-monitor script container
+# Based on python:2
+############################################################
+
+# Set the base image to Python:2
+FROM python:2
+
+# Set the working directory
+WORKDIR /usr/src/avi
+
+# File Author / Maintainer
+MAINTAINER mkarnowski@avinetworks.com
+
+
+################## BEGIN INSTALLATION ######################
+
+# Set Docker environment variable
+ENV EN_DOCKER=True
+
+
+# Install python requirements
+RUN pip install --no-cache-dir requests
+#RUN apt-get update
+#RUN apt-get install -y vim
+
+# Copy scripts to directory
+COPY "avimetrics.py" "/usr/src/avi"
+COPY "avi_controllers.json" "/usr/src/avi"
+COPY "metrics_endpoints.py" "/usr/src/avi"
+COPY "datadog.json" "/usr/src/avi"
+COPY "graphite_host.json" "/usr/src/avi"
+COPY "splunk_host.json" "/usr/src/avi"
+COPY "appdynamics_http.json" "/usr/src/avi"
+
+
+# Execute script
+CMD ["python", "/usr/src/avi/avimetrics.py"]

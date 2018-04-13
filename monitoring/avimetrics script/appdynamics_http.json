@@ -1,0 +1,6 @@
+{"appdynamics":
+    {
+	    "server":"169.254.0.1",
+	    "server_port":8293
+    }
+}
