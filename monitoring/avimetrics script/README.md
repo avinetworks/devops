@@ -172,11 +172,11 @@ EXAMPLE:
 # Run as a container
 To run this script as a container, modify the files as exampled above prior to building.
 
-###Build the container
+### Build the container
 ```sh
 $ docker build -t avimetrics .
 ```
-###Start the container
+### Start the container
 To start the container it is required to specify the metrics endpoint via the EN_METRIC_ENDPOINT environment variable.  To specify multiple endpoint seprate each with a colon, ":".  The example below specifies multiple endpoints.
 ```sh
 $ docker run -d -e "EN_METRIC_ENDPOINT=graphite:datadog:appdynamics_http" --name avimetrics --restart always --log-opt max-size=1m avimetrics
@@ -185,7 +185,7 @@ $ docker run -d -e "EN_METRIC_ENDPOINT=graphite:datadog:appdynamics_http" --name
 # Metrics Being Collected
 
 
-###Controller Cluster Metrics
+### Controller Cluster Metrics
 
 - Cluster node roles
 - Network pool Usage
@@ -199,7 +199,7 @@ $ docker run -d -e "EN_METRIC_ENDPOINT=graphite:datadog:appdynamics_http" --name
 
 
 
-###Service Engine Metrics:
+### Service Engine Metrics:
 
 - Virtual Server count per Service Engine
 - Service Engine count
@@ -236,7 +236,7 @@ $ docker run -d -e "EN_METRIC_ENDPOINT=graphite:datadog:appdynamics_http" --name
 
 
 
-###Virtual Service Stats
+### Virtual Service Stats
 
 - Virtual Service healthscore
 - Virtual Service operational status (Up/Down)
@@ -305,7 +305,7 @@ $ docker run -d -e "EN_METRIC_ENDPOINT=graphite:datadog:appdynamics_http" --name
 
 
 
-###Virtual Service Pool Server Metrics
+### Virtual Service Pool Server Metrics
 
 - Statistics for each invidual Pool Server
     - l4_server.avg_rx_pkts
