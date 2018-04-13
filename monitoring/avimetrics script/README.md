@@ -54,7 +54,7 @@ Send Metrics to one or more metrics endpoints.  Valid values are:
 
 ```sh
 $ avimetrics.py -m datadog -m graphite
-
+```
 
 Only print exceptions
 ```sh
