@@ -1,0 +1,28 @@
+############################################################
+# Dockerfile to build python avi-monitor script container
+# Based on grafana/grafana
+############################################################
+
+# Set the base image to Grafana
+FROM grafana/grafana
+
+# Set the working directory
+
+# File Author / Maintainer
+MAINTAINER mkarnowski@avinetworks.com
+
+
+################## BEGIN INSTALLATION ######################
+
+
+# Copy script to directory
+COPY "datasource.yml" "/etc/grafana/provisioning/datasources/"
+COPY "dashboard.yml" "/etc/grafana/provisioning/dashboards/"
+COPY "01-summary.json" "/var/lib/grafana/dashboards/"
+COPY "02-serviceEnginesTotal.json" "/var/lib/grafana/dashboards/"
+COPY "03-serviceEnginesSpecific.json" "/var/lib/grafana/dashboards/"
+COPY "04-virtualServicesTotal.json" "/var/lib/grafana/dashboards/"
+COPY "05-virtualServicesSpecific.json" "/var/lib/grafana/dashboards/"
+COPY "Avi-dashboards.json" "/var/lib/grafana/dashboards/"
+COPY "server.crt" "/"
+COPY "server.key" "/"

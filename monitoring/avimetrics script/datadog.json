@@ -1,0 +1,6 @@
+{"datadog":
+    {
+        "api_url" : "app.datadoghq.com/api/v1/series?api_key=",
+        "api_key" : "abcdefghijgklmnopqrstuvwxyz12345"
+    }
+}
