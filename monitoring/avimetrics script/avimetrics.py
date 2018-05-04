@@ -1290,6 +1290,7 @@ class avi_metrics():
 
     #-----------------------------------
     #----- GET customer Member specific statistics
+    def controller_cluster_metrics(self):
         try:
             temp_start_time = time.time()
             major,minor = self.login.json()['version']['Version'].rsplit('.',1)
