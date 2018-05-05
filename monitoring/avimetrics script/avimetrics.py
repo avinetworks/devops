@@ -1,7 +1,7 @@
 #!/usr/bin/python
 
 
-version = 'v2018-04-12'
+version = 'v2018-05-04'
 
 #########################################################################################
 #                                                                                       #
@@ -162,6 +162,8 @@ class avi_metrics():
             'l4_client.avg_lossy_connections',
             'l7_client.avg_complete_responses',
             'l7_client.avg_client_data_transfer_time',
+            'l7_client.avg_client_txn_latency',
+            'l7_client.sum_application_response_time',
             'l7_client.avg_resp_4xx_avi_errors',
             'l7_client.avg_resp_5xx_avi_errors',
             'l7_client.avg_resp_4xx',
@@ -260,7 +262,7 @@ class avi_metrics():
             headers = ({"X-Avi-Tenant": "admin", 'content-type': 'application/json'})
             resp = requests.get('https://%s/api/cluster' %self.avi_cluster_ip, verify=False, headers = headers,cookies=dict(sessionid= login.cookies['sessionid']),timeout=5)
             #if expires > time.time():
-            if resp.status_code() == 200:
+            if resp.status_code == 200:
                 return login
             else:
                 login = requests.post('https://%s/login' %self.avi_cluster_ip, verify=False, data={'username': self.avi_user, 'password': self.avi_pass},timeout=15)
@@ -717,28 +719,41 @@ class avi_metrics():
                         if v['uuid'] not in discovered_vs:
                             discovered_vs.append(v['uuid'])
                             vs_name = v['config']['name']
-                            vs_healthscore = v['health_score']['health_score']
-                            temp_payload = self.payload_template.copy()
-                            temp_payload['timestamp']=int(time.time())
-                            temp_payload['vs_name'] = vs_name
-                            temp_payload['metric_type'] = 'virtualservice_healthscore'
-                            temp_payload['metric_name'] = 'healthscore'
-                            temp_payload['metric_value'] = vs_healthscore
-                            temp_payload['name_space'] = 'avi||'+self.host_location+'||'+self.host_environment+'||'+self.avi_cluster_ip+'||virtualservice||%s||healthscore' %vs_name
-                            endpoint_payload_list.append(temp_payload)
+                            temp_dict = {}
+                            temp_dict['healthscore'] = v['health_score']['health_score']
+                            temp_dict['resources_penalty'] = v['health_score']['resources_penalty']
+                            temp_dict['anomaly_penalty'] = v['health_score']['anomaly_penalty']
+                            temp_dict['performance_score'] = v['health_score']['performance_score']
+                            temp_dict['security_penalty'] = v['health_score']['security_penalty']
+                            for h in temp_dict:
+                                temp_payload = self.payload_template.copy()
+                                temp_payload['timestamp']=int(time.time())
+                                temp_payload['vs_name'] = vs_name
+                                temp_payload['metric_type'] = 'virtualservice_healthscore'
+                                temp_payload['metric_name'] = h
+                                temp_payload['metric_value'] = temp_dict[h]
+                                temp_payload['name_space'] = 'avi||'+self.host_location+'||'+self.host_environment+'||'+self.avi_cluster_ip+'||virtualservice||%s||%s' %(vs_name,h)
+                                endpoint_payload_list.append(temp_payload)
                 if t['name'] in self.se_dict['tenants'] and self.se_dict['tenants'][t['name']]['count'] > 0:
                     for s in self.se_dict['tenants'][t['name']]['results']:
                         if s['uuid'] not in discovered_se:
                             discovered_se.append(s['uuid'])
-                            se_healthscore = s['health_score']['health_score']
-                            temp1_payload = self.payload_template.copy()
-                            temp1_payload['timestamp']=int(time.time())
-                            temp1_payload['se_name'] = self.se_dict[s['uuid']]
-                            temp1_payload['metric_type'] = 'serviceengine_healthscore'
-                            temp1_payload['metric_name'] = 'healthscore'
-                            temp1_payload['metric_value'] = se_healthscore
-                            temp1_payload['name_space'] = 'avi||'+self.host_location+'||'+self.host_environment+'||'+self.avi_cluster_ip+'||serviceengine||%s||healthscore' %self.se_dict[s['uuid']]
-                            endpoint_payload_list.append(temp1_payload)
+                            #se_healthscore = s['health_score']['health_score']
+                            temp1_dict = {}
+                            temp1_dict['healthscore'] = s['health_score']['health_score']
+                            temp1_dict['resources_penalty'] = s['health_score']['resources_penalty']
+                            temp1_dict['anomaly_penalty'] = s['health_score']['anomaly_penalty']
+                            temp1_dict['performance_score'] = s['health_score']['performance_score']
+                            temp1_dict['security_penalty'] = s['health_score']['security_penalty']
+                            for h in temp1_dict:
+                                temp1_payload = self.payload_template.copy()
+                                temp1_payload['timestamp']=int(time.time())
+                                temp1_payload['se_name'] = self.se_dict[s['uuid']]
+                                temp1_payload['metric_type'] = 'serviceengine_healthscore'
+                                temp1_payload['metric_name'] = h
+                                temp1_payload['metric_value'] = temp1_dict[h]
+                                temp1_payload['name_space'] = 'avi||'+self.host_location+'||'+self.host_environment+'||'+self.avi_cluster_ip+'||serviceengine||%s||%s' %(self.se_dict[s['uuid']],h)
+                                endpoint_payload_list.append(temp1_payload)
             if len(endpoint_payload_list) > 0:
                 send_metriclist_to_endpoint(endpoint_list, endpoint_payload_list)
             temp_total_time = str(time.time()-temp_start_time)
