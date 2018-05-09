@@ -70,7 +70,7 @@ $ avimetrics.py -m <endpoint> --debug
 
 ## avi_controllers.json
 
-To Add an Additional Controller to Monitor this file will need to modified.  Password is base64 encoded.
+To Add an Additional Controller to Monitor this file will need to modified.  Password can be plaintext or base64 encoded.
 
 EXAMPLE:
 
@@ -81,7 +81,7 @@ EXAMPLE:
     "location":"dc1",
     "environment":"prod",
     "avi_user":"user",
-    "_comment":"BASE64 ENCODED PASSWORD",
+    "_comment":"ACCEPTS PLAIN TEXT OR BASE64 ENCODED PASSWORD",
     "avi_pass":"dGVzdA=="
     },
     {
@@ -89,8 +89,8 @@ EXAMPLE:
     "location":"nj",
     "environment":"dev",
     "avi_user":"user",
-    "_comment":"BASE64 ENCODED PASSWORD",
-    "avi_pass":"dGVzdA=="
+    "_comment":"ACCEPTS PLAIN TEXT OR BASE64 ENCODED PASSWORD",
+    "avi_pass":"test"
     }
   ]
 }
