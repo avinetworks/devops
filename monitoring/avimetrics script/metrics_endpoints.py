@@ -13,7 +13,7 @@ def send_value_graphite(endpoint_info, graphite_payload):
         name_space_prefix = 'network-script||'
         for entry in graphite_payload:
             name_space = (name_space_prefix+entry['name_space']).replace('.','_').replace('||','.').replace(' ','_')
-            message_list.append('%s %d %d' %(name_space, entry['metric_value'], entry['timestamp']))
+            message_list.append('%s %f %d' %(name_space, entry['metric_value'], entry['timestamp']))
             #----- I believe there is a message list limit on graphite for plain text
             if sys.getsizeof(message_list) > 4915:
                 message = '\n'.join(message_list) + '\n'
