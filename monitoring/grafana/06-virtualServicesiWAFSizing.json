@@ -1,0 +1,942 @@
+{
+  "__inputs": [
+    {
+      "name": "DS_GRAPHITE",
+      "label": "graphite",
+      "description": "",
+      "type": "datasource",
+      "pluginId": "graphite",
+      "pluginName": "Graphite"
+    }
+  ],
+  "__requires": [
+    {
+      "type": "grafana",
+      "id": "grafana",
+      "name": "Grafana",
+      "version": "4.6.0"
+    },
+    {
+      "type": "panel",
+      "id": "graph",
+      "name": "Graph",
+      "version": ""
+    },
+    {
+      "type": "datasource",
+      "id": "graphite",
+      "name": "Graphite",
+      "version": "1.0.0"
+    }
+  ],
+  "annotations": {
+    "list": [
+      {
+        "builtIn": 1,
+        "datasource": "-- Grafana --",
+        "enable": true,
+        "hide": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "name": "Annotations & Alerts",
+        "type": "dashboard"
+      }
+    ]
+  },
+  "editable": true,
+  "gnetId": null,
+  "graphTooltip": 0,
+  "hideControls": false,
+  "id": null,
+  "links": [],
+  "refresh": "30s",
+  "rows": [
+    {
+      "collapse": false,
+      "height": 274,
+      "panels": [
+        {
+          "aliasColors": {},
+          "bars": false,
+          "dashLength": 10,
+          "dashes": false,
+          "datasource": "${DS_GRAPHITE}",
+          "fill": 1,
+          "id": 36,
+          "legend": {
+            "avg": false,
+            "current": false,
+            "max": false,
+            "min": false,
+            "show": true,
+            "total": false,
+            "values": false
+          },
+          "lines": true,
+          "linewidth": 1,
+          "links": [],
+          "nullPointMode": "null as zero",
+          "percentage": false,
+          "pointradius": 5,
+          "points": false,
+          "renderer": "flot",
+          "seriesOverrides": [],
+          "spaceLength": 10,
+          "span": 6,
+          "stack": true,
+          "steppedLine": false,
+          "targets": [
+            {
+              "refId": "A",
+              "target": "aliasByMetric(network-script.avi.$location.$environment.$device.virtualservice.$vs.l7_server_avg_application_response_time)",
+              "textEditor": true
+            },
+            {
+              "hide": false,
+              "refId": "B",
+              "target": "aliasByMetric(network-script.avi.$location.$environment.$device.virtualservice.$vs.l7_client_avg_client_data_transfer_time)",
+              "textEditor": false
+            },
+            {
+              "refId": "C",
+              "target": "aliasByMetric(network-script.avi.$location.$environment.$device.virtualservice.$vs.l4_client_avg_total_rtt)",
+              "textEditor": false
+            },
+            {
+              "refId": "D",
+              "target": "aliasByMetric(network-script.avi.$location.$environment.$device.virtualservice.$vs.l4_server_avg_total_rtt)",
+              "textEditor": false
+            }
+          ],
+          "thresholds": [],
+          "timeFrom": null,
+          "timeShift": null,
+          "title": "End to End Timing",
+          "tooltip": {
+            "shared": true,
+            "sort": 0,
+            "value_type": "individual"
+          },
+          "type": "graph",
+          "xaxis": {
+            "buckets": null,
+            "mode": "time",
+            "name": null,
+            "show": true,
+            "values": []
+          },
+          "yaxes": [
+            {
+              "format": "ms",
+              "label": null,
+              "logBase": 1,
+              "max": null,
+              "min": null,
+              "show": true
+            },
+            {
+              "format": "short",
+              "label": null,
+              "logBase": 1,
+              "max": null,
+              "min": null,
+              "show": true
+            }
+          ]
+        },
+        {
+          "aliasColors": {},
+          "bars": false,
+          "dashLength": 10,
+          "dashes": false,
+          "datasource": "${DS_GRAPHITE}",
+          "editable": true,
+          "error": false,
+          "fill": 1,
+          "grid": {},
+          "id": 40,
+          "legend": {
+            "avg": false,
+            "current": false,
+            "max": false,
+            "min": false,
+            "show": true,
+            "total": false,
+            "values": false
+          },
+          "lines": true,
+          "linewidth": 2,
+          "links": [],
+          "nullPointMode": "connected",
+          "percentage": false,
+          "pointradius": 5,
+          "points": false,
+          "renderer": "flot",
+          "seriesOverrides": [],
+          "spaceLength": 10,
+          "span": 6,
+          "stack": false,
+          "steppedLine": false,
+          "targets": [
+            {
+              "refId": "A",
+              "target": "aliasByMetric(network-script.avi.$location.$environment.$device.virtualservice.$vs.l7_client_avg_waf_matched)",
+              "textEditor": true
+            },
+            {
+              "refId": "C",
+              "target": "aliasByMetric(network-script.avi.$location.$environment.$device.virtualservice.$vs.l7_client_avg_waf_evaluated)",
+              "textEditor": true
+            },
+            {
+              "refId": "B",
+              "target": "aliasByMetric(network-script.avi.$location.$environment.$device.virtualservice.$vs.l7_client_avg_waf_rejected)",
+              "textEditor": true
+            },
+            {
+              "refId": "E",
+              "target": "aliasByMetric(network-script.avi.$location.$environment.$device.virtualservice.$vs.l7_client_avg_waf_disabled)",
+              "textEditor": true
+            }
+          ],
+          "thresholds": [],
+          "timeFrom": null,
+          "timeShift": null,
+          "title": "Sum all Requests - WAF eval/matched/rejected/bypass",
+          "tooltip": {
+            "msResolution": false,
+            "shared": false,
+            "sort": 0,
+            "value_type": "cumulative"
+          },
+          "type": "graph",
+          "xaxis": {
+            "buckets": null,
+            "mode": "time",
+            "name": null,
+            "show": true,
+            "values": []
+          },
+          "yaxes": [
+            {
+              "format": "short",
+              "logBase": 1,
+              "max": null,
+              "min": null,
+              "show": true
+            },
+            {
+              "format": "percent",
+              "logBase": 1,
+              "max": null,
+              "min": null,
+              "show": false
+            }
+          ]
+        }
+      ],
+      "repeat": null,
+      "repeatIteration": null,
+      "repeatRowId": null,
+      "showTitle": false,
+      "title": "Dashboard Row",
+      "titleSize": "h6"
+    },
+    {
+      "collapse": false,
+      "height": 236,
+      "panels": [
+        {
+          "aliasColors": {},
+          "bars": false,
+          "dashLength": 10,
+          "dashes": false,
+          "datasource": "${DS_GRAPHITE}",
+          "editable": true,
+          "error": false,
+          "fill": 1,
+          "grid": {},
+          "id": 31,
+          "legend": {
+            "avg": false,
+            "current": false,
+            "max": false,
+            "min": false,
+            "show": true,
+            "total": false,
+            "values": false
+          },
+          "lines": true,
+          "linewidth": 2,
+          "links": [],
+          "nullPointMode": "connected",
+          "percentage": false,
+          "pointradius": 5,
+          "points": false,
+          "renderer": "flot",
+          "seriesOverrides": [],
+          "spaceLength": 10,
+          "span": 6,
+          "stack": false,
+          "steppedLine": false,
+          "targets": [
+            {
+              "refId": "A",
+              "target": "aliasByMetric(network-script.avi.$location.$environment.$device.virtualservice.$vs.l7_client_pct_get_reqs)",
+              "textEditor": true
+            },
+            {
+              "refId": "C",
+              "target": "aliasByMetric(network-script.avi.$location.$environment.$device.virtualservice.$vs.l7_client_pct_post_reqs)",
+              "textEditor": true
+            },
+            {
+              "refId": "B",
+              "target": "aliasByMetric(network-script.avi.$location.$environment.$device.virtualservice.$vs.l7_client_pct_waf_disabled)",
+              "textEditor": true
+            }
+          ],
+          "thresholds": [],
+          "timeFrom": null,
+          "timeShift": null,
+          "title": "Percentage GET/POST/BYPASS",
+          "tooltip": {
+            "msResolution": false,
+            "shared": false,
+            "sort": 0,
+            "value_type": "cumulative"
+          },
+          "type": "graph",
+          "xaxis": {
+            "buckets": null,
+            "mode": "time",
+            "name": null,
+            "show": true,
+            "values": []
+          },
+          "yaxes": [
+            {
+              "format": "percent",
+              "logBase": 1,
+              "max": null,
+              "min": null,
+              "show": true
+            },
+            {
+              "format": "short",
+              "logBase": 1,
+              "max": null,
+              "min": null,
+              "show": true
+            }
+          ]
+        },
+        {
+          "aliasColors": {},
+          "bars": false,
+          "dashLength": 10,
+          "dashes": false,
+          "datasource": "${DS_GRAPHITE}",
+          "editable": true,
+          "error": false,
+          "fill": 1,
+          "grid": {},
+          "id": 37,
+          "legend": {
+            "avg": false,
+            "current": false,
+            "max": false,
+            "min": false,
+            "show": true,
+            "total": false,
+            "values": false
+          },
+          "lines": true,
+          "linewidth": 2,
+          "links": [],
+          "nullPointMode": "connected",
+          "percentage": false,
+          "pointradius": 5,
+          "points": false,
+          "renderer": "flot",
+          "seriesOverrides": [],
+          "spaceLength": 10,
+          "span": 3,
+          "stack": false,
+          "steppedLine": false,
+          "targets": [
+            {
+              "refId": "D",
+              "target": "aliasByMetric(network-script.avi.$location.$environment.$device.virtualservice.$vs.l7_client_sum_total_responses)",
+              "textEditor": true
+            }
+          ],
+          "thresholds": [],
+          "timeFrom": null,
+          "timeShift": null,
+          "title": "Sum all Requests",
+          "tooltip": {
+            "msResolution": false,
+            "shared": false,
+            "sort": 0,
+            "value_type": "cumulative"
+          },
+          "type": "graph",
+          "xaxis": {
+            "buckets": null,
+            "mode": "time",
+            "name": null,
+            "show": true,
+            "values": []
+          },
+          "yaxes": [
+            {
+              "format": "short",
+              "logBase": 1,
+              "max": null,
+              "min": null,
+              "show": true
+            },
+            {
+              "format": "percent",
+              "logBase": 1,
+              "max": null,
+              "min": null,
+              "show": false
+            }
+          ]
+        },
+        {
+          "aliasColors": {},
+          "bars": false,
+          "dashLength": 10,
+          "dashes": false,
+          "datasource": "${DS_GRAPHITE}",
+          "editable": true,
+          "error": false,
+          "fill": 1,
+          "grid": {},
+          "id": 38,
+          "legend": {
+            "avg": false,
+            "current": false,
+            "max": false,
+            "min": false,
+            "show": true,
+            "total": false,
+            "values": false
+          },
+          "lines": true,
+          "linewidth": 2,
+          "links": [],
+          "nullPointMode": "connected",
+          "percentage": false,
+          "pointradius": 5,
+          "points": false,
+          "renderer": "flot",
+          "seriesOverrides": [],
+          "spaceLength": 10,
+          "span": 3,
+          "stack": false,
+          "steppedLine": false,
+          "targets": [
+            {
+              "refId": "A",
+              "target": "aliasByMetric(network-script.avi.$location.$environment.$device.virtualservice.$vs.l7_client_avg_post_bytes)",
+              "textEditor": true
+            }
+          ],
+          "thresholds": [],
+          "timeFrom": null,
+          "timeShift": null,
+          "title": "Average Post Bytes",
+          "tooltip": {
+            "msResolution": false,
+            "shared": false,
+            "sort": 0,
+            "value_type": "cumulative"
+          },
+          "type": "graph",
+          "xaxis": {
+            "buckets": null,
+            "mode": "time",
+            "name": null,
+            "show": true,
+            "values": []
+          },
+          "yaxes": [
+            {
+              "format": "short",
+              "logBase": 1,
+              "max": null,
+              "min": null,
+              "show": true
+            },
+            {
+              "format": "short",
+              "logBase": 1,
+              "max": null,
+              "min": null,
+              "show": true
+            }
+          ]
+        }
+      ],
+      "repeat": null,
+      "repeatIteration": null,
+      "repeatRowId": null,
+      "showTitle": false,
+      "title": "Row1",
+      "titleSize": "h6"
+    },
+    {
+      "collapse": false,
+      "height": 220,
+      "panels": [
+        {
+          "aliasColors": {},
+          "bars": false,
+          "dashLength": 10,
+          "dashes": false,
+          "datasource": "${DS_GRAPHITE}",
+          "editable": true,
+          "error": false,
+          "fill": 1,
+          "grid": {},
+          "id": 28,
+          "legend": {
+            "avg": false,
+            "current": false,
+            "max": false,
+            "min": false,
+            "show": true,
+            "total": false,
+            "values": false
+          },
+          "lines": true,
+          "linewidth": 2,
+          "links": [],
+          "nullPointMode": "connected",
+          "percentage": false,
+          "pointradius": 5,
+          "points": false,
+          "renderer": "flot",
+          "seriesOverrides": [],
+          "spaceLength": 10,
+          "span": 3,
+          "stack": false,
+          "steppedLine": false,
+          "targets": [
+            {
+              "refId": "B",
+              "target": "aliasByMetric(network-script.avi.$location.$environment.$device.virtualservice.$vs.l7_client_avg_http_headers_count)",
+              "textEditor": true
+            }
+          ],
+          "thresholds": [],
+          "timeFrom": null,
+          "timeShift": null,
+          "title": "Average Header Count",
+          "tooltip": {
+            "msResolution": false,
+            "shared": false,
+            "sort": 0,
+            "value_type": "cumulative"
+          },
+          "type": "graph",
+          "xaxis": {
+            "buckets": null,
+            "mode": "time",
+            "name": null,
+            "show": true,
+            "values": []
+          },
+          "yaxes": [
+            {
+              "format": "short",
+              "logBase": 1,
+              "max": null,
+              "min": null,
+              "show": true
+            },
+            {
+              "format": "short",
+              "logBase": 1,
+              "max": null,
+              "min": null,
+              "show": true
+            }
+          ]
+        },
+        {
+          "aliasColors": {},
+          "bars": false,
+          "dashLength": 10,
+          "dashes": false,
+          "datasource": "${DS_GRAPHITE}",
+          "editable": true,
+          "error": false,
+          "fill": 1,
+          "grid": {},
+          "id": 30,
+          "legend": {
+            "avg": false,
+            "current": false,
+            "max": false,
+            "min": false,
+            "show": true,
+            "total": false,
+            "values": false
+          },
+          "lines": true,
+          "linewidth": 2,
+          "links": [],
+          "nullPointMode": "connected",
+          "percentage": false,
+          "pointradius": 5,
+          "points": false,
+          "renderer": "flot",
+          "seriesOverrides": [],
+          "spaceLength": 10,
+          "span": 3,
+          "stack": false,
+          "steppedLine": false,
+          "targets": [
+            {
+              "refId": "B",
+              "target": "aliasByMetric(network-script.avi.$location.$environment.$device.virtualservice.$vs.l7_client_avg_http_headers_bytes)",
+              "textEditor": true
+            }
+          ],
+          "thresholds": [],
+          "timeFrom": null,
+          "timeShift": null,
+          "title": "Average Header Bytes",
+          "tooltip": {
+            "msResolution": false,
+            "shared": false,
+            "sort": 0,
+            "value_type": "cumulative"
+          },
+          "type": "graph",
+          "xaxis": {
+            "buckets": null,
+            "mode": "time",
+            "name": null,
+            "show": true,
+            "values": []
+          },
+          "yaxes": [
+            {
+              "format": "Bps",
+              "logBase": 1,
+              "max": null,
+              "min": null,
+              "show": true
+            },
+            {
+              "format": "short",
+              "logBase": 1,
+              "max": null,
+              "min": null,
+              "show": true
+            }
+          ]
+        },
+        {
+          "aliasColors": {},
+          "bars": false,
+          "dashLength": 10,
+          "dashes": false,
+          "datasource": "${DS_GRAPHITE}",
+          "editable": true,
+          "error": false,
+          "fill": 1,
+          "grid": {},
+          "id": 33,
+          "legend": {
+            "avg": false,
+            "current": false,
+            "max": false,
+            "min": false,
+            "show": true,
+            "total": false,
+            "values": false
+          },
+          "lines": true,
+          "linewidth": 2,
+          "links": [],
+          "nullPointMode": "connected",
+          "percentage": false,
+          "pointradius": 5,
+          "points": false,
+          "renderer": "flot",
+          "seriesOverrides": [],
+          "spaceLength": 10,
+          "span": 3,
+          "stack": false,
+          "steppedLine": false,
+          "targets": [
+            {
+              "refId": "A",
+              "target": "aliasByMetric(network-script.avi.$location.$environment.$device.virtualservice.$vs.l7_client_avg_http_params_count)",
+              "textEditor": true
+            }
+          ],
+          "thresholds": [],
+          "timeFrom": null,
+          "timeShift": null,
+          "title": "Average Parameter Count",
+          "tooltip": {
+            "msResolution": false,
+            "shared": false,
+            "sort": 0,
+            "value_type": "cumulative"
+          },
+          "type": "graph",
+          "xaxis": {
+            "buckets": null,
+            "mode": "time",
+            "name": null,
+            "show": true,
+            "values": []
+          },
+          "yaxes": [
+            {
+              "decimals": null,
+              "format": "none",
+              "logBase": 1,
+              "max": null,
+              "min": null,
+              "show": true
+            },
+            {
+              "format": "none",
+              "logBase": 1,
+              "max": null,
+              "min": null,
+              "show": true
+            }
+          ]
+        },
+        {
+          "aliasColors": {},
+          "bars": false,
+          "dashLength": 10,
+          "dashes": false,
+          "datasource": "${DS_GRAPHITE}",
+          "editable": true,
+          "error": false,
+          "fill": 1,
+          "grid": {},
+          "id": 35,
+          "legend": {
+            "avg": false,
+            "current": false,
+            "max": false,
+            "min": false,
+            "show": true,
+            "total": false,
+            "values": false
+          },
+          "lines": true,
+          "linewidth": 2,
+          "links": [],
+          "nullPointMode": "connected",
+          "percentage": false,
+          "pointradius": 5,
+          "points": false,
+          "renderer": "flot",
+          "seriesOverrides": [],
+          "spaceLength": 10,
+          "span": 3,
+          "stack": false,
+          "steppedLine": false,
+          "targets": [
+            {
+              "refId": "A",
+              "target": "aliasByMetric(network-script.avi.$location.$environment.$device.virtualservice.$vs.l7_client_avg_uri_length)",
+              "textEditor": true
+            }
+          ],
+          "thresholds": [],
+          "timeFrom": null,
+          "timeShift": null,
+          "title": "Average URI Length",
+          "tooltip": {
+            "msResolution": false,
+            "shared": false,
+            "sort": 0,
+            "value_type": "cumulative"
+          },
+          "type": "graph",
+          "xaxis": {
+            "buckets": null,
+            "mode": "time",
+            "name": null,
+            "show": true,
+            "values": []
+          },
+          "yaxes": [
+            {
+              "format": "short",
+              "logBase": 1,
+              "max": null,
+              "min": null,
+              "show": true
+            },
+            {
+              "format": "short",
+              "logBase": 1,
+              "max": null,
+              "min": null,
+              "show": true
+            }
+          ]
+        }
+      ],
+      "repeat": null,
+      "repeatIteration": null,
+      "repeatRowId": null,
+      "showTitle": false,
+      "title": "New row",
+      "titleSize": "h6"
+    }
+  ],
+  "schemaVersion": 14,
+  "style": "dark",
+  "tags": [
+    "network",
+    "avi"
+  ],
+  "templating": {
+    "enable": true,
+    "list": [
+      {
+        "allFormat": "glob",
+        "allValue": null,
+        "current": {},
+        "datasource": "${DS_GRAPHITE}",
+        "hide": 0,
+        "includeAll": false,
+        "label": null,
+        "multi": false,
+        "multiFormat": "glob",
+        "name": "location",
+        "options": [],
+        "query": "network-script.avi.*",
+        "refresh": 1,
+        "regex": "",
+        "sort": 0,
+        "tagValuesQuery": "",
+        "tags": [],
+        "tagsQuery": "",
+        "type": "query",
+        "useTags": false
+      },
+      {
+        "allFormat": "glob",
+        "allValue": null,
+        "current": {},
+        "datasource": "${DS_GRAPHITE}",
+        "hide": 0,
+        "includeAll": false,
+        "label": null,
+        "multi": false,
+        "multiFormat": "glob",
+        "name": "environment",
+        "options": [],
+        "query": "network-script.avi.$location.*",
+        "refresh": 1,
+        "regex": "",
+        "sort": 0,
+        "tagValuesQuery": "",
+        "tags": [],
+        "tagsQuery": "",
+        "type": "query",
+        "useTags": false
+      },
+      {
+        "allFormat": "glob",
+        "allValue": null,
+        "current": {},
+        "datasource": "${DS_GRAPHITE}",
+        "hide": 0,
+        "includeAll": false,
+        "label": null,
+        "multi": false,
+        "multiFormat": "glob",
+        "name": "device",
+        "options": [],
+        "query": "network-script.avi.$location.$environment.*",
+        "refresh": 1,
+        "regex": "",
+        "sort": 0,
+        "tagValuesQuery": "",
+        "tags": [],
+        "tagsQuery": "",
+        "type": "query",
+        "useTags": false
+      },
+      {
+        "allFormat": "glob",
+        "allValue": null,
+        "current": {},
+        "datasource": "${DS_GRAPHITE}",
+        "hide": 0,
+        "includeAll": false,
+        "label": null,
+        "multi": false,
+        "name": "vs",
+        "options": [],
+        "query": "network-script.avi.$location.$environment.$device.virtualservice.*",
+        "refresh": 1,
+        "refresh_on_load": false,
+        "regex": "",
+        "sort": 0,
+        "tagValuesQuery": "",
+        "tags": [],
+        "tagsQuery": "",
+        "type": "query",
+        "useTags": false
+      }
+    ]
+  },
+  "time": {
+    "from": "now-1h",
+    "to": "now"
+  },
+  "timepicker": {
+    "collapse": false,
+    "enable": true,
+    "notice": false,
+    "now": true,
+    "refresh_intervals": [
+      "5s",
+      "10s",
+      "30s",
+      "1m",
+      "5m",
+      "15m",
+      "30m",
+      "1h",
+      "2h",
+      "1d"
+    ],
+    "status": "Stable",
+    "time_options": [
+      "5m",
+      "15m",
+      "1h",
+      "6h",
+      "12h",
+      "24h",
+      "2d",
+      "7d",
+      "30d"
+    ],
+    "type": "timepicker"
+  },
+  "timezone": "browser",
+  "title": "Avi - Virtual Services-Sizing-Metrics",
+  "version": 10
+}
