@@ -21,8 +21,9 @@ ENV EN_DOCKER=True
 
 # Install python requirements
 RUN pip install --no-cache-dir requests
-#RUN apt-get update
-#RUN apt-get install -y vim
+RUN apt-get update
+RUN apt-get install -y vim
+RUN apt-get clean
 
 # Copy scripts to directory
 COPY "avimetrics.py" "/usr/src/avi"
