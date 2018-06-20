@@ -1,0 +1,18 @@
+{
+  "Name": "AVI Autoscale Role",
+  "IsCustom": true,
+  "Description": "Custom Role for AVI Autoscale",
+  "Actions": [
+    "Microsoft.Compute/virtualMachineScaleSets/read",
+    "microsoft.Compute/virtualMachineScaleSets/*/read",
+    "Microsoft.Compute/virtualMachineScaleSets/write",
+    "microsoft.Compute/virtualMachineScaleSets/delete/action"
+  ],
+  "NotActions": [
+
+  ],
+  "AssignableScopes": [
+    "/subscriptions/<fill subscription-id>"
+  ]
+}
+
