@@ -1,7 +1,7 @@
 #!/usr/bin/python
 
 
-version = 'v2018-05-04'
+version = 'v2018-07-03'
 
 #########################################################################################
 #                                                                                       #
@@ -114,8 +114,11 @@ else:
 #----- This function allows for passwords to be either plaintext or base64 encoded
 def isBase64(password):
     try:
-        if base64.b64encode(base64.b64decode(password)) == password:
-            return base64.b64decode(password)
+        if base64.b64encode(base64.b64decode(b''+password)) == password:
+            if all(ord(c) < 128 for c in base64.b64decode(b''+password)):
+                return base64.b64decode(b''+password)
+            else:
+                return password
         else:
             return password
     except Exception:
@@ -186,18 +189,18 @@ class avi_metrics():
             'l7_client.avg_waf_attacks',
             'l7_client.pct_waf_attacks',
             'l7_client.sum_total_responses',
-            'l7_client.avg_waf_rejected',
-            'l7_client.avg_waf_evaluated',
-            'l7_client.avg_waf_matched',
-            'l7_client.avg_waf_disabled',
-            'l7_client.pct_waf_disabled',
-            'l7_client.avg_http_headers_count',
-            'l7_client.avg_http_headers_bytes',
-            'l7_client.pct_get_reqs',
-            'l7_client.pct_post_reqs',
-            'l7_client.avg_http_params_count',
-            'l7_client.avg_uri_length',
-            'l7_client.avg_post_bytes',
+            'l7_client.avg_waf_rejected', #---- available after 17.2
+            'l7_client.avg_waf_evaluated', #---- available after 17.2
+            'l7_client.avg_waf_matched', #---- available after 17.2.12
+            'l7_client.avg_waf_disabled', #---- available after 17.2.12
+            'l7_client.pct_waf_disabled', #---- available after 17.2.12
+            'l7_client.avg_http_headers_count', #---- available after 17.2.12
+            'l7_client.avg_http_headers_bytes', #---- available after 17.2.12
+            'l7_client.pct_get_reqs', #---- available after 17.2.12
+            'l7_client.pct_post_reqs', #---- available after 17.2.12
+            'l7_client.avg_http_params_count', #---- available after 17.2.12
+            'l7_client.avg_uri_length', #---- available after 17.2.12
+            'l7_client.avg_post_bytes', #---- available after 17.2.12
             'dns_client.avg_complete_queries',
             'dns_client.avg_domain_lookup_failures',
             'dns_client.avg_tcp_queries',
@@ -446,6 +449,52 @@ class avi_metrics():
 
 
 
+    #-----------------------------------
+    #----- Remove unavailable metrics for current version
+    def remove_version_specific_metrics(self):
+        try:
+            temp_start_time = time.time()
+            #----- metrics available after 17.2.12 and 18.1.2
+            v17_2_12__18_1_12_plus = [
+                'l7_client.avg_http_headers_count',
+                'l7_client.avg_http_headers_bytes',
+                'l7_client.pct_get_reqs',
+                'l7_client.pct_post_reqs',
+                'l7_client.avg_http_params_count',
+                'l7_client.avg_uri_length',
+                'l7_client.avg_post_bytes',
+                'l7_client.avg_waf_matched',
+                'l7_client.avg_waf_disabled',
+                'l7_client.pct_waf_disabled']
+            #----- metrics available starting after 17.2
+            v17_2_plus = [
+                'l7_client.avg_waf_rejected',
+                'l7_client.avg_waf_evaluated']
+            major,minor = self.login.json()['version']['Version'].rsplit('.',1)
+            #---- check for v17 versions prior to 17.2
+            if float(major) < 17.2: #----- controller metrics api introduced in 17.2.5
+                for m in v17_2_plus:
+                    self.vs_metric_list = self.vs_metric_list.replace(m+',','')
+            #---- check for v17 prior to 17.2.12
+            if float(major) <= 17.2: #----- controller metrics api introduced in 17.2.5
+                if float(minor) < 12:
+                    for m in v17_2_12__18_1_12_plus:
+                        self.vs_metric_list = self.vs_metric_list.replace(m+',','')
+            #----- check for v18 versions
+            if float(major) <= 18.1 and float(major) > 17.2:
+                if float(minor) < 2:
+                    for m in v17_2_12__18_1_12_plus:
+                        self.vs_metric_list = self.vs_metric_list.replace(m+',','')
+        except:
+            print(str(datetime.now())+' '+self.avi_cluster_ip+': remove_version_specific_metrics encountered an error')
+            exception_text = traceback.format_exc()
+            print(str(datetime.now())+' '+self.avi_cluster_ip+': '+exception_text)
+
+
+
+
+
+
 
 
 
@@ -646,7 +695,7 @@ class avi_metrics():
         try:
             temp_start_time = time.time()
             major,minor = self.login.json()['version']['Version'].rsplit('.',1)
-            if float(major) >= 17.2 and float(minor) >= 8: #----- controller metrics api introduced in 17.2.5
+            if (float(major) >= 17.2 and float(minor) >= 8) or float(major) >= 18.1: #----- controller metrics api introduced in 17.2.5
                 proc = []
                 for t in self.tenants:
                     if t['name'] in self.se_dict['tenants'] and self.se_dict['tenants'][t['name']]['count'] > 0:
@@ -1322,7 +1371,7 @@ class avi_metrics():
         try:
             temp_start_time = time.time()
             major,minor = self.login.json()['version']['Version'].rsplit('.',1)
-            if float(major) >= 17.2 and float(minor) >= 5: #----- controller metrics api introduced in 17.2.5
+            if (float(major) >= 17.2 and float(minor) >= 5) or float(major) >= 18.1: #----- controller metrics api introduced in 17.2.5
                 cluster= self.avi_request('cluster','admin').json()
                 cluster_nodes = {}
                 temp_list=[]
@@ -1379,6 +1428,8 @@ class avi_metrics():
             self.avi_controller = self.controller_to_poll()
             print '=====> Chose '+self.avi_controller
             self.vs_dict, self.se_dict, self.pool_dict, self.seg_dict = self.gen_inventory_dict()
+            #---- remove metrics that are not available in the current version
+            self.remove_version_specific_metrics()
             #-----------------------------------
             #----- Add Test functions to list for threaded execution
             #-----------------------------------
