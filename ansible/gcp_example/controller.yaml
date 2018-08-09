@@ -1,0 +1,30 @@
+---
+- hosts: bm
+  vars:
+    avi_con_version: 18.1.2-9058-20180623.025526
+    controller_ip: "{{ controller_ip }}"
+    internal_ip: 10.0.0.7
+    password: "{{ password }}"
+  roles:
+    - avinetworks.avisdk
+  tasks:
+  - name: Avi Controller | Setup docker
+    include_role:
+      name: avinetworks.docker
+    become: yes
+
+  - name: Avi Controller | Setup Controller
+    include_role:
+      name: avinetworks.avicontroller
+    vars:
+      con_controller_ip: "{{internal_ip}}"
+      con_memory_gb: 20
+      con_cores: 4
+      con_fresh_install: True
+      con_package_deploy: False
+      con_version: "{{avi_con_version}}"
+      con_image: avinetworks/controller:{{ con_version }}
+      con_disk_gb: 50
+      #con_package_source: /mnt/builds/eng/nightly-build-18.1.2-5282/docker_install.tar.gz
+      #con_package_dest: /root/docker_install.tar.gz
+

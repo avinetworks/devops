@@ -1,0 +1,124 @@
+---
+# Run playbook as
+# ansible-playbook controller_kcloud.yaml -vvv -e "password=xxx controller_ip=xxx avi_config_state=present default_avi_password=xxx"
+#
+- hosts: localhost
+  vars_files:
+    - "avi_creds.yml"
+  vars:
+    avi_con_version: 18.1.2-9058-20180623.025526
+    cloud_name: Default-Cloud
+    avi_config_state: present
+    service_account_token: "{{ lookup('file', '~/.kube_service_token') }}"
+  roles:
+    - avinetworks.avisdk
+  tasks:
+  - name: Avi Credentials
+    debug: msg="{{ avi_credentials }}"
+
+  - name: Update user password
+    avi_useraccount:
+      controller: "{{controller_ip}}"
+      username: admin
+      password: "{{password}}"
+      old_password: "{{default_avi_password}}"
+      api_version: "18.1.2"
+
+  - name: Avi Controller | Setup IPAM and Network
+    include_role:
+      name: avinetworks.aviconfig
+    vars:
+      avi_config_file: "avi_config.yml"
+      avi_creds_file: "avi_creds.yml"
+    when:
+      - avi_config_state=="present"
+
+  - name: Avi Controller | Setup cloud Setup
+    avi_cloud:
+      avi_credentials: "{{ avi_credentials }}"
+      name: "{{ cloud_name }}"
+      dhcp_enabled: true
+      vtype: CLOUD_OSHIFT_K8S
+      prefer_static_routes: true
+      ipam_provider_ref: "/api/ipamdnsproviderprofile?name=ns"
+      dns_provider_ref: "/api/ipamdnsproviderprofile?name=ns_d"
+      tenant_ref: "/api/tenant?name=admin"
+      east_west_ipam_provider_ref: "/api/ipamdnsproviderprofile?name=ew"
+      oshiftk8s_configuration:
+        east_west_placement_subnet:
+          mask: 16
+          ip_addr:
+            type: V4
+            addr: 172.18.0.1
+        container_port_match_http_service: false
+        service_account_token: "{{service_account_token}}"
+        docker_registry_se:
+          oshift_registry: {}
+        se_deployment_method: SE_CREATE_POD
+        master_nodes:
+          - "{{kube_master_node}}"
+        avi_bridge_subnet:
+          mask: 16
+          ip_addr:
+            type: V4
+            addr: 172.18.0.1
+      east_west_dns_provider_ref: "/api/ipamdnsproviderprofile?name=ns_d"
+      license_type: LIC_CORES
+      license_tier: ENTERPRISE_18
+    when:
+      - avi_config_state=="present"
+
+  - name: Avi Controller | Disable cloud
+    avi_cloud:
+      avi_credentials: "{{ avi_credentials }}"
+      name: "{{ cloud_name }}"
+      vtype: CLOUD_NONE
+      license_type: LIC_CORES
+      license_tier: ENTERPRISE_18
+      tenant_ref: "/api/tenant?name=admin"
+      east_west_ipam_provider_ref: "/api/ipamdnsproviderprofile?name=ew"
+      east_west_ipam_provider_ref: "/api/ipamdnsproviderprofile?name=ew"
+      ipam_provider_ref: "/api/ipamdnsproviderprofile?name=ns"
+      dns_provider_ref: "/api/ipamdnsproviderprofile?name=ns_d"
+    when:
+      - avi_config_state=="absent"
+
+  - name: Avi Controller | Pause for cloud cleanup
+    pause:
+    when:
+      - avi_config_state=="absent"
+
+  - name: Avi Controller | Remove use of IPAM from cloud
+    avi_cloud:
+      avi_credentials: "{{ avi_credentials }}"
+      name: "{{ cloud_name }}"
+      vtype: CLOUD_NONE
+      license_type: LIC_CORES
+      license_tier: ENTERPRISE_18
+      tenant_ref: "/api/tenant?name=admin"
+      east_west_ipam_provider_ref: ""
+    when:
+      - avi_config_state=="absent"
+
+  - name: Avi Controller | Cleanup IPAM and Network
+    include_role:
+      name: avinetworks.aviconfig
+    vars:
+      avi_config_file: "avi_config.yml"
+      avi_creds_file: "avi_creds.yml"
+    when:
+      - avi_config_state=="absent"
+
+#  - name: Avi Controller | Delete cloud
+#    avi_cloud:
+#      avi_credentials: "{{ avi_credentials }}"
+#      name: "{{ cloud_name }}"
+#      state: absent
+#      vtype: CLOUD_NONE
+#      license_type: LIC_CORES
+#      license_tier: ENTERPRISE_18
+#      tenant_ref: "/api/tenant?name=admin"
+#    when:
+#      - avi_config_state=="absent"
+#      - false
+
