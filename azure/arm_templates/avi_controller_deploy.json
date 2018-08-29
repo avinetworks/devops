@@ -286,6 +286,9 @@
         "name": "controllervmcopy",
         "count": "[parameters('controllerCount')]"
       },
+      "identity": {
+          "type": "systemAssigned"
+      },
       "tags": {
         "displayName": "Avi Controller VirtualMachine"
       },
