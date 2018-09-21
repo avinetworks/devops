@@ -1,7 +1,7 @@
 {
-  "Name": "AVI Controller Market Place Role",
+  "Name": "Avi Controller Market Place Role",
   "IsCustom": true,
-  "Description": "Role provides read/write permissions to auto accept AVI marketplace license terms and conditions",
+  "Description": "Role provides read/write permissions to auto accept Avi marketplace license terms and conditions",
   "Actions": [
     "Microsoft.MarketplaceOrdering/offerTypes/publishers/offers/plans/agreements/read",
     "Microsoft.MarketplaceOrdering/offerTypes/publishers/offers/plans/agreements/write"
