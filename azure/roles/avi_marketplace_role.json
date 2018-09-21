@@ -1,0 +1,16 @@
+{
+  "Name": "Avi Controller Marketplace Role",
+  "IsCustom": true,
+  "Description": "Role provides read/write permissions to auto accept Avi marketplace license terms and conditions. This role needs to be appliend at subscription level",
+  "Actions": [
+    "Microsoft.MarketplaceOrdering/offerTypes/publishers/offers/plans/agreements/read",
+    "Microsoft.MarketplaceOrdering/offerTypes/publishers/offers/plans/agreements/write"
+  ],
+  "NotActions": [
+
+  ],
+  "AssignableScopes": [
+    "/subscriptions/<fill subscription-id>"
+  ]
+}
+
