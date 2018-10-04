@@ -1,0 +1,130 @@
+---
+- hosts: localhost
+  connection: local
+
+  vars:
+    app_name: complex_app
+  
+  vars_files:
+    - "{{ site_dir }}/vars/creds.yml"
+  roles:
+    - role: "avinetworks.avisdk"
+  
+  tasks:
+    - name: Setting up Application
+      debug: msg="{{ app_name }}"
+        
+    - name: Create health monitor
+      avi_healthmonitor:
+        controller: "{{avi_credentials.controller}}"
+        username: "{{avi_credentials.username}}"
+        password: "{{avi_credentials.password}}"
+        api_version: "{{avi_credentials.api_version}}"
+        name: app-hm
+        http_monitor:
+          http_request: "HEAD / HTTP/1.0"
+          http_response_code:
+            - HTTP_2XX
+            - HTTP_3XX
+        receive_timeout: 4
+        failed_checks: 3
+        send_interval: 10
+        successful_checks: 3
+        type: HEALTH_MONITOR_HTTP
+        
+    - name: Create PoolGroup
+      avi_poolgroup:
+        controller: "{{avi_credentials.controller}}"
+        username: "{{avi_credentials.username}}"
+        password: "{{avi_credentials.password}}"
+        api_version: "{{avi_credentials.api_version}}"
+        name: app-poolgroup
+        
+
+    - name: Create First Pool
+      avi_pool:
+        controller: "{{avi_credentials.controller}}"
+        username: "{{avi_credentials.username}}"
+        password: "{{avi_credentials.password}}"
+        api_version: "{{avi_credentials.api_version}}"
+        name: app-pool-1
+        lb_algorithm: LB_ALGORITHM_ROUND_ROBIN
+        health_monitor_refs:
+          - "/api/healthmonitor?name=app-hm"
+        servers:
+          - ip:
+               addr: "{{ pool_server1 }}"
+               type: 'V4'
+          
+    - name: Create Second Pool
+      avi_pool:
+        controller: "{{avi_credentials.controller}}"
+        username: "{{avi_credentials.username}}"
+        password: "{{avi_credentials.password}}"
+        api_version: "{{avi_credentials.api_version}}"
+        name: app-pool-2
+        lb_algorithm: LB_ALGORITHM_ROUND_ROBIN
+        health_monitor_refs:
+          - "/api/healthmonitor?name=app-hm"
+        servers:
+          - ip:
+               addr: "{{ pool_server2 }}"
+               type: 'V4'
+
+    - name: create http policy set
+      avi_httppolicyset:
+        username: "{{avi_credentials.username}}"
+        password: "{{avi_credentials.password}}"
+        controller: "{{avi_credentials.controller}}"
+        api_version: "{{avi_credentials.api_version}}"
+        name: app-policy-set
+        description: "test-HTTP-policy-set"
+        http_request_policy:
+         rules:
+          - index: 1
+            enable: true
+            name: test-test1
+            match:
+              path:
+                match_case: INSENSITIVE
+                match_str:
+                  - /test1
+                match_criteria: EQUALS
+            switching_action:
+              action: HTTP_SWITCHING_SELECT_POOL
+              status_code: HTTP_LOCAL_RESPONSE_STATUS_CODE_200
+              pool_ref: "/api/pool?name=app-pool-1"
+          - index: 2
+            enable: true
+            name: test-test2
+            match:
+              path:
+                match_case: INSENSITIVE
+                match_str:
+                  - /matchpattern
+                match_criteria: CONTAINS
+            switching_action:
+              action: HTTP_SWITCHING_SELECT_POOL
+              status_code: HTTP_LOCAL_RESPONSE_STATUS_CODE_200
+              pool_ref: "/api/pool?name=app-pool-2"
+        is_internal_policy: false
+        
+    - name: Create Virtualservice
+      avi_virtualservice:
+        controller: "{{avi_credentials.controller}}"
+        username: "{{avi_credentials.username}}"
+        password: "{{avi_credentials.password}}"
+        api_version: "{{avi_credentials.api_version}}"
+        name: "{{ app_name }}"
+        services:
+          - port: 80
+            enable_ssl: true
+        pool_group_ref: '/api/pool?name=app-poolgroup'
+        ssl_profile_ref: '/api/sslprofile?name=System-Standard'
+        http_policies:
+          - http_policy_set_ref: /api/httppolicyset?name=app-policy-set
+        vip:
+          - ip_address:
+              addr: "{{ app1_vip }}"
+              type: 'V4'
+            vip_id: '1'
