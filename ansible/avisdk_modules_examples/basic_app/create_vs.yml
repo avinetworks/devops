@@ -6,7 +6,7 @@
     app_name: app1
   
   vars_files:
-    - "{{ site_dir }}/creds.yml"
+    - "{{ site_dir }}/vars/creds.yml"
   roles:
     - role: "avinetworks.avisdk"
   
