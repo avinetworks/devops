@@ -1,0 +1,67 @@
+---
+- hosts: localhost
+  connection: local
+  
+  vars:
+    app_name: app1
+  
+  vars_files:
+    - "{{ site_dir }}/vars/creds.yml"
+  roles:
+    - role: "avinetworks.avisdk"
+  
+  tasks:
+    - name: Setting up Application
+      debug: msg="{{ app_name }}"
+        
+    - name: Create health monitor
+      avi_healthmonitor:
+        controller: "{{avi_credentials.controller}}"
+        username: "{{avi_credentials.username}}"
+        password: "{{avi_credentials.password}}"
+        api_version: "{{avi_credentials.api_version}}"
+        name: app1-hm
+        http_monitor:
+          http_request: "HEAD / HTTP/1.0"
+          http_response_code:
+            - HTTP_2XX
+            - HTTP_3XX
+        receive_timeout: 4
+        failed_checks: 3
+        send_interval: 10
+        successful_checks: 3
+        type: HEALTH_MONITOR_HTTP
+
+    - name: Create pool
+      avi_pool:
+        controller: "{{avi_credentials.controller}}"
+        username: "{{avi_credentials.username}}"
+        password: "{{avi_credentials.password}}"
+        api_version: "{{avi_credentials.api_version}}"
+        name: app1-pool
+        lb_algorithm: LB_ALGORITHM_ROUND_ROBIN
+        health_monitor_refs:
+          - "/api/healthmonitor?name=app1-hm"
+        servers:
+          - ip:
+               addr: "{{ pool_server1 }}"
+               type: 'V4'
+          - ip:
+               addr: "{{ pool_server2 }}"
+               type: 'V4'
+    
+    - name: Create Virtualservice
+      avi_virtualservice:
+        controller: "{{avi_credentials.controller}}"
+        username: "{{avi_credentials.username}}"
+        password: "{{avi_credentials.password}}"
+        api_version: "{{avi_credentials.api_version}}"
+        name: "{{ app_name }}"
+        services:
+          - port: 80
+        pool_ref: '/api/pool?name=app1-pool'
+        vip:
+          - ip_address:
+              addr: "{{ app1_vip }}"
+              type: 'V4'
+            vip_id: '1'
