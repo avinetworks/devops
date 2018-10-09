@@ -1,7 +1,7 @@
 # Avi Metrics Script
 
 The Avi Metrics script was built with the intent to pull metrics from one or more Avi controllers and send these values to a centralized metrics database(s).
-The script supports a number of different endpoints; current support includes AppDynamics, Datadog, Graphite and Splunk.
+The script supports a number of different endpoints; current support includes AppDynamics, Datadog, Graphite Splunk and InfluxDB.
 
 
 This repository includes that necessary files to deploy a centralized metrics script
@@ -19,6 +19,7 @@ This repository includes that necessary files to deploy a centralized metrics sc
     - **datadog.json**:  This file contains the values required to send to the Datadog HTTP API
     - **graphite_host.json**:  This file contains the graphite host and tcp port information.
     - **splunk_host.json**:  This file contains the values required to send to a Splunk HTTP Endpoint Collector API to a Metric Index
+    - **influxdb.json**:  This file contains the values required to send to an InfluxDB HTTP API endpoint
 
 
 
@@ -51,6 +52,7 @@ Send Metrics to one or more metrics endpoints.  Valid values are:
  - graphite
  - datadog
  - splunk
+ - influxdb
 
 ```sh
 $ avimetrics.py -m datadog -m graphite
@@ -169,6 +171,24 @@ EXAMPLE:
 ```
 
 
+## influxdb.json
+
+Define the values for sending values to InfluxDB via HTTP API.  The script will send values using the InfluxDB's Line Protocol format.
+
+EXAMPLE:
+
+```sh
+{"influxdb":
+    {
+        "server": "169.254.0.1",
+        "server_port": 8086,
+        "protocol": "https",
+        "db": "avi"
+    }
+}
+```
+
+
 # Run as a container
 To run this script as a container, modify the files as exampled above prior to building.
 
@@ -235,7 +255,6 @@ $ docker run -d -e "EN_METRIC_ENDPOINT=graphite:datadog:appdynamics_http" --name
 
 
 
-
 ### Virtual Service Stats
 
 - Virtual Service healthscore
@@ -266,6 +285,8 @@ $ docker run -d -e "EN_METRIC_ENDPOINT=graphite:datadog:appdynamics_http" --name
     - l4_client.avg_lossy_connections
     - l7_client.avg_complete_responses
     - l7_client.avg_client_data_transfer_time
+    - l7_client.avg_client_txn_latency
+    - l7_client.sum_application_response_time
     - l7_client.avg_resp_4xx_avi_errors
     - l7_client.avg_resp_5xx_avi_errors
     - l7_client.avg_resp_4xx
@@ -287,6 +308,19 @@ $ docker run -d -e "EN_METRIC_ENDPOINT=graphite:datadog:appdynamics_http" --name
     - l7_client.avg_frustrated_responses
     - l7_client.avg_waf_attacks
     - l7_client.pct_waf_attacks
+    - l7_client.sum_total_responses
+    - l7_client.avg_waf_rejected
+    - l7_client.avg_waf_evaluated
+    - l7_client.avg_waf_matched
+    - l7_client.avg_waf_disabled
+    - l7_client.pct_waf_disabled
+    - l7_client.avg_http_headers_count
+    - l7_client.avg_http_headers_bytes
+    - l7_client.pct_get_reqs
+    - l7_client.pct_post_reqs
+    - l7_client.avg_http_params_count
+    - l7_client.avg_uri_length
+    - l7_client.avg_post_bytes
     - dns_client.avg_complete_queries
     - dns_client.avg_domain_lookup_failures
     - dns_client.avg_tcp_queries
@@ -300,6 +334,10 @@ $ docker run -d -e "EN_METRIC_ENDPOINT=graphite:datadog:appdynamics_http" --name
     - dns_server.avg_errored_queries
     - dns_server.avg_tcp_queries
     - dns_server.avg_udp_queries
+
+
+
+
 
 
 

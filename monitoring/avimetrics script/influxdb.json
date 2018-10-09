@@ -1,0 +1,8 @@
+{"influxdb":
+    {
+        "server": "169.254.0.1",
+        "server_port": 8086,
+        "protocol": "https",
+        "db": "avi"
+    }
+}

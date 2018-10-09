@@ -1,7 +1,7 @@
 #!/usr/bin/python
 
 
-version = 'v2018-07-03'
+version = 'v2018-10-09'
 
 #########################################################################################
 #                                                                                       #
@@ -61,7 +61,8 @@ def determine_endpoint_type():
         'appdynamics_http',
         'appdynamics_machine',
         'splunk',
-        'datadog'
+        'datadog',
+        'influxdb'
         ]
     if args.metrics == None:
         print '=====>ERROR:  No metric type defined, acceptable types are: '+str(endpoint_types)
@@ -95,6 +96,11 @@ def determine_endpoint_type():
                     endpoint_info = json.load(dd)['datadog']
                     endpoint_info['type'] = 'datadog'
                     endpoint_list.append(endpoint_info)
+            elif a.lower() == 'influxdb':
+                with open(os.path.join(fdir,'influxdb.json')) as inflx:
+                    endpoint_info = json.load(inflx)['influxdb']
+                    endpoint_info['type'] = 'influxdb'
+                    endpoint_list.append(endpoint_info)                    
         return endpoint_list
 
 
@@ -328,22 +334,25 @@ class avi_metrics():
             pool_dict={'tenants':{}}
             seg_dict = {'tenants':{}}
             if self.login.json()['user']['is_superuser'] == True: #----if SU, use wildcard tenant
-                vs_inv = self.avi_request('virtualservice-inventory?page_size=1000','*').json()
-                vs_total_pages = (vs_inv['count']/1000) + (vs_inv['count'] % 1000 > 0)
+                vs_inv = self.avi_request('virtualservice-inventory?page_size=200','*').json()
                 page_number = 1
-                while vs_total_pages > page_number:
+                while 'next' in vs_inv:
                     page_number += 1
-                    resp = self.avi_request('virtualservice-inventory?page_size=1000&page='+page_number,'*').json()
+                    resp = self.avi_request('virtualservice-inventory?page_size=200&page='+str(page_number),'*').json()
                     vs_inv['results'].append(resp['results'])
                 #------------------
-                se_inv = self.avi_request('serviceengine-inventory?page_size=1000','*').json()
-                #------------------
-                pool_inv = self.avi_request('pool-inventory?page_size=1000','*').json()
-                pool_total_pages = (pool_inv['count']/1000) + (pool_inv['count'] % 1000 > 0)
+                se_inv = self.avi_request('serviceengine-inventory?page_size=200','*').json()
                 page_number = 1
-                while pool_total_pages > page_number:
+                while 'next' in se_inv:
                     page_number += 1
-                    resp = self.avi_request('pool-inventory?page_size=1000&page='+page_number,'*').json()
+                    self.avi_request('serviceengine-inventory?page_size=200&page='+str(page_number),'*').json()
+                    se_inv['results'].append(resp['results'])
+                #------------------
+                pool_inv = self.avi_request('pool-inventory?page_size=200','*').json()
+                page_number = 1
+                while 'next' in pool_inv:
+                    page_number += 1
+                    resp = self.avi_request('pool-inventory?page_size=200&page='+str(page_number),'*').json()
                     pool_inv['results'].append(resp['results'])
                 #------------------
                 seg_inv = self.avi_request('serviceenginegroup-inventory?page_size=1000','*').json()
@@ -397,22 +406,25 @@ class avi_metrics():
                         seg_dict[seg['uuid']] = seg['config']['name']
             else:
                 for t in self.tenants:
-                    vs_inv = self.avi_request('virtualservice-inventory?page_size=1000',t['name']).json()
-                    vs_total_pages = (vs_inv['count']/1000) + (vs_inv['count'] % 1000 > 0)
+                    vs_inv = self.avi_request('virtualservice-inventory?page_size=200',t['name']).json()
                     page_number = 1
-                    while vs_total_pages > page_number:
+                    while 'next' in vs_inv:
                         page_number += 1
-                        resp = self.avi_request('virtualservice-inventory?page_size=1000&page='+page_number,t['name']).json()
+                        resp = self.avi_request('virtualservice-inventory?page_size=200&page='+str(page_number),t['name']).json()
                         vs_inv['results'].append(resp['results'])
                     #------------------
-                    se_inv = self.avi_request('serviceengine-inventory?page_size=1000',t['name']).json()
-                    #------------------
-                    pool_inv = self.avi_request('pool-inventory?page_size=1000',t['name']).json()
-                    pool_total_pages = (pool_inv['count']/1000) + (pool_inv['count'] % 1000 > 0)
+                    se_inv = self.avi_request('serviceengine-inventory?page_size=200',t['name']).json()
                     page_number = 1
-                    while pool_total_pages > page_number:
+                    while 'next' in se_inv:
                         page_number += 1
-                        resp = self.avi_request('pool-inventory?page_size=1000&page='+page_number,'*').json()
+                        resp = self.avi_request('serviceengine-inventory?page_size=200&page='+str(page_number),t['name']).json()
+                        se_inv['results'].append(resp['results'])
+                    #------------------
+                    pool_inv = self.avi_request('pool-inventory?page_size=200',t['name']).json()
+                    page_number = 1
+                    while 'next' in pool_inv:
+                        page_number += 1
+                        resp = self.avi_request('pool-inventory?page_size=200&page='+str(page_number),t['name']).json()
                         pool_inv['results'].append(resp['results'])
                     #------------------
                     seg_inv = self.avi_request('serviceenginegroup-inventory?page_size=1000',t['name']).json()
