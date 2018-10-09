@@ -229,6 +229,7 @@ class avi_metrics():
             'se_stats.avg_cpu_usage',
             'se_stats.avg_disk1_usage',
             'se_stats.avg_mem_usage',
+            'se_stats.avg_dynamic_mem_usage',
             'se_stats.avg_persistent_table_usage',
             'se_stats.avg_rx_bandwidth',
             'se_if.avg_rx_bytes',
