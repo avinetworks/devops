@@ -309,8 +309,8 @@ $ docker run -d -e "EN_METRIC_ENDPOINT=graphite:datadog:appdynamics_http" --name
     - l7_client.avg_waf_attacks
     - l7_client.pct_waf_attacks
     - l7_client.sum_total_responses
-    - l7_client.avg_waf_rejec
-    - l7_client.avg_waf_evalua
+    - l7_client.avg_waf_rejected
+    - l7_client.avg_waf_evaluated
     - l7_client.avg_waf_matched
     - l7_client.avg_waf_disabled
     - l7_client.pct_waf_disabled
