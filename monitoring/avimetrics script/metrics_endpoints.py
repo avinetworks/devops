@@ -120,6 +120,34 @@ def send_value_appdynamics_http(endpoint_info, appd_payload):
 
 
 
+def send_value_influxdb(endpoint_info, influx_payload):
+    try:
+        tag_to_ignore = ['metric_name', 'timestamp', 'metric_value','name_space']
+        message_list = []
+        for entry in influx_payload:
+            tag_list=[]
+            for k in entry:
+                if k not in tag_to_ignore:
+                    tag_list.append((k+'='+entry[k]).replace(' ', '\\'))
+            tag_list = ','.join(tag_list)
+            #temp_payload='%s,%s value=%f %d' %(entry['metric_name'],tag_list,entry['metric_value'],entry['timestamp'])
+            temp_payload='%s,%s value=%f' %(entry['metric_name'],tag_list,entry['metric_value'])
+            message_list.append(temp_payload)
+            if sys.getsizeof(message_list) > 4915:
+                message = '\n'.join(message_list) + '\n'
+                headers = ({'content-type': 'octet-stream'})
+                resp = requests.post('%s://%s:%s/write?db=%s' %(endpoint_info['protocol'],endpoint_info['server'],endpoint_info['server_port'],endpoint_info['db']),verify=False,headers = headers, data=message)
+                message_list = []
+        message = '\n'.join(message_list) + '\n'
+        headers = ({'content-type': 'octet-stream'})
+        resp = requests.post('%s://%s:%s/write?db=%s' %(endpoint_info['protocol'],endpoint_info['server'],endpoint_info['server_port'],endpoint_info['db']),verify=False,headers = headers, data=message)
+    except:
+        exception_text = traceback.format_exc()
+        print exception_text
+            
+
+
+
 
 
 
@@ -196,6 +224,8 @@ def send_metriclist_to_endpoint(endpoint_list, payload):
                 send_value_appdynamics_machine(endpoint_info, payload)
             elif endpoint_info['type'] == 'datadog':
                 send_value_datadog(endpoint_info, payload)
+            elif endpoint_info['type'] == 'influxdb':
+                send_value_influxdb(endpoint_info, payload)
     except:
         exception_text = traceback.format_exc()
         print exception_text

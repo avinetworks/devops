@@ -33,6 +33,7 @@ COPY "datadog.json" "/usr/src/avi"
 COPY "graphite_host.json" "/usr/src/avi"
 COPY "splunk_host.json" "/usr/src/avi"
 COPY "appdynamics_http.json" "/usr/src/avi"
+COPY "influxdb.json" "/usr/src/avi"
 
 
 # Execute script
