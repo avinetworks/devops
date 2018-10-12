@@ -123,6 +123,7 @@ def send_value_appdynamics_http(endpoint_info, appd_payload):
 def send_value_influxdb(endpoint_info, influx_payload):
     try:
         tag_to_ignore = ['metric_name', 'timestamp', 'metric_value','name_space']
+        metric_prefix = ''
         message_list = []
         for entry in influx_payload:
             tag_list=[]
@@ -130,8 +131,7 @@ def send_value_influxdb(endpoint_info, influx_payload):
                 if k not in tag_to_ignore:
                     tag_list.append((k+'='+entry[k]).replace(' ', '\\'))
             tag_list = ','.join(tag_list)
-            #temp_payload='%s,%s value=%f %d' %(entry['metric_name'],tag_list,entry['metric_value'],entry['timestamp'])
-            temp_payload='%s,%s value=%f' %(entry['metric_name'],tag_list,entry['metric_value'])
+            temp_payload='%s%s,%s value=%f' %(metric_prefix, entry['metric_name'],tag_list,entry['metric_value'])
             message_list.append(temp_payload)
             if sys.getsizeof(message_list) > 4915:
                 message = '\n'.join(message_list) + '\n'
