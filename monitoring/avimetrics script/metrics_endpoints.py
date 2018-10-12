@@ -123,7 +123,7 @@ def send_value_appdynamics_http(endpoint_info, appd_payload):
 def send_value_influxdb(endpoint_info, influx_payload):
     try:
         tag_to_ignore = ['metric_name', 'timestamp', 'metric_value','name_space']
-        metric_prefix = ''
+        metric_prefix = endpoint_info['metric_prefix']
         message_list = []
         for entry in influx_payload:
             tag_list=[]
