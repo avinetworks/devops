@@ -19,7 +19,7 @@
   - name: Patch pool with a single server using patch op
     avi_pool:
       avi_api_update_method: patch
-      avi_api_patch_op: delete
+      avi_api_patch_op: add
       avi_credentials: "{{avi_credentials}}"
       name: test-pool
       servers:
