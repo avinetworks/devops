@@ -1204,21 +1204,22 @@ class avi_metrics():
                     for v in self.vs_dict['tenants'][t['name']]['results']:
                         if v['uuid'] not in discovered_vs:
                             for a in v['runtime']['vip_summary']:
-                                for s in a['service_engine']:
-                                    if s['primary'] == True:
-                                        discovered_vs.append(v['uuid'])
-                                        se_name = self.se_dict[s['uuid']]
-                                        vs_name = v['config']['name']
-                                        temp_payload = self.payload_template.copy()
-                                        temp_payload['timestamp']=int(time.time())
-                                        temp_payload['vs_name'] = vs_name
-                                        temp_payload['tenant'] = t['name']
-                                        temp_payload['se_name'] = se_name
-                                        temp_payload['metric_type'] = 'virtualservice_primary_se'
-                                        temp_payload['metric_name'] = 'primary_se'
-                                        temp_payload['metric_value'] = 1
-                                        temp_payload['name_space'] = 'avi||'+self.host_location+'||'+self.host_environment+'||'+self.avi_cluster_ip+'||virtualservice||%s||primary_se||%s' %(vs_name,se_name)
-                                        endpoint_payload_list.append(temp_payload)
+                                if 'service_engine' in a:
+                                    for s in a['service_engine']:
+                                        if s['primary'] == True:
+                                            discovered_vs.append(v['uuid'])
+                                            se_name = self.se_dict[s['uuid']]
+                                            vs_name = v['config']['name']
+                                            temp_payload = self.payload_template.copy()
+                                            temp_payload['timestamp']=int(time.time())
+                                            temp_payload['vs_name'] = vs_name
+                                            temp_payload['tenant'] = t['name']
+                                            temp_payload['se_name'] = se_name
+                                            temp_payload['metric_type'] = 'virtualservice_primary_se'
+                                            temp_payload['metric_name'] = 'primary_se'
+                                            temp_payload['metric_value'] = 1
+                                            temp_payload['name_space'] = 'avi||'+self.host_location+'||'+self.host_environment+'||'+self.avi_cluster_ip+'||virtualservice||%s||primary_se||%s' %(vs_name,se_name)
+                                            endpoint_payload_list.append(temp_payload)
             if len(endpoint_payload_list) > 0:
                 send_metriclist_to_endpoint(endpoint_list, endpoint_payload_list)
             temp_total_time = str(time.time()-temp_start_time)
@@ -1540,6 +1541,8 @@ class avi_metrics():
             test_functions.append(self.get_avi_version)
             test_functions.append(self.pool_server_stats)
             test_functions.append(self.controller_cluster_metrics)
+            test_functions.append(self.se_connected)
+            test_functions.append(self.vs_primary_se)
             #-----------------------------------
             #-----------------------------------
             #-----
