@@ -1,0 +1,16 @@
+avi_credentials:
+  controller: "{{controller_ip}}"
+  username: admin
+  password: "{{password}}"
+  api_version: 18.1.2
+
+ew_subnet: "169.254.0.0"
+ew_subnet_start: "169.254.0.2"
+ew_subnet_end: "169.254.0.254"
+
+ns_subnet: "10.90.65.0"
+ns_subnet_start: "10.90.65.192"
+ns_subnet_end: "10.90.65.200"
+
+project_name: "grastogi"
+kube_master_node: "10.90.65.64:6443"
