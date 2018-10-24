@@ -1,0 +1,45 @@
+#
+# @author: Gaurav Rastogi (grastogi@avinetworks.com)
+#
+# This playbook takes a list of comma separated pool servers
+# and adds them to existing Pool
+# Usage:
+#   ansible-playbook  -M network/avi --extra-vars "username=admin password=password controller=10.10.25.42 pool=p1 pool_servers_ip=10.10.10.10,20.20.20.20"
+#
+---
+- hosts: localhost
+  connection: local
+  vars:
+    avi_credentials:
+      controller: "{{ controller }}"
+      username: admin
+      password: "{{ password }}"
+      api_version: 17.2.1
+    pool_name: "{{ pool_name }}"
+    pool_servers_ip: "{{ pool_servers }}"
+  roles:
+    - role: avinetworks.avisdk
+  tasks:
+    - name: build server list
+      set_fact:
+        servers: "{{servers|default([]) + [{'ip': {'addr': item, 'type': 'V4'}}] }}"
+      with_items: "{{pool_servers_ip.split(',')}}"
+      # each server_list item has ansible fact as server
+    - avi_api_session:
+        # get pool information
+        avi_credentials: "{{avi_credentials}}"
+        http_method: get
+        path: pool
+        params:
+          name: "{{ pool_name }}"
+      register: pool_results
+    - name: get_pool_path
+      set_fact:
+        pool_path: pool/{{ pool_results.obj.results[0].uuid }}
+    - avi_api_session:
+        avi_credentials: "{{avi_credentials}}"
+        http_method: patch
+        path: "{{ pool_path }}"
+        data:
+          add:
+            servers: "{{ servers }}"

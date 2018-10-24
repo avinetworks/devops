@@ -1,0 +1,44 @@
+---
+- hosts: localhost
+  vars:
+    controller: 10.130.181.11
+    username: admin
+    password: avi123$%
+    tenant: CRES
+  connection: local
+  roles:
+    - role: avinetworks.avisdk
+  tasks:
+    - avi_pool:
+        controller: "{{ controller }}"
+        username: "{{ username }}"
+        password: "{{ password }}"
+        tenant: "{{ tenant }}"
+        tenant_ref: "/api/tenant?name={{ tenant }}"
+        api_version: 17.2.9
+        name: testpool
+        health_monitor_refs:
+           - '/api/healthmonitor?name=System-HTTP'
+        servers:
+           - ip:
+               addr: '10.90.64.16'
+               type: 'V4'
+      register: mypool
+    - avi_virtualservice:
+        controller: "{{ controller }}"
+        username: "{{ username }}"
+        password: "{{ password }}"
+        tenant: "{{ tenant }}"
+        tenant_ref: "/api/tenant?name={{ tenant }}"
+        name: testvs2
+        services:
+           - port: 80
+        pool_ref: '/api/pool?name=testpool'
+        performance_limits:
+           max_concurrent_connections: 1000
+        api_version: 17.2.9
+        vip:
+          - ip_address:
+              addr: '10.90.64.252'
+              type: 'V4'
+      register: testvs

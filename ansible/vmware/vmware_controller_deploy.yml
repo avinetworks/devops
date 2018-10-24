@@ -1,0 +1,383 @@
+---
+#ansible-playbook initialControllerConfig.yml -e "controller=10.10.29.250"
+- hosts: localhost
+  connection: local
+  roles:
+    - { role: avinetworks.avicontroller-vmware }
+    - { role: avinetworks.avisdk }
+  
+  vars:
+    # commom vars 
+    controller: 10.10.25.42
+    username: admin
+    api_version: 17.2.10
+    password: "{{password}}"
+    state: present
+    vcenter_host: 10.10.2.10
+    vcenter_user: root
+    vcenter_pwd: "{{vcenter_password}}"
+    datacenter: 10GTest
+    vmware_cloud_name: "vmwarecloud"
+    vmware_cluster_name: "Arista"
+    vrf_name: VRF-GSLB
+    network_name: PG-965
+
+    # Deploy controller on vcenter
+    ova_path: /Users/grastogi/mnt/builds/17.2.11/last-good
+    vm_name: gaurav-1-gslb-cluster-ctrl
+    folder: Gaurav
+    datastore: AS01
+    mgmt_network: "Mgmt_Arista_3"
+    power_on: true
+    mgmt_ip: "{{ controller }}"
+    mgmt_mask: 255.255.254.0
+    default_gw: 10.10.28.1
+
+    # initial controll config
+    old_password: "{{avi_default_password}}"
+    from_email: admin@avinetworks.com
+    dns_server01: 8.8.8.8
+    dns_server02: 8.8.4.4
+    ntp_server01: 0.us.pool.ntp.org
+    ntp_server02: 1.us.pool.ntp.org
+
+    # VMWare cloud connector config
+    vmmgmtnetwrk: "Mgmt_Arista_3"
+    vcenter_url: "10.10.2.10"
+    discovery_time: 900
+    service_engine_group_name: "SEGGSLB"
+    cloud_datacenter: "10GTest"
+    vrf_gw_mon_ip: 10.90.65.1
+    prefix_name: grastogi
+    vcenter_folder: grastogi
+    net_address: 10.90.65.0
+    net_maskbit: 24
+    beg_addr: 10.90.65.101
+    end_addr: 10.90.65.250
+
+    # GSLB VS and site configuration
+    sitename: site01
+    domain: gslb.teste.com
+    gslb_controller: "{{ controller }}"
+    gslb_fullname: "Gslb Service User"
+    gslb_username: admin
+    gslb_password: "{{gslb_password}}"
+    vs_name: VS-GSLB
+    port_num: 53
+    vs_ip: 10.90.65.10
+    app_profile_name: System-DNS
+    tenant_name: admin
+    vmwarecloudname: vmwarecloud
+    service_engine_name: SEGGSLB
+    vip_network_address: 10.90.65.0
+    vip_netmask_bits: 24
+
+  # deploy controller vcenter
+  tasks:
+    - name: Deploy Avi Controller "{{ vm_name }}"
+      deploy_controller:
+        state: "{{ state }}"
+        ovftool_path: /usr/bin/
+        vcenter_host: "{{ vcenter_host }}"
+        vcenter_user: "{{ vcenter_user }}"
+        vcenter_password: "{{ vcenter_pwd }}"
+        con_datacenter: "{{ datacenter }}"
+        con_cluster: "{{ vmware_cluster_name }}"
+        con_ova_path: "{{ ova_path }}"
+        con_vm_name: "{{ vm_name }}"
+        con_vcenter_folder: "{{ folder }}"
+        con_datastore: "{{ datastore }}"
+        con_mgmt_network: "{{ mgmt_network }}"
+        con_power_on: "{{ power_on }}"
+        con_mgmt_ip: "{{ mgmt_ip }}"
+        con_mgmt_mask: "{{ mgmt_mask }}"
+        con_default_gw: "{{ default_gw }}"
+        #con_number_of_cpus: 16
+        #con_memory: 32
+        #con_disk_size: 500
+      when: false
+
+  # initial controller configuration
+    - name: Wait for Controller be ready
+      uri:
+        validate_certs: False
+        url: "http://{{ controller }}/"
+        method: GET
+        status_code: 200,302,301,503
+      register: statusCode_output
+      until: statusCode_output.status == 200
+      retries: 120
+      delay: 60
+
+    - name: Check Cluster Status
+      uri:
+        validate_certs: false
+        url: "https://{{ controller }}/api/cluster/runtime"
+        method: GET
+        status_code: 200,302,301,503
+      register: cluster_status
+      until: cluster_status.cluster_state.progress == 100
+      retries: 120
+      delay: 60
+
+    - name: Wait to all services be ready
+      pause:
+          echo: no
+          seconds: 60
+
+    - name: Change admin default password
+      avi_useraccount:
+        controller: "{{ controller }}"
+        username: "{{ username }}"
+        password: "{{ password }}"
+        api_version: "{{ api_version }}"
+        old_password: "{{ old_password }}"
+
+    - name: Basic Controller Config
+      avi_systemconfiguration:
+        controller: "{{ controller }}"
+        username: "{{ username }}"
+        password: "{{ password }}"
+        api_version: "{{ api_version }}"
+        email_configuration:
+          smtp_type: SMTP_LOCAL_HOST
+          from_email: "{{ from_email }}"
+        global_tenant_config:
+          se_in_provider_context: true
+          tenant_access_to_provider_se: true
+          tenant_vrf: false
+        dns_configuration:
+          search_domain: ''
+          server_list:
+            - type: V4
+              addr: "{{ dns_server01 }}"
+            - type: V4
+              addr: "{{ dns_server02 }}"
+        portal_configuration:
+          use_uuid_from_input: false
+          redirect_to_https: true
+          disable_remote_cli_shell: false
+          enable_clickjacking_protection: true
+          enable_http: true
+          enable_https: true
+          password_strength_check: true
+          allow_basic_authentication: false
+        ntp_configuration:
+          ntp_servers:
+            - server:
+                type: DNS
+                addr: "{{ ntp_server01 }}"
+            - server:
+                type: DNS
+                addr: "{{ ntp_server02 }}"
+        default_license_tier: ENTERPRISE_18
+
+    # Configure the VMWare cloud connector
+    - name: defining avi config
+      set_fact:
+        avi_config:
+          avi_cloud_discovery_wait: "{{ discovery_time }}"
+          cloud:
+            - name: "{{ vmware_cloud_name }}"
+              vtype: CLOUD_VCENTER
+              dhcp_enabled: true
+              license_type: "LIC_CORES"
+              vcenter_configuration:
+                username: "{{ vcenter_user }}"
+                password: "{{ vcenter_pwd }}"
+                datacenter: "{{ cloud_datacenter }}"
+                management_network: "/api/vimgrnwruntime/?name={{ vmmgmtnetwrk }}"
+                privilege: "WRITE_ACCESS"
+                vcenter_url: "{{ vcenter_url }}"
+
+          vrfcontext:
+            - name: "{{ vrf_name }}"
+              cloud_ref: "/api/cloud/?name={{ vmware_cloud_name }}"
+              gateway_mon:
+              - cloud_ref: "/api/cloud/?name={{ vmware_cloud_name }}"
+                gateway_ip:
+                  addr: "{{ vrf_gw_mon_ip }}"
+                  type: V4
+                id: "{{ vrf_gw_mon_ip }}"
+              static_routes:
+              - cloud_ref:  "/api/cloud/?name={{ vmware_cloud_name }}"
+                system_default: false
+                next_hop:
+                  addr: "{{ vrf_gw_mon_ip }}"
+                  type: V4
+                prefix_text: 0.0.0.0/0
+                prefix:
+                  ip_addr:
+                    addr: 0.0.0.0
+                    type: V4
+                  mask: '0'
+                route_id: '1'
+
+          serviceenginegroup:
+            - name: "{{ service_engine_group_name }}"
+              cloud_ref: "/api/cloud/?name={{ vmware_cloud_name }}"
+              vcenter_folder: "{{ vcenter_folder }}"
+              vcenter_clusters:
+                cluster_refs:
+                  - "/api/vimgrclusterruntime/?name={{ vmware_cluster_name }}"
+                include: True
+              max_se: 4
+              buffer_se: 0
+              se_name_prefix: "{{ prefix_name }}"
+
+          network:
+            - name: "{{ network_name }}"
+              vrf_context_ref: "/api/vrfcontext/?name={{ vrf_name }}"
+              tenant_ref: "/api/tenant/?name=admin"
+              cloud_ref: "/api/cloud/?name={{ vmware_cloud_name }}"
+              configured_subnets:
+              - prefix:
+                  ip_addr:
+                    type: V4
+                    addr: "{{ net_address }}"
+                  mask: "{{ net_maskbit }}"
+                static_ranges:
+                - begin:
+                    type: V4
+                    addr: "{{ beg_addr }}"
+                  end:
+                    type: V4
+                    addr: "{{ end_addr }}"
+              exclude_discovered_subnets: false
+              vimgrnw_ref: "/api/vimgrnwruntime/?name={{ network_name }}"
+              synced_from_se: false
+              dhcp_enabled: false
+              vcenter_dvs: true
+
+    - name: Configuring the cloud
+      import_role:
+        name: avinetworks.aviconfig
+      vars:
+        avi_credentials:
+          controller: "{{ controller }}"
+          username: "{{ username }}"
+          password: "{{ password }}"
+          api_version: "{{ api_version }}"
+        avi_config: "{{ avi_config }}"
+
+    # Configure GSLB VS and site
+    - name: Check if user exists on Avi
+      avi_api_session:
+        username: "{{ username }}"
+        password: "{{ password }}"
+        controller: "{{ controller }}"
+        api_version: "{{ api_version }}"
+        http_method: get
+        path: user
+        params:
+          name: "{{ gslb_username }}"
+      register: user_exists
+    - name: Existing User
+      debug: msg="{{ user_exists}}"
+
+    - name: Create User on Avi
+      avi_api_session:
+        avi_credentials: "{{api_credentials}}"
+        http_method: post
+        path: user
+        data:
+          name: "{{ gslb_fullname }}"
+          username: "{{ gslb_username }}"
+          password: "{{ gslb_password}}"
+          access:
+            - role_ref: "/api/role?name=System-Admin"
+              tenant_ref: "/api/tenant?name={{ tenant_name }}"
+          user_profile_ref: "/api/useraccountprofile?name=No-Lockout-User-Account-Profile"
+      when: user_exists.obj.count == 0
+
+    - name: Create GSLB VS "{{ vs_name }}"
+      avi_virtualservice:
+        controller: "{{ controller }}"
+        username: "{{ username }}"
+        password: "{{ password }}"
+        api_version: "{{ api_version }}"
+        name: "{{ vs_name }}"
+        services:
+            - port: "{{ port_num }}"
+        application_profile_ref: '/api/applicationprofile?name={{ app_profile_name }}'
+        vrf_context_ref: "/api/vrfcontext/?name={{ vrf_name }}"
+        tenant_ref: "/api/tenant/?name={{ tenant_name }}"
+        cloud_ref: "/api/cloud?name={{ vmwarecloudname }}"
+        se_group_ref: "/api/serviceenginegroup/?name={{ service_engine_name }}"
+        vip:
+            -
+              vip_id: 0
+              subnet:
+                mask: "{{ vip_netmask_bits }}"
+                ip_addr:
+                  type: V4
+                  addr: "{{ vip_network_address }}"
+              ip_address:
+                  type: V4
+                  addr: "{{ vs_ip }}"
+              network_ref: '/api/network/?name={{ network_name }}'
+              discovered_networks:
+                -
+                    subnet:
+                        -
+                            mask: "{{ vip_netmask_bits }}"
+                            ip_addr:
+                                type: V4
+                                addr: "{{ vip_network_address }} "
+                    network_ref: '/api/network/?name={{ network_name }}'
+
+    - name: Get main Cluster Information using avi_api_session
+      avi_api_session:
+        username: "{{ username }}"
+        password: "{{ password }}"
+        controller: "{{ controller }}"
+        api_version: "{{ api_version }}"
+        http_method: get
+        path: cluster
+      register: cluster_info
+
+    - name: Get VS info "{{ vs_name }}"
+      avi_api_session:
+        username: "{{ username }}"
+        password: "{{ password }}"
+        controller: "{{ controller }}"
+        api_version: "{{ api_version }}"
+        http_method: get
+        path: virtualservice
+        params:
+          name: "{{ vs_name }}"
+      register: vs_info
+      
+    - name: Create GSLB
+      avi_gslb:
+        username: "{{ username }}"
+        password: "{{ password }}"
+        controller: "{{ controller }}"
+        api_version: "{{ api_version }}"
+        sites:
+        - enabled: true
+          port: 443
+          member_type: GSLB_ACTIVE_MEMBER
+          cluster_uuid: "{{ cluster_info['obj'].uuid }}"
+          ip_addresses:
+          - type: V4
+            addr: "{{ gslb_controller }}"
+          dns_vses:
+                -
+                    dns_vs_uuid: "{{ vs_info['obj']['results'][0]['uuid'] }}"
+                    domain_names: []
+          name: "{{ sitename }}"
+          username: "{{ gslb_username }}"
+          password: "{{ gslb_password }}"
+        send_interval: 30
+        name: "{{ sitename }}"
+        dns_configs:
+        - domain_name: "{{ domain }}"
+        leader_cluster_uuid: "{{ cluster_info['obj'].uuid }}"
+        third_party_sites:
+          - 
+            enabled: true
+            name: "{{ sitename }}_outside"
+            hm_proxies:
+              - 
+                site_uuid: "{{ cluster_info['obj'].uuid }}"

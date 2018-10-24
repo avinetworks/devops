@@ -1,0 +1,26 @@
+---
+- hosts: localhost
+  vars:
+    credentials:
+      controller: "{{ controller }}"
+      password: "{{ password }}"
+      username: admin
+      api_version: 18.1.3
+  roles:
+    - role: avinetworks.avisdk
+  tasks:
+    - name: Create Virtual Service
+      avi_virtualservice:
+        avi_credentials: "{{ credentials }}"
+        name: vs1
+      register: vs_result
+    - name: vs_result debug
+      debug: msg="{{ vs_result }}"
+    - name: Scaleout
+      avi_api_session:
+        avi_credentials: "{{ credentials }}"
+        http_method: post
+        path: "virtualservice/{{ vs_result.obj.uuid}}/scaleout"
+        data:
+          "to_new_se": true
+          "vip_id": "0"

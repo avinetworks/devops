@@ -1,0 +1,104 @@
+# Create a certificate SSL Certificate
+---
+- hosts: localhost
+  connection: local
+  roles:
+    - role: avientworks.avisdk
+  tasks:
+    - avi_sslkeyandcertificate:
+        controller: "{{controller}}"
+        username: admin
+        password: "{{password}}"
+        tenant: admin
+        key: |
+          -----BEGIN PRIVATE KEY-----
+          MIIJQwIBADANBgkqhkiG9w0BAQEFAASCCS0wggkpAgEAAoICAQC23047XEGJYPEK
+          MwOSsTxmmvOSp/npEvJof0fuaszq2m31SFCapfscWXW+S8ESYvHZP+JDU4OppfLR
+          n0Hgc3d6pJvNK0dILZxHa35lnq8wkWfnquxYKqZl0F020obGy2e9VdW4CuFDPEr1
+          HeJKGFQ6uXQ5cQsh/LYjbWikgnsXHoC0phYiwRMfbLBGl7rXRikObseD7m8Xv9h6
+          YpbqZ91xa12NoSaKG5sliHwRsP/nAdMH1X9GRZKOA0tz2n/8nhgUT+pq7J1fVF74
+          GKSNhu6p76l3dKkm63WAP/rbKIy4zUQ1MAznRqBPEViEGO1HQpuR27IlVHkjL82i
+          bEWPiZsXo4OasVKfJCkgui/tHKK4DW5uAig4y2ue9D7wACz09ysYhDuEi/Je9xUI
+          Ys/qKlsImHZ2lHBQSbaC/ctcRTZWFgTWbohodtum8yWVdJ9pTfo+q3hrOQn4IsIw
+          WWRHqFPhwF8jy3rHrN1RgpfAmH6DavsUerMr8I1PfKCP5RUjx9wkiNpZEh+6e2wJ
+          eLEiUyAt/iUhRqHdNuV0bG33zsTtwQO9m9obUfHKgKHTz3IXXdH4KhTwEEHYPojs
+          TaqHWDxCdvhG5G0+K79ZWk/CEiuoXANOUTXbrFZT0z4xoeutq/GfFHqm9hoRNLu7
+          Nn/RlAPsw2ICZEf0D4MyczdbsKdZoQIDAQABAoICAB8y99jew3uZo2X3EBv9yu1C
+          cF3L9LIT/nFfjbkaVX2X6HyZas8HlFDg3lqp9/WYFeTXplWQMP1Hh6bFwep2KKMu
+          5DnbsVyaE3iH2Vei/AaQOCbpHUtpc1wZcV3CCyZtW3SM6Vpt2MKszakGAS5c+jnO
+          nAqUw653u+dNajXu4Osv1At97nbdc9K/q09P4ZuKp8SDl9xlWGS34Un3+gFh2QDZ
+          rWtVXArh7NU5dNlb1jzmLce/X+hwRDGgVEYeuAk0O61zeO3nEm5KKa2wHpras2sg
+          rUvpBlbSgwhvYe/z+hYpRwLAAOOQRBdZQT3ANvMaZQo8bic6QzSCmlWknTWA54mV
+          jH4FTSnefy125b26mPI5vrA5Hnf9TIFDz+H6WEq8pFmbdRWb+GJYMt7potlWARtt
+          ZO13O9okqGn9M0rs68nsV/5VdXZdbmHE0VdJKlpfytY4/MJcWuCf86f7DcoHcAWd
+          YJGVo2AWaFEazgJpmMt+Ks9bRhzLLcgdYYvatlpq7Jv+ycnAEEtw23MWlSiwRv4N
+          ljmodYiYDU1Uy9oPU/EerJaFzexxmXCkEvslnWGC3/ym3f8xpYcy6EWkO9d5Wk6V
+          hwGirxnfatjOch5UyPHeiwX2fH9/A8nLtBAwmXlIDkMKPvHJROc5ObIEmhqAEL8V
+          0apNB2q7T/CL5DWpvCLxAoIBAQDzwciZVxeOS7qvG4t/rsbglqsez8EN2dMVttLt
+          zP4RNRRAlQNxU+Toub/ZX/L+aO2+X0XwWGkohBBIUMBnG3mOKY1b4oAt755AYysF
+          QZLOz90LVOwwTv2lVZ+EoT8i7urzYQ3DFHZ7HYOVIXQqSvL9DDdyKY2u3O2/PVag
+          Pwbl6Px4/ktx5Ps1n8xvTb3pY12OPs8iuapNMfUvL0cY0X9pX+iD9sIIhR9R2WeW
+          IFWj/gT2ChwFh+U+K5+o9+1T1dq8L57RR0Ku8v28w9Rfxljf4VRxj1nGDcYt85c2
+          YnEKJmpsJT8K8qtaatouoBma6KlkBq6mBZDUmYoS2zUhNGglAoIBAQDADqthnJ8y
+          7iLu9Wld+TZT/zY4NITAMPTSqw7Bruht9g6GrIwdnlrneWlzHoZvaPiQrY0XXgwp
+          6F1g8MWrt6geZktaIk4myjZHlLCrFmm273Jd1RHLdI0HNKfBsdwBjuKqgcjeXRLO
+          yJWxOFwlaQwRkFBbxtFO10xZ6YyO/eFS5SVfv6ZeT5gGhAxzXjwDuGkd/o/l4J58
+          2yTjscqrsYawh2QdlDbuTRbxP0VPWyoC4KsJ2mEFSJJkrxI/PAevO2KU8jWCqGh1
+          493uwqeu4ucjAEjUiQpqo3pDsGa0rG5CJRH7PYZRzb+xlfk5megM/1l6ILvKIDt3
+          TAWolFj6g+TNAoIBAQC8XjM7tF7iusjwSvP5XsIXireAXwIMRxllPVwxImnwODmH
+          UuBPMorCAdEtFYW9bq7Sn+N3QYs6IRxIFgcpZsT/xEKWECoH1ZVQopH7RNpDccSa
+          3iyLhG9k1g8oukcFIuZz37t31pdcuskVdL3FdRfjzw4F7fCsgdREJg2MVkhpYSvC
+          AJmi0VYD8ZJVLRmmgwAoTYdaiWn+r62OohVqK3MvpksTt5voY595a+0tyZ0E1udU
+          jylqaMMR0TpXpAhF8gxPwukTRuNUOTk2J4s13ByQHhxYiXPRppFQr15aS6aZNmil
+          W/8k4bTjcZFb2KMQ390PDE7ow4JRmLlnqviayVn1AoIBAQCnpWZ2S1gwBe0ad8Bl
+          FmAVDEbQ4w8qENH0fvrfmIUtT0a4yi94vz0Mp0+j/HZPE+s9pzDsv9yQTFQOhb2W
+          ujcXaiXGZQGhHIwrCaD5hxP6aqODQrVIytE8A/uXuWCZP5eeTLIBYG9Fb5QzYUYW
+          Jc8yGa37nt4gGxF7vsFCJF0mlf18yfc4hfPnZCbWIeDzQmsHkqkbeWn/BO/7jbuj
+          CdDPkS+UHkeg1kv7hEZFEgfnASRr8mMUUJfxKV0dM5JlpMnVyGNrTQP6PFEC1Im4
+          wDoQtHPeik08br0QDxBoD8gjFubOT5NLHvWA16/4Vt9XUSJS1/X0ZxRhe0vJLs1I
+          yA7VAoIBAHKuWCBydZj5k2G0m4Wv9r0naFxYQAlWYxbiPKquph/0HNCyhGzcNm7D
+          IhZ8Z4EluLjeqQJbG+O9BenFTwZRNyFtMxZe9r7/2wkkm0twWu24V3QZB5sm5mPJ
+          opH36oDQvYivKzrd0r4HJV8qxDYOEHrpLK9dRJ2G9FOTw0fBb5DeqynNa/qdY6z7
+          jV2UjxrN042hl0v3j8dqaJRRIhb0929zD3VEhUHLb/tXUS/K2i+wt9rJVnmjwnR3
+          euPpmwBk67FT8h/FTbrRHn5uCTRwjRJgPanFaYsBi62c2r5ugdMIcx4D56ZamPhR
+          NgtoPRz9WKr4R1VRoEGI7K5oKHIJO8Q=
+          -----END PRIVATE KEY-----
+        certificate:
+          self_signed: true
+          certificate: |
+            -----BEGIN CERTIFICATE-----
+            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
+            -----END CERTIFICATE-----
+        type: SSL_CERTIFICATE_TYPE_VIRTUALSERVICE
+        name: MyTestCert

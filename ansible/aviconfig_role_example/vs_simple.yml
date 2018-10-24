@@ -1,0 +1,39 @@
+---
+- hosts: localhost
+  vars:
+    avi_credentials:
+      controller: 10.10.25.42
+      username: admin
+      password: avi123
+      api_version: 18.1.2
+  connection: local
+  roles:
+    - role: avinetworks.avisdk
+  tasks:
+    - avi_pool:
+        avi_credentials: "{{avi_credentials}}"
+        state: "{{state | default('present')}}"
+        name: vs-simple-pool
+        lb_algorithm: LB_ALGORITHM_ROUND_ROBIN
+        servers:
+          - ip:
+               addr: 10.90.64.12
+               type: 'V4'
+          - ip:
+               addr: 10.90.64.11
+               type: 'V4'
+          - ip:
+               addr: 10.90.64.13
+               type: 'V4'
+    - avi_virtualservice:
+        avi_credentials: "{{avi_credentials}}"
+        state: "{{state | default('present')}}"
+        name: vs-simple-pool
+        services:
+          - port: 80
+        pool_ref: '/api/pool?name=vs-simple-pool'
+        vip:
+          - ip_address:
+              addr: 10.90.64.244
+              type: 'V4'
+            vip_id: '1'

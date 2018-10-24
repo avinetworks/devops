@@ -1,0 +1,19 @@
+# Create a certificate SSL Certificate
+---
+- hosts: localhost
+  connection: local
+  vars:
+    avi_credentials:
+      controller: "{{ controller }}"
+      username: admin
+      password: "{{ password }}"
+      api_version: 17.2.1
+  tasks:
+  - avi_actiongroupconfig:
+      avi_credentials: "{{avi_credentials}}"
+      name: "MyActionGroup"
+      api_version: 17.2.1
+      tenant_ref: /api/tenant?name=admin
+      level: ALERT_LOW
+      autoscale_trigger_notification: false
+      external_only: true

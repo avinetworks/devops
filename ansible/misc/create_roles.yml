@@ -1,0 +1,104 @@
+---
+- hosts: localhost
+  vars:
+    master_ctl_ip: ec2-34-250-111-254.eu-west-1.compute.amazonaws.com
+    master_ctl_username: admin
+    master_ctl_password: "{{password}}"
+  roles:
+    - role: avinetworks.avisdk
+  tasks:
+    - name: Create Read Only ROle
+      avi_role:
+        controller: "{{ master_ctl_ip }}"
+        username: "{{ master_ctl_username }}"
+        password: "{{ master_ctl_password }}"
+        name: newrole1
+        privileges:
+        - resource: PERMISSION_VIRTUALSERVICE
+          type: READ_ACCESS
+        - resource: PERMISSION_POOL
+          type: READ_ACCESS
+        - resource: PERMISSION_POOLGROUP
+          type: READ_ACCESS
+        - resource: PERMISSION_HTTPPOLICYSET
+          type: READ_ACCESS
+        - resource: PERMISSION_NETWORKSECURITYPOLICY
+          type: READ_ACCESS
+        - resource: PERMISSION_NETWORKPROFILE
+          type: READ_ACCESS
+        - resource: PERMISSION_APPLICATIONPROFILE
+          type: READ_ACCESS
+        - resource: PERMISSION_APPLICATIONPERSISTENCEPROFILE
+          type: READ_ACCESS
+        - resource: PERMISSION_HEALTHMONITOR
+          type: READ_ACCESS
+        - resource: PERMISSION_ANALYTICSPROFILE
+          type: READ_ACCESS
+        - resource: PERMISSION_IPAMDNSPROVIDERPROFILE
+          type: READ_ACCESS
+        - resource: PERMISSION_IPADDRGROUP
+          type: READ_ACCESS
+        - resource: PERMISSION_STRINGGROUP
+          type: READ_ACCESS
+        - resource: PERMISSION_VSDATASCRIPTSET
+          type: READ_ACCESS
+        - resource: PERMISSION_MICROSERVICEGROUP
+          type: READ_ACCESS
+        - resource: PERMISSION_SSLPROFILE
+          type: READ_ACCESS
+        - resource: PERMISSION_AUTHPROFILE
+          type: READ_ACCESS
+        - resource: PERMISSION_PKIPROFILE
+          type: READ_ACCESS
+        - resource: PERMISSION_SSLKEYANDCERTIFICATE
+          type: READ_ACCESS
+        - resource: PERMISSION_CERTIFICATEMANAGEMENTPROFILE
+          type: READ_ACCESS
+        - resource: PERMISSION_ALERTCONFIG
+          type: READ_ACCESS
+        - resource: PERMISSION_ALERT
+          type: READ_ACCESS
+        - resource: PERMISSION_ACTIONGROUPCONFIG
+          type: READ_ACCESS
+        - resource: PERMISSION_ALERTSYSLOGCONFIG
+          type: READ_ACCESS
+        - resource: PERMISSION_ALERTEMAILCONFIG
+          type: READ_ACCESS
+        - resource: PERMISSION_SNMPTRAPPROFILE
+          type: READ_ACCESS
+        - resource: PERMISSION_TRAFFIC_CAPTURE
+          type: READ_ACCESS
+        - resource: PERMISSION_CLOUD
+          type: READ_ACCESS
+        - resource: PERMISSION_SERVICEENGINE
+          type: READ_ACCESS
+        - resource: PERMISSION_SERVICEENGINEGROUP
+          type: READ_ACCESS
+        - resource: PERMISSION_NETWORK
+          type: READ_ACCESS
+        - resource: PERMISSION_VRFCONTEXT
+          type: READ_ACCESS
+        - resource: PERMISSION_SYSTEMCONFIGURATION
+          type: NO_ACCESS
+        - resource: PERMISSION_CONTROLLER
+          type: NO_ACCESS
+        - resource: PERMISSION_REBOOT
+          type: NO_ACCESS
+        - resource: PERMISSION_UPGRADE
+          type: NO_ACCESS
+        - resource: PERMISSION_TECHSUPPORT
+          type: NO_ACCESS
+        - resource: PERMISSION_INTERNAL
+          type: NO_ACCESS
+        - resource: PERMISSION_USER
+          type: NO_ACCESS
+        - resource: PERMISSION_ROLE
+          type: NO_ACCESS
+        - resource: PERMISSION_TENANT
+          type: NO_ACCESS
+        - resource: PERMISSION_GSLB
+          type: NO_ACCESS
+        - resource: PERMISSION_GSLBSERVICE
+          type: NO_ACCESS
+        - resource: PERMISSION_GSLBHEALTHMONITOR
+          type: NO_ACCESS

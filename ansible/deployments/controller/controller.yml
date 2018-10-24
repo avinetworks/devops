@@ -1,6 +1,0 @@
----
-- hosts: controllers
-  roles:
-    - role: avinetworks.docker
-    - role: avinetworks.avicontroller
-      con_version: "{{ con_version }}"
