@@ -1,0 +1,43 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: cloudinit-job
+  namespace: default
+spec:
+  template:
+    spec:
+      serviceAccountName: avi
+      containers:
+        - name: cloudinit
+          # Below tag is the version of the avitools image
+          # not to be confused with avi controller version
+          image: avinetworks/avitools:18.1.2
+          volumeMounts:
+            - name: config-volume
+              mountPath: /etc/avi/conf
+            - name: aviansible-volume
+              mountPath: /etc/avi
+          env:
+            - name: USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: avicontroller-secret
+                  key: username
+            - name: PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: avicontroller-secret
+                  key: password
+            - name: STATE
+              value: present
+              #value: absent
+            - name: cmd
+              value: "ansible-playbook -v -i localhost -e username=$USERNAME -e password=$PASSWORD -e token=$(cat /var/run/secrets/kubernetes.io/serviceaccount/token) -e avi_config_state=$STATE /etc/avi/main.yml"
+      volumes:
+        - name: config-volume
+          configMap:
+            name: cloudinit-configmap
+        - name: aviansible-volume
+          configMap:
+            name: aviansible-configmap
+      restartPolicy: Never

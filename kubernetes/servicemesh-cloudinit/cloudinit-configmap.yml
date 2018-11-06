@@ -1,0 +1,117 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: cloudinit-configmap
+  namespace: default
+data:
+  avi_vars.yml: |
+    cloud_name: "k8sCloud"
+    avi_controller: "10.10.10.11"
+    version: "18.1.2"
+    registry_url: "docker.registry.url"
+    # AWS variables
+    license_type: "LIC_HOSTS"
+    ns_subnet_id: "subnet-1234abcd"
+    region: "us-west-2"
+    vpc_id: "vpc-12345abcdefg56"
+    availability_zone: "us-west-2a"
+    iam_assume_role: "arn:aws:iam::1234567890:role/XAccountAccess"
+    # Proxy variables
+    proxy_host: "aws.api.proxy.host"
+    proxy_port: "80"
+    # Kubernetes variables
+    master_nodes:
+      - "https://10.10.10.21:6443"
+    subdomain: "k8sdemo.local"
+    ns_attribute_key: "nodetype"
+    ns_attribute_value: "infra"
+
+  aviconfig.yml: |  
+    avi_config:
+      #network:
+      #  - name: "EW-Net-{{ cloud_name }}"
+      #    cloud_ref: "/api/cloud?name={{ cloud_name }}"
+      #    configured_subnets:
+      #      - prefix:
+      #          mask: "16"
+      #          ip_addr:
+      #            type: V4
+      #            addr: "172.90.0.0"
+      #        static_ranges:
+      #        - begin:
+      #            type: V4
+      #            addr: "172.90.0.10"
+      #          end:
+      #            type: V4
+      #            addr: "172.90.255.250"
+      ipamdnsproviderprofile:
+        - name: "EastWestIPAM-{{ cloud_name }}"
+          type: "IPAMDNS_TYPE_INTERNAL"
+          internal_profile:
+            usable_network_refs:
+              - "/api/network?name=EW-Net-{{ cloud_name }}"
+        - name: "NorthSouthIPAM-{{ cloud_name }}"
+          type: "IPAMDNS_TYPE_AWS"
+          #proxy_configuration:
+          #  host: "{{ proxy_host }}"
+          #  port: "{{ proxy_port }}"
+          aws_profile:
+            use_iam_roles: true
+            iam_assume_role: "{{ iam_assume_role }}"
+            # provide access keys if use_iam_roles is set to false
+            #access_key_id: ""
+            #secret_access_key: ""
+            region: "{{ region }}"
+            zones:
+            - usable_network_uuids:
+              - "{{ ns_subnet_id }}"
+              availability_zone: "{{ availability_zone }}"
+            vpc_id: "{{ vpc_id }}"
+        - name: "Avi-k8s-DNS-{{ cloud_name }}"
+          type: "IPAMDNS_TYPE_INTERNAL_DNS"
+          internal_profile:
+            dns_service_domain:
+              - domain_name: "{{ subdomain }}"
+      serviceenginegroup:
+        - name: "Default-Group"
+          cloud_ref: "/api/cloud?name={{ cloud_name }}"
+          # Uncomment below to change default SE footprint
+          #vcpus_per_se: 1
+          #memory_per_se: 2048
+          #disk_per_se: 10
+          host_attribute_key: "{{ ns_attribute_key }}"
+          host_attribute_value: "{{ ns_attribute_value }}"
+      cloud:
+        - name: "{{ cloud_name }}"
+          license_type: "{{ license_type }}"
+          tenant_ref: "/api/tenant?name=admin"
+          vtype: "CLOUD_OSHIFT_K8S"
+          ipam_provider_ref: "/api/ipamdnsproviderprofile?name=NorthSouthIPAM-{{ cloud_name }}"
+          east_west_ipam_provider_ref: "/api/ipamdnsproviderprofile?name=EastWestIPAM-{{ cloud_name }}"
+          dns_provider_ref: "/api/ipamdnsproviderprofile?name=Avi-k8s-DNS-{{ cloud_name }}"
+          east_west_dns_provider_ref: "/api/ipamdnsproviderprofile?name=Avi-k8s-DNS-{{ cloud_name }}"
+          oshiftk8s_configuration:
+            cluster_tag: "{{ cloud_name }}"
+            master_nodes: "{{ master_nodes }}"
+            service_account_token: "{{ token }}"
+            se_deployment_method: SE_CREATE_POD
+            docker_registry_se:
+              registry: "{{ registry_url }}/avinetworks/se"
+      virtualservice:
+        - name: "DNS-VS-{{ cloud_name }}"
+          services:
+            - port: 53
+          network_profile_ref: "/api/networkprofile?name=System-UDP-Per-Pkt"
+          application_profile_ref: "/api/applicationprofile?name=System-DNS"
+          cloud_ref: "/api/cloud?name={{ cloud_name }}"
+          vip:
+            - auto_allocate_ip: true
+              ipam_network_subnet:
+                network_ref: "/api/network/{{ ns_subnet_id }}"
+                subnet_uuid: "{{ ns_subnet_id }}"
+              network_ref: "/api/network/{{ ns_subnet_id }}"
+              subnet_uuid: "{{ ns_subnet_id }}"
+      #systemconfiguration:
+      #  - dns_virtualservice_refs:
+      #      - "/api/virtualservice?name=DNS-VS-{{ cloud_name }}"
+      #    uuid: "default"
