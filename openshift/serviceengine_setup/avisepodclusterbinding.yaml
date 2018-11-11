@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: ClusterRoleBinding
+metadata:
+  name: avisepodrolebinding
+roleRef:
+  name: avirole
+subjects:
+- kind: ServiceAccount
+  name: avi
+  namespace: default
+userNames:
+- system:serviceaccount:default:avi

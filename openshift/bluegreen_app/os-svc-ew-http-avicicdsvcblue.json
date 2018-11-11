@@ -1,0 +1,22 @@
+{
+  "kind": "Service",
+  "apiVersion": "v1",
+  "metadata": {
+    "name": "avicicdsvcblue",
+    "labels": {
+        "svc": "avicicdsvcblue"
+    }
+  },
+  "spec": {
+    "ports": [
+    {
+      "name": "http",
+      "port": 80,
+      "targetPort": "http"
+    }
+    ],
+    "selector": {
+      "name": "avicicdsvcblue"
+    }
+  }
+}

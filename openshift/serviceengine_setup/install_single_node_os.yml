@@ -1,13 +1,12 @@
 ---
 - hosts: localhost
   vars:
-    vcenter_hostname: 10.10.2.10
-    username: root
-    password: "{{password}}"
+    openshift_host: "{{hostname}}"
     build: test
-    guest_name: "vmware.docker.test.{{ build }}"
-    template: "centos-7-bare-template"
   tasks:
+    - name: Check if
+
+
     - file: path=roles state=directory mode=0755
     - shell: ansible-galaxy install -p roles -r ansible_requirements.yml -cf
     - name: Create the VMware virtual machine.
