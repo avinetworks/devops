@@ -1,0 +1,22 @@
+{
+  "kind": "Service",
+  "apiVersion": "v1",
+  "metadata": {
+    "name": "aviversion2",
+    "labels": {
+        "svc": "aviversion2"
+    }
+  },
+  "spec": {
+    "ports": [
+    {
+      "name": "http",
+      "port": 80,
+      "targetPort": "http"
+    }
+    ],
+    "selector": {
+      "name": "aviversion2"
+    }
+  }
+}
