@@ -1,0 +1,17 @@
+apiVersion: v1
+kind: Route
+spec:
+  host: avicanary.default.grastogi.avi.local
+  path: "/"
+  to:
+    kind: Service
+    name: aviversion1
+    weight: 100
+  alternateBackends:
+  - kind: Service
+    name: aviversion2
+    weight: 1
+metadata:
+  name: avicanary
+  annotations:
+    avi_proxy: '{"poolgroup": {"deployment_policy_ref": "/api/pooldeploymentpolicy?name=openshift-canary"}, "version": "18.1.5", "virtualservice": {"analtyics_policy": {"duration": 0, "metrics_realtime_update": true}}, "pool": {"analytics_policy": {"enable_realtime_metrics": true}}}'

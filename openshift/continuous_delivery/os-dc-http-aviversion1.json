@@ -1,0 +1,47 @@
+{
+  "kind": "DeploymentConfig",
+  "apiVersion": "v1",
+  "metadata": {
+    "name": "aviversion1"
+  },
+  "spec": {
+    "template": { 
+      "metadata": {
+        "labels": {
+          "name": "aviversion1"
+        }
+      },
+      "spec": {
+        "containers": [
+          {
+            "name": "aviversion1",
+            "image": "avinetworks/server-os",
+            "resources": {
+                "requests": {
+                    "cpu": "100m",
+                    "memory": "64Mi"
+                }
+            },
+            "env": [
+              {
+                  "name": "SERVER_NAME",
+                  "value": "aviversion1"
+              }
+            ],
+            "ports": [
+              {
+                "name": "http",
+                "containerPort": 8080,
+                "protocol": "TCP"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    "replicas": 2,
+    "selector": {
+      "name": "aviversion1"
+    }
+  }
+}

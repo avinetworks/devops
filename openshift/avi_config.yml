@@ -1,0 +1,86 @@
+avi_config:
+  cloud:
+    - name: "{{ cloud_name }}"
+      dhcp_enabled: true
+      vtype: CLOUD_OSHIFT_K8S
+      prefer_static_routes: true
+      ipam_provider_ref: "/api/ipamdnsproviderprofile?name=openshift-ns"
+      dns_provider_ref: "/api/ipamdnsproviderprofile?name=openshift-ns_d"
+      tenant_ref: "/api/tenant?name=admin"
+      east_west_ipam_provider_ref: "/api/ipamdnsproviderprofile?name=openshift-ew"
+      oshiftk8s_configuration:
+        cluster_tag: openshift
+        east_west_placement_subnet:
+          mask: 16
+          ip_addr:
+            type: V4
+            addr: 172.18.0.1
+        container_port_match_http_service: false
+        service_account_token: "{{service_account_token}}"
+        docker_registry_se:
+          oshift_registry: {}
+        se_deployment_method: SE_CREATE_POD
+        master_nodes:
+          - "{{openshift_master_node}}"
+        avi_bridge_subnet:
+          mask: 16
+          ip_addr:
+            type: V4
+            addr: 172.18.0.1
+      east_west_dns_provider_ref: "/api/ipamdnsproviderprofile?name=openshift-ns_d"
+      license_type: LIC_CORES
+      license_tier: ENTERPRISE_18
+
+
+  ipamdnsproviderprofile:
+    - name: openshift-ew
+      tenant_ref: "/api/tenant?name=admin"
+      internal_profile:
+        usable_network_refs:
+          - "/api/network?name=openshift-ew"
+      type: IPAMDNS_TYPE_INTERNAL
+    - name: openshift-ns
+      tenant_ref: "/api/tenant?name=admin"
+      internal_profile:
+        usable_network_refs:
+          - "/api/network?name=openshift-ns"
+      type: IPAMDNS_TYPE_INTERNAL
+    - name: openshift-ns_d
+      tenant_ref: "/api/tenant?name=admin"
+      internal_profile:
+        dns_service_domain:
+          - domain_name: "{{ project_name }}.avi.local"
+      type: IPAMDNS_TYPE_INTERNAL_DNS
+  network:
+    - name: "openshift-ew"
+      cloud_ref: "/api/cloud?name={{cloud_name}}"
+      tenant_ref: "/api/tenant?name=admin"
+      configured_subnets:
+        - prefix:
+            mask: 24
+            ip_addr:
+              type: "V4"
+              addr: "{{ ew_subnet }}"
+          static_ranges:
+            - begin:
+                type: "V4"
+                addr: "{{ ew_subnet_start }}"
+              end:
+                type: "V4"
+                addr: "{{ ew_subnet_end }}"
+    - name: "openshift-ns"
+      cloud_ref: "/api/cloud?name={{cloud_name}}"
+      tenant_ref: "/api/tenant?name=admin"
+      configured_subnets:
+        - prefix:
+            mask: 24
+            ip_addr:
+              type: "V4"
+              addr: "{{ openshift_ns_subnet }}"
+          static_ranges:
+            - begin:
+                type: "V4"
+                addr: "{{ openshift_ns_subnet_start }}"
+              end:
+                type: "V4"
+                addr: "{{ openshift_ns_subnet_end }}"

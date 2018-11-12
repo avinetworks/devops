@@ -1,0 +1,18 @@
+apiVersion: v1
+kind: Route
+spec:
+  host: avicicd.default.grastogi.avi.local
+  path: "/"
+  to:
+    kind: Service
+    name: avicicdsvcblue
+    weight: 20
+  alternateBackends:
+  - kind: Service
+    name: avicicdsvcgreen
+    weight: 80
+metadata:
+  name: avicicd
+  annotations:
+    avi_proxy: '{"version": "18.1.5", "virtualservice": {"analtyics_policy": {"duration": 0, "metrics_realtime_update": true}}, "pool": {"analytics_policy": {"enable_realtime_metrics": true}}}'
+    #avi_proxy: '{"poolgroup": {"deployment_policy_ref": "/api/pooldeploymentpolicy?name=avisvc1-pdp"}, "version": "18.1.5", "virtualservice": {"analtyics_policy": {"duration": 0, "metrics_realtime_update": true}}, "pool": {"analytics_policy": {"enable_realtime_metrics": true}}}'

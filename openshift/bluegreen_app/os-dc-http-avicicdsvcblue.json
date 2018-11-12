@@ -1,0 +1,47 @@
+{
+  "kind": "DeploymentConfig",
+  "apiVersion": "v1",
+  "metadata": {
+    "name": "avicicdsvcblue"
+  },
+  "spec": {
+    "template": { 
+      "metadata": {
+        "labels": {
+          "name": "avicicdsvcblue"
+        }
+      },
+      "spec": {
+        "containers": [
+          {
+            "name": "avicicdsvcblue",
+            "image": "avinetworks/server-os",
+            "resources": {
+                "requests": {
+                    "cpu": "100m",
+                    "memory": "64Mi"
+                }
+            },
+            "env": [
+              {
+                  "name": "SERVER_NAME",
+                  "value": "avicicdsvcblue"
+              }
+            ],
+            "ports": [
+              {
+                "name": "http",
+                "containerPort": 8080,
+                "protocol": "TCP"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    "replicas": 2,
+    "selector": {
+      "name": "avicicdsvcblue"
+    }
+  }
+}
