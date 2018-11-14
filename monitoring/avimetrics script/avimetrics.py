@@ -1,7 +1,7 @@
 #!/usr/bin/python
 
 
-version = 'v2018-10-19'
+version = 'v2018-11-06'
 
 #########################################################################################
 #                                                                                       #
@@ -49,6 +49,7 @@ required_args = parser.add_argument_group('required named arguments')
 parser.add_argument('--brief', help='Print Exceptions Only', required=False, action='store_true')
 parser.add_argument('--debug', help='Print All Output, this the DEFAULT setting', required=False, action='store_true')
 parser.add_argument('-m', '--metrics', help='Metrics Endpoint for Sending the data', action='append', required=False, default=None)
+parser.add_argument('--norealtime', help='Disable Check for Realtime Stats', required=False, action='store_true')
 args = parser.parse_args()
 
 
@@ -65,13 +66,13 @@ def determine_endpoint_type():
         'influxdb'
         ]
     if args.metrics == None:
-        print '=====>ERROR:  No metric type defined, acceptable types are: '+str(endpoint_types)
+        print '=====> ERROR:  No metric type defined, acceptable types are: '+str(endpoint_types)
         sys.exit(1)
     else:
         endpoint_list = []
         for a in args.metrics:
             if a.lower() not in endpoint_types:
-                print '=====>ERROR:  Invalid metrics type, acceptable types are: '+str(endpoint_types)
+                print '=====> ERROR:  Invalid metrics type, acceptable types are: '+str(endpoint_types)
                 sys.exit(1)
             elif a.lower() == 'graphite':
                 with open(os.path.join(fdir,'graphite_host.json')) as gr:
@@ -326,25 +327,31 @@ class avi_metrics():
             seg_dict = {'tenants':{}}
             if self.login.json()['user']['is_superuser'] == True: #----if SU, use wildcard tenant
                 vs_inv = self.avi_request('virtualservice-inventory?page_size=200','*').json()
+                resp = vs_inv
                 page_number = 1
-                while 'next' in vs_inv:
+                while 'next' in resp:
                     page_number += 1
                     resp = self.avi_request('virtualservice-inventory?page_size=200&page='+str(page_number),'*').json()
-                    vs_inv['results'].append(resp['results'])
+                    for v in resp['results']:
+                        vs_inv['results'].append(v)
                 #------------------
                 se_inv = self.avi_request('serviceengine-inventory?page_size=200','*').json()
+                resp = se_inv
                 page_number = 1
-                while 'next' in se_inv:
+                while 'next' in resp:
                     page_number += 1
                     self.avi_request('serviceengine-inventory?page_size=200&page='+str(page_number),'*').json()
-                    se_inv['results'].append(resp['results'])
+                    for s in resp['results']:
+                        se_inv['results'].append(s)
                 #------------------
                 pool_inv = self.avi_request('pool-inventory?page_size=200','*').json()
+                resp = pool_inv
                 page_number = 1
-                while 'next' in pool_inv:
+                while 'next' in resp:
                     page_number += 1
                     resp = self.avi_request('pool-inventory?page_size=200&page='+str(page_number),'*').json()
-                    pool_inv['results'].append(resp['results'])
+                    for p in resp['results']:
+                        pool_inv['results'].append(p)
                 #------------------
                 seg_inv = self.avi_request('serviceenginegroup-inventory?page_size=1000','*').json()
                 if vs_inv['count'] > 0:
@@ -398,25 +405,31 @@ class avi_metrics():
             else:
                 for t in self.tenants:
                     vs_inv = self.avi_request('virtualservice-inventory?page_size=200',t['name']).json()
+                    resp = vs_inv
                     page_number = 1
-                    while 'next' in vs_inv:
+                    while 'next' in resp:
                         page_number += 1
                         resp = self.avi_request('virtualservice-inventory?page_size=200&page='+str(page_number),t['name']).json()
-                        vs_inv['results'].append(resp['results'])
+                        for v in resp['results']:
+                            vs_inv['results'].append(v)
                     #------------------
                     se_inv = self.avi_request('serviceengine-inventory?page_size=200',t['name']).json()
+                    resp = se_inv
                     page_number = 1
-                    while 'next' in se_inv:
+                    while 'next' in resp:
                         page_number += 1
                         resp = self.avi_request('serviceengine-inventory?page_size=200&page='+str(page_number),t['name']).json()
-                        se_inv['results'].append(resp['results'])
+                        for s in resp['results']:
+                            se_inv['results'].append(s)
                     #------------------
                     pool_inv = self.avi_request('pool-inventory?page_size=200',t['name']).json()
+                    resp = pool_inv
                     page_number = 1
-                    while 'next' in pool_inv:
+                    while 'next' in resp:
                         page_number += 1
                         resp = self.avi_request('pool-inventory?page_size=200&page='+str(page_number),t['name']).json()
-                        pool_inv['results'].append(resp['results'])
+                        for p in resp['results']:
+                            pool_inv['results'].append(p)
                     #------------------
                     seg_inv = self.avi_request('serviceenginegroup-inventory?page_size=1000',t['name']).json()
                     if vs_inv['count'] > 0:
@@ -587,21 +600,22 @@ class avi_metrics():
                             }
                             ]}
                     se_stat = self.avi_post('analytics/metrics/collection?pad_missing_data=false', t['name'], payload).json()
-                    payload = {
-                        "metric_requests": [
-                            {
-                                "step": 5,
-                                "limit": 1,
-                                "aggregate_entity": False,
-                                "entity_uuid": "*",
-                                "se_uuid": "*",
-                                "id": "collItemRequest:AllSEs",
-                                "metric_id": self.se_metric_list
-                            }
-                            ]}
-                    realtime_stat = self.avi_post('analytics/metrics/collection?pad_missing_data=false', t['name'], payload).json()
-                    if 'series' in realtime_stat:
-                        se_stat['series']['collItemRequest:AllSEs'].update(realtime_stat['series']['collItemRequest:AllSEs'])
+                    if args.norealtime == False:
+                        payload = {
+                            "metric_requests": [
+                                {
+                                    "step": 5,
+                                    "limit": 1,
+                                    "aggregate_entity": False,
+                                    "entity_uuid": "*",
+                                    "se_uuid": "*",
+                                    "id": "collItemRequest:AllSEs",
+                                    "metric_id": self.se_metric_list
+                                }
+                                ]}
+                        realtime_stat = self.avi_post('analytics/metrics/collection?pad_missing_data=false', t['name'], payload).json()
+                        if 'series' in realtime_stat:
+                            se_stat['series']['collItemRequest:AllSEs'].update(realtime_stat['series']['collItemRequest:AllSEs'])
                     for s in se_stat['series']['collItemRequest:AllSEs']:
                         if s in self.se_dict:
                             se_name = self.se_dict[s]
@@ -655,11 +669,12 @@ class avi_metrics():
                 payload =  {'metric_requests': [{'step' : 300, 'limit': 1, 'id': 'allvs', 'entity_uuid' : '*', 'metric_id': self.vs_metric_list}]}
                 vs_stats = self.avi_post('analytics/metrics/collection?pad_missing_data=false', tenant, payload).json()
                 #----- this pulls 1 min avg stats for vs that have realtime stats enabled
-                payload =  {'metric_requests': [{'step' : 5, 'limit': 1, 'id': 'allvs', 'entity_uuid' : '*', 'metric_id': self.vs_metric_list}]}
-                realtime_stats = self.avi_post('analytics/metrics/collection?pad_missing_data=false', tenant, payload).json()
-                #----- overwrites real time vs' 5 min avg with the 1 min avg
-                if 'series' in realtime_stats:
-                    vs_stats['series']['allvs'].update(realtime_stats['series']['allvs'])
+                if args.norealtime == False:
+                    payload =  {'metric_requests': [{'step' : 5, 'limit': 1, 'id': 'allvs', 'entity_uuid' : '*', 'metric_id': self.vs_metric_list}]}
+                    realtime_stats = self.avi_post('analytics/metrics/collection?pad_missing_data=false', tenant, payload).json()
+                    #----- overwrites real time vs' 5 min avg with the 1 min avg
+                    if 'series' in realtime_stats:
+                        vs_stats['series']['allvs'].update(realtime_stats['series']['allvs'])
                 #----- THIS IS NEW
                 for v in vs_stats['series']['allvs']:
                     if v in self.vs_dict:
@@ -725,11 +740,12 @@ class avi_metrics():
             payload =  {'metric_requests': [{'step' : 300, 'limit': 1, 'id': 'vs_metrics_by_se', 'entity_uuid' : '*', 'serviceengine_uuid': '*', 'include_refs': True, 'metric_id': self.vs_metric_list}]}
             vs_stats = self.avi_post('analytics/metrics/collection?pad_missing_data=false', tenant, payload).json()
             #----- this will pull 1 min stats for vs that have realtime stat enabled
-            payload =  {'metric_requests': [{'step' : 5, 'limit': 1, 'id': 'vs_metrics_by_se', 'entity_uuid' : '*', 'serviceengine_uuid': '*', 'include_refs': True, 'metric_id': self.vs_metric_list}]}
-            realtime_stats = self.avi_post('analytics/metrics/collection?pad_missing_data=false', tenant, payload).json()
-            #----- overwrite 5 min avg stats with 1 min avg stats for vs that have realtime stats enabled
-            if 'series' in realtime_stats:
-                vs_stats['series']['vs_metrics_by_se'].update(realtime_stats['series']['vs_metrics_by_se'])
+            if args.norealtime == False:
+                payload =  {'metric_requests': [{'step' : 5, 'limit': 1, 'id': 'vs_metrics_by_se', 'entity_uuid' : '*', 'serviceengine_uuid': '*', 'include_refs': True, 'metric_id': self.vs_metric_list}]}
+                realtime_stats = self.avi_post('analytics/metrics/collection?pad_missing_data=false', tenant, payload).json()
+                #----- overwrite 5 min avg stats with 1 min avg stats for vs that have realtime stats enabled
+                if 'series' in realtime_stats:
+                    vs_stats['series']['vs_metrics_by_se'].update(realtime_stats['series']['vs_metrics_by_se'])
             if len(vs_stats['series']['vs_metrics_by_se']) > 0:
                 for entry in vs_stats['series']['vs_metrics_by_se']:
                     if tenant == 'admin' and entry not in self.vs_dict['admin_vs']:
@@ -1618,6 +1634,8 @@ def main():
 #----- check for docker environment Variable
 #----- if docker environment, runs as while loop
 if 'EN_DOCKER' in os.environ:
+    if 'EN_NOREALTIME' in os.environ:
+        args.norealtime = True
     #----- Metrics db server
     fdir = os.path.abspath(os.path.dirname(__file__))
     args.metrics = (os.environ['EN_METRIC_ENDPOINT'].replace(' ','').lower().split(':'))

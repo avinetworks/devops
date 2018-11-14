@@ -70,6 +70,11 @@ $ avimetrics.py -m <endpoint> --debug
 ```
 
 
+Disable checking for and retrieving of realtime metrics if they are enabled within the controller, results in the default 5 minute averages
+```sh
+$ avimetrics.py -m <endpoint> --norealtime
+```
+
 ## avi_controllers.json
 
 To Add an Additional Controller to Monitor this file will need to modified.  Password can be plaintext or base64 encoded.
@@ -197,7 +202,11 @@ To run this script as a container, modify the files as exampled above prior to b
 $ docker build -t avimetrics .
 ```
 ### Start the container
-To start the container it is required to specify the metrics endpoint via the EN_METRIC_ENDPOINT environment variable.  To specify multiple endpoint seprate each with a colon, ":".  The example below specifies multiple endpoints.
+To start the container it is required to specify the metrics endpoint via the <strong>EN_METRIC_ENDPOINT</strong> environment variable.  To specify multiple endpoint seprate each with a colon, ":".  
+
+Add the environment variable <strong>EN_NOREALTIME=True</strong> to disable retrieving realtime metrics if they are enabled within the controller, results in 5 min averages.
+
+The example below specifies running the container with sending data to multiple endpoints.
 ```sh
 $ docker run -d -e "EN_METRIC_ENDPOINT=graphite:datadog:appdynamics_http" --name avimetrics --restart always --log-opt max-size=1m avimetrics
 ```
