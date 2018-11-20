@@ -2,6 +2,8 @@
 
 The following shows how to setup serviceengines using single node setup beautifully described by Grant Shipley @ Redhat.
 
+https://github.com/gshipley/installcentos
+
 Here are steps to configure a quick one node openshift setup.
 
 <TODO>
