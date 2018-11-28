@@ -1,0 +1,95 @@
+---
+- hosts: localhost
+  connection: local
+  
+  vars_files: 
+   - ./var/creds.yml
+  
+  roles:
+    - role: avinetworks.avisdk
+  
+  tasks:
+    - name: "Upload an image from local"
+      os_image:
+        auth:
+          auth_url: "{{ auth.auth_url }}"
+          username: "{{ auth.username }}"
+          password: "{{ auth.password }}"
+          project_name: "{{ auth.project_name }}"
+          domain_name: "{{ auth.domain_name }}"
+        name: Avi-Controller-18
+        container_format: bare
+        disk_format: qcow2
+        state: present
+        filename: /path/to/controller.qcow2
+      register: image_result
+
+    - name: "Launch an instance"
+      os_server:
+        state: present
+        auth:
+          auth_url: "{{ auth.auth_url }}"
+          username: "{{ auth.username }}"
+          password: "{{ auth.password }}"
+          project_name: "{{ auth.project_name }}"
+          domain_name: "{{ auth.domain_name }}"
+        name: "{{ item.name }}"
+        availability_zone: nova
+        image: "{{ image_result.image['id'] }}"
+        key_name: test
+        timeout: 200
+        flavor: "{{ flavor_id }}"
+        security_groups: default
+        auto_ip: yes
+        nics:
+         - net-name: avimgmt
+      register: result
+      loop: "{{ nodes }}"
+
+    - name: Check Controllers State
+      uri:
+        url: "https://{{ item }}/api/cluster/runtime"
+        validate_certs: false
+      register: url
+      retries: 120
+      delay: 20
+      until:
+       - "url.json is defined"
+       - "url.json['cluster_state']['state'] in ['CLUSTER_UP_HA_ACTIVE', 'CLUSTER_UP_NO_HA']"
+      ignore_errors: yes
+      with_items:
+       - "{{ result.results[0]['openstack']['interface_ip'] }}"
+       - "{{ result.results[1]['openstack']['interface_ip'] }}"
+       - "{{ result.results[2]['openstack']['interface_ip'] }}"
+    
+    - name: Update user password
+      avi_useraccount:
+        username: "{{ username }}"
+        password: "{{ password }}"
+        controller: "{{ result.results[0]['openstack']['interface_ip'] }}"
+        api_version: "{{ api_version }}"
+        old_password: "{{ old_password }}"
+
+    - name: Create cluster
+      avi_cluster:
+       state: present
+       controller: "{{ result.results[0]['openstack']['interface_ip'] }}"
+       username: "{{ username }}"
+       password: "{{ password }}"
+       api_version: "{{ api_version }}"
+       name: "cluster"
+       nodes:
+        - ip:
+            type: "V4"
+            addr: "{{ result.results[0]['openstack']['interface_ip'] }}"
+          name: "{{ result.results[0]['openstack']['interface_ip'] }}"
+        - ip: 
+            type: "V4"
+            addr: "{{ result.results[1]['openstack']['interface_ip'] }}" 
+          name: "{{ result.results[1]['openstack']['interface_ip'] }}"
+        - ip:
+            type: "V4"
+            addr: "{{ result.results[2]['openstack']['interface_ip'] }}"
+          name: "{{ result.results[2]['openstack']['interface_ip'] }}"
+
+

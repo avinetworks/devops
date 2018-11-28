@@ -1,0 +1,18 @@
+username: "username"
+password: "password"
+api_version: "18.1.5"
+old_password: "default_controller_password"
+
+nodes:
+ - { name: 'node1' }
+ - { name: 'node2' }
+ - { name: 'node3' }
+
+flavor_id: 4
+
+auth:
+  auth_url: "http://10.10.174.5:5080/v3"
+  username: username
+  password: password
+  project_name: foo
+  domain_name: Default
