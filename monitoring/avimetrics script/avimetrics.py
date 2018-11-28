@@ -1,7 +1,7 @@
 #!/usr/bin/python
 
 
-version = 'v2018-11-06'
+version = 'v2018-11-26'
 
 #########################################################################################
 #                                                                                       #
@@ -340,7 +340,7 @@ class avi_metrics():
                 page_number = 1
                 while 'next' in resp:
                     page_number += 1
-                    self.avi_request('serviceengine-inventory?page_size=200&page='+str(page_number),'*').json()
+                    resp = self.avi_request('serviceengine-inventory?page_size=200&page='+str(page_number),'*').json()
                     for s in resp['results']:
                         se_inv['results'].append(s)
                 #------------------
@@ -1391,7 +1391,8 @@ class avi_metrics():
             temp_payload = self.payload_template.copy()
             temp_payload['timestamp']=int(time.time())
             temp_payload['metric_type'] = 'version'
-            temp_payload['metric_name'] = current_version
+            temp_payload['metric_name'] = 'current_version'
+            temp_payload['version'] = current_version
             temp_payload['metric_value'] = 1
             temp_payload['name_space'] = 'avi||'+self.host_location+'||'+self.host_environment+'||'+self.avi_cluster_ip+'||current_version||%s' %current_version
             endpoint_payload_list.append(temp_payload)
@@ -1439,20 +1440,30 @@ class avi_metrics():
                                     server_object = p.split(',')[2]
                                     for d in resp.json()['series']['collItemRequest:AllServers'][p]:
                                         if 'data' in d:
-                                            pool_name = d['header']['pool_ref'].rsplit('#',1)[1]
-                                            vs_name = d['header']['entity_ref'].rsplit('#',1)[1]
+                                            pool_name = d['header']['pool_ref'].rsplit('#',1)[1]                                            
                                             metric_name = d['header']['name']
                                             temp_payload = self.payload_template.copy()
                                             temp_payload['timestamp']=int(time.time())
-                                            temp_payload['vs_name'] = vs_name
                                             temp_payload['pool_name'] = pool_name
                                             temp_payload['tenant'] = t['name']
                                             temp_payload['pool_member'] = server_object
                                             temp_payload['metric_type'] = 'pool_member_metrics'
                                             temp_payload['metric_name'] = metric_name
                                             temp_payload['metric_value'] = d['data'][0]['value']
-                                            temp_payload['name_space'] = 'avi||'+self.host_location+'||'+self.host_environment+'||'+self.avi_cluster_ip+'||virtualservice||%s||pool||%s||%s||%s' %(vs_name, pool_name, server_object,metric_name)
-                                            endpoint_payload_list.append(temp_payload)
+                                            if 'entity_ref' in d['header']:
+                                                vs_name = d['header']['entity_ref'].rsplit('#',1)[1]
+                                                temp_payload['vs_name'] = vs_name
+                                                temp_payload['name_space'] = 'avi||'+self.host_location+'||'+self.host_environment+'||'+self.avi_cluster_ip+'||virtualservice||%s||pool||%s||%s||%s' %(vs_name, pool_name, server_object,metric_name)
+                                                endpoint_payload_list.append(temp_payload)
+                                            else:
+                                                for x in self.pool_dict['tenants'][t['name']]['results']:
+                                                    if x['config']['name'] == pool_name:
+                                                        for v in x['virtualservices']:
+                                                            vs_name = self.vs_dict[v.split('/api/virtualservice/')[1]]
+                                                            temp_payload1 = temp_payload.copy()
+                                                            temp_payload1['vs_name'] = vs_name
+                                                            temp_payload1['name_space'] = 'avi||'+self.host_location+'||'+self.host_environment+'||'+self.avi_cluster_ip+'||virtualservice||%s||pool||%s||%s||%s' %(vs_name, pool_name, server_object,metric_name)
+                                                            endpoint_payload_list.append(temp_payload1)
             except:
                 print(str(datetime.now())+' '+self.avi_cluster_ip+': func pool_server_metrics encountered an error for tenant '+t['name'])
                 exception_text = traceback.format_exc()
