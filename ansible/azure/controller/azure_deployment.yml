@@ -1,6 +1,6 @@
 - hosts: localhost
   connection: local
-   vars:
+  vars:
     virtual_network: ansible-demo-vn001
     subnet: subnet001
   roles:
