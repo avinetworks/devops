@@ -1,5 +1,6 @@
 import socket
 import requests
+from requests.auth import HTTPBasicAuth
 import json
 import traceback
 from datetime import datetime
@@ -136,11 +137,26 @@ def send_value_influxdb(endpoint_info, influx_payload):
             if sys.getsizeof(message_list) > 4915:
                 message = '\n'.join(message_list) + '\n'
                 headers = ({'content-type': 'octet-stream'})
-                resp = requests.post('%s://%s:%s/write?db=%s' %(endpoint_info['protocol'],endpoint_info['server'],endpoint_info['server_port'],endpoint_info['db']),verify=False,headers = headers, data=message)
-                message_list = []
+                if str(endpoint_info['auth-enabled']).lower() == 'true':
+                    resp = requests.post('%s://%s:%s/write?db=%s' %(endpoint_info['protocol'],endpoint_info['server'],endpoint_info['server_port'],endpoint_info['db']),verify=False,headers = headers, data=message,auth=(endpoint_info['username'],endpoint_info['password']))
+                    message_list = []
+                else:
+                    resp = requests.post('%s://%s:%s/write?db=%s' %(endpoint_info['protocol'],endpoint_info['server'],endpoint_info['server_port'],endpoint_info['db']),verify=False,headers = headers, data=message)
+                    message_list = []
+                if resp.status_code == 401:
+                    print(str(datetime.now())+' '+endpoint_info['server']+': UNAUTHORIZED')
+                elif resp.status_code == 403:
+                    print(str(datetime.now())+' '+endpoint_info['server']+': FORBIDDEN')
         message = '\n'.join(message_list) + '\n'
         headers = ({'content-type': 'octet-stream'})
-        resp = requests.post('%s://%s:%s/write?db=%s' %(endpoint_info['protocol'],endpoint_info['server'],endpoint_info['server_port'],endpoint_info['db']),verify=False,headers = headers, data=message)
+        if str(endpoint_info['auth-enabled']).lower() == 'true':
+            resp = requests.post('%s://%s:%s/write?db=%s' %(endpoint_info['protocol'],endpoint_info['server'],endpoint_info['server_port'],endpoint_info['db']),verify=False,headers = headers, data=message,auth=(endpoint_info['username'],endpoint_info['password']))
+        else:
+            resp = requests.post('%s://%s:%s/write?db=%s' %(endpoint_info['protocol'],endpoint_info['server'],endpoint_info['server_port'],endpoint_info['db']),verify=False,headers = headers, data=message)
+        if resp.status_code == 401:
+            print(str(datetime.now())+' '+endpoint_info['server']+': UNAUTHORIZED')
+        elif resp.status_code == 403:
+            print(str(datetime.now())+' '+endpoint_info['server']+': FORBIDDEN')
     except:
         exception_text = traceback.format_exc()
         print exception_text

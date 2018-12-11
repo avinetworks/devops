@@ -5,6 +5,10 @@
         "protocol": "https",
         "db": "avi",
         "_comment":"Change metric_prefix only if you need to define a prefix",
-        "metric_prefix": ""
+        "metric_prefix": "",
+        "_comment":"If using auth on influxdb set auth-enabled to true and modify the credential values",
+        "auth-enabled": false,
+        "username": "admin",
+        "password": "password"
     }
 }
