@@ -236,7 +236,7 @@ def send_value_logstash(endpoint_info, payload):
                 for k in keys_to_remove:
                     entry.pop(k,None)
                 message_list['metrics'].append(entry)
-                if sys.getsizeof(message_list) > 1450:
+                if sys.getsizeof(message_list['metrics']) > 1450:
                     udpsock.sendto(json.dumps(message_list),(endpoint_info['server'],endpoint_info['server_port']))
                     message_list = {'metrics':[]}
             udpsock.sendto(json.dumps(message_list),(endpoint_info['server'],endpoint_info['server_port']))
@@ -248,7 +248,7 @@ def send_value_logstash(endpoint_info, payload):
                 for k in keys_to_remove:
                     entry.pop(k,None)
                 message_list['metrics'].append(entry)
-                if sys.getsizeof(message_list) > 1450:
+                if sys.getsizeof(message_list['metrics']) > 1450:
                     tcpsock.send(json.dumps(message_list))
                     message_list = {'metrics':[]}
             tcpsock.send(json.dumps(message_list))
