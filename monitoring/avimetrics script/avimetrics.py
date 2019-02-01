@@ -24,7 +24,8 @@ version = 'v2018-11-26'
 #----- Import Libraries
 
 import requests
-requests.packages.urllib3.disable_warnings()
+import urllib3
+urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 import json
 import time
 import syslog
