@@ -228,17 +228,17 @@ def send_value_elastic_stack(payload):
 
 def send_value_logstash(endpoint_info, payload):
     try:
-        message_list = {'metrics':[]}
+        message_list = {'avi':[]}
         keys_to_remove = ['name_space','timestamp']
         if endpoint_info['protocol'] == 'udp':
             udpsock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
             for entry in payload:
                 for k in keys_to_remove:
                     entry.pop(k,None)
-                message_list['metrics'].append(entry)
-                if sys.getsizeof(message_list['metrics']) > 1450:
+                message_list['avi'].append(entry)
+                if sys.getsizeof(message_list['avi']) > 1450:
                     udpsock.sendto(json.dumps(message_list),(endpoint_info['server'],endpoint_info['server_port']))
-                    message_list = {'metrics':[]}
+                    message_list = {'avi':[]}
             udpsock.sendto(json.dumps(message_list),(endpoint_info['server'],endpoint_info['server_port']))
         else:
             tcpsock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -247,10 +247,10 @@ def send_value_logstash(endpoint_info, payload):
             for entry in payload:
                 for k in keys_to_remove:
                     entry.pop(k,None)
-                message_list['metrics'].append(entry)
-                if sys.getsizeof(message_list['metrics']) > 1450:
+                message_list['avi'].append(entry)
+                if sys.getsizeof(message_list['avi']) > 1450:
                     tcpsock.send(json.dumps(message_list))
-                    message_list = {'metrics':[]}
+                    message_list = {'avi':[]}
             tcpsock.send(json.dumps(message_list))
             tcpsock.close()
     except:

@@ -11,6 +11,6 @@ udp {
 filter {
  if [type] == "avi_metrics" {
       split {
-        field => "metrics"
+        field => "avi"
 }
 }
