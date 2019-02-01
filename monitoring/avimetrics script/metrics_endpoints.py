@@ -226,6 +226,42 @@ def send_value_elastic_stack(payload):
 
 
 
+def send_value_logstash(endpoint_info, payload):
+    try:
+        message_list = {'metrics':[]}
+        keys_to_remove = ['name_space','timestamp']
+        if endpoint_info['protocol'] == 'udp':
+            udpsock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+            for entry in payload:
+                for k in keys_to_remove:
+                    entry.pop(k,None)
+                message_list['metrics'].append(entry)
+                if sys.getsizeof(message_list) > 1450:
+                    udpsock.sendto(json.dumps(message_list),(endpoint_info['server'],endpoint_info['server_port']))
+                    message_list = {'metrics':[]}
+            udpsock.sendto(json.dumps(message_list),(endpoint_info['server'],endpoint_info['server_port']))
+        else:
+            tcpsock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            tcpsock.connect((endpoint_info['server'], endpoint_info['server_port']))
+            socket.setdefaulttimeout(10)
+            for entry in payload:
+                for k in keys_to_remove:
+                    entry.pop(k,None)
+                message_list['metrics'].append(entry)
+                if sys.getsizeof(message_list) > 1450:
+                    tcpsock.send(json.dumps(message_list))
+                    message_list = {'metrics':[]}
+            tcpsock.send(json.dumps(message_list))
+            tcpsock.close()
+    except:
+        exception_text = traceback.format_exc()
+        print exception_text
+            
+
+
+
+
+
 
 def send_metriclist_to_endpoint(endpoint_list, payload):
     try:
@@ -242,6 +278,8 @@ def send_metriclist_to_endpoint(endpoint_list, payload):
                 send_value_datadog(endpoint_info, payload)
             elif endpoint_info['type'] == 'influxdb':
                 send_value_influxdb(endpoint_info, payload)
+            elif endpoint_info['type'] == 'logstash':
+                send_value_logstash(endpoint_info, payload)
     except:
         exception_text = traceback.format_exc()
         print exception_text
