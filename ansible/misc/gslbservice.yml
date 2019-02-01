@@ -55,8 +55,3 @@
                   ratio: 3
               name: '{{ product }}-pool-gslb'
               priority: 20
-
-
-[root@localhost ~]# pip freeze | grep netscaler
-
-
