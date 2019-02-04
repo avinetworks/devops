@@ -1,5 +1,8 @@
 - hosts: localhost
   connection: local
+  vars:
+    virtual_network: ansible-demo-vn001
+    subnet: subnet001
   roles:
     - { role: avinetworks.avisdk }
     - { role: Azure.azure_modules }
@@ -210,7 +213,3 @@
         username: 'admin'
         password: 'password'
         api_version: 17.2.5
-
-  vars:
-    virtual_network: ansible-demo-vn001
-    subnet: subnet001
