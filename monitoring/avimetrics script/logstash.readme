@@ -1,16 +1,10 @@
-Logstash configuration input and filter examples.  
+Logstash configuration input examples.  
 
 
 udp {
    port => 1517
-   codec => "json"
+   codec => "json_lines"
    type => "avi_metrics"
  }
 
-#----- This filter is required
-filter {
- if [type] == "avi_metrics" {
-      split {
-        field => "avi"
-}
-}
+
