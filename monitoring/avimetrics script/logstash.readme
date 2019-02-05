@@ -8,3 +8,8 @@ udp {
  }
 
 
+tcp {
+   port => 1517
+   codec => "json_lines"
+   type => "avi_metrics"
+ }
