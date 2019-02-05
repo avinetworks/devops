@@ -1,0 +1,9 @@
+{"elasticsearch":
+    {
+        "server": "169.254.0.1",
+        "server_port": 9200,
+        "index": "avimetrics",
+        "_comment":"default time filter field name",
+        "timestamp": "@timestamp"
+    }
+}

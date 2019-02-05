@@ -5,6 +5,7 @@ import json
 import traceback
 from datetime import datetime
 import sys
+import time
 
 
 #----- Send value to graphite
@@ -120,7 +121,7 @@ def send_value_appdynamics_http(endpoint_info, appd_payload):
 
 
 
-
+#----- Send value to influxdb
 def send_value_influxdb(endpoint_info, influx_payload):
     try:
         tag_to_ignore = ['metric_name', 'timestamp', 'metric_value','name_space']
@@ -182,7 +183,7 @@ def send_value_prometheus(payload):
 
 
 
-
+#----- Send value to datadog
 def send_value_datadog(endpoint_info, datadog_payload):
     try:
         keys_to_remove=["avicontroller","timestamp","metric_value","metric_name","name_space"]
@@ -219,13 +220,25 @@ def send_value_datadog(endpoint_info, datadog_payload):
 
 
 
+#----- Send value to elasticsearch
+def send_value_elasticsearch(endpoint_info, payload):
+    try:
+        keys_to_remove = ['name_space']
+        for entry in payload:
+            for k in keys_to_remove:
+                entry.pop(k,None)
+            entry[endpoint_info['timestamp']] = time.strftime("%Y-%m-%dT%H:%M:%S", time.localtime())
+            headers = ({'content-type': 'application/json'})
+            resp = requests.post('http://%s:%s/%s/_doc' %(endpoint_info['server'], endpoint_info['server_port'], endpoint_info['index']) ,headers = headers, data=json.dumps(entry))
+            if resp.status_code != 201:
+                print resp.text
+    except:
+        exception_text = traceback.format_exc()
+        print exception_text
 
-def send_value_elastic_stack(payload):
-    pass
 
 
-
-
+#----- Send value to logstash
 def send_value_logstash(endpoint_info, payload):
     try:
         keys_to_remove = ['name_space','timestamp']
@@ -279,6 +292,8 @@ def send_metriclist_to_endpoint(endpoint_list, payload):
                 send_value_influxdb(endpoint_info, payload)
             elif endpoint_info['type'] == 'logstash':
                 send_value_logstash(endpoint_info, payload)
+            elif endpoint_info['type'] == 'elasticsearch':
+                send_value_elasticsearch(endpoint_info, payload)                
     except:
         exception_text = traceback.format_exc()
         print exception_text

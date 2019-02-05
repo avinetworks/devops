@@ -1,7 +1,7 @@
 #!/usr/bin/python
 
 
-version = 'v2018-11-26'
+version = 'v2019-02-04'
 
 #########################################################################################
 #                                                                                       #
@@ -65,7 +65,8 @@ def determine_endpoint_type():
         'splunk',
         'datadog',
         'influxdb',
-        'logstash'
+        'logstash',
+        'elasticsearch'
         ]
     if args.metrics == None:
         print '=====> ERROR:  No metric type defined, acceptable types are: '+str(endpoint_types)
@@ -108,7 +109,12 @@ def determine_endpoint_type():
                 with open(os.path.join(fdir,'logstash.json')) as logstash:
                     endpoint_info = json.load(logstash)['logstash']
                     endpoint_info['type'] = 'logstash'
-                    endpoint_list.append(endpoint_info)                                          
+                    endpoint_list.append(endpoint_info)  
+            elif a.lower() == 'elasticsearch':
+                with open(os.path.join(fdir,'elasticsearch.json')) as elasticsearch:
+                    endpoint_info = json.load(elasticsearch)['elasticsearch']
+                    endpoint_info['type'] = 'elasticsearch'
+                    endpoint_list.append(endpoint_info)                                                              
         return endpoint_list
 
 
