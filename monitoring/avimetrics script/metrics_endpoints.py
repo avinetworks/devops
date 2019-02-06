@@ -229,7 +229,10 @@ def send_value_elasticsearch(endpoint_info, payload):
                 entry.pop(k,None)
             entry[endpoint_info['timestamp']] = time.strftime("%Y-%m-%dT%H:%M:%S", time.localtime())
             headers = ({'content-type': 'application/json'})
-            resp = requests.post('http://%s:%s/%s/_doc' %(endpoint_info['server'], endpoint_info['server_port'], endpoint_info['index']) ,headers = headers, data=json.dumps(entry))
+            if str(endpoint_info['auth-enabled']).lower() == 'true':
+                resp = requests.post('%s://%s:%s/%s/_doc' %(endpoint_info['protocol'],endpoint_info['server'], endpoint_info['server_port'], endpoint_info['index']) ,headers = headers, data=json.dumps(entry),auth=(endpoint_info['username'],endpoint_info['password']))
+            else:
+                resp = requests.post('%s://%s:%s/%s/_doc' %(endpoint_info['protocol'],endpoint_info['server'], endpoint_info['server_port'], endpoint_info['index']) ,headers = headers, data=json.dumps(entry))
             if resp.status_code != 201:
                 print resp.text
     except:
