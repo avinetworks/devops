@@ -228,6 +228,7 @@ def send_value_elasticsearch(endpoint_info, payload):
             for k in keys_to_remove:
                 entry.pop(k,None)
             entry[endpoint_info['timestamp']] = time.strftime("%Y-%m-%dT%H:%M:%S", time.localtime())
+            entry['metric_value'] = float(entry['metric_value'])
             headers = ({'content-type': 'application/json'})
             if str(endpoint_info['auth-enabled']).lower() == 'true':
                 resp = requests.post('%s://%s:%s/%s/_doc' %(endpoint_info['protocol'],endpoint_info['server'], endpoint_info['server_port'], endpoint_info['index']) ,headers = headers, data=json.dumps(entry),auth=(endpoint_info['username'],endpoint_info['password']))
