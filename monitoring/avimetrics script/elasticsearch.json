@@ -1,0 +1,14 @@
+{"elasticsearch":
+    {
+        "server": "169.254.0.1",
+        "server_port": 9200,
+        "protocol" : "https",
+        "index": "avimetrics",
+        "_comment":"default time filter field name",
+        "timestamp": "@timestamp",
+        "_comment":"If using auth on elasticsearch set auth-enabled to true and modify the credential values",
+        "auth-enabled": true,
+        "username": "admin",
+        "password": "password"
+    }
+}

@@ -1,0 +1,9 @@
+{"logstash":
+    {
+        "_comment": "logstash codec => json_lines",
+        "server": "169.254.0.1",
+        "server_port": 517,
+        "_comment": "tcp or udp",
+        "protocol": "udp"
+    }
+}

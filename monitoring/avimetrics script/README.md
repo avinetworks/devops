@@ -1,7 +1,7 @@
 # Avi Metrics Script
 
 The Avi Metrics script was built with the intent to pull metrics from one or more Avi controllers and send these values to a centralized metrics database(s).
-The script supports a number of different endpoints; current support includes AppDynamics, Datadog, Graphite Splunk and InfluxDB.
+The script supports a number of different endpoints; current support includes AppDynamics, Datadog, Graphite Splunk, Logstash, Elasticsearch and InfluxDB.
 
 
 This repository includes that necessary files to deploy a centralized metrics script
@@ -14,11 +14,13 @@ This repository includes that necessary files to deploy a centralized metrics sc
     - **avimetrics.py**:  This is the script that will pull the values from the Avi Controller API and forward to the metrics enpoints
     - **avi_controllers.json**:  This file contains the Avi Controller login information.  When new Avi controllers are deployed they need to be added and this file must be redeployed.
     - **metrics_endpoints.py**:  This file contains the methods for formatting the data and sending to the defined metrics endpoint(s)
-    - **dockerfile**:  This file contains the commands to build a container with the metrics script
+    - **dockerfile**:  This file contains the commands to build a container with the metrics script    
     - **appdynamics_http.json**:  This file contains values required to send to a App Dynamics Standalone Machine Agent HTTP Listener
     - **datadog.json**:  This file contains the values required to send to the Datadog HTTP API
-    - **graphite_host.json**:  This file contains the graphite host and tcp port information.
+    - **graphite_host.json**:  This file contains the graphite host and tcp port information
     - **splunk_host.json**:  This file contains the values required to send to a Splunk HTTP Endpoint Collector API to a Metric Index
+    - **logstash.json**:  This file contains the values required to send to a Logstash input
+    - **elasticsearch_host.json**:  This file contains the values required to send to the Elasticsearch document API
     - **influxdb.json**:  This file contains the values required to send to an InfluxDB HTTP API endpoint
 
 
@@ -28,7 +30,12 @@ This repository includes that necessary files to deploy a centralized metrics sc
 
 
 # Installation
-All files are required and must exist within the same directory for successful metric gathering.
+The following files are required and must exist within the same directory for successful metric gathering.
+- **avimetrics.py**
+- **avi_controllers.json**
+- **metrics_endpoints.py**
+- **RELEVANT ENDPOINT .json file(s)**
+
 
 
 # Usage
@@ -52,7 +59,10 @@ Send Metrics to one or more metrics endpoints.  Valid values are:
  - graphite
  - datadog
  - splunk
+ - logstash
+ - elasticsearch
  - influxdb
+ 
 
 ```sh
 $ avimetrics.py -m datadog -m graphite
@@ -176,9 +186,54 @@ EXAMPLE:
 ```
 
 
+## logstash.json
+
+Define the values for sending metrics to a Logstash endpoint.  The script will send values in a format that is expecting the configured logstash codec to be json_lines.
+
+EXAMPLE:
+
+```sh
+{"logstash":
+    {
+        "_comment": "logstash codec => json_lines",
+        "server": "169.254.0.1",
+        "server_port": 517,
+        "_comment": "tcp or udp",
+        "protocol": "udp"
+    }
+}
+
+```
+
+
+## elasticsearch.json
+
+Define the values for sending metrics to Elasticsearch via the document API.
+
+EXAMPLE:
+
+```sh
+{"elasticsearch":
+    {
+        "server": "169.254.0.1",
+        "server_port": 9200,
+        "protocol" : "https",
+        "index": "avimetrics",
+        "_comment":"default time filter field name",
+        "timestamp": "@timestamp",
+        "_comment":"If using auth on elasticsearch set auth-enabled to true and modify the credential values",
+        "auth-enabled": true,
+        "username": "admin",
+        "password": "password"
+    }
+}
+
+```
+
+
 ## influxdb.json
 
-Define the values for sending values to InfluxDB via HTTP API.  The script will send values using the InfluxDB's Line Protocol format.
+Define the values for sending metrics to InfluxDB via HTTP API.  The script will send values using the InfluxDB's Line Protocol format.
 
 EXAMPLE:
 

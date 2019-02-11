@@ -1,7 +1,7 @@
 #!/usr/bin/python
 
 
-version = 'v2018-11-26'
+version = 'v2019-02-04'
 
 #########################################################################################
 #                                                                                       #
@@ -24,7 +24,8 @@ version = 'v2018-11-26'
 #----- Import Libraries
 
 import requests
-requests.packages.urllib3.disable_warnings()
+import urllib3
+urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 import json
 import time
 import syslog
@@ -63,7 +64,9 @@ def determine_endpoint_type():
         'appdynamics_machine',
         'splunk',
         'datadog',
-        'influxdb'
+        'influxdb',
+        'logstash',
+        'elasticsearch'
         ]
     if args.metrics == None:
         print '=====> ERROR:  No metric type defined, acceptable types are: '+str(endpoint_types)
@@ -101,7 +104,17 @@ def determine_endpoint_type():
                 with open(os.path.join(fdir,'influxdb.json')) as inflx:
                     endpoint_info = json.load(inflx)['influxdb']
                     endpoint_info['type'] = 'influxdb'
-                    endpoint_list.append(endpoint_info)                    
+                    endpoint_list.append(endpoint_info) 
+            elif a.lower() == 'logstash':
+                with open(os.path.join(fdir,'logstash.json')) as logstash:
+                    endpoint_info = json.load(logstash)['logstash']
+                    endpoint_info['type'] = 'logstash'
+                    endpoint_list.append(endpoint_info)  
+            elif a.lower() == 'elasticsearch':
+                with open(os.path.join(fdir,'elasticsearch.json')) as elasticsearch:
+                    endpoint_info = json.load(elasticsearch)['elasticsearch']
+                    endpoint_info['type'] = 'elasticsearch'
+                    endpoint_list.append(endpoint_info)                                                              
         return endpoint_list
 
 
@@ -753,20 +766,21 @@ class avi_metrics():
                     elif tenant != 'admin' and entry in self.vs_dict['admin_vs']:
                         continue
                     else:
-                        vs_name = self.vs_dict[entry]
-                        for d in vs_stats['series']['vs_metrics_by_se'][entry]:
-                            if 'data' in d:
-                                se_name = self.se_dict[d['header']['serviceengine_ref'].split('serviceengine/')[1]]
-                                temp_payload = self.payload_template.copy()
-                                temp_payload['timestamp']=int(time.time())
-                                temp_payload['se_name'] = se_name
-                                temp_payload['tenant'] = tenant
-                                temp_payload['vs_name'] = vs_name
-                                temp_payload['metric_type'] = 'virtualservice_metrics_per_serviceengine'
-                                temp_payload['metric_name'] = d['header']['name']
-                                temp_payload['metric_value'] = d['data'][0]['value']
-                                temp_payload['name_space'] = 'avi||'+self.host_location+'||'+self.host_environment+'||'+self.avi_cluster_ip+'||serviceengine||%s||virtualservice_stats||%s||%s' %(se_name,vs_name,d['header']['name'])
-                                endpoint_payload_list.append(temp_payload)
+                        if entry in self.vs_dict:
+                            vs_name = self.vs_dict[entry]
+                            for d in vs_stats['series']['vs_metrics_by_se'][entry]:
+                                if 'data' in d:
+                                    se_name = self.se_dict[d['header']['serviceengine_ref'].split('serviceengine/')[1]]
+                                    temp_payload = self.payload_template.copy()
+                                    temp_payload['timestamp']=int(time.time())
+                                    temp_payload['se_name'] = se_name
+                                    temp_payload['tenant'] = tenant
+                                    temp_payload['vs_name'] = vs_name
+                                    temp_payload['metric_type'] = 'virtualservice_metrics_per_serviceengine'
+                                    temp_payload['metric_name'] = d['header']['name']
+                                    temp_payload['metric_value'] = d['data'][0]['value']
+                                    temp_payload['name_space'] = 'avi||'+self.host_location+'||'+self.host_environment+'||'+self.avi_cluster_ip+'||serviceengine||%s||virtualservice_stats||%s||%s' %(se_name,vs_name,d['header']['name'])
+                                    endpoint_payload_list.append(temp_payload)
                 if len(endpoint_payload_list) > 0:
                     send_metriclist_to_endpoint(endpoint_list, endpoint_payload_list)
                 temp_total_time = str(time.time()-temp_start_time)
