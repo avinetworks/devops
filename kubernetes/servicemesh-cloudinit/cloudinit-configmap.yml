@@ -5,45 +5,45 @@ metadata:
   namespace: default
 data:
   avi_vars.yml: |
-    cloud_name: "k8sCloud"
-    avi_controller: "10.10.10.11"
+    cloud_name: "k8s1"
+    avi_controller: "10.0.0.100"
     version: "18.1.2"
-    registry_url: "docker.registry.url"
+    #registry_url: "avireg"
     # AWS variables
     license_type: "LIC_HOSTS"
-    ns_subnet_id: "subnet-1234abcd"
+    ns_subnet_id: "subnet-v79sid7"
     region: "us-west-2"
-    vpc_id: "vpc-12345abcdefg56"
+    vpc_id: "vpc-19295f7h68v290u"
     availability_zone: "us-west-2a"
-    iam_assume_role: "arn:aws:iam::1234567890:role/XAccountAccess"
+    #iam_assume_role: "arn:aws:iam::18937023:role/XAccountAccess"
     # Proxy variables
-    proxy_host: "aws.api.proxy.host"
-    proxy_port: "80"
+    #proxy_host: "avi.proxy.host"
+    #proxy_port: "80"
     # Kubernetes variables
     master_nodes:
-      - "https://10.10.10.21:6443"
-    subdomain: "k8sdemo.local"
-    ns_attribute_key: "nodetype"
-    ns_attribute_value: "infra"
+      - "https://10.0.0.10:6443"
+    subdomain: "k8sdemo.avi.local"
+    #ns_attribute_key: "nodetype"
+    #ns_attribute_value: "infra"
 
   aviconfig.yml: |  
     avi_config:
-      #network:
-      #  - name: "EW-Net-{{ cloud_name }}"
-      #    cloud_ref: "/api/cloud?name={{ cloud_name }}"
-      #    configured_subnets:
-      #      - prefix:
-      #          mask: "16"
-      #          ip_addr:
-      #            type: V4
-      #            addr: "172.90.0.0"
-      #        static_ranges:
-      #        - begin:
-      #            type: V4
-      #            addr: "172.90.0.10"
-      #          end:
-      #            type: V4
-      #            addr: "172.90.255.250"
+      network:
+        - name: "EW-Net-{{ cloud_name }}"
+          cloud_ref: "/api/cloud?name={{ cloud_name }}"
+          configured_subnets:
+            - prefix:
+                mask: "16"
+                ip_addr:
+                  type: V4
+                  addr: "172.90.0.0"
+              static_ranges:
+              - begin:
+                  type: V4
+                  addr: "172.90.0.10"
+                end:
+                  type: V4
+                  addr: "172.90.255.250"
       ipamdnsproviderprofile:
         - name: "EastWestIPAM-{{ cloud_name }}"
           type: "IPAMDNS_TYPE_INTERNAL"
@@ -57,7 +57,7 @@ data:
           #  port: "{{ proxy_port }}"
           aws_profile:
             use_iam_roles: true
-            iam_assume_role: "{{ iam_assume_role }}"
+            #iam_assume_role: "{{ iam_assume_role }}"
             # provide access keys if use_iam_roles is set to false
             #access_key_id: ""
             #secret_access_key: ""
@@ -72,18 +72,17 @@ data:
           internal_profile:
             dns_service_domain:
               - domain_name: "{{ subdomain }}"
-      serviceenginegroup:
-        - name: "Default-Group"
-          cloud_ref: "/api/cloud?name={{ cloud_name }}"
-          # Uncomment below to change default SE footprint
-          #vcpus_per_se: 1
-          #memory_per_se: 2048
-          #disk_per_se: 10
-          host_attribute_key: "{{ ns_attribute_key }}"
-          host_attribute_value: "{{ ns_attribute_value }}"
+      #serviceenginegroup:
+      #  - name: "Default-Group"
+      #    cloud_ref: "/api/cloud?name={{ cloud_name }}"
+      #    #vcpus_per_se: 1
+      #    #memory_per_se: 1024
+      #    #disk_per_se: 10
+      #    host_attribute_key: "{{ ns_attribute_key }}"
+      #    host_attribute_value: "{{ ns_attribute_value }}"
       cloud:
         - name: "{{ cloud_name }}"
-          license_type: "{{ license_type }}"
+          license_type: "LIC_CORES"
           tenant_ref: "/api/tenant?name=admin"
           vtype: "CLOUD_OSHIFT_K8S"
           ipam_provider_ref: "/api/ipamdnsproviderprofile?name=NorthSouthIPAM-{{ cloud_name }}"
@@ -95,8 +94,8 @@ data:
             master_nodes: "{{ master_nodes }}"
             service_account_token: "{{ token }}"
             se_deployment_method: SE_CREATE_POD
-            docker_registry_se:
-              registry: "{{ registry_url }}/avinetworks/se"
+            #docker_registry_se:
+            #  registry: "{{ registry_url }}/avinetworks/se"
       virtualservice:
         - name: "DNS-VS-{{ cloud_name }}"
           services:

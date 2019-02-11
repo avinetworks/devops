@@ -1,4 +1,5 @@
 Kubernetes configuration for configuring Avi
+Note: All k8s objects are created in default tenant
 
 * Run script to create avi controller secret yaml. 
   It encodes the cleartext passord to base64
@@ -15,12 +16,10 @@ Kubernetes configuration for configuring Avi
 
 * Create avi serviceaccount, role and rolebinding.
   This is used by Avi cloud connector
-   kubectl create -f avi_sa.yml
+   kubectl create -f avi-sa.yml
 
 * Create the cloud-init job
    kubectl create -f cloudinit-job.yml
-
-Note: All k8s objects are created in default tenant
 
 This will perform the folloing on Avi controller:
 1. Create no-orchestrator cloud with given name
@@ -29,4 +28,3 @@ This will perform the folloing on Avi controller:
 4. Edit the cloud in step 1 to k8s cloud.
 5. Create a DNS VS
 6. Set the DNS VS as application DNS in system settings
-
