@@ -7,22 +7,26 @@ data:
   avi_vars.yml: |
     cloud_name: "k8s1"
     avi_controller: "10.0.0.100"
-    version: "18.1.2"
-    #registry_url: "avireg"
+    version: "18.2.1"
+    # Uncomment below and add private docker registry URL
+    #registry_url: ""
     # AWS variables
-    license_type: "LIC_HOSTS"
+    license_type: "LIC_CORES"
     ns_subnet_id: "subnet-v79sid7"
     region: "us-west-2"
     vpc_id: "vpc-19295f7h68v290u"
     availability_zone: "us-west-2a"
+    ## Uncomment below and add role ARN for cross account Access
+    ## when avi controller is not in same account as the k8s cluster
     #iam_assume_role: "arn:aws:iam::18937023:role/XAccountAccess"
-    # Proxy variables
+    ## Uncomment below to specify AWS API proxy variables
     #proxy_host: "avi.proxy.host"
     #proxy_port: "80"
     # Kubernetes variables
     master_nodes:
       - "https://10.0.0.10:6443"
     subdomain: "k8sdemo.avi.local"
+    ## Uncomment below and specify node labels to restrict SE deploymet
     #ns_attribute_key: "nodetype"
     #ns_attribute_value: "infra"
 
@@ -52,13 +56,15 @@ data:
               - "/api/network?name=EW-Net-{{ cloud_name }}"
         - name: "NorthSouthIPAM-{{ cloud_name }}"
           type: "IPAMDNS_TYPE_AWS"
+          ## Uncomment below if proxy is required to reach AWS API
           #proxy_configuration:
           #  host: "{{ proxy_host }}"
           #  port: "{{ proxy_port }}"
           aws_profile:
             use_iam_roles: true
+            ## Uncomment below if using cross account assume role
             #iam_assume_role: "{{ iam_assume_role }}"
-            # provide access keys if use_iam_roles is set to false
+            ## provide access keys if use_iam_roles is set to false
             #access_key_id: ""
             #secret_access_key: ""
             region: "{{ region }}"
@@ -72,6 +78,7 @@ data:
           internal_profile:
             dns_service_domain:
               - domain_name: "{{ subdomain }}"
+      ## Uncomment serviceenginegroup to restrict SE deployment to labeled nodes
       #serviceenginegroup:
       #  - name: "Default-Group"
       #    cloud_ref: "/api/cloud?name={{ cloud_name }}"
@@ -94,8 +101,12 @@ data:
             master_nodes: "{{ master_nodes }}"
             service_account_token: "{{ token }}"
             se_deployment_method: SE_CREATE_POD
+            ## Uncomment to use private registry
             #docker_registry_se:
             #  registry: "{{ registry_url }}/avinetworks/se"
+            ing_include_attributes:
+              attribute: "kubernetes.io/ingress.class"
+              value: "avi"
       virtualservice:
         - name: "DNS-VS-{{ cloud_name }}"
           services:
@@ -110,7 +121,3 @@ data:
                 subnet_uuid: "{{ ns_subnet_id }}"
               network_ref: "/api/network/{{ ns_subnet_id }}"
               subnet_uuid: "{{ ns_subnet_id }}"
-      #systemconfiguration:
-      #  - dns_virtualservice_refs:
-      #      - "/api/virtualservice?name=DNS-VS-{{ cloud_name }}"
-      #    uuid: "default"

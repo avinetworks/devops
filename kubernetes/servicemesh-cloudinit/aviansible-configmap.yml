@@ -53,3 +53,14 @@ data:
             name: avinetworks.aviconfig
           vars:
             avi_config_file: "/etc/avi/conf/aviconfig.yml"
+        - name: Set DNS VS as system DNS
+          avi_systemconfiguration:
+            controller: "{{ avi_controller }}" 
+            username: "{{ username }}"
+            password: "{{ password }}"
+            api_version: "{{ version }}"
+            state: "present"
+            avi_api_update_method: "patch"
+            avi_api_patch_op: "add"
+            dns_virtualservice_refs:
+              - "/api/virtualservice?name=DNS-VS-{{ cloud_name }}"
