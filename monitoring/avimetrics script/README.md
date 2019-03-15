@@ -18,7 +18,7 @@ This repository includes that necessary files to deploy a centralized metrics sc
     - **appdynamics_http.json**:  This file contains values required to send to a App Dynamics Standalone Machine Agent HTTP Listener
     - **datadog.json**:  This file contains the values required to send to the Datadog HTTP API
     - **graphite_host.json**:  This file contains the graphite host and tcp port information
-    - **splunk_host.json**:  This file contains the values required to send to a Splunk HTTP Endpoint Collector API to a Metric Index
+    - **splunk_host.json**:  This file contains the values required to send to a Splunk HTTP Endpoint Collector API
     - **logstash.json**:  This file contains the values required to send to a Logstash input
     - **elasticsearch_host.json**:  This file contains the values required to send to the Elasticsearch document API
     - **influxdb.json**:  This file contains the values required to send to an InfluxDB HTTP API endpoint
@@ -169,7 +169,7 @@ EXAMPLE:
 
 ## splunk_host.json
 
-Define the values for sending values to Splunk HTTP Endpoint Collector.  The Splunk index data type is expected to be Metrics.
+Define the values for sending values to Splunk HTTP Endpoint Collector. 
 
 EXAMPLE:
 
@@ -180,8 +180,11 @@ EXAMPLE:
     "hec_protocol":"https",
     "hec_port": 8088,
     "hec_token":"abcdefgh-ijkl-mnop-qrst-uvwxyz123456",
+    "_comment":"INDEX TYPE EVENT OR METRIC",
+    "index_type":"event",
     "index":"avimetrics"
     }
+
 }
 ```
 

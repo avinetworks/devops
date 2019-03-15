@@ -42,7 +42,7 @@ def send_value_graphite(endpoint_info, graphite_payload):
 
 
 #----- Send value to splunk HEC - destination a metric index
-def send_value_splunk(endpoint_info, splunk_payload):
+def send_value_splunk_hec_metric(endpoint_info, splunk_payload):
     try:
         splunk_payload_template = {
             "source": "avi",
@@ -82,6 +82,44 @@ def send_value_splunk(endpoint_info, splunk_payload):
         print(str(datetime.now())+'   '+exception_text)
         print entry
 
+
+
+
+#----- Send value to splunk HEC
+def send_value_splunk_hec(endpoint_info, splunk_payload):
+    try:
+        splunk_payload_template = {
+            "source": "",
+            "time": "",
+            "host": "",
+            "index": endpoint_info['index'],
+            "sourcetype": "avi:metrics",
+            "event": {
+                "avi_controller": ""
+            }
+        }
+        hec_token = endpoint_info['hec_token']
+        headers = ({'Authorization': 'Splunk '+hec_token})
+        for entry in splunk_payload:
+            temp_entry = entry
+            keys_to_remove=["avicontroller","name_space"]
+            payload = splunk_payload_template.copy()
+            payload['host'] = temp_entry['avicontroller']
+            payload['source'] = temp_entry['avicontroller']
+            payload['time'] = temp_entry['timestamp']
+            payload['sourcetype'] = 'avi:metrics'
+            payload['event']['avi_controller'] = temp_entry['avicontroller']
+            for k in keys_to_remove:
+                entry.pop(k, None)
+            for e in entry:
+                payload["event"][e]=entry[e]
+            resp = requests.post('%s://%s:%s/services/collector/event' %(endpoint_info['hec_protocol'], endpoint_info['server'], str(endpoint_info['hec_port'])) , verify=False, headers = headers, data=json.dumps(payload))
+            if resp.status_code == 400:
+                print resp.text
+    except:
+        exception_text = traceback.format_exc()
+        print(str(datetime.now())+'   '+exception_text)
+        print entry
 
 
 
@@ -285,7 +323,10 @@ def send_metriclist_to_endpoint(endpoint_list, payload):
             if endpoint_info['type'] == 'graphite':
                 send_value_graphite(endpoint_info, payload)
             elif endpoint_info['type'] == 'splunk':
-                send_value_splunk(endpoint_info, payload)
+                if endpoint_info['index_type'].lower() == 'metric':
+                    send_value_splunk_hec_metric(endpoint_info, payload)
+                else:
+                    send_value_splunk_hec(endpoint_info, payload)
             elif endpoint_info['type'] == 'appdynamics_http':
                 send_value_appdynamics_http(endpoint_info, payload)
             elif endpoint_info['type'] == 'appdynamics_machine':
@@ -297,7 +338,7 @@ def send_metriclist_to_endpoint(endpoint_list, payload):
             elif endpoint_info['type'] == 'logstash':
                 send_value_logstash(endpoint_info, payload)
             elif endpoint_info['type'] == 'elasticsearch':
-                send_value_elasticsearch(endpoint_info, payload)                
+                send_value_elasticsearch(endpoint_info, payload)
     except:
         exception_text = traceback.format_exc()
         print exception_text
