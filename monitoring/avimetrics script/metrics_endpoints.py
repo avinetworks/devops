@@ -298,6 +298,8 @@ def send_metriclist_to_endpoint(endpoint_list, payload):
                 send_value_logstash(endpoint_info, payload)
             elif endpoint_info['type'] == 'elasticsearch':
                 send_value_elasticsearch(endpoint_info, payload)                
+            else:
+                print 'No sending data to any end point'
     except:
         exception_text = traceback.format_exc()
         print exception_text
