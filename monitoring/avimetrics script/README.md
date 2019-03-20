@@ -62,7 +62,7 @@ Send Metrics to one or more metrics endpoints.  Valid values are:
  - logstash
  - elasticsearch
  - influxdb
- 
+
 
 ```sh
 $ avimetrics.py -m datadog -m graphite
@@ -169,7 +169,7 @@ EXAMPLE:
 
 ## splunk_host.json
 
-Define the values for sending values to Splunk HTTP Endpoint Collector. 
+Define the values for sending values to Splunk HTTP Endpoint Collector.
 
 EXAMPLE:
 
@@ -291,6 +291,7 @@ $ docker run -d -e "EN_METRIC_ENDPOINT=graphite:datadog:appdynamics_http" --name
 - Virtual Server count per Service Engine
 - Service Engine count
 - Service Engine / Controller missed heartbeats
+- Service Engine connected state
 - Service Engine healthscore
 - Service Engine Virtual Service hosted used capacity
 - Statistics for each Service Engine
@@ -301,6 +302,7 @@ $ docker run -d -e "EN_METRIC_ENDPOINT=graphite:datadog:appdynamics_http" --name
     - se_stats.avg_cpu_usage
     - se_stats.avg_disk1_usage
     - se_stats.avg_mem_usage
+    - se_stats.avg_dynamic_mem_usage
     - se_stats.avg_persistent_table_usage
     - se_stats.avg_rx_bandwidth
     - se_if.avg_rx_bytes
