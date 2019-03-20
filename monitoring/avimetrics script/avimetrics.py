@@ -50,9 +50,9 @@ required_args = parser.add_argument_group('required named arguments')
 parser.add_argument('--brief', help='Print Exceptions Only', required=False, action='store_true')
 parser.add_argument('--debug', help='Print All Output, this the DEFAULT setting', required=False, action='store_true')
 parser.add_argument('-m', '--metrics', help='Metrics Endpoint for Sending the data', action='append', required=False, default=None)
+parser.add_argument('-c', '--ctl', help='Optional avi_controllers.json control file', required=False, default='avi_controllers.json')
 parser.add_argument('--norealtime', help='Disable Check for Realtime Stats', required=False, action='store_true')
 args = parser.parse_args()
-
 
 
 
@@ -69,8 +69,8 @@ def determine_endpoint_type():
         'elasticsearch'
         ]
     if args.metrics == None:
-        print '=====> ERROR:  No metric type defined, acceptable types are: '+str(endpoint_types)
-        sys.exit(1)
+        print '=====> No end point will be used'
+        endpoint_list = []
     else:
         endpoint_list = []
         for a in args.metrics:
@@ -1667,7 +1667,7 @@ if 'EN_DOCKER' in os.environ:
     endpoint_list = determine_endpoint_type()
     while True:
         loop_start_time = time.time()
-        with open('avi_controllers.json') as amc:
+        with open(args.ctl) as amc:
             avi_controller_list = json.load(amc)['controllers']
         main()
         loop_total_time = time.time()-loop_start_time
@@ -1678,7 +1678,8 @@ else:
     #----- Get the file path to import controllers, needed for cron
     fdir = os.path.abspath(os.path.dirname(__file__))
     #----- Import avi controller info from json file
-    with open(os.path.join(fdir,'avi_controllers.json')) as amc:
+    print 'Use control file %s' % args.ctl
+    with open(os.path.join(fdir, args.ctl)) as amc:
         avi_controller_list = json.load(amc)['controllers']
     #----- Import endpoint info from json files
     endpoint_list = determine_endpoint_type()
