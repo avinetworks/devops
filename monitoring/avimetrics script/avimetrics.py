@@ -1,7 +1,7 @@
 #!/usr/bin/python
 
 
-version = 'v2019-02-04'
+version = 'v2019-03-20'
 
 #########################################################################################
 #                                                                                       #
@@ -300,13 +300,13 @@ class avi_metrics():
             return login
 
 
-    def avi_request(self,avi_api,tenant):
-        headers = ({"X-Avi-Tenant": "%s" %tenant, 'content-type': 'application/json'})
+    def avi_request(self,avi_api,tenant,api_version='17.2.1'):
+        headers = ({'X-Avi-Tenant': '%s' %tenant, 'content-type': 'application/json', 'X-Avi-Version': '%s' %api_version})
         return requests.get('https://%s/api/%s' %(self.avi_controller,avi_api), verify=False, headers = headers,cookies=dict(sessionid= self.login.cookies['sessionid']),timeout=50)
 
 
-    def avi_post(self,api_url,tenant,payload):
-        headers = ({"X-Avi-Tenant": "%s" %tenant, 'content-type': 'application/json','referer': 'https://%s' %self.avi_controller, 'X-CSRFToken': dict(self.login.cookies)['csrftoken']})
+    def avi_post(self,api_url,tenant,payload,api_version='17.2.1'):
+        headers = ({"X-Avi-Tenant": "%s" %tenant, 'content-type': 'application/json','referer': 'https://%s' %self.avi_controller, 'X-CSRFToken': dict(self.login.cookies)['csrftoken'],'X-Avi-Version':'%s' %api_version})
         cookies = dict(sessionid= self.login.cookies['sessionid'],csrftoken=self.login.cookies['csrftoken'])
         return requests.post('https://%s/api/%s' %(self.avi_controller,api_url), verify=False, headers = headers,cookies=cookies, data=json.dumps(payload),timeout=50)
 
