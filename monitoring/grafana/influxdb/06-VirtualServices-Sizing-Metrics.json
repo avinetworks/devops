@@ -1,0 +1,2062 @@
+{
+  "annotations": {
+    "list": [
+      {
+        "builtIn": 1,
+        "datasource": "-- Grafana --",
+        "enable": true,
+        "hide": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "name": "Annotations & Alerts",
+        "type": "dashboard"
+      }
+    ]
+  },
+  "editable": true,
+  "gnetId": null,
+  "graphTooltip": 0,
+  "id": 7,
+  "iteration": 1544728195552,
+  "links": [],
+  "panels": [
+    {
+      "aliasColors": {},
+      "bars": false,
+      "dashLength": 10,
+      "dashes": false,
+      "datasource": "influxdb",
+      "fill": 1,
+      "gridPos": {
+        "h": 7,
+        "w": 12,
+        "x": 0,
+        "y": 0
+      },
+      "id": 36,
+      "legend": {
+        "avg": false,
+        "current": false,
+        "max": false,
+        "min": false,
+        "show": true,
+        "total": false,
+        "values": false
+      },
+      "lines": true,
+      "linewidth": 1,
+      "links": [],
+      "nullPointMode": "connected",
+      "percentage": false,
+      "pointradius": 5,
+      "points": false,
+      "renderer": "flot",
+      "seriesOverrides": [],
+      "spaceLength": 10,
+      "stack": true,
+      "steppedLine": false,
+      "targets": [
+        {
+          "alias": "Client RTT",
+          "groupBy": [
+            {
+              "params": [
+                "$__interval"
+              ],
+              "type": "time"
+            },
+            {
+              "params": [
+                "null"
+              ],
+              "type": "fill"
+            }
+          ],
+          "measurement": "l4_client.avg_total_rtt",
+          "orderByTime": "ASC",
+          "policy": "autogen",
+          "query": "SELECT mean(\"value\") FROM \"autogen\".\"l4_client.avg_total_rtt\" WHERE (\"avicontroller\" =~ /^$device$/ AND \"environment\" =~ /^$environment$/ AND \"location\" =~ /^$location$/ AND \"vs_name\" =~ /^$vs$/ AND \"metric_type\" = 'virtualservice_metrics') AND $timeFilter GROUP BY time($__interval) fill(null)",
+          "rawQuery": false,
+          "refId": "A",
+          "resultFormat": "time_series",
+          "select": [
+            [
+              {
+                "params": [
+                  "value"
+                ],
+                "type": "field"
+              },
+              {
+                "params": [],
+                "type": "mean"
+              }
+            ]
+          ],
+          "tags": [
+            {
+              "key": "avicontroller",
+              "operator": "=~",
+              "value": "/^$device$/"
+            },
+            {
+              "condition": "AND",
+              "key": "environment",
+              "operator": "=~",
+              "value": "/^$environment$/"
+            },
+            {
+              "condition": "AND",
+              "key": "location",
+              "operator": "=~",
+              "value": "/^$location$/"
+            },
+            {
+              "condition": "AND",
+              "key": "vs_name",
+              "operator": "=~",
+              "value": "/^$vs$/"
+            },
+            {
+              "condition": "AND",
+              "key": "metric_type",
+              "operator": "=",
+              "value": "virtualservice_metrics"
+            }
+          ],
+          "target": "aliasByMetric(network-script.avi.$location.$environment.$device.virtualservice.$vs.l7_server_avg_application_response_time)",
+          "textEditor": true
+        },
+        {
+          "alias": "Server RTT",
+          "groupBy": [
+            {
+              "params": [
+                "$__interval"
+              ],
+              "type": "time"
+            },
+            {
+              "params": [
+                "null"
+              ],
+              "type": "fill"
+            }
+          ],
+          "hide": false,
+          "measurement": "l4_server.avg_total_rtt",
+          "orderByTime": "ASC",
+          "policy": "autogen",
+          "query": "SELECT mean(\"value\") FROM \"autogen\".\"l4_server.avg_total_rtt\" WHERE (\"avicontroller\" =~ /^$device$/ AND \"environment\" =~ /^$environment$/ AND \"location\" =~ /^$location$/ AND \"vs_name\" =~ /^$vs$/ AND \"metric_type\" = 'virtualservice_metrics') AND $timeFilter GROUP BY time($__interval) fill(null)",
+          "rawQuery": false,
+          "refId": "B",
+          "resultFormat": "time_series",
+          "select": [
+            [
+              {
+                "params": [
+                  "value"
+                ],
+                "type": "field"
+              },
+              {
+                "params": [],
+                "type": "mean"
+              }
+            ]
+          ],
+          "tags": [
+            {
+              "key": "avicontroller",
+              "operator": "=~",
+              "value": "/^$device$/"
+            },
+            {
+              "condition": "AND",
+              "key": "environment",
+              "operator": "=~",
+              "value": "/^$environment$/"
+            },
+            {
+              "condition": "AND",
+              "key": "location",
+              "operator": "=~",
+              "value": "/^$location$/"
+            },
+            {
+              "condition": "AND",
+              "key": "vs_name",
+              "operator": "=~",
+              "value": "/^$vs$/"
+            },
+            {
+              "condition": "AND",
+              "key": "metric_type",
+              "operator": "=",
+              "value": "virtualservice_metrics"
+            }
+          ],
+          "target": "aliasByMetric(network-script.avi.$location.$environment.$device.virtualservice.$vs.l7_client_avg_client_data_transfer_time)",
+          "textEditor": false
+        },
+        {
+          "alias": "App Response",
+          "groupBy": [
+            {
+              "params": [
+                "$__interval"
+              ],
+              "type": "time"
+            },
+            {
+              "params": [
+                "null"
+              ],
+              "type": "fill"
+            }
+          ],
+          "measurement": "l7_server.avg_application_response_time",
+          "orderByTime": "ASC",
+          "policy": "autogen",
+          "refId": "C",
+          "resultFormat": "time_series",
+          "select": [
+            [
+              {
+                "params": [
+                  "value"
+                ],
+                "type": "field"
+              },
+              {
+                "params": [],
+                "type": "mean"
+              }
+            ]
+          ],
+          "tags": [
+            {
+              "key": "avicontroller",
+              "operator": "=~",
+              "value": "/^$device$/"
+            },
+            {
+              "condition": "AND",
+              "key": "environment",
+              "operator": "=~",
+              "value": "/^$environment$/"
+            },
+            {
+              "condition": "AND",
+              "key": "location",
+              "operator": "=~",
+              "value": "/^$location$/"
+            },
+            {
+              "condition": "AND",
+              "key": "vs_name",
+              "operator": "=~",
+              "value": "/^$vs$/"
+            },
+            {
+              "condition": "AND",
+              "key": "metric_type",
+              "operator": "=",
+              "value": "virtualservice_metrics"
+            }
+          ],
+          "target": "aliasByMetric(network-script.avi.$location.$environment.$device.virtualservice.$vs.l4_client_avg_total_rtt)",
+          "textEditor": false
+        },
+        {
+          "alias": "Data Transfer",
+          "groupBy": [
+            {
+              "params": [
+                "$__interval"
+              ],
+              "type": "time"
+            },
+            {
+              "params": [
+                "null"
+              ],
+              "type": "fill"
+            }
+          ],
+          "measurement": "l7_client.avg_client_data_transfer_time",
+          "orderByTime": "ASC",
+          "policy": "autogen",
+          "refId": "D",
+          "resultFormat": "time_series",
+          "select": [
+            [
+              {
+                "params": [
+                  "value"
+                ],
+                "type": "field"
+              },
+              {
+                "params": [],
+                "type": "mean"
+              }
+            ]
+          ],
+          "tags": [
+            {
+              "key": "avicontroller",
+              "operator": "=~",
+              "value": "/^$device$/"
+            },
+            {
+              "condition": "AND",
+              "key": "environment",
+              "operator": "=~",
+              "value": "/^$environment$/"
+            },
+            {
+              "condition": "AND",
+              "key": "location",
+              "operator": "=~",
+              "value": "/^$location$/"
+            },
+            {
+              "condition": "AND",
+              "key": "vs_name",
+              "operator": "=~",
+              "value": "/^$vs$/"
+            },
+            {
+              "condition": "AND",
+              "key": "metric_type",
+              "operator": "=",
+              "value": "virtualservice_metrics"
+            }
+          ],
+          "target": "aliasByMetric(network-script.avi.$location.$environment.$device.virtualservice.$vs.l4_server_avg_total_rtt)",
+          "textEditor": false
+        }
+      ],
+      "thresholds": [],
+      "timeFrom": null,
+      "timeRegions": [],
+      "timeShift": null,
+      "title": "End to End Timing",
+      "tooltip": {
+        "shared": true,
+        "sort": 0,
+        "value_type": "individual"
+      },
+      "type": "graph",
+      "xaxis": {
+        "buckets": null,
+        "mode": "time",
+        "name": null,
+        "show": true,
+        "values": []
+      },
+      "yaxes": [
+        {
+          "format": "ms",
+          "label": null,
+          "logBase": 1,
+          "max": null,
+          "min": null,
+          "show": true
+        },
+        {
+          "format": "short",
+          "label": null,
+          "logBase": 1,
+          "max": null,
+          "min": null,
+          "show": true
+        }
+      ],
+      "yaxis": {
+        "align": false,
+        "alignLevel": null
+      }
+    },
+    {
+      "aliasColors": {},
+      "bars": false,
+      "dashLength": 10,
+      "dashes": false,
+      "datasource": "influxdb",
+      "editable": true,
+      "error": false,
+      "fill": 1,
+      "grid": {},
+      "gridPos": {
+        "h": 7,
+        "w": 12,
+        "x": 12,
+        "y": 0
+      },
+      "id": 40,
+      "legend": {
+        "avg": false,
+        "current": false,
+        "max": false,
+        "min": false,
+        "show": true,
+        "total": false,
+        "values": false
+      },
+      "lines": true,
+      "linewidth": 2,
+      "links": [],
+      "nullPointMode": "connected",
+      "percentage": false,
+      "pointradius": 5,
+      "points": false,
+      "renderer": "flot",
+      "seriesOverrides": [],
+      "spaceLength": 10,
+      "stack": false,
+      "steppedLine": false,
+      "targets": [
+        {
+          "alias": "$m",
+          "groupBy": [
+            {
+              "params": [
+                "$__interval"
+              ],
+              "type": "time"
+            },
+            {
+              "params": [
+                "null"
+              ],
+              "type": "fill"
+            }
+          ],
+          "measurement": "l7_client.avg_waf_matched",
+          "orderByTime": "ASC",
+          "policy": "autogen",
+          "query": "SELECT mean(\"value\") FROM \"measurement\" WHERE $timeFilter GROUP BY time($__interval) fill(null)",
+          "rawQuery": false,
+          "refId": "A",
+          "resultFormat": "time_series",
+          "select": [
+            [
+              {
+                "params": [
+                  "value"
+                ],
+                "type": "field"
+              },
+              {
+                "params": [],
+                "type": "mean"
+              }
+            ]
+          ],
+          "tags": [
+            {
+              "key": "avicontroller",
+              "operator": "=~",
+              "value": "/^$device$/"
+            },
+            {
+              "condition": "AND",
+              "key": "environment",
+              "operator": "=~",
+              "value": "/^$environment$/"
+            },
+            {
+              "condition": "AND",
+              "key": "location",
+              "operator": "=~",
+              "value": "/^$location$/"
+            },
+            {
+              "condition": "AND",
+              "key": "vs_name",
+              "operator": "=~",
+              "value": "/^$vs$/"
+            },
+            {
+              "condition": "AND",
+              "key": "metric_type",
+              "operator": "=",
+              "value": "virtualservice_metrics"
+            }
+          ],
+          "target": "aliasByMetric(network-script.avi.$location.$environment.$device.virtualservice.$vs.l7_client_avg_waf_matched)",
+          "textEditor": true
+        },
+        {
+          "alias": "$m",
+          "groupBy": [
+            {
+              "params": [
+                "$__interval"
+              ],
+              "type": "time"
+            },
+            {
+              "params": [
+                "null"
+              ],
+              "type": "fill"
+            }
+          ],
+          "measurement": "l7_client.avg_waf_evaluated",
+          "orderByTime": "ASC",
+          "policy": "autogen",
+          "refId": "C",
+          "resultFormat": "time_series",
+          "select": [
+            [
+              {
+                "params": [
+                  "value"
+                ],
+                "type": "field"
+              },
+              {
+                "params": [],
+                "type": "mean"
+              }
+            ]
+          ],
+          "tags": [
+            {
+              "key": "avicontroller",
+              "operator": "=~",
+              "value": "/^$device$/"
+            },
+            {
+              "condition": "AND",
+              "key": "environment",
+              "operator": "=~",
+              "value": "/^$environment$/"
+            },
+            {
+              "condition": "AND",
+              "key": "location",
+              "operator": "=~",
+              "value": "/^$location$/"
+            },
+            {
+              "condition": "AND",
+              "key": "vs_name",
+              "operator": "=~",
+              "value": "/^$vs$/"
+            },
+            {
+              "condition": "AND",
+              "key": "metric_type",
+              "operator": "=",
+              "value": "virtualservice_metrics"
+            }
+          ],
+          "target": "aliasByMetric(network-script.avi.$location.$environment.$device.virtualservice.$vs.l7_client_avg_waf_evaluated)",
+          "textEditor": true
+        },
+        {
+          "alias": "$m",
+          "groupBy": [
+            {
+              "params": [
+                "$__interval"
+              ],
+              "type": "time"
+            },
+            {
+              "params": [
+                "null"
+              ],
+              "type": "fill"
+            }
+          ],
+          "measurement": "l7_client.avg_waf_rejected",
+          "orderByTime": "ASC",
+          "policy": "autogen",
+          "refId": "B",
+          "resultFormat": "time_series",
+          "select": [
+            [
+              {
+                "params": [
+                  "value"
+                ],
+                "type": "field"
+              },
+              {
+                "params": [],
+                "type": "mean"
+              }
+            ]
+          ],
+          "tags": [
+            {
+              "key": "avicontroller",
+              "operator": "=~",
+              "value": "/^$device$/"
+            },
+            {
+              "condition": "AND",
+              "key": "environment",
+              "operator": "=~",
+              "value": "/^$environment$/"
+            },
+            {
+              "condition": "AND",
+              "key": "location",
+              "operator": "=~",
+              "value": "/^$location$/"
+            },
+            {
+              "condition": "AND",
+              "key": "vs_name",
+              "operator": "=~",
+              "value": "/^$vs$/"
+            },
+            {
+              "condition": "AND",
+              "key": "metric_type",
+              "operator": "=",
+              "value": "virtualservice_metrics"
+            }
+          ],
+          "target": "aliasByMetric(network-script.avi.$location.$environment.$device.virtualservice.$vs.l7_client_avg_waf_rejected)",
+          "textEditor": true
+        },
+        {
+          "alias": "$m",
+          "groupBy": [
+            {
+              "params": [
+                "$__interval"
+              ],
+              "type": "time"
+            },
+            {
+              "params": [
+                "null"
+              ],
+              "type": "fill"
+            }
+          ],
+          "measurement": "l7_client.avg_waf_disabled",
+          "orderByTime": "ASC",
+          "policy": "autogen",
+          "refId": "E",
+          "resultFormat": "time_series",
+          "select": [
+            [
+              {
+                "params": [
+                  "value"
+                ],
+                "type": "field"
+              },
+              {
+                "params": [],
+                "type": "mean"
+              }
+            ]
+          ],
+          "tags": [
+            {
+              "key": "avicontroller",
+              "operator": "=~",
+              "value": "/^$device$/"
+            },
+            {
+              "condition": "AND",
+              "key": "environment",
+              "operator": "=~",
+              "value": "/^$environment$/"
+            },
+            {
+              "condition": "AND",
+              "key": "location",
+              "operator": "=~",
+              "value": "/^$location$/"
+            },
+            {
+              "condition": "AND",
+              "key": "vs_name",
+              "operator": "=~",
+              "value": "/^$vs$/"
+            },
+            {
+              "condition": "AND",
+              "key": "metric_type",
+              "operator": "=",
+              "value": "virtualservice_metrics"
+            }
+          ],
+          "target": "aliasByMetric(network-script.avi.$location.$environment.$device.virtualservice.$vs.l7_client_avg_waf_disabled)",
+          "textEditor": true
+        }
+      ],
+      "thresholds": [],
+      "timeFrom": null,
+      "timeRegions": [],
+      "timeShift": null,
+      "title": "Sum all Requests - WAF eval/matched/rejected/bypass",
+      "tooltip": {
+        "msResolution": false,
+        "shared": true,
+        "sort": 0,
+        "value_type": "cumulative"
+      },
+      "type": "graph",
+      "xaxis": {
+        "buckets": null,
+        "mode": "time",
+        "name": null,
+        "show": true,
+        "values": []
+      },
+      "yaxes": [
+        {
+          "format": "short",
+          "logBase": 1,
+          "max": null,
+          "min": null,
+          "show": true
+        },
+        {
+          "format": "percent",
+          "logBase": 1,
+          "max": null,
+          "min": null,
+          "show": false
+        }
+      ],
+      "yaxis": {
+        "align": false,
+        "alignLevel": null
+      }
+    },
+    {
+      "aliasColors": {},
+      "bars": false,
+      "dashLength": 10,
+      "dashes": false,
+      "datasource": "influxdb",
+      "editable": true,
+      "error": false,
+      "fill": 1,
+      "grid": {},
+      "gridPos": {
+        "h": 6,
+        "w": 12,
+        "x": 0,
+        "y": 7
+      },
+      "id": 31,
+      "legend": {
+        "avg": false,
+        "current": false,
+        "max": false,
+        "min": false,
+        "show": true,
+        "total": false,
+        "values": false
+      },
+      "lines": true,
+      "linewidth": 2,
+      "links": [],
+      "nullPointMode": "connected",
+      "percentage": false,
+      "pointradius": 5,
+      "points": false,
+      "renderer": "flot",
+      "seriesOverrides": [],
+      "spaceLength": 10,
+      "stack": false,
+      "steppedLine": false,
+      "targets": [
+        {
+          "alias": "$m",
+          "groupBy": [
+            {
+              "params": [
+                "$__interval"
+              ],
+              "type": "time"
+            },
+            {
+              "params": [
+                "null"
+              ],
+              "type": "fill"
+            }
+          ],
+          "measurement": "l7_client.pct_get_reqs",
+          "orderByTime": "ASC",
+          "policy": "autogen",
+          "refId": "A",
+          "resultFormat": "time_series",
+          "select": [
+            [
+              {
+                "params": [
+                  "value"
+                ],
+                "type": "field"
+              },
+              {
+                "params": [],
+                "type": "mean"
+              }
+            ]
+          ],
+          "tags": [
+            {
+              "key": "avicontroller",
+              "operator": "=~",
+              "value": "/^$device$/"
+            },
+            {
+              "condition": "AND",
+              "key": "environment",
+              "operator": "=~",
+              "value": "/^$environment$/"
+            },
+            {
+              "condition": "AND",
+              "key": "location",
+              "operator": "=~",
+              "value": "/^$location$/"
+            },
+            {
+              "condition": "AND",
+              "key": "vs_name",
+              "operator": "=~",
+              "value": "/^$vs$/"
+            },
+            {
+              "condition": "AND",
+              "key": "metric_type",
+              "operator": "=",
+              "value": "virtualservice_metrics"
+            }
+          ],
+          "target": "aliasByMetric(network-script.avi.$location.$environment.$device.virtualservice.$vs.l7_client_pct_get_reqs)",
+          "textEditor": true
+        },
+        {
+          "alias": "$m",
+          "groupBy": [
+            {
+              "params": [
+                "$__interval"
+              ],
+              "type": "time"
+            },
+            {
+              "params": [
+                "null"
+              ],
+              "type": "fill"
+            }
+          ],
+          "measurement": "l7_client.pct_post_reqs",
+          "orderByTime": "ASC",
+          "policy": "autogen",
+          "refId": "C",
+          "resultFormat": "time_series",
+          "select": [
+            [
+              {
+                "params": [
+                  "value"
+                ],
+                "type": "field"
+              },
+              {
+                "params": [],
+                "type": "mean"
+              }
+            ]
+          ],
+          "tags": [
+            {
+              "key": "avicontroller",
+              "operator": "=~",
+              "value": "/^$device$/"
+            },
+            {
+              "condition": "AND",
+              "key": "environment",
+              "operator": "=~",
+              "value": "/^$environment$/"
+            },
+            {
+              "condition": "AND",
+              "key": "location",
+              "operator": "=~",
+              "value": "/^$location$/"
+            },
+            {
+              "condition": "AND",
+              "key": "vs_name",
+              "operator": "=~",
+              "value": "/^$vs$/"
+            },
+            {
+              "condition": "AND",
+              "key": "metric_type",
+              "operator": "=",
+              "value": "virtualservice_metrics"
+            }
+          ],
+          "target": "aliasByMetric(network-script.avi.$location.$environment.$device.virtualservice.$vs.l7_client_pct_post_reqs)",
+          "textEditor": true
+        },
+        {
+          "alias": "$m",
+          "groupBy": [
+            {
+              "params": [
+                "$__interval"
+              ],
+              "type": "time"
+            },
+            {
+              "params": [
+                "null"
+              ],
+              "type": "fill"
+            }
+          ],
+          "measurement": "l7_client.pct_waf_disabled",
+          "orderByTime": "ASC",
+          "policy": "autogen",
+          "refId": "B",
+          "resultFormat": "time_series",
+          "select": [
+            [
+              {
+                "params": [
+                  "value"
+                ],
+                "type": "field"
+              },
+              {
+                "params": [],
+                "type": "mean"
+              }
+            ]
+          ],
+          "tags": [
+            {
+              "key": "avicontroller",
+              "operator": "=~",
+              "value": "/^$device$/"
+            },
+            {
+              "condition": "AND",
+              "key": "environment",
+              "operator": "=~",
+              "value": "/^$environment$/"
+            },
+            {
+              "condition": "AND",
+              "key": "location",
+              "operator": "=~",
+              "value": "/^$location$/"
+            },
+            {
+              "condition": "AND",
+              "key": "vs_name",
+              "operator": "=~",
+              "value": "/^$vs$/"
+            },
+            {
+              "condition": "AND",
+              "key": "metric_type",
+              "operator": "=",
+              "value": "virtualservice_metrics"
+            }
+          ],
+          "target": "aliasByMetric(network-script.avi.$location.$environment.$device.virtualservice.$vs.l7_client_pct_waf_disabled)",
+          "textEditor": true
+        }
+      ],
+      "thresholds": [],
+      "timeFrom": null,
+      "timeRegions": [],
+      "timeShift": null,
+      "title": "Percentage GET/POST/BYPASS",
+      "tooltip": {
+        "msResolution": false,
+        "shared": true,
+        "sort": 0,
+        "value_type": "cumulative"
+      },
+      "type": "graph",
+      "xaxis": {
+        "buckets": null,
+        "mode": "time",
+        "name": null,
+        "show": true,
+        "values": []
+      },
+      "yaxes": [
+        {
+          "format": "percent",
+          "logBase": 1,
+          "max": null,
+          "min": null,
+          "show": true
+        },
+        {
+          "format": "short",
+          "logBase": 1,
+          "max": null,
+          "min": null,
+          "show": true
+        }
+      ],
+      "yaxis": {
+        "align": false,
+        "alignLevel": null
+      }
+    },
+    {
+      "aliasColors": {},
+      "bars": false,
+      "dashLength": 10,
+      "dashes": false,
+      "datasource": "influxdb",
+      "editable": true,
+      "error": false,
+      "fill": 1,
+      "grid": {},
+      "gridPos": {
+        "h": 6,
+        "w": 6,
+        "x": 12,
+        "y": 7
+      },
+      "id": 37,
+      "legend": {
+        "avg": false,
+        "current": false,
+        "max": false,
+        "min": false,
+        "show": true,
+        "total": false,
+        "values": false
+      },
+      "lines": true,
+      "linewidth": 2,
+      "links": [],
+      "nullPointMode": "connected",
+      "percentage": false,
+      "pointradius": 5,
+      "points": false,
+      "renderer": "flot",
+      "seriesOverrides": [],
+      "spaceLength": 10,
+      "stack": false,
+      "steppedLine": false,
+      "targets": [
+        {
+          "alias": "$m",
+          "groupBy": [
+            {
+              "params": [
+                "$__interval"
+              ],
+              "type": "time"
+            },
+            {
+              "params": [
+                "null"
+              ],
+              "type": "fill"
+            }
+          ],
+          "measurement": "l7_client.sum_total_responses",
+          "orderByTime": "ASC",
+          "policy": "autogen",
+          "refId": "D",
+          "resultFormat": "time_series",
+          "select": [
+            [
+              {
+                "params": [
+                  "value"
+                ],
+                "type": "field"
+              },
+              {
+                "params": [],
+                "type": "mean"
+              }
+            ]
+          ],
+          "tags": [
+            {
+              "key": "avicontroller",
+              "operator": "=~",
+              "value": "/^$device$/"
+            },
+            {
+              "condition": "AND",
+              "key": "environment",
+              "operator": "=~",
+              "value": "/^$environment$/"
+            },
+            {
+              "condition": "AND",
+              "key": "location",
+              "operator": "=~",
+              "value": "/^$location$/"
+            },
+            {
+              "condition": "AND",
+              "key": "vs_name",
+              "operator": "=~",
+              "value": "/^$vs$/"
+            },
+            {
+              "condition": "AND",
+              "key": "metric_type",
+              "operator": "=",
+              "value": "virtualservice_metrics"
+            }
+          ],
+          "target": "aliasByMetric(network-script.avi.$location.$environment.$device.virtualservice.$vs.l7_client_sum_total_responses)",
+          "textEditor": true
+        }
+      ],
+      "thresholds": [],
+      "timeFrom": null,
+      "timeRegions": [],
+      "timeShift": null,
+      "title": "Sum all Requests",
+      "tooltip": {
+        "msResolution": false,
+        "shared": false,
+        "sort": 0,
+        "value_type": "cumulative"
+      },
+      "type": "graph",
+      "xaxis": {
+        "buckets": null,
+        "mode": "time",
+        "name": null,
+        "show": true,
+        "values": []
+      },
+      "yaxes": [
+        {
+          "format": "short",
+          "logBase": 1,
+          "max": null,
+          "min": null,
+          "show": true
+        },
+        {
+          "format": "percent",
+          "logBase": 1,
+          "max": null,
+          "min": null,
+          "show": false
+        }
+      ],
+      "yaxis": {
+        "align": false,
+        "alignLevel": null
+      }
+    },
+    {
+      "aliasColors": {},
+      "bars": false,
+      "dashLength": 10,
+      "dashes": false,
+      "datasource": "influxdb",
+      "editable": true,
+      "error": false,
+      "fill": 1,
+      "grid": {},
+      "gridPos": {
+        "h": 6,
+        "w": 6,
+        "x": 18,
+        "y": 7
+      },
+      "id": 38,
+      "legend": {
+        "avg": false,
+        "current": false,
+        "max": false,
+        "min": false,
+        "show": true,
+        "total": false,
+        "values": false
+      },
+      "lines": true,
+      "linewidth": 2,
+      "links": [],
+      "nullPointMode": "connected",
+      "percentage": false,
+      "pointradius": 5,
+      "points": false,
+      "renderer": "flot",
+      "seriesOverrides": [],
+      "spaceLength": 10,
+      "stack": false,
+      "steppedLine": false,
+      "targets": [
+        {
+          "alias": "$m",
+          "groupBy": [
+            {
+              "params": [
+                "$__interval"
+              ],
+              "type": "time"
+            },
+            {
+              "params": [
+                "null"
+              ],
+              "type": "fill"
+            }
+          ],
+          "measurement": "l7_client.avg_post_bytes",
+          "orderByTime": "ASC",
+          "policy": "autogen",
+          "refId": "A",
+          "resultFormat": "time_series",
+          "select": [
+            [
+              {
+                "params": [
+                  "value"
+                ],
+                "type": "field"
+              },
+              {
+                "params": [],
+                "type": "mean"
+              }
+            ]
+          ],
+          "tags": [
+            {
+              "key": "avicontroller",
+              "operator": "=~",
+              "value": "/^$device$/"
+            },
+            {
+              "condition": "AND",
+              "key": "environment",
+              "operator": "=~",
+              "value": "/^$environment$/"
+            },
+            {
+              "condition": "AND",
+              "key": "location",
+              "operator": "=~",
+              "value": "/^$location$/"
+            },
+            {
+              "condition": "AND",
+              "key": "vs_name",
+              "operator": "=~",
+              "value": "/^$vs$/"
+            },
+            {
+              "condition": "AND",
+              "key": "metric_type",
+              "operator": "=",
+              "value": "virtualservice_metrics"
+            }
+          ],
+          "target": "aliasByMetric(network-script.avi.$location.$environment.$device.virtualservice.$vs.l7_client_avg_post_bytes)",
+          "textEditor": true
+        }
+      ],
+      "thresholds": [],
+      "timeFrom": null,
+      "timeRegions": [],
+      "timeShift": null,
+      "title": "Average Post Bytes",
+      "tooltip": {
+        "msResolution": false,
+        "shared": false,
+        "sort": 0,
+        "value_type": "cumulative"
+      },
+      "type": "graph",
+      "xaxis": {
+        "buckets": null,
+        "mode": "time",
+        "name": null,
+        "show": true,
+        "values": []
+      },
+      "yaxes": [
+        {
+          "format": "short",
+          "logBase": 1,
+          "max": null,
+          "min": null,
+          "show": true
+        },
+        {
+          "format": "short",
+          "logBase": 1,
+          "max": null,
+          "min": null,
+          "show": true
+        }
+      ],
+      "yaxis": {
+        "align": false,
+        "alignLevel": null
+      }
+    },
+    {
+      "aliasColors": {},
+      "bars": false,
+      "dashLength": 10,
+      "dashes": false,
+      "datasource": "influxdb",
+      "editable": true,
+      "error": false,
+      "fill": 1,
+      "grid": {},
+      "gridPos": {
+        "h": 6,
+        "w": 6,
+        "x": 0,
+        "y": 13
+      },
+      "id": 28,
+      "legend": {
+        "avg": false,
+        "current": false,
+        "max": false,
+        "min": false,
+        "show": true,
+        "total": false,
+        "values": false
+      },
+      "lines": true,
+      "linewidth": 2,
+      "links": [],
+      "nullPointMode": "connected",
+      "percentage": false,
+      "pointradius": 5,
+      "points": false,
+      "renderer": "flot",
+      "seriesOverrides": [],
+      "spaceLength": 10,
+      "stack": false,
+      "steppedLine": false,
+      "targets": [
+        {
+          "alias": "$m",
+          "groupBy": [
+            {
+              "params": [
+                "$__interval"
+              ],
+              "type": "time"
+            },
+            {
+              "params": [
+                "null"
+              ],
+              "type": "fill"
+            }
+          ],
+          "measurement": "l7_client.avg_http_headers_count",
+          "orderByTime": "ASC",
+          "policy": "autogen",
+          "refId": "B",
+          "resultFormat": "time_series",
+          "select": [
+            [
+              {
+                "params": [
+                  "value"
+                ],
+                "type": "field"
+              },
+              {
+                "params": [],
+                "type": "mean"
+              }
+            ]
+          ],
+          "tags": [
+            {
+              "key": "avicontroller",
+              "operator": "=~",
+              "value": "/^$device$/"
+            },
+            {
+              "condition": "AND",
+              "key": "environment",
+              "operator": "=~",
+              "value": "/^$environment$/"
+            },
+            {
+              "condition": "AND",
+              "key": "location",
+              "operator": "=~",
+              "value": "/^$location$/"
+            },
+            {
+              "condition": "AND",
+              "key": "vs_name",
+              "operator": "=~",
+              "value": "/^$vs$/"
+            },
+            {
+              "condition": "AND",
+              "key": "metric_type",
+              "operator": "=",
+              "value": "virtualservice_metrics"
+            }
+          ],
+          "target": "aliasByMetric(network-script.avi.$location.$environment.$device.virtualservice.$vs.l7_client_avg_http_headers_count)",
+          "textEditor": true
+        }
+      ],
+      "thresholds": [],
+      "timeFrom": null,
+      "timeRegions": [],
+      "timeShift": null,
+      "title": "Average Header Count",
+      "tooltip": {
+        "msResolution": false,
+        "shared": false,
+        "sort": 0,
+        "value_type": "cumulative"
+      },
+      "type": "graph",
+      "xaxis": {
+        "buckets": null,
+        "mode": "time",
+        "name": null,
+        "show": true,
+        "values": []
+      },
+      "yaxes": [
+        {
+          "format": "short",
+          "logBase": 1,
+          "max": null,
+          "min": null,
+          "show": true
+        },
+        {
+          "format": "short",
+          "logBase": 1,
+          "max": null,
+          "min": null,
+          "show": true
+        }
+      ],
+      "yaxis": {
+        "align": false,
+        "alignLevel": null
+      }
+    },
+    {
+      "aliasColors": {},
+      "bars": false,
+      "dashLength": 10,
+      "dashes": false,
+      "datasource": "influxdb",
+      "editable": true,
+      "error": false,
+      "fill": 1,
+      "grid": {},
+      "gridPos": {
+        "h": 6,
+        "w": 6,
+        "x": 6,
+        "y": 13
+      },
+      "id": 30,
+      "legend": {
+        "avg": false,
+        "current": false,
+        "max": false,
+        "min": false,
+        "show": true,
+        "total": false,
+        "values": false
+      },
+      "lines": true,
+      "linewidth": 2,
+      "links": [],
+      "nullPointMode": "connected",
+      "percentage": false,
+      "pointradius": 5,
+      "points": false,
+      "renderer": "flot",
+      "seriesOverrides": [],
+      "spaceLength": 10,
+      "stack": false,
+      "steppedLine": false,
+      "targets": [
+        {
+          "alias": "$m",
+          "groupBy": [
+            {
+              "params": [
+                "$__interval"
+              ],
+              "type": "time"
+            },
+            {
+              "params": [
+                "null"
+              ],
+              "type": "fill"
+            }
+          ],
+          "measurement": "l7_client.avg_http_headers_bytes",
+          "orderByTime": "ASC",
+          "policy": "autogen",
+          "refId": "B",
+          "resultFormat": "time_series",
+          "select": [
+            [
+              {
+                "params": [
+                  "value"
+                ],
+                "type": "field"
+              },
+              {
+                "params": [],
+                "type": "mean"
+              }
+            ]
+          ],
+          "tags": [
+            {
+              "key": "avicontroller",
+              "operator": "=~",
+              "value": "/^$device$/"
+            },
+            {
+              "condition": "AND",
+              "key": "environment",
+              "operator": "=~",
+              "value": "/^$environment$/"
+            },
+            {
+              "condition": "AND",
+              "key": "location",
+              "operator": "=~",
+              "value": "/^$location$/"
+            },
+            {
+              "condition": "AND",
+              "key": "vs_name",
+              "operator": "=~",
+              "value": "/^$vs$/"
+            },
+            {
+              "condition": "AND",
+              "key": "metric_type",
+              "operator": "=",
+              "value": "virtualservice_metrics"
+            }
+          ],
+          "target": "aliasByMetric(network-script.avi.$location.$environment.$device.virtualservice.$vs.l7_client_avg_http_headers_bytes)",
+          "textEditor": true
+        }
+      ],
+      "thresholds": [],
+      "timeFrom": null,
+      "timeRegions": [],
+      "timeShift": null,
+      "title": "Average Header Bytes",
+      "tooltip": {
+        "msResolution": false,
+        "shared": false,
+        "sort": 0,
+        "value_type": "cumulative"
+      },
+      "type": "graph",
+      "xaxis": {
+        "buckets": null,
+        "mode": "time",
+        "name": null,
+        "show": true,
+        "values": []
+      },
+      "yaxes": [
+        {
+          "format": "Bps",
+          "logBase": 1,
+          "max": null,
+          "min": null,
+          "show": true
+        },
+        {
+          "format": "short",
+          "logBase": 1,
+          "max": null,
+          "min": null,
+          "show": true
+        }
+      ],
+      "yaxis": {
+        "align": false,
+        "alignLevel": null
+      }
+    },
+    {
+      "aliasColors": {},
+      "bars": false,
+      "dashLength": 10,
+      "dashes": false,
+      "datasource": "influxdb",
+      "editable": true,
+      "error": false,
+      "fill": 1,
+      "grid": {},
+      "gridPos": {
+        "h": 6,
+        "w": 6,
+        "x": 12,
+        "y": 13
+      },
+      "id": 33,
+      "legend": {
+        "avg": false,
+        "current": false,
+        "max": false,
+        "min": false,
+        "show": true,
+        "total": false,
+        "values": false
+      },
+      "lines": true,
+      "linewidth": 2,
+      "links": [],
+      "nullPointMode": "connected",
+      "percentage": false,
+      "pointradius": 5,
+      "points": false,
+      "renderer": "flot",
+      "seriesOverrides": [],
+      "spaceLength": 10,
+      "stack": false,
+      "steppedLine": false,
+      "targets": [
+        {
+          "alias": "$m",
+          "groupBy": [
+            {
+              "params": [
+                "$__interval"
+              ],
+              "type": "time"
+            },
+            {
+              "params": [
+                "null"
+              ],
+              "type": "fill"
+            }
+          ],
+          "measurement": "l7_client.avg_http_params_count",
+          "orderByTime": "ASC",
+          "policy": "autogen",
+          "refId": "A",
+          "resultFormat": "time_series",
+          "select": [
+            [
+              {
+                "params": [
+                  "value"
+                ],
+                "type": "field"
+              },
+              {
+                "params": [],
+                "type": "mean"
+              }
+            ]
+          ],
+          "tags": [
+            {
+              "key": "avicontroller",
+              "operator": "=~",
+              "value": "/^$device$/"
+            },
+            {
+              "condition": "AND",
+              "key": "environment",
+              "operator": "=~",
+              "value": "/^$environment$/"
+            },
+            {
+              "condition": "AND",
+              "key": "location",
+              "operator": "=~",
+              "value": "/^$location$/"
+            },
+            {
+              "condition": "AND",
+              "key": "vs_name",
+              "operator": "=~",
+              "value": "/^$vs$/"
+            },
+            {
+              "condition": "AND",
+              "key": "metric_type",
+              "operator": "=",
+              "value": "virtualservice_metrics"
+            }
+          ],
+          "target": "aliasByMetric(network-script.avi.$location.$environment.$device.virtualservice.$vs.l7_client_avg_http_params_count)",
+          "textEditor": true
+        }
+      ],
+      "thresholds": [],
+      "timeFrom": null,
+      "timeRegions": [],
+      "timeShift": null,
+      "title": "Average Parameter Count",
+      "tooltip": {
+        "msResolution": false,
+        "shared": false,
+        "sort": 0,
+        "value_type": "cumulative"
+      },
+      "type": "graph",
+      "xaxis": {
+        "buckets": null,
+        "mode": "time",
+        "name": null,
+        "show": true,
+        "values": []
+      },
+      "yaxes": [
+        {
+          "decimals": null,
+          "format": "none",
+          "logBase": 1,
+          "max": null,
+          "min": null,
+          "show": true
+        },
+        {
+          "format": "none",
+          "logBase": 1,
+          "max": null,
+          "min": null,
+          "show": true
+        }
+      ],
+      "yaxis": {
+        "align": false,
+        "alignLevel": null
+      }
+    },
+    {
+      "aliasColors": {},
+      "bars": false,
+      "dashLength": 10,
+      "dashes": false,
+      "datasource": "influxdb",
+      "editable": true,
+      "error": false,
+      "fill": 1,
+      "grid": {},
+      "gridPos": {
+        "h": 6,
+        "w": 6,
+        "x": 18,
+        "y": 13
+      },
+      "id": 35,
+      "legend": {
+        "avg": false,
+        "current": false,
+        "max": false,
+        "min": false,
+        "show": true,
+        "total": false,
+        "values": false
+      },
+      "lines": true,
+      "linewidth": 2,
+      "links": [],
+      "nullPointMode": "connected",
+      "percentage": false,
+      "pointradius": 5,
+      "points": false,
+      "renderer": "flot",
+      "seriesOverrides": [],
+      "spaceLength": 10,
+      "stack": false,
+      "steppedLine": false,
+      "targets": [
+        {
+          "alias": "$m",
+          "groupBy": [
+            {
+              "params": [
+                "$__interval"
+              ],
+              "type": "time"
+            },
+            {
+              "params": [
+                "null"
+              ],
+              "type": "fill"
+            }
+          ],
+          "measurement": "l7_client.avg_uri_length",
+          "orderByTime": "ASC",
+          "policy": "autogen",
+          "refId": "A",
+          "resultFormat": "time_series",
+          "select": [
+            [
+              {
+                "params": [
+                  "value"
+                ],
+                "type": "field"
+              },
+              {
+                "params": [],
+                "type": "mean"
+              }
+            ]
+          ],
+          "tags": [
+            {
+              "key": "avicontroller",
+              "operator": "=~",
+              "value": "/^$device$/"
+            },
+            {
+              "condition": "AND",
+              "key": "environment",
+              "operator": "=~",
+              "value": "/^$environment$/"
+            },
+            {
+              "condition": "AND",
+              "key": "location",
+              "operator": "=~",
+              "value": "/^$location$/"
+            },
+            {
+              "condition": "AND",
+              "key": "vs_name",
+              "operator": "=~",
+              "value": "/^$vs$/"
+            },
+            {
+              "condition": "AND",
+              "key": "metric_type",
+              "operator": "=",
+              "value": "virtualservice_metrics"
+            }
+          ],
+          "target": "aliasByMetric(network-script.avi.$location.$environment.$device.virtualservice.$vs.l7_client_avg_uri_length)",
+          "textEditor": true
+        }
+      ],
+      "thresholds": [],
+      "timeFrom": null,
+      "timeRegions": [],
+      "timeShift": null,
+      "title": "Average URI Length",
+      "tooltip": {
+        "msResolution": false,
+        "shared": false,
+        "sort": 0,
+        "value_type": "cumulative"
+      },
+      "type": "graph",
+      "xaxis": {
+        "buckets": null,
+        "mode": "time",
+        "name": null,
+        "show": true,
+        "values": []
+      },
+      "yaxes": [
+        {
+          "format": "short",
+          "logBase": 1,
+          "max": null,
+          "min": null,
+          "show": true
+        },
+        {
+          "format": "short",
+          "logBase": 1,
+          "max": null,
+          "min": null,
+          "show": true
+        }
+      ],
+      "yaxis": {
+        "align": false,
+        "alignLevel": null
+      }
+    }
+  ],
+  "refresh": "1m",
+  "schemaVersion": 16,
+  "style": "dark",
+  "tags": [
+    "network",
+    "avi"
+  ],
+  "templating": {
+    "list": [
+      {
+        "allFormat": "glob",
+        "allValue": null,
+        "datasource": "influxdb",
+        "definition": "SHOW TAG VALUES WITH KEY = \"location\"",
+        "hide": 0,
+        "includeAll": false,
+        "label": null,
+        "multi": false,
+        "multiFormat": "glob",
+        "name": "location",
+        "options": [],
+        "query": "SHOW TAG VALUES WITH KEY = \"location\"",
+        "refresh": 1,
+        "regex": "",
+        "skipUrlSync": false,
+        "sort": 0,
+        "tagValuesQuery": "",
+        "tags": [],
+        "tagsQuery": "",
+        "type": "query",
+        "useTags": false
+      },
+      {
+        "allFormat": "glob",
+        "allValue": null,
+        "datasource": "influxdb",
+        "definition": "SHOW TAG VALUES WITH KEY = \"environment\" WHERE location =~ /$location/",
+        "hide": 0,
+        "includeAll": false,
+        "label": null,
+        "multi": false,
+        "multiFormat": "glob",
+        "name": "environment",
+        "options": [],
+        "query": "SHOW TAG VALUES WITH KEY = \"environment\" WHERE location =~ /$location/",
+        "refresh": 1,
+        "regex": "",
+        "skipUrlSync": false,
+        "sort": 0,
+        "tagValuesQuery": "",
+        "tags": [],
+        "tagsQuery": "",
+        "type": "query",
+        "useTags": false
+      },
+      {
+        "allFormat": "glob",
+        "allValue": null,
+        "datasource": "influxdb",
+        "definition": "SHOW TAG VALUES WITH KEY = \"avicontroller\" WHERE location =~ /$location/ AND environment =~ /$environment/",
+        "hide": 0,
+        "includeAll": false,
+        "label": null,
+        "multi": false,
+        "multiFormat": "glob",
+        "name": "device",
+        "options": [],
+        "query": "SHOW TAG VALUES WITH KEY = \"avicontroller\" WHERE location =~ /$location/ AND environment =~ /$environment/",
+        "refresh": 1,
+        "regex": "",
+        "skipUrlSync": false,
+        "sort": 0,
+        "tagValuesQuery": "",
+        "tags": [],
+        "tagsQuery": "",
+        "type": "query",
+        "useTags": false
+      },
+      {
+        "allFormat": "glob",
+        "allValue": null,
+        "datasource": "influxdb",
+        "definition": "SHOW TAG VALUES WITH KEY = \"vs_name\" WHERE location =~ /$location/ AND environment =~ /$environment/ AND avicontroller =~ /$device/",
+        "hide": 0,
+        "includeAll": false,
+        "label": null,
+        "multi": false,
+        "name": "vs",
+        "options": [],
+        "query": "SHOW TAG VALUES WITH KEY = \"vs_name\" WHERE location =~ /$location/ AND environment =~ /$environment/ AND avicontroller =~ /$device/",
+        "refresh": 1,
+        "refresh_on_load": false,
+        "regex": "",
+        "skipUrlSync": false,
+        "sort": 0,
+        "tagValuesQuery": "",
+        "tags": [],
+        "tagsQuery": "",
+        "type": "query",
+        "useTags": false
+      }
+    ]
+  },
+  "time": {
+    "from": "now-1h",
+    "to": "now"
+  },
+  "timepicker": {
+    "collapse": false,
+    "enable": true,
+    "notice": false,
+    "now": true,
+    "refresh_intervals": [
+      "5s",
+      "10s",
+      "30s",
+      "1m",
+      "5m",
+      "15m",
+      "30m",
+      "1h",
+      "2h",
+      "1d"
+    ],
+    "status": "Stable",
+    "time_options": [
+      "5m",
+      "15m",
+      "1h",
+      "6h",
+      "12h",
+      "24h",
+      "2d",
+      "7d",
+      "30d"
+    ],
+    "type": "timepicker"
+  },
+  "timezone": "browser",
+  "title": "Avi - Virtual Services-Sizing-Metrics"
+}
