@@ -5,10 +5,13 @@ avi_credentials:
   controller: 10.10.25.29
   username: admin
   password: "{{ avi_password }}"
-  api_version: 18.1.5
+  api_version: 18.2.2
 
 # all apps use the same backend servers
 app1_vip: 10.90.64.200
+app2_vip: 10.90.64.201
 
 pool_server1: 10.90.64.16
 pool_server2: 10.90.64.14
+pool_server3: 10.90.64.15
+pool_server4: 10.90.64.13

@@ -1,9 +1,11 @@
+# Playbook to create an application on the controller with poolgroup, pool, healthmonitor http policy set and virtualservice
 ---
 - hosts: localhost
   connection: local
 
   vars:
-    app_name: complex_app
+    app_name_1: vs_app_1
+    app_name_2: vs_app_2
   
   vars_files:
     - "{{ site_dir }}/vars/creds.yml"
@@ -11,16 +13,110 @@
     - role: "avinetworks.avisdk"
   
   tasks:
-    - name: Setting up Application
-      debug: msg="{{ app_name }}"
-        
-    - name: Create health monitor
+    - name: Setting up Applications
+      debug: msg="{{ app_name_1 }} and {{ app_name_2 }}"
+
+
+    # Task to create Cloud on the controller.
+    # Here is the link to get more details of parametrs of this task.
+    # https://github.com/avinetworks/ansible-role-avisdk/blob/master/library/avi_cloud.py
+    - name: "Avi Example | Create Cloud"
+      register: cloud
+      tags: run
+      avi_cloud:
+        controller: "{{ avi_credentials.controller }}"
+        username: "{{ avi_credentials.username }}"
+        password: "{{ avi_credentials.password }}"
+        api_version: "{{avi_credentials.api_version}}"
+        avi_credentials: "{{ avi_credentials | default(omit)}}"
+        api_context: "{{avi_api_context | default(omit)}}"
+        name: "Test-Cloud"
+        state: "{{ state }}"
+        vtype: "CLOUD_VCENTER"
+        dhcp_enabled: true
+        license_type: "LIC_CORES"
+        vcenter_configuration:
+          username: "root"
+          datacenter: "10GTest"
+          management_network: "/api/vimgrnwruntime?name=Mgmt_Arista_3"
+          privilege: "WRITE_ACCESS"
+          vcenter_url: "10.10.2.10"
+          password: vmware
+
+    # Task to create Tenant on the controller.
+    # Here is the link to get more details of parametrs of this task.
+    # https://github.com/avinetworks/ansible-role-avisdk/blob/master/library/avi_tenant.py
+    - name: "Avi Example | Create Tenant"
+      register: tenant
+      tags: run
+      avi_tenant:
+        controller: "{{ avi_credentials.controller }}"
+        username: "{{ avi_credentials.username }}"
+        password: "{{ avi_credentials.password }}"
+        api_version: "{{avi_credentials.api_version}}"
+        avi_credentials: "{{ avi_credentials | default(omit)}}"
+        api_context: "{{avi_api_context | default(omit)}}"
+        name: "Test-Tenant"
+        state: "{{ state }}"
+        config_settings:
+          se_in_provider_context: false
+          tenant_access_to_provider_se: true
+          tenant_vrf: true
+        description: VCenter, Open Stack
+        local: true
+
+    # Task to create ServiceEngineGroup on the controller.
+    # Here is the link to get more details of parametrs of this task.
+    # https://github.com/avinetworks/ansible-role-avisdk/blob/master/library/avi_serviceenginegroup.py
+    - name: "Avi Example | Create ServiceEngineGroup object"
+      tags: run
+      avi_serviceenginegroup:
+        controller: "{{ avi_credentials.controller }}"
+        username: "{{ avi_credentials.username }}"
+        password: "{{ avi_credentials.password }}"
+        api_version: "{{avi_credentials.api_version}}"
+        avi_credentials: "{{ avi_credentials | default(omit)}}"
+        api_context: "{{avi_api_context | default(omit)}}"
+        tenant: "Test-Tenant"
+        state: "{{ state }}"
+        name: "sample_serviceenginegroup"
+        tenant_ref: "/api/tenant?name=Test-Tenant"
+        cloud_ref: "/api/cloud/?name=Test-Cloud"
+
+    # Task to create VrfContext on the controller.
+    # Here is the link to get more details of parametrs of this task.
+    # https://github.com/avinetworks/ansible-role-avisdk/blob/master/library/avi_vrfcontext.py
+    - name: "Avi Example | Create VrfContext"
+      tags: run
+      avi_vrfcontext:
+        controller: "{{ avi_credentials.controller }}"
+        username: "{{ avi_credentials.username }}"
+        password: "{{ avi_credentials.password }}"
+        api_version: "{{avi_credentials.api_version}}"
+        avi_credentials: "{{ avi_credentials | default(omit)}}"
+        api_context: "{{avi_api_context | default(omit)}}"
+        state: "{{ state }}"
+        tenant: "Test-Tenant"
+        name: "sample_vrfcontext"
+        system_default: true
+        tenant_ref: "/api/tenant?name=Test-Tenant"
+        cloud_ref: "/api/cloud/?name=Test-Cloud"
+
+    # Task to create HealthMonitor on the controller.
+    # Here is the link to get more details of parametrs of this task.
+    # https://github.com/avinetworks/ansible-role-avisdk/blob/master/library/avi_healthmonitor.py
+    - name: "Avi Example | Create Http health monitor"
       avi_healthmonitor:
         controller: "{{avi_credentials.controller}}"
         username: "{{avi_credentials.username}}"
         password: "{{avi_credentials.password}}"
         api_version: "{{avi_credentials.api_version}}"
-        name: app-hm
+        avi_credentials: "{{ avi_credentials | default(omit)}}"
+        api_context: "{{avi_api_context | default(omit)}}"
+        state: "{{ state }}"
+        name: app-hm-http
+        tenant: "Test-Tenant"
+        tenant_ref: "/api/tenant/?name=Test-Tenant"
         http_monitor:
           http_request: "HEAD / HTTP/1.0"
           http_response_code:
@@ -31,59 +127,245 @@
         send_interval: 10
         successful_checks: 3
         type: HEALTH_MONITOR_HTTP
-        
-    - name: Create PoolGroup
-      avi_poolgroup:
+
+    - name: "Avi Example | Create Https health monitor"
+      avi_healthmonitor:
         controller: "{{avi_credentials.controller}}"
         username: "{{avi_credentials.username}}"
         password: "{{avi_credentials.password}}"
         api_version: "{{avi_credentials.api_version}}"
-        name: app-poolgroup
-        
+        avi_credentials: "{{ avi_credentials | default(omit)}}"
+        api_context: "{{avi_api_context | default(omit)}}"
+        state: "{{ state }}"
+        name: app-hm-https
+        tenant: "Test-Tenant"
+        tenant_ref: "/api/tenant/?name=Test-Tenant"
+        https_monitor:
+          exact_http_request: 'false'
+          http_request: HEAD / HTTP/1.0
+          http_response_code:
+            - HTTP_2XX
+            - HTTP_3XX
+        receive_timeout: 4
+        failed_checks: 3
+        send_interval: 10
+        successful_checks: 3
+        type: HEALTH_MONITOR_HTTP
 
-    - name: Create First Pool
+
+    - name: "Avi Example | Create Ping health monitor"
+      avi_healthmonitor:
+        controller: "{{avi_credentials.controller}}"
+        username: "{{avi_credentials.username}}"
+        password: "{{avi_credentials.password}}"
+        api_version: "{{avi_credentials.api_version}}"
+        avi_credentials: "{{ avi_credentials | default(omit)}}"
+        api_context: "{{avi_api_context | default(omit)}}"
+        state: "{{ state }}"
+        tenant: "Test-Tenant"
+        name: app-hm-ping
+        receive_timeout: 4
+        tenant_ref: "/api/tenant/?name=Test-Tenant"
+        is_federated: false
+        failed_checks: 2
+        send_interval: 10
+        successful_checks: 2
+        type: HEALTH_MONITOR_PING
+
+    - name: "Avi Example | Create Tcp health monitor"
+      avi_healthmonitor:
+        controller: "{{avi_credentials.controller}}"
+        username: "{{avi_credentials.username}}"
+        password: "{{avi_credentials.password}}"
+        api_version: "{{avi_credentials.api_version}}"
+        avi_credentials: "{{ avi_credentials | default(omit)}}"
+        api_context: "{{avi_api_context | default(omit)}}"
+        state: "{{ state }}"
+        tenant: "Test-Tenant"
+        name: app-hm-tcp
+        receive_timeout: 4
+        tenant_ref: "/api/tenant/?name=Test-Tenant"
+        is_federated: false
+        failed_checks: 3
+        tcp_monitor:
+          tcp_half_open: false
+        send_interval: 5
+        successful_checks: 1
+        type: HEALTH_MONITOR_TCP
+
+
+    # Task to create Pool on the controller.
+    # Here is the link to get more details of parametrs of this task.
+    # https://github.com/avinetworks/ansible-role-avisdk/blob/master/library/avi_pool.py
+    - name: "Avi Example | Create First Pool"
       avi_pool:
         controller: "{{avi_credentials.controller}}"
         username: "{{avi_credentials.username}}"
         password: "{{avi_credentials.password}}"
         api_version: "{{avi_credentials.api_version}}"
+        avi_credentials: "{{ avi_credentials | default(omit)}}"
+        api_context: "{{avi_api_context | default(omit)}}"
+        state: "{{ state }}"
+        tenant: "Test-Tenant"
         name: app-pool-1
+        tenant_ref: "/api/tenant/?name=Test-Tenant"
+        cloud_ref: "/api/cloud/?name=Test-Cloud"
+        vrf_ref: "/api/vrfcontext?name=sample_vrfcontext"
         lb_algorithm: LB_ALGORITHM_ROUND_ROBIN
         health_monitor_refs:
-          - "/api/healthmonitor?name=app-hm"
+          - "/api/healthmonitor?name=app-hm-http"
+          - "/api/healthmonitor?name=app-hm-https"
         servers:
           - ip:
                addr: "{{ pool_server1 }}"
                type: 'V4'
-          
-    - name: Create Second Pool
+
+    # Task to create Pool on the controller.
+    # Here is the link to get more details of parametrs of this task.
+    # https://github.com/avinetworks/ansible-role-avisdk/blob/master/library/avi_pool.py
+    - name: "Avi Example | Create Second Pool"
       avi_pool:
         controller: "{{avi_credentials.controller}}"
         username: "{{avi_credentials.username}}"
         password: "{{avi_credentials.password}}"
         api_version: "{{avi_credentials.api_version}}"
+        avi_credentials: "{{ avi_credentials | default(omit)}}"
+        api_context: "{{avi_api_context | default(omit)}}"
+        state: "{{ state }}"
+        tenant: "Test-Tenant"
         name: app-pool-2
+        tenant_ref: "/api/tenant/?name=Test-Tenant"
+        cloud_ref: "/api/cloud/?name=Test-Cloud"
+        vrf_ref: "/api/vrfcontext?name=sample_vrfcontext"
         lb_algorithm: LB_ALGORITHM_ROUND_ROBIN
         health_monitor_refs:
-          - "/api/healthmonitor?name=app-hm"
+          - "/api/healthmonitor?name=app-hm-http"
+          - "/api/healthmonitor?name=app-hm-tcp"
         servers:
           - ip:
                addr: "{{ pool_server2 }}"
                type: 'V4'
 
-    - name: create http policy set
+    # Task to create Pool on the controller.
+    # Here is the link to get more details of parametrs of this task.
+    # https://github.com/avinetworks/ansible-role-avisdk/blob/master/library/avi_pool.py
+    - name: "Avi Example | Create Third Pool"
+      avi_pool:
+        controller: "{{avi_credentials.controller}}"
+        username: "{{avi_credentials.username}}"
+        password: "{{avi_credentials.password}}"
+        api_version: "{{avi_credentials.api_version}}"
+        avi_credentials: "{{ avi_credentials | default(omit)}}"
+        api_context: "{{avi_api_context | default(omit)}}"
+        state: "{{ state }}"
+        tenant: "Test-Tenant"
+        name: "app-pool-3"
+        tenant_ref: "/api/tenant/?name=Test-Tenant"
+        cloud_ref: "/api/cloud/?name=Test-Cloud"
+        vrf_ref: "/api/vrfcontext?name=sample_vrfcontext"
+        lb_algorithm: LB_ALGORITHM_ROUND_ROBIN
+        health_monitor_refs:
+          - "/api/healthmonitor?name=app-hm-https"
+          - "/api/healthmonitor?name=app-hm-tcp"
+        servers:
+          - ip:
+              addr: "{{ pool_server3 }}"
+              type: 'V4'
+
+    # Task to create Pool on the controller.
+    # Here is the link to get more details of parametrs of this task.
+    # https://github.com/avinetworks/ansible-role-avisdk/blob/master/library/avi_pool.py
+    - name: "Avi Example | Create Fourth Pool"
+      avi_pool:
+        controller: "{{avi_credentials.controller}}"
+        username: "{{avi_credentials.username}}"
+        password: "{{avi_credentials.password}}"
+        api_version: "{{avi_credentials.api_version}}"
+        avi_credentials: "{{ avi_credentials | default(omit)}}"
+        api_context: "{{avi_api_context | default(omit)}}"
+        state: "{{ state }}"
+        tenant: "Test-Tenant"
+        name: "app-pool-4"
+        tenant_ref: "/api/tenant/?name=Test-tenant"
+        cloud_ref: "/api/cloud/?name=Test-Cloud"
+        vrf_ref: "/api/vrfcontext?name=sample_vrfcontext"
+        lb_algorithm: LB_ALGORITHM_ROUND_ROBIN
+        health_monitor_refs:
+          - "/api/healthmonitor?name=app-hm-https"
+          - "/api/healthmonitor?name=app-hm-tcp"
+        servers:
+          - ip:
+              addr: "{{ pool_server4 }}"
+              type: 'V4'
+    # Task to create PoolGroup on the controller.
+    # Here is the link to get more details of parametrs of this task.
+    # https://github.com/avinetworks/ansible-role-avisdk/blob/master/library/avi_poolgroup.py
+    - name: "Avi Example | Create PoolGroup | app-poolgroup"
+      avi_poolgroup:
+        controller: "{{avi_credentials.controller}}"
+        username: "{{avi_credentials.username}}"
+        password: "{{avi_credentials.password}}"
+        api_version: "{{avi_credentials.api_version}}"
+        avi_credentials: "{{ avi_credentials | default(omit)}}"
+        api_context: "{{avi_api_context | default(omit)}}"
+        state: "{{ state }}"
+        tenant: "Test-Tenant"
+        implicit_priority_labels: false
+        tenant_ref: "/api/tenant/?name=Test-Tenant"
+        cloud_ref: "/api/cloud/?name=Test-Cloud"
+        members:
+          - pool_ref: "/api/pool?name=app-pool-3"
+            ratio: 1
+          - pool_ref: "/api/pool?name=app-pool-4"
+            ratio: 1
+        min_servers: 0
+        name: "app-poolgroup"
+
+    # Task to create PoolGroup on the controller.
+    # Here is the link to get more details of parametrs of this task.
+    # https://github.com/avinetworks/ansible-role-avisdk/blob/master/library/avi_poolgroup.py
+    - name: "Avi Example | Create PoolGroup | test-poolgroup-1"
+      avi_poolgroup:
+        controller: "{{avi_credentials.controller}}"
+        username: "{{avi_credentials.username}}"
+        password: "{{avi_credentials.password}}"
+        api_version: "{{avi_credentials.api_version}}"
+        avi_credentials: "{{ avi_credentials | default(omit)}}"
+        api_context: "{{avi_api_context | default(omit)}}"
+        state: "{{ state }}"
+        tenant: "Test-Tenant"
+        implicit_priority_labels: false
+        tenant_ref: "/api/tenant/?name=Test-Tenant"
+        cloud_ref: "/api/cloud/?name=Test-Cloud"
+        members:
+          - pool_ref: "/api/pool?name=app-pool-3"
+            ratio: 1
+          - pool_ref: "/api/pool?name=app-pool-4"
+            ratio: 1
+        min_servers: 0
+        name: "test-poolgroup-1"
+
+    # Task to create Http policy set on the controller.
+    # Here is the link to get more details of parametrs of this task.
+    # https://github.com/avinetworks/ansible-role-avisdk/blob/master/library/avi_httppolicyset.py
+    - name: "Avi Example | Create http policyset"
       avi_httppolicyset:
         username: "{{avi_credentials.username}}"
         password: "{{avi_credentials.password}}"
         controller: "{{avi_credentials.controller}}"
         api_version: "{{avi_credentials.api_version}}"
-        name: app-policy-set
+        avi_credentials: "{{ avi_credentials | default(omit)}}"
+        api_context: "{{avi_api_context | default(omit)}}"
+        state: "{{ state }}"
+        tenant: "Test-Tenant"
+        name: "app-policy-set"
         description: "test-HTTP-policy-set"
+        tenant_ref: "/api/tenant/?name=Test-Tenant"
         http_request_policy:
          rules:
           - index: 1
             enable: true
-            name: test-test1
+            name: "test-test1"
             match:
               path:
                 match_case: INSENSITIVE
@@ -96,7 +378,7 @@
               pool_ref: "/api/pool?name=app-pool-1"
           - index: 2
             enable: true
-            name: test-test2
+            name: "test-test2"
             match:
               path:
                 match_case: INSENSITIVE
@@ -108,19 +390,30 @@
               status_code: HTTP_LOCAL_RESPONSE_STATUS_CODE_200
               pool_ref: "/api/pool?name=app-pool-2"
         is_internal_policy: false
-        
-    - name: Create Virtualservice
+
+    # Task to create virtualservice on the controller
+    # Here is the link to get more details of parametrs of this task
+    # https://github.com/avinetworks/ansible-role-avisdk/blob/master/library/avi_virtualservice.py
+    - name: "Avi Example | Create Virtualservice | {{ app_name_1 }}"
       avi_virtualservice:
         controller: "{{avi_credentials.controller}}"
         username: "{{avi_credentials.username}}"
         password: "{{avi_credentials.password}}"
         api_version: "{{avi_credentials.api_version}}"
-        name: "{{ app_name }}"
+        avi_credentials: "{{ avi_credentials | default(omit)}}"
+        api_context: "{{avi_api_context | default(omit)}}"
+        state: "{{ state }}"
+        tenant: "Test-Tenant"
+        name: "{{ app_name_1 }}"
         services:
-          - port: 80
+          - port: 443
             enable_ssl: true
-        pool_group_ref: '/api/pool?name=app-poolgroup'
+        pool_group_ref: '/api/poolgroup?name=app-poolgroup'
         ssl_profile_ref: '/api/sslprofile?name=System-Standard'
+        tenant_ref: "/api/tenant/?name=Test-Tenant"
+        cloud_ref: "/api/cloud/?name=Test-Cloud"
+        se_group_ref: '/api/serviceenginegroup?name=sample_serviceenginegroup'
+        vrf_context_ref: "/api/vrfcontext?name=sample_vrfcontext"
         http_policies:
           - http_policy_set_ref: /api/httppolicyset?name=app-policy-set
         vip:
@@ -128,3 +421,33 @@
               addr: "{{ app1_vip }}"
               type: 'V4'
             vip_id: '1'
+
+
+    # Task to create virtualservice on the controller
+    # Here is the link to get more details of parametrs of this task
+    # https://github.com/avinetworks/ansible-role-avisdk/blob/master/library/avi_virtualservice.py
+    - name: "Avi Example | Create Virtualservice | {{ app_name_2 }}"
+      avi_virtualservice:
+        controller: "{{avi_credentials.controller}}"
+        username: "{{avi_credentials.username}}"
+        password: "{{avi_credentials.password}}"
+        api_version: "{{avi_credentials.api_version}}"
+        avi_credentials: "{{ avi_credentials | default(omit)}}"
+        api_context: "{{avi_api_context | default(omit)}}"
+        state: "{{ state }}"
+        tenant: "Test-Tenant"
+        name: "{{ app_name_2 }}"
+        services:
+          - port: 444
+            enable_ssl: true
+        pool_group_ref: '/api/poolgroup?name=test-poolgroup-1'
+        ssl_profile_ref: '/api/sslprofile?name=System-Standard'
+        tenant_ref: "/api/tenant/?name=Test-Tenant"
+        cloud_ref: "/api/cloud/?name=Test-Cloud"
+        se_group_ref: '/api/serviceenginegroup?name=sample_serviceenginegroup'
+        vrf_context_ref: "/api/vrfcontext?name=sample_vrfcontext"
+        vip:
+          - ip_address:
+              addr: "{{ app2_vip }}"
+              type: 'V4'
+            vip_id: '2'
