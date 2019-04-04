@@ -22,7 +22,6 @@
     # https://github.com/avinetworks/ansible-role-avisdk/blob/master/library/avi_cloud.py
     - name: "Avi Example | Create Cloud"
       register: cloud
-      tags: run
       avi_cloud:
         controller: "{{ avi_credentials.controller }}"
         username: "{{ avi_credentials.username }}"
@@ -48,7 +47,6 @@
     # https://github.com/avinetworks/ansible-role-avisdk/blob/master/library/avi_tenant.py
     - name: "Avi Example | Create Tenant"
       register: tenant
-      tags: run
       avi_tenant:
         controller: "{{ avi_credentials.controller }}"
         username: "{{ avi_credentials.username }}"
@@ -69,7 +67,6 @@
     # Here is the link to get more details of parametrs of this task.
     # https://github.com/avinetworks/ansible-role-avisdk/blob/master/library/avi_serviceenginegroup.py
     - name: "Avi Example | Create ServiceEngineGroup object"
-      tags: run
       avi_serviceenginegroup:
         controller: "{{ avi_credentials.controller }}"
         username: "{{ avi_credentials.username }}"
@@ -87,7 +84,6 @@
     # Here is the link to get more details of parametrs of this task.
     # https://github.com/avinetworks/ansible-role-avisdk/blob/master/library/avi_vrfcontext.py
     - name: "Avi Example | Create VrfContext"
-      tags: run
       avi_vrfcontext:
         controller: "{{ avi_credentials.controller }}"
         username: "{{ avi_credentials.username }}"
@@ -152,7 +148,6 @@
         successful_checks: 3
         type: HEALTH_MONITOR_HTTP
 
-
     - name: "Avi Example | Create Ping health monitor"
       avi_healthmonitor:
         controller: "{{avi_credentials.controller}}"
@@ -192,7 +187,6 @@
         send_interval: 5
         successful_checks: 1
         type: HEALTH_MONITOR_TCP
-
 
     # Task to create Pool on the controller.
     # Here is the link to get more details of parametrs of this task.
@@ -297,6 +291,7 @@
           - ip:
               addr: "{{ pool_server4 }}"
               type: 'V4'
+
     # Task to create PoolGroup on the controller.
     # Here is the link to get more details of parametrs of this task.
     # https://github.com/avinetworks/ansible-role-avisdk/blob/master/library/avi_poolgroup.py
@@ -421,7 +416,6 @@
               addr: "{{ app1_vip }}"
               type: 'V4'
             vip_id: '1'
-
 
     # Task to create virtualservice on the controller
     # Here is the link to get more details of parametrs of this task
