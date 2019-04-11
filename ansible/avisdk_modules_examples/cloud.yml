@@ -1,0 +1,71 @@
+# Configure VMware cloud using avinetworks.avisdk role
+---
+- hosts: localhost
+  connection: local
+  vars:
+   avi_credentials:
+    controller: "{{ lookup('env', 'AVI_CONTROLLER') }}"
+    username: "{{ lookup('env', 'AVI_USERNAME') }}"
+    password: "{{ lookup('env', 'AVI_PASSWORD') }}"
+    api_version: "{{ lookup('env', 'API_VERSION') }}"
+
+  roles:
+    - role: avinetworks.avisdk
+  tasks:
+    - block:
+      - name: Create cloud
+        avi_cloud:
+          controller: "{{ avi_credentials.controller }}"
+          username: "{{ avi_credentials.username }}"
+          password: "{{ avi_credentials.password }}"
+          api_version: "{{avi_credentials.api_version}}"
+          name: Test-Vcenter-Cloud
+          tenant_ref: '/api/tenant?name=admin'
+          vtype: CLOUD_VCENTER
+          dhcp_enabled: true
+          license_type: "LIC_CORES"
+          vcenter_configuration:
+            username: root
+            password: vmware
+            datacenter: "10GTest"
+            management_network: "/api/vimgrnwruntime?name=Mgmt_Arista_3"
+            privilege: "WRITE_ACCESS"
+            vcenter_url: "10.10.2.10"
+
+      - name: Fetch cloud status
+        avi_api_session:
+          controller: "{{ avi_credentials.controller }}"
+          username: "{{ avi_credentials.username }}"
+          password: "{{ avi_credentials.password }}"
+          api_version: "{{avi_credentials.api_version}}"
+          tenant: "admin"
+          http_method: get
+          path: "cloud-inventory"
+          params:
+            name: "Test-Vcenter-Cloud"
+        register: cloud_inventory
+      
+      - name: Avi Cloud | Waiting for VMware network discovery
+        wait_for:
+          timeout: 450
+        when: 'cloud_inventory.obj.results[0].status.state != "CLOUD_STATE_PLACEMENT_READY"'
+
+      - name: Create cloud
+        avi_cloud:
+          controller: "{{ avi_credentials.controller }}"
+          username: "{{ avi_credentials.username }}"
+          password: "{{ avi_credentials.password }}"
+          api_version: "{{avi_credentials.api_version}}"
+          name: Test-Vcenter-Cloud
+          tenant_ref: '/api/tenant?name=admin'
+          vtype: CLOUD_VCENTER
+          dhcp_enabled: true
+          license_type: "LIC_CORES"
+          vcenter_configuration:
+            username: root
+            password: vmware
+            datacenter: "10GTest"
+            management_network: "/api/vimgrnwruntime?name=Mgmt_Arista_3"
+            privilege: "WRITE_ACCESS"
+            vcenter_url: "10.10.2.10"
+
