@@ -162,14 +162,6 @@ class avi_metrics():
         self.payload_template['avicontroller'] = self.avi_cluster_ip
         #------
         self.vs_metric_list  = [
-            'l4_server.avg_errored_connections',
-            'l4_server.avg_rx_pkts',
-            'l4_server.avg_bandwidth',
-            'l4_server.avg_open_conns',
-            'l4_server.avg_new_established_conns',
-            'l4_server.avg_pool_complete_conns',
-            'l4_server.apdexc',
-            'l4_server.avg_total_rtt',
             'l4_client.apdexc',
             'l4_client.avg_bandwidth',
             'l4_client.avg_application_dos_attacks',
@@ -192,16 +184,10 @@ class avi_metrics():
             'l7_client.avg_resp_4xx',
             'l7_client.avg_resp_5xx',
             'l4_client.avg_total_rtt',
-            'l7_server.avg_resp_latency',
-            'l7_server.apdexr',
             'l7_client.avg_page_load_time',
             'l7_client.apdexr',
             'l7_client.avg_ssl_handshakes_new',
             'l7_client.avg_ssl_connections',
-            'l7_server.avg_application_response_time',
-            'l7_server.pct_response_errors',
-            'l7_server.avg_frustrated_responses',
-            'l7_server.avg_total_requests',
             'l7_client.sum_get_reqs',
             'l7_client.sum_post_reqs',
             'l7_client.sum_other_reqs',
@@ -209,18 +195,18 @@ class avi_metrics():
             'l7_client.avg_waf_attacks',
             'l7_client.pct_waf_attacks',
             'l7_client.sum_total_responses',
-            'l7_client.avg_waf_rejected', #---- available after 17.2
-            'l7_client.avg_waf_evaluated', #---- available after 17.2
-            'l7_client.avg_waf_matched', #---- available after 17.2.12
-            'l7_client.avg_waf_disabled', #---- available after 17.2.12
-            'l7_client.pct_waf_disabled', #---- available after 17.2.12
-            'l7_client.avg_http_headers_count', #---- available after 17.2.12
-            'l7_client.avg_http_headers_bytes', #---- available after 17.2.12
-            'l7_client.pct_get_reqs', #---- available after 17.2.12
-            'l7_client.pct_post_reqs', #---- available after 17.2.12
-            'l7_client.avg_http_params_count', #---- available after 17.2.12
-            'l7_client.avg_uri_length', #---- available after 17.2.12
-            'l7_client.avg_post_bytes', #---- available after 17.2.12
+            'l7_client.avg_waf_rejected',
+            'l7_client.avg_waf_evaluated',
+            'l7_client.avg_waf_matched',
+            'l7_client.avg_waf_disabled',
+            'l7_client.pct_waf_disabled',
+            'l7_client.avg_http_headers_count',
+            'l7_client.avg_http_headers_bytes',
+            'l7_client.pct_get_reqs',
+            'l7_client.pct_post_reqs',
+            'l7_client.avg_http_params_count',
+            'l7_client.avg_uri_length',
+            'l7_client.avg_post_bytes',
             'dns_client.avg_complete_queries',
             'dns_client.avg_domain_lookup_failures',
             'dns_client.avg_tcp_queries',
@@ -277,7 +263,17 @@ class avi_metrics():
             'l4_server.avg_pool_open_conns',
             'l4_server.avg_pool_complete_conns',
             'l4_server.avg_open_conns',
-            'l4_server.max_open_conns']
+            'l4_server.max_open_conns',
+            'l4_server.avg_errored_connections',
+            'l4_server.apdexc',
+            'l4_server.avg_total_rtt',
+            'l7_server.avg_resp_latency',
+            'l7_server.apdexr',
+            'l7_server.avg_application_response_time',
+            'l7_server.pct_response_errors',
+            'l7_server.avg_frustrated_responses',
+            'l7_server.avg_total_requests'
+            ]
 
 
     def avi_login(self):
@@ -338,6 +334,8 @@ class avi_metrics():
             se_dict={'tenants':{},'admin_se':[]}
             pool_dict={'tenants':{}}
             seg_dict = {'tenants':{}}
+            cloud_mapping = {}
+            cloud_dict={}
             if self.login.json()['user']['is_superuser'] == True: #----if SU, use wildcard tenant
                 vs_inv = self.avi_request('virtualservice-inventory?page_size=200','*').json()
                 resp = vs_inv
@@ -367,6 +365,13 @@ class avi_metrics():
                         pool_inv['results'].append(p)
                 #------------------
                 seg_inv = self.avi_request('serviceenginegroup-inventory?page_size=1000','*').json()
+                #------------------
+                cloud_inv = self.avi_request('cloud-inventory?page_size=1000','*').json()
+                #------------------
+                if cloud_inv['count'] > 0:
+                    for c in cloud_inv['results']:
+                        cloud_dict[c['uuid']] = c['config']['name']                       
+                #------------------
                 if vs_inv['count'] > 0:
                     for v in vs_inv['results']:
                         for t in self.tenants:
@@ -378,8 +383,10 @@ class avi_metrics():
                             vs_dict['tenants'][temp_tenant]['count']+=1
                             vs_dict['tenants'][temp_tenant]['results'].append(v)
                         vs_dict[v['uuid']] = v['config']['name']
+                        cloud_mapping[v['uuid']] = cloud_dict[v['config']['cloud_ref'].split('/cloud/')[1]]
                         if temp_tenant == 'admin':
                             vs_dict['admin_vs'].append(v['uuid'])
+                #------------------                                                   
                 if se_inv['count'] > 0:
                     for s in se_inv['results']:
                         for t in self.tenants:
@@ -391,8 +398,10 @@ class avi_metrics():
                             se_dict['tenants'][temp_tenant]['count']+=1
                             se_dict['tenants'][temp_tenant]['results'].append(s)
                         se_dict[s['uuid']] = s['config']['name']
+                        cloud_mapping[s['uuid']] = cloud_dict[s['config']['cloud_ref'].split('/cloud/')[1]]
                         if temp_tenant == 'admin':
                             se_dict['admin_se'].append(s['uuid'])
+                #------------------                            
                 if pool_inv['count'] > 0:
                     for p in pool_inv['results']:
                         for t in self.tenants:
@@ -404,6 +413,8 @@ class avi_metrics():
                             pool_dict['tenants'][temp_tenant]['count']+=1
                             pool_dict['tenants'][temp_tenant]['results'].append(p)
                         pool_dict[p['uuid']] = p['config']['name']
+                        cloud_mapping[p['uuid']] = cloud_dict[p['config']['cloud_ref'].split('/cloud/')[1]]
+                #------------------                        
                 if seg_inv['count'] > 0:
                     for seg in seg_inv['results']:
                         for t in self.tenants:
@@ -415,6 +426,8 @@ class avi_metrics():
                             seg_dict['tenants'][temp_tenant]['count']+=1
                             seg_dict['tenants'][temp_tenant]['results'].append(seg)
                         seg_dict[seg['uuid']] = seg['config']['name']
+                        cloud_mapping[seg['uuid']] = cloud_dict[seg['config']['cloud_ref'].split('/cloud/')[1]]
+                #------------------                 
             else:
                 for t in self.tenants:
                     vs_inv = self.avi_request('virtualservice-inventory?page_size=200',t['name']).json()
@@ -445,30 +458,39 @@ class avi_metrics():
                             pool_inv['results'].append(p)
                     #------------------
                     seg_inv = self.avi_request('serviceenginegroup-inventory?page_size=1000',t['name']).json()
+                    #------------------
+                    cloud_inv = self.avi_request('cloud-inventory?page_size=1000',t['name']).json()                    
+                    #------------------
+                    for c in cloud_inv['results']:
+                        cloud_dict[c['uuid']] = c['config']['name']                      
                     if vs_inv['count'] > 0:
                         vs_dict['tenants'][t['name']]=vs_inv
                     for v in vs_inv['results']:
                         vs_dict[v['uuid']] = v['config']['name']
+                        cloud_mapping[v['uuid']] = cloud_dict[v['config']['cloud_ref'].split('/cloud/')[1]]
                         if t['name'] == 'admin':
                             vs_dict['admin_vs'].append(v['uuid'])
                     if se_inv['count'] > 0:
                         se_dict['tenants'][t['name']] = se_inv
                     for s in se_inv['results']:
                         se_dict[s['uuid']] = s['config']['name']
+                        cloud_mapping[s['uuid']] = cloud_dict[s['config']['cloud_ref'].split('/cloud/')[1]]
                         if t['name'] == 'admin':
                             se_dict['admin_se'].append(s['uuid'])
                     if pool_inv['count'] > 0:
                         pool_dict['tenants'][t['name']] = pool_inv
                     for p in pool_inv['results']:
                         pool_dict[p['uuid']] = s['config']['name']
+                        cloud_mapping[p['uuid']] = cloud_dict[p['config']['cloud_ref'].split('/cloud/')[1]]
                     if seg_inv['count'] > 0:
                         seg_dict['tenants'][t['name']] = seg_inv
                     for seg in seg_inv['results']:
                         seg_dict[seg['uuid']] = seg['config']['name']
+                        cloud_mapping[seg['uuid']] = cloud_dict[seg['config']['cloud_ref'].split('/cloud/')[1]]
             temp_total_time = str(time.time()-start_time)
             if args.debug == True:
                 print(str(datetime.now())+' '+self.avi_cluster_ip+': func gen_inventory_dict completed, executed in '+temp_total_time+' seconds')
-            return vs_dict, se_dict, pool_dict, seg_dict
+            return vs_dict, se_dict, pool_dict, seg_dict, cloud_mapping
         except:
             print(str(datetime.now())+' '+self.avi_cluster_ip+': func gen_inventory_dict encountered an error')
             exception_text = traceback.format_exc()
@@ -597,7 +619,6 @@ class avi_metrics():
             temp_start_time = time.time()
             endpoint_payload_list = []
             discovered_ses = []
-            discovered_health = []
             for t in self.tenants:
                 if t['name'] in self.se_dict['tenants'] and self.se_dict['tenants'][t['name']]['count'] > 0:
                     payload = {
@@ -700,6 +721,7 @@ class avi_metrics():
                                 temp_payload['timestamp']=int(time.time())
                                 temp_payload['vs_name'] = vs_name
                                 temp_payload['tenant'] = tenant
+                                temp_payload['cloud'] = self.cloud_mapping[vs_uuid]
                                 temp_payload['metric_type'] = 'virtualservice_metrics'
                                 temp_payload['metric_name'] = metric_name
                                 temp_payload['metric_value'] = m['data'][0]['value']
@@ -775,6 +797,7 @@ class avi_metrics():
                                     temp_payload['timestamp']=int(time.time())
                                     temp_payload['se_name'] = se_name
                                     temp_payload['tenant'] = tenant
+                                    temp_payload['cloud'] = self.cloud_mapping[entry]
                                     temp_payload['vs_name'] = vs_name
                                     temp_payload['metric_type'] = 'virtualservice_metrics_per_serviceengine'
                                     temp_payload['metric_name'] = d['header']['name']
@@ -822,6 +845,7 @@ class avi_metrics():
                                 temp_payload['timestamp']=int(time.time())
                                 temp_payload['vs_name'] = vs_name
                                 temp_payload['tenant'] = t['name']
+                                temp_payload['cloud'] = self.cloud_mapping[v['uuid']]
                                 temp_payload['metric_type'] = 'virtualservice_healthscore'
                                 temp_payload['metric_name'] = h
                                 temp_payload['metric_value'] = temp_dict[h]
@@ -843,6 +867,7 @@ class avi_metrics():
                                 temp1_payload['timestamp']=int(time.time())
                                 temp1_payload['se_name'] = self.se_dict[s['uuid']]
                                 temp1_payload['tenant'] = t['name']
+                                temp1_payload['cloud'] = self.cloud_mapping[s['uuid']]
                                 temp1_payload['metric_type'] = 'serviceengine_healthscore'
                                 temp1_payload['metric_name'] = h
                                 temp1_payload['metric_value'] = temp1_dict[h]
@@ -888,6 +913,7 @@ class avi_metrics():
                         temp_payload['timestamp']=int(time.time())
                         temp_payload['vs_name'] = vs_name
                         temp_payload['tenant'] = t['name']
+                        temp_payload['cloud'] = self.cloud_mapping[v['uuid']]
                         temp_payload['metric_type'] = 'virtualservice_operstatus'
                         temp_payload['metric_name'] = 'oper_status'
                         temp_payload['metric_value'] = metric_value
@@ -963,6 +989,7 @@ class avi_metrics():
                                     temp_payload['timestamp']=int(time.time())
                                     temp_payload['vs_name'] = vs_entry
                                     temp_payload['tenant'] = t['name']
+                                    temp_payload['cloud'] = self.cloud_mapping[p['uuid']]
                                     temp_payload['pool_name'] = pool_name
                                     temp_payload['metric_type'] = 'virtualservice_pool_members'
                                     temp_payload['metric_name'] = 'virtualservice_pool_members_enabled'
@@ -1025,6 +1052,7 @@ class avi_metrics():
                                 temp_payload['timestamp']=int(time.time())
                                 temp_payload['se_name'] = s['config']['name']
                                 temp_payload['tenant'] = t['name']
+                                temp_payload['cloud'] = self.cloud_mapping[s['uuid']]
                                 temp_payload['metric_type'] = 'serviceengine_missed_heartbeats'
                                 temp_payload['metric_name'] = 'missed_heartbeats'
                                 temp_payload['metric_value'] = s['runtime']['hb_status']['num_hb_misses']
@@ -1061,6 +1089,7 @@ class avi_metrics():
                                 temp_payload['timestamp']=int(time.time())
                                 temp_payload['se_name'] = s['config']['name']
                                 temp_payload['tenant'] = t['name']
+                                temp_payload['cloud'] = self.cloud_mapping[s['uuid']]
                                 temp_payload['metric_type'] = 'serviceengine_connected_state'
                                 temp_payload['metric_name'] = 'connected'
                                 if s['runtime']['se_connected'] == True:
@@ -1187,6 +1216,7 @@ class avi_metrics():
                                 temp_payload['se_name'] = se_name
                                 temp_payload['vs_name'] = vs_name
                                 temp_payload['tenant'] = t['name']
+                                temp_payload['cloud'] = self.cloud_mapping[s['uuid']]
                                 temp_payload['metric_type'] = 'virtualservice_hosted_se'
                                 temp_payload['metric_name'] = 'hosting_se'
                                 temp_payload['metric_value'] = 1
@@ -1202,6 +1232,7 @@ class avi_metrics():
                                 temp_payload['se_name'] = se_name
                                 temp_payload['vs_name'] = vs_name
                                 temp_payload['tenant'] = t['name']
+                                temp_payload['cloud'] = self.cloud_mapping[s['uuid']]
                                 temp_payload['metric_type'] = 'virtualservice_hosted_se'
                                 temp_payload['metric_name'] = 'hosting_se'
                                 temp_payload['metric_value'] = 1
@@ -1244,6 +1275,7 @@ class avi_metrics():
                                             temp_payload['timestamp']=int(time.time())
                                             temp_payload['vs_name'] = vs_name
                                             temp_payload['tenant'] = t['name']
+                                            temp_payload['cloud'] = self.cloud_mapping[v['uuid']]
                                             temp_payload['se_name'] = se_name
                                             temp_payload['metric_type'] = 'virtualservice_primary_se'
                                             temp_payload['metric_name'] = 'primary_se'
@@ -1460,6 +1492,7 @@ class avi_metrics():
                                             temp_payload['timestamp']=int(time.time())
                                             temp_payload['pool_name'] = pool_name
                                             temp_payload['tenant'] = t['name']
+                                            temp_payload['cloud'] = self.cloud_mapping[d['header']['pool_ref'].split('/pool/')[1].split('#')[0]]
                                             temp_payload['pool_member'] = server_object
                                             temp_payload['metric_type'] = 'pool_member_metrics'
                                             temp_payload['metric_name'] = metric_name
@@ -1557,7 +1590,7 @@ class avi_metrics():
             self.tenants = self.login.json()['tenants']
             self.avi_controller = self.controller_to_poll()
             print '=====> Chose '+self.avi_controller
-            self.vs_dict, self.se_dict, self.pool_dict, self.seg_dict = self.gen_inventory_dict()
+            self.vs_dict, self.se_dict, self.pool_dict, self.seg_dict, self.cloud_mapping = self.gen_inventory_dict()
             #---- remove metrics that are not available in the current version
             self.vs_metric_list, self.se_metric_list, self.controller_metric_list, self.pool_server_metric_list = self.remove_version_specific_metrics()
             #-----------------------------------

@@ -320,28 +320,27 @@ def send_value_logstash(endpoint_info, payload):
 
 def send_metriclist_to_endpoint(endpoint_list, payload):
     try:
-        for endpoint_info in endpoint_list:
-            if endpoint_info['type'] == 'graphite':
-                send_value_graphite(endpoint_info, payload)
-            elif endpoint_info['type'] == 'splunk':
-                if endpoint_info['index_type'].lower() == 'metric':
-                    send_value_splunk_hec_metric(endpoint_info, payload)
-                else:
-                    send_value_splunk_hec(endpoint_info, payload)
-            elif endpoint_info['type'] == 'appdynamics_http':
-                send_value_appdynamics_http(endpoint_info, payload)
-            elif endpoint_info['type'] == 'appdynamics_machine':
-                send_value_appdynamics_machine(endpoint_info, payload)
-            elif endpoint_info['type'] == 'datadog':
-                send_value_datadog(endpoint_info, payload)
-            elif endpoint_info['type'] == 'influxdb':
-                send_value_influxdb(endpoint_info, payload)
-            elif endpoint_info['type'] == 'logstash':
-                send_value_logstash(endpoint_info, payload)
-            elif endpoint_info['type'] == 'elasticsearch':
-                send_value_elasticsearch(endpoint_info, payload)
-            else:
-                print 'No sending data to any end point'
+        if endpoint_list != None:
+            for endpoint_info in endpoint_list:
+                if endpoint_info['type'] == 'graphite':
+                    send_value_graphite(endpoint_info, payload)
+                elif endpoint_info['type'] == 'splunk':
+                    if endpoint_info['index_type'].lower() == 'metric':
+                        send_value_splunk_hec_metric(endpoint_info, payload)
+                    else:
+                        send_value_splunk_hec(endpoint_info, payload)
+                elif endpoint_info['type'] == 'appdynamics_http':
+                    send_value_appdynamics_http(endpoint_info, payload)
+                elif endpoint_info['type'] == 'appdynamics_machine':
+                    send_value_appdynamics_machine(endpoint_info, payload)
+                elif endpoint_info['type'] == 'datadog':
+                    send_value_datadog(endpoint_info, payload)
+                elif endpoint_info['type'] == 'influxdb':
+                    send_value_influxdb(endpoint_info, payload)
+                elif endpoint_info['type'] == 'logstash':
+                    send_value_logstash(endpoint_info, payload)
+                elif endpoint_info['type'] == 'elasticsearch':
+                    send_value_elasticsearch(endpoint_info, payload)
     except:
         exception_text = traceback.format_exc()
         print exception_text
