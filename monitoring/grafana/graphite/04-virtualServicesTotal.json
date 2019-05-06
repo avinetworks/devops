@@ -2,7 +2,6 @@
   "annotations": {
     "list": [
       {
-        "$$hashKey": "object:5757",
         "builtIn": 1,
         "datasource": "-- Grafana --",
         "enable": true,
@@ -16,7 +15,8 @@
   "editable": true,
   "gnetId": null,
   "graphTooltip": 0,
-  "iteration": 1520040986372,
+  "id": 5,
+  "iteration": 1556550970719,
   "links": [],
   "panels": [
     {
@@ -24,7 +24,6 @@
       "bars": false,
       "dashLength": 10,
       "dashes": false,
-      "datasource": null,
       "editable": true,
       "error": false,
       "fill": 1,
@@ -66,6 +65,7 @@
       ],
       "thresholds": [],
       "timeFrom": null,
+      "timeRegions": [],
       "timeShift": null,
       "title": "Top 10 - Bandwidth",
       "tooltip": {
@@ -97,14 +97,17 @@
           "min": null,
           "show": true
         }
-      ]
+      ],
+      "yaxis": {
+        "align": false,
+        "alignLevel": null
+      }
     },
     {
       "aliasColors": {},
       "bars": false,
       "dashLength": 10,
       "dashes": false,
-      "datasource": null,
       "editable": true,
       "error": false,
       "fill": 1,
@@ -146,6 +149,7 @@
       ],
       "thresholds": [],
       "timeFrom": null,
+      "timeRegions": [],
       "timeShift": null,
       "title": "Top 10 - Connections Per Second",
       "tooltip": {
@@ -177,14 +181,17 @@
           "min": null,
           "show": true
         }
-      ]
+      ],
+      "yaxis": {
+        "align": false,
+        "alignLevel": null
+      }
     },
     {
       "aliasColors": {},
       "bars": false,
       "dashLength": 10,
       "dashes": false,
-      "datasource": null,
       "editable": true,
       "error": false,
       "fill": 0,
@@ -199,6 +206,8 @@
       "legend": {
         "avg": false,
         "current": false,
+        "hideEmpty": false,
+        "hideZero": false,
         "max": false,
         "min": false,
         "show": true,
@@ -220,12 +229,13 @@
       "targets": [
         {
           "refId": "A",
-          "target": "aliasByNode(lowestCurrent(network-script.avi.$location.$environment.$device.virtualservice.*.healthscore, 10), 6)",
+          "target": "aliasByNode(lowestCurrent(removeEmptySeries(network-script.avi.$location.$environment.$device.virtualservice.*.healthscore, 0), 10), 6)",
           "textEditor": false
         }
       ],
       "thresholds": [],
       "timeFrom": null,
+      "timeRegions": [],
       "timeShift": null,
       "title": "Top 10 Lowest VS Healthscores",
       "tooltip": {
@@ -257,14 +267,17 @@
           "min": null,
           "show": true
         }
-      ]
+      ],
+      "yaxis": {
+        "align": false,
+        "alignLevel": null
+      }
     },
     {
       "aliasColors": {},
       "bars": false,
       "dashLength": 10,
       "dashes": false,
-      "datasource": null,
       "editable": true,
       "error": false,
       "fill": 1,
@@ -307,6 +320,7 @@
       ],
       "thresholds": [],
       "timeFrom": null,
+      "timeRegions": [],
       "timeShift": null,
       "title": "SSL TPS - Top 10",
       "tooltip": {
@@ -338,14 +352,17 @@
           "min": null,
           "show": true
         }
-      ]
+      ],
+      "yaxis": {
+        "align": false,
+        "alignLevel": null
+      }
     },
     {
       "aliasColors": {},
       "bars": false,
       "dashLength": 10,
       "dashes": false,
-      "datasource": null,
       "editable": true,
       "error": false,
       "fill": 1,
@@ -387,6 +404,7 @@
       ],
       "thresholds": [],
       "timeFrom": null,
+      "timeRegions": [],
       "timeShift": null,
       "title": "Top 10 - Concurrent Connections",
       "tooltip": {
@@ -418,21 +436,24 @@
           "min": null,
           "show": true
         }
-      ]
+      ],
+      "yaxis": {
+        "align": false,
+        "alignLevel": null
+      }
     },
     {
       "aliasColors": {},
       "bars": false,
       "dashLength": 10,
       "dashes": false,
-      "datasource": null,
       "editable": true,
       "error": false,
       "fill": 1,
       "grid": {},
       "gridPos": {
         "h": 7,
-        "w": 8,
+        "w": 12,
         "x": 0,
         "y": 13
       },
@@ -467,6 +488,7 @@
       ],
       "thresholds": [],
       "timeFrom": null,
+      "timeRegions": [],
       "timeShift": null,
       "title": "Top 10 - RX Packets Per Second",
       "tooltip": {
@@ -498,22 +520,25 @@
           "min": null,
           "show": true
         }
-      ]
+      ],
+      "yaxis": {
+        "align": false,
+        "alignLevel": null
+      }
     },
     {
       "aliasColors": {},
       "bars": false,
       "dashLength": 10,
       "dashes": false,
-      "datasource": null,
       "editable": true,
       "error": false,
       "fill": 1,
       "grid": {},
       "gridPos": {
         "h": 7,
-        "w": 8,
-        "x": 8,
+        "w": 12,
+        "x": 12,
         "y": 13
       },
       "id": 6,
@@ -547,6 +572,7 @@
       ],
       "thresholds": [],
       "timeFrom": null,
+      "timeRegions": [],
       "timeShift": null,
       "title": "Top 10 - TX Packets Per Second",
       "tooltip": {
@@ -578,92 +604,15 @@
           "min": null,
           "show": true
         }
-      ]
-    },
-    {
-      "aliasColors": {},
-      "bars": false,
-      "dashLength": 10,
-      "dashes": false,
-      "datasource": null,
-      "editable": true,
-      "error": false,
-      "fill": 0,
-      "grid": {},
-      "gridPos": {
-        "h": 7,
-        "w": 8,
-        "x": 16,
-        "y": 13
-      },
-      "id": 10,
-      "legend": {
-        "avg": false,
-        "current": false,
-        "max": false,
-        "min": false,
-        "show": true,
-        "total": false,
-        "values": false
-      },
-      "lines": true,
-      "linewidth": 2,
-      "links": [],
-      "nullPointMode": "connected",
-      "percentage": false,
-      "pointradius": 5,
-      "points": false,
-      "renderer": "flot",
-      "seriesOverrides": [],
-      "spaceLength": 10,
-      "stack": false,
-      "steppedLine": false,
-      "targets": [
-        {
-          "refId": "A",
-          "target": "aliasByNode(network-script.avi.$location.$environment.$device.sslcerts.*.expires, 6)",
-          "textEditor": true
-        }
       ],
-      "thresholds": [],
-      "timeFrom": null,
-      "timeShift": null,
-      "title": "Days until SSL Certificate Expires (<30 days)",
-      "tooltip": {
-        "msResolution": false,
-        "shared": true,
-        "sort": 0,
-        "value_type": "cumulative"
-      },
-      "type": "graph",
-      "xaxis": {
-        "buckets": null,
-        "mode": "time",
-        "name": null,
-        "show": true,
-        "values": []
-      },
-      "yaxes": [
-        {
-          "format": "short",
-          "label": "Days",
-          "logBase": 1,
-          "max": null,
-          "min": null,
-          "show": true
-        },
-        {
-          "format": "short",
-          "logBase": 1,
-          "max": null,
-          "min": null,
-          "show": true
-        }
-      ]
+      "yaxis": {
+        "align": false,
+        "alignLevel": null
+      }
     }
   ],
   "refresh": "1m",
-  "schemaVersion": 16,
+  "schemaVersion": 18,
   "style": "dark",
   "tags": [
     "avi",
@@ -675,6 +624,7 @@
         "allFormat": "glob",
         "allValue": null,
         "datasource": null,
+        "definition": "",
         "hide": 0,
         "includeAll": false,
         "label": null,
@@ -685,6 +635,7 @@
         "query": "network-script.avi.*",
         "refresh": 1,
         "regex": "",
+        "skipUrlSync": false,
         "sort": 0,
         "tagValuesQuery": "",
         "tags": [],
@@ -696,6 +647,7 @@
         "allFormat": "glob",
         "allValue": null,
         "datasource": null,
+        "definition": "",
         "hide": 0,
         "includeAll": false,
         "label": null,
@@ -706,6 +658,7 @@
         "query": "network-script.avi.$location.*",
         "refresh": 1,
         "regex": "",
+        "skipUrlSync": false,
         "sort": 0,
         "tagValuesQuery": "",
         "tags": [],
@@ -716,7 +669,12 @@
       {
         "allFormat": "glob",
         "allValue": null,
+        "current": {
+          "text": "10_130_129_34",
+          "value": "10_130_129_34"
+        },
         "datasource": null,
+        "definition": "",
         "hide": 0,
         "includeAll": false,
         "label": null,
@@ -727,6 +685,7 @@
         "query": "network-script.avi.$location.$environment.*",
         "refresh": 1,
         "regex": "",
+        "skipUrlSync": false,
         "sort": 0,
         "tagValuesQuery": "",
         "tags": [],
@@ -772,7 +731,5 @@
     "type": "timepicker"
   },
   "timezone": "browser",
-  "title": "04-Virtual Services Total",
-  "uid": "YTfCFy6zz",
-  "version": 3
+  "title": "04-Virtual Services Total"
 }

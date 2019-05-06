@@ -2,7 +2,6 @@
   "annotations": {
     "list": [
       {
-        "$$hashKey": "object:249",
         "builtIn": 1,
         "datasource": "-- Grafana --",
         "enable": true,
@@ -16,7 +15,8 @@
   "editable": true,
   "gnetId": null,
   "graphTooltip": 0,
-  "iteration": 1520131042277,
+  "id": 6,
+  "iteration": 1556551703167,
   "links": [],
   "panels": [
     {
@@ -28,7 +28,6 @@
         "rgba(237, 129, 40, 0.89)",
         "rgba(50, 172, 45, 0.97)"
       ],
-      "datasource": null,
       "format": "bps",
       "gauge": {
         "maxValue": 100,
@@ -107,7 +106,6 @@
         "rgba(237, 129, 40, 0.89)",
         "rgba(50, 172, 45, 0.97)"
       ],
-      "datasource": null,
       "format": "none",
       "gauge": {
         "maxValue": 100,
@@ -186,7 +184,6 @@
         "rgba(237, 129, 40, 0.89)",
         "rgba(50, 172, 45, 0.97)"
       ],
-      "datasource": null,
       "format": "none",
       "gauge": {
         "maxValue": 100,
@@ -265,7 +262,6 @@
         "rgba(237, 129, 40, 0.89)",
         "rgba(50, 172, 45, 0.97)"
       ],
-      "datasource": null,
       "format": "none",
       "gauge": {
         "maxValue": 100,
@@ -344,7 +340,6 @@
         "rgba(237, 129, 40, 0.89)",
         "rgba(50, 172, 45, 0.97)"
       ],
-      "datasource": null,
       "format": "none",
       "gauge": {
         "maxValue": 100,
@@ -419,7 +414,6 @@
       "bars": false,
       "dashLength": 10,
       "dashes": false,
-      "datasource": null,
       "fill": 5,
       "gridPos": {
         "h": 7,
@@ -451,21 +445,25 @@
       "steppedLine": false,
       "targets": [
         {
+          "refCount": 0,
           "refId": "A",
           "target": "alias(network-script.avi.$location.$environment.$device.virtualservice.$vs.l4_client_avg_total_rtt, 'Client RTT')",
           "textEditor": false
         },
         {
+          "refCount": 0,
           "refId": "B",
-          "target": "alias(network-script.avi.$location.$environment.$device.virtualservice.$vs.l4_server_avg_total_rtt, 'Server RTT')",
+          "target": "alias(avg(network-script.avi.$location.$environment.$device.virtualservice.$vs.pool.*.*.l4_server_avg_total_rtt), 'Server RTT')",
           "textEditor": false
         },
         {
+          "refCount": 0,
           "refId": "C",
-          "target": "alias(network-script.avi.$location.$environment.$device.virtualservice.$vs.l7_server_avg_application_response_time, 'App Rsponse')",
+          "target": "alias(avg(network-script.avi.$location.$environment.$device.virtualservice.$vs.pool.*.*.l7_server_avg_application_response_time), 'App Response')",
           "textEditor": false
         },
         {
+          "refCount": 0,
           "refId": "D",
           "target": "alias(network-script.avi.$location.$environment.$device.virtualservice.$vs.l7_client_avg_client_data_transfer_time, 'Data Transfer')",
           "textEditor": false
@@ -473,6 +471,7 @@
       ],
       "thresholds": [],
       "timeFrom": null,
+      "timeRegions": [],
       "timeShift": null,
       "title": "End to End Timing",
       "tooltip": {
@@ -490,7 +489,7 @@
       },
       "yaxes": [
         {
-          "format": "short",
+          "format": "ms",
           "label": null,
           "logBase": 1,
           "max": null,
@@ -505,14 +504,17 @@
           "min": null,
           "show": true
         }
-      ]
+      ],
+      "yaxis": {
+        "align": false,
+        "alignLevel": null
+      }
     },
     {
       "aliasColors": {},
       "bars": false,
       "dashLength": 10,
       "dashes": false,
-      "datasource": null,
       "editable": true,
       "error": false,
       "fill": 1,
@@ -554,6 +556,7 @@
       ],
       "thresholds": [],
       "timeFrom": null,
+      "timeRegions": [],
       "timeShift": null,
       "title": "VS Bandwidth",
       "tooltip": {
@@ -585,14 +588,17 @@
           "min": null,
           "show": true
         }
-      ]
+      ],
+      "yaxis": {
+        "align": false,
+        "alignLevel": null
+      }
     },
     {
       "aliasColors": {},
       "bars": false,
       "dashLength": 10,
       "dashes": false,
-      "datasource": null,
       "editable": true,
       "error": false,
       "fill": 1,
@@ -634,6 +640,7 @@
       ],
       "thresholds": [],
       "timeFrom": null,
+      "timeRegions": [],
       "timeShift": null,
       "title": "Connections Per Second",
       "tooltip": {
@@ -665,14 +672,17 @@
           "min": null,
           "show": true
         }
-      ]
+      ],
+      "yaxis": {
+        "align": false,
+        "alignLevel": null
+      }
     },
     {
       "aliasColors": {},
       "bars": false,
       "dashLength": 10,
       "dashes": false,
-      "datasource": null,
       "editable": true,
       "error": false,
       "fill": 1,
@@ -714,6 +724,7 @@
       ],
       "thresholds": [],
       "timeFrom": null,
+      "timeRegions": [],
       "timeShift": null,
       "title": "Concurrent Connections",
       "tooltip": {
@@ -745,14 +756,17 @@
           "min": null,
           "show": true
         }
-      ]
+      ],
+      "yaxis": {
+        "align": false,
+        "alignLevel": null
+      }
     },
     {
       "aliasColors": {},
       "bars": false,
       "dashLength": 10,
       "dashes": false,
-      "datasource": null,
       "editable": true,
       "error": false,
       "fill": 1,
@@ -794,6 +808,7 @@
       ],
       "thresholds": [],
       "timeFrom": null,
+      "timeRegions": [],
       "timeShift": null,
       "title": "VS Oper Status : 1 == UP",
       "tooltip": {
@@ -825,14 +840,17 @@
           "min": null,
           "show": true
         }
-      ]
+      ],
+      "yaxis": {
+        "align": false,
+        "alignLevel": null
+      }
     },
     {
       "aliasColors": {},
       "bars": false,
       "dashLength": 10,
       "dashes": false,
-      "datasource": null,
       "editable": true,
       "error": false,
       "fill": 1,
@@ -868,12 +886,13 @@
       "targets": [
         {
           "refId": "A",
-          "target": "aliasByMetric(network-script.avi.$location.$environment.$device.virtualservice.$vs.l7_server_avg_resp_latency)",
-          "textEditor": true
+          "target": "aliasByMetric(avg(network-script.avi.$location.$environment.$device.virtualservice.$vs.pool.*.*.l4_server_avg_total_rtt))",
+          "textEditor": false
         }
       ],
       "thresholds": [],
       "timeFrom": null,
+      "timeRegions": [],
       "timeShift": null,
       "title": "Avg Server Side Latency (ms)",
       "tooltip": {
@@ -905,14 +924,17 @@
           "min": null,
           "show": true
         }
-      ]
+      ],
+      "yaxis": {
+        "align": false,
+        "alignLevel": null
+      }
     },
     {
       "aliasColors": {},
       "bars": false,
       "dashLength": 10,
       "dashes": false,
-      "datasource": null,
       "editable": true,
       "error": false,
       "fill": 0,
@@ -964,6 +986,7 @@
       ],
       "thresholds": [],
       "timeFrom": null,
+      "timeRegions": [],
       "timeShift": null,
       "title": "Pool Members",
       "tooltip": {
@@ -995,14 +1018,17 @@
           "min": null,
           "show": true
         }
-      ]
+      ],
+      "yaxis": {
+        "align": false,
+        "alignLevel": null
+      }
     },
     {
       "aliasColors": {},
       "bars": false,
       "dashLength": 10,
       "dashes": false,
-      "datasource": null,
       "editable": true,
       "error": false,
       "fill": 1,
@@ -1044,6 +1070,7 @@
       ],
       "thresholds": [],
       "timeFrom": null,
+      "timeRegions": [],
       "timeShift": null,
       "title": "RX Packets Per Second",
       "tooltip": {
@@ -1075,14 +1102,17 @@
           "min": null,
           "show": true
         }
-      ]
+      ],
+      "yaxis": {
+        "align": false,
+        "alignLevel": null
+      }
     },
     {
       "aliasColors": {},
       "bars": false,
       "dashLength": 10,
       "dashes": false,
-      "datasource": null,
       "editable": true,
       "error": false,
       "fill": 1,
@@ -1124,6 +1154,7 @@
       ],
       "thresholds": [],
       "timeFrom": null,
+      "timeRegions": [],
       "timeShift": null,
       "title": "TX Packets Per Second",
       "tooltip": {
@@ -1155,14 +1186,17 @@
           "min": null,
           "show": true
         }
-      ]
+      ],
+      "yaxis": {
+        "align": false,
+        "alignLevel": null
+      }
     },
     {
       "aliasColors": {},
       "bars": false,
       "dashLength": 10,
       "dashes": false,
-      "datasource": null,
       "editable": true,
       "error": false,
       "fill": 1,
@@ -1204,6 +1238,7 @@
       ],
       "thresholds": [],
       "timeFrom": null,
+      "timeRegions": [],
       "timeShift": null,
       "title": "VS Healthscore",
       "tooltip": {
@@ -1235,14 +1270,17 @@
           "min": null,
           "show": true
         }
-      ]
+      ],
+      "yaxis": {
+        "align": false,
+        "alignLevel": null
+      }
     },
     {
       "aliasColors": {},
       "bars": false,
       "dashLength": 10,
       "dashes": false,
-      "datasource": null,
       "editable": true,
       "error": false,
       "fill": 0,
@@ -1284,6 +1322,7 @@
       ],
       "thresholds": [],
       "timeFrom": null,
+      "timeRegions": [],
       "timeShift": null,
       "title": "Hosted on Service Engines",
       "tooltip": {
@@ -1292,7 +1331,6 @@
         "sort": 0,
         "value_type": "individual"
       },
-      "transparent": false,
       "type": "graph",
       "xaxis": {
         "buckets": null,
@@ -1316,14 +1354,17 @@
           "min": null,
           "show": true
         }
-      ]
+      ],
+      "yaxis": {
+        "align": false,
+        "alignLevel": null
+      }
     },
     {
       "aliasColors": {},
       "bars": false,
       "dashLength": 10,
       "dashes": false,
-      "datasource": null,
       "editable": true,
       "error": false,
       "fill": 1,
@@ -1358,7 +1399,6 @@
       "steppedLine": false,
       "targets": [
         {
-          "$$hashKey": "object:426",
           "refId": "A",
           "target": "aliasByMetric(network-script.avi.$location.$environment.$device.virtualservice.$vs.l4_client_avg_lossy_connections)",
           "textEditor": false
@@ -1366,6 +1406,7 @@
       ],
       "thresholds": [],
       "timeFrom": null,
+      "timeRegions": [],
       "timeShift": null,
       "title": "Average Client Lossy Connections",
       "tooltip": {
@@ -1397,14 +1438,17 @@
           "min": null,
           "show": true
         }
-      ]
+      ],
+      "yaxis": {
+        "align": false,
+        "alignLevel": null
+      }
     },
     {
       "aliasColors": {},
       "bars": false,
       "dashLength": 10,
       "dashes": false,
-      "datasource": null,
       "editable": true,
       "error": false,
       "fill": 1,
@@ -1451,6 +1495,7 @@
       ],
       "thresholds": [],
       "timeFrom": null,
+      "timeRegions": [],
       "timeShift": null,
       "title": "SSL Statistics /sec",
       "tooltip": {
@@ -1482,14 +1527,17 @@
           "min": null,
           "show": true
         }
-      ]
+      ],
+      "yaxis": {
+        "align": false,
+        "alignLevel": null
+      }
     },
     {
       "aliasColors": {},
       "bars": false,
       "dashLength": 10,
       "dashes": false,
-      "datasource": null,
       "editable": true,
       "error": false,
       "fill": 1,
@@ -1556,6 +1604,7 @@
       ],
       "thresholds": [],
       "timeFrom": null,
+      "timeRegions": [],
       "timeShift": null,
       "title": "4xx 5xx Status Codes",
       "tooltip": {
@@ -1589,14 +1638,17 @@
           "min": null,
           "show": true
         }
-      ]
+      ],
+      "yaxis": {
+        "align": false,
+        "alignLevel": null
+      }
     },
     {
       "aliasColors": {},
       "bars": false,
       "dashLength": 10,
       "dashes": false,
-      "datasource": null,
       "fill": 1,
       "gridPos": {
         "h": 7,
@@ -1635,6 +1687,7 @@
       ],
       "thresholds": [],
       "timeFrom": null,
+      "timeRegions": [],
       "timeShift": null,
       "title": "Client Side Open Connections",
       "tooltip": {
@@ -1667,14 +1720,17 @@
           "min": null,
           "show": true
         }
-      ]
+      ],
+      "yaxis": {
+        "align": false,
+        "alignLevel": null
+      }
     },
     {
       "aliasColors": {},
       "bars": false,
       "dashLength": 10,
       "dashes": false,
-      "datasource": null,
       "editable": true,
       "error": false,
       "fill": 0,
@@ -1709,28 +1765,33 @@
       "steppedLine": false,
       "targets": [
         {
+          "refCount": 0,
           "refId": "A",
           "target": "aliasByMetric(network-script.avi.$location.$environment.$device.virtualservice.$vs.l4_client_apdexc)",
           "textEditor": true
         },
         {
+          "refCount": 0,
           "refId": "B",
-          "target": "aliasByMetric(network-script.avi.$location.$environment.$device.virtualservice.$vs.l4_server_apdexc)",
-          "textEditor": true
+          "target": "aliasByMetric(avg(network-script.avi.$location.$environment.$device.virtualservice.$vs.pool.*.*.l4_server_apdexc))",
+          "textEditor": false
         },
         {
+          "refCount": 0,
           "refId": "C",
           "target": "aliasByMetric(network-script.avi.$location.$environment.$device.virtualservice.$vs.l7_client_apdexr)",
           "textEditor": true
         },
         {
+          "refCount": 0,
           "refId": "D",
-          "target": "aliasByMetric(network-script.avi.$location.$environment.$device.virtualservice.$vs.l7_server_apdexr)",
-          "textEditor": true
+          "target": "aliasByMetric(avg(network-script.avi.$location.$environment.$device.virtualservice.$vs.pool.*.*.l7_server_apdexr))",
+          "textEditor": false
         }
       ],
       "thresholds": [],
       "timeFrom": null,
+      "timeRegions": [],
       "timeShift": null,
       "title": "Virtual Service ApDex  Values",
       "tooltip": {
@@ -1762,14 +1823,17 @@
           "min": null,
           "show": true
         }
-      ]
+      ],
+      "yaxis": {
+        "align": false,
+        "alignLevel": null
+      }
     },
     {
       "aliasColors": {},
       "bars": false,
       "dashLength": 10,
       "dashes": false,
-      "datasource": null,
       "fill": 1,
       "gridPos": {
         "h": 7,
@@ -1809,6 +1873,7 @@
       ],
       "thresholds": [],
       "timeFrom": null,
+      "timeRegions": [],
       "timeShift": null,
       "title": "Pool Member - Avg Bandwidth",
       "tooltip": {
@@ -1841,14 +1906,17 @@
           "min": null,
           "show": true
         }
-      ]
+      ],
+      "yaxis": {
+        "align": false,
+        "alignLevel": null
+      }
     },
     {
       "aliasColors": {},
       "bars": false,
       "dashLength": 10,
       "dashes": false,
-      "datasource": null,
       "fill": 0,
       "gridPos": {
         "h": 7,
@@ -1888,6 +1956,7 @@
       ],
       "thresholds": [],
       "timeFrom": null,
+      "timeRegions": [],
       "timeShift": null,
       "title": "Pool Member - Open Conns",
       "tooltip": {
@@ -1920,7 +1989,11 @@
           "min": null,
           "show": true
         }
-      ]
+      ],
+      "yaxis": {
+        "align": false,
+        "alignLevel": null
+      }
     },
     {
       "columns": [
@@ -1929,7 +2002,6 @@
           "value": "total"
         }
       ],
-      "datasource": null,
       "fontSize": "80%",
       "gridPos": {
         "h": 7,
@@ -2002,7 +2074,6 @@
           "value": "total"
         }
       ],
-      "datasource": null,
       "fontSize": "80%",
       "gridPos": {
         "h": 7,
@@ -2075,7 +2146,6 @@
           "value": "total"
         }
       ],
-      "datasource": null,
       "fontSize": "80%",
       "gridPos": {
         "h": 7,
@@ -2156,7 +2226,6 @@
           "value": "total"
         }
       ],
-      "datasource": null,
       "fontSize": "80%",
       "gridPos": {
         "h": 7,
@@ -2232,7 +2301,7 @@
     }
   ],
   "refresh": "1m",
-  "schemaVersion": 16,
+  "schemaVersion": 18,
   "style": "dark",
   "tags": [
     "network",
@@ -2244,6 +2313,7 @@
         "allFormat": "glob",
         "allValue": null,
         "datasource": null,
+        "definition": "",
         "hide": 0,
         "includeAll": false,
         "label": null,
@@ -2254,6 +2324,7 @@
         "query": "network-script.avi.*",
         "refresh": 1,
         "regex": "",
+        "skipUrlSync": false,
         "sort": 0,
         "tagValuesQuery": "",
         "tags": [],
@@ -2265,6 +2336,7 @@
         "allFormat": "glob",
         "allValue": null,
         "datasource": null,
+        "definition": "",
         "hide": 0,
         "includeAll": false,
         "label": null,
@@ -2275,6 +2347,7 @@
         "query": "network-script.avi.$location.*",
         "refresh": 1,
         "regex": "",
+        "skipUrlSync": false,
         "sort": 0,
         "tagValuesQuery": "",
         "tags": [],
@@ -2286,6 +2359,7 @@
         "allFormat": "glob",
         "allValue": null,
         "datasource": null,
+        "definition": "",
         "hide": 0,
         "includeAll": false,
         "label": null,
@@ -2296,6 +2370,7 @@
         "query": "network-script.avi.$location.$environment.*",
         "refresh": 1,
         "regex": "",
+        "skipUrlSync": false,
         "sort": 0,
         "tagValuesQuery": "",
         "tags": [],
@@ -2307,6 +2382,7 @@
         "allFormat": "glob",
         "allValue": null,
         "datasource": null,
+        "definition": "",
         "hide": 0,
         "includeAll": false,
         "label": null,
@@ -2317,6 +2393,7 @@
         "refresh": 1,
         "refresh_on_load": false,
         "regex": "",
+        "skipUrlSync": false,
         "sort": 0,
         "tagValuesQuery": "",
         "tags": [],
@@ -2362,7 +2439,5 @@
     "type": "timepicker"
   },
   "timezone": "browser",
-  "title": "05-Virtual Services Specific",
-  "uid": "k0fCKyezz",
-  "version": 7
+  "title": "05-Virtual Services Specific"
 }
