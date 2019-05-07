@@ -279,10 +279,15 @@ class avi_metrics():
     def avi_login(self):
         try:
             login = pickle.load(open((os.path.join(fdir,self.avi_cluster_ip)),'rb'))
+            cookies=dict()
             for c in login.cookies:
                 expires = c.expires
+            if 'avi-sessionid' in login.cookies.keys():
+                cookies['avi-sessionid'] = login.cookies['avi-sessionid']
+            else:
+                cookies['sessionid'] = login.cookies['sessionid']
             headers = ({"X-Avi-Tenant": "admin", 'content-type': 'application/json'})
-            resp = requests.get('https://%s/api/cluster' %self.avi_cluster_ip, verify=False, headers = headers,cookies=dict(sessionid= login.cookies['sessionid']),timeout=5)
+            resp = requests.get('https://%s/api/cluster' %self.avi_cluster_ip, verify=False, headers = headers,cookies=cookies,timeout=5)
             #if expires > time.time():
             if resp.status_code == 200:
                 return login
@@ -297,21 +302,36 @@ class avi_metrics():
 
 
     def avi_request(self,avi_api,tenant,api_version='17.2.1'):
+        cookies=dict()
+        if 'avi-sessionid' in self.login.cookies.keys():
+            cookies['avi-sessionid'] = self.login.cookies['avi-sessionid']
+        else:
+            cookies['sessionid'] = self.login.cookies['sessionid']
         headers = ({'X-Avi-Tenant': '%s' %tenant, 'content-type': 'application/json', 'X-Avi-Version': '%s' %api_version})
-        return requests.get('https://%s/api/%s' %(self.avi_controller,avi_api), verify=False, headers = headers,cookies=dict(sessionid= self.login.cookies['sessionid']),timeout=50)
+        return requests.get('https://%s/api/%s' %(self.avi_controller,avi_api), verify=False, headers = headers,cookies=cookies,timeout=50)
 
 
     def avi_post(self,api_url,tenant,payload,api_version='17.2.1'):
+        cookies=dict()
+        if 'avi-sessionid' in self.login.cookies.keys():
+            cookies['avi-sessionid'] = self.login.cookies['avi-sessionid']
+        else:
+            cookies['sessionid'] = self.login.cookies['sessionid']      
         headers = ({"X-Avi-Tenant": "%s" %tenant, 'content-type': 'application/json','referer': 'https://%s' %self.avi_controller, 'X-CSRFToken': dict(self.login.cookies)['csrftoken'],'X-Avi-Version':'%s' %api_version})
-        cookies = dict(sessionid= self.login.cookies['sessionid'],csrftoken=self.login.cookies['csrftoken'])
+        cookies['csrftoken'] = self.login.cookies['csrftoken']
         return requests.post('https://%s/api/%s' %(self.avi_controller,api_url), verify=False, headers = headers,cookies=cookies, data=json.dumps(payload),timeout=50)
 
 
 
     #----- Tries to determine a follower controller to poll
     def controller_to_poll(self):
+        cookies=dict()
+        if 'avi-sessionid' in self.login.cookies.keys():
+            cookies['avi-sessionid'] = self.login.cookies['avi-sessionid']
+        else:
+            cookies['sessionid'] = self.login.cookies['sessionid']        
         headers = ({"X-Avi-Tenant": "admin", 'content-type': 'application/json'})
-        resp = (requests.get('https://%s/api/%s' %(self.avi_cluster_ip,'cluster/runtime'), verify=False, headers = headers,cookies=dict(sessionid= self.login.cookies['sessionid']),timeout=50)).json()
+        resp = (requests.get('https://%s/api/%s' %(self.avi_cluster_ip,'cluster/runtime'), verify=False, headers = headers,cookies=cookies,timeout=50)).json()
         follower_list = []
         if len(resp['node_states']) > 1:
             for c in resp['node_states']:
@@ -364,9 +384,9 @@ class avi_metrics():
                     for p in resp['results']:
                         pool_inv['results'].append(p)
                 #------------------
-                seg_inv = self.avi_request('serviceenginegroup-inventory?page_size=1000','*').json()
+                seg_inv = self.avi_request('serviceenginegroup-inventory?page_size=200','*').json()
                 #------------------
-                cloud_inv = self.avi_request('cloud-inventory?page_size=1000','*').json()
+                cloud_inv = self.avi_request('cloud-inventory?page_size=200','*').json()
                 #------------------
                 if cloud_inv['count'] > 0:
                     for c in cloud_inv['results']:
@@ -457,9 +477,9 @@ class avi_metrics():
                         for p in resp['results']:
                             pool_inv['results'].append(p)
                     #------------------
-                    seg_inv = self.avi_request('serviceenginegroup-inventory?page_size=1000',t['name']).json()
+                    seg_inv = self.avi_request('serviceenginegroup-inventory?page_size=200',t['name']).json()
                     #------------------
-                    cloud_inv = self.avi_request('cloud-inventory?page_size=1000',t['name']).json()                    
+                    cloud_inv = self.avi_request('cloud-inventory?page_size=200',t['name']).json()                    
                     #------------------
                     for c in cloud_inv['results']:
                         cloud_dict[c['uuid']] = c['config']['name']                      
@@ -1168,7 +1188,7 @@ class avi_metrics():
         try:
             if datetime.now().minute % 5 == 0: #----- run every 5 mins
                  temp_start_time = time.time()
-                 subnets = self.avi_request('network-inventory?page_size=1000','admin').json()['results']
+                 subnets = self.avi_request('network-inventory?page_size=200','admin').json()['results']
                  endpoint_payload_list = []
                  if len(subnets) > 0:
                      for s in subnets:
@@ -1588,7 +1608,8 @@ class avi_metrics():
             start_time = time.time()
             self.login = self.avi_login()
             self.tenants = self.login.json()['tenants']
-            self.avi_controller = self.controller_to_poll()
+            #self.avi_controller = self.controller_to_poll()
+            self.avi_controller = self.avi_cluster_ip
             print '=====> Chose '+self.avi_controller
             self.vs_dict, self.se_dict, self.pool_dict, self.seg_dict, self.cloud_mapping = self.gen_inventory_dict()
             #---- remove metrics that are not available in the current version
@@ -1696,7 +1717,8 @@ if 'EN_DOCKER' in os.environ:
         args.norealtime = True
     #----- Metrics db server
     fdir = os.path.abspath(os.path.dirname(__file__))
-    args.metrics = (os.environ['EN_METRIC_ENDPOINT'].replace(' ','').lower().split(':'))
+    if 'EN_METRIC_ENDPOINT' in os.environ:
+        args.metrics = (os.environ['EN_METRIC_ENDPOINT'].replace(' ','').lower().split(':'))      
     endpoint_list = determine_endpoint_type()
     while True:
         loop_start_time = time.time()

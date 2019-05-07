@@ -2,7 +2,6 @@
   "annotations": {
     "list": [
       {
-        "$$hashKey": "object:5507",
         "builtIn": 1,
         "datasource": "-- Grafana --",
         "enable": true,
@@ -16,7 +15,8 @@
   "editable": true,
   "gnetId": null,
   "graphTooltip": 0,
-  "iteration": 1520040942736,
+  "id": 4,
+  "iteration": 1556550776546,
   "links": [],
   "panels": [
     {
@@ -28,7 +28,6 @@
         "rgba(237, 129, 40, 0.89)",
         "rgba(50, 172, 45, 0.97)"
       ],
-      "datasource": null,
       "format": "none",
       "gauge": {
         "maxValue": 100,
@@ -107,7 +106,6 @@
         "rgba(237, 129, 40, 0.89)",
         "rgba(50, 172, 45, 0.97)"
       ],
-      "datasource": null,
       "format": "none",
       "gauge": {
         "maxValue": 100,
@@ -186,7 +184,6 @@
         "rgba(237, 129, 40, 0.89)",
         "rgba(50, 172, 45, 0.97)"
       ],
-      "datasource": null,
       "format": "none",
       "gauge": {
         "maxValue": 100,
@@ -265,7 +262,6 @@
         "rgba(237, 129, 40, 0.89)",
         "rgba(245, 54, 54, 0.9)"
       ],
-      "datasource": null,
       "decimals": null,
       "format": "percent",
       "gauge": {
@@ -345,7 +341,6 @@
         "rgba(237, 129, 40, 0.89)",
         "rgba(50, 172, 45, 0.97)"
       ],
-      "datasource": null,
       "format": "none",
       "gauge": {
         "maxValue": 100,
@@ -420,7 +415,6 @@
       "bars": false,
       "dashLength": 10,
       "dashes": false,
-      "datasource": null,
       "editable": true,
       "error": false,
       "fill": 3,
@@ -462,6 +456,7 @@
       ],
       "thresholds": [],
       "timeFrom": null,
+      "timeRegions": [],
       "timeShift": null,
       "title": "SE Average Bandwidth",
       "tooltip": {
@@ -493,7 +488,11 @@
           "min": null,
           "show": true
         }
-      ]
+      ],
+      "yaxis": {
+        "align": false,
+        "alignLevel": null
+      }
     },
     {
       "aliasColors": {},
@@ -501,7 +500,6 @@
       "cacheTimeout": "300",
       "dashLength": 10,
       "dashes": false,
-      "datasource": null,
       "editable": true,
       "error": false,
       "fill": 1,
@@ -548,6 +546,7 @@
       ],
       "thresholds": [],
       "timeFrom": null,
+      "timeRegions": [],
       "timeShift": null,
       "title": "Average Bandwidth",
       "tooltip": {
@@ -579,14 +578,17 @@
           "min": null,
           "show": true
         }
-      ]
+      ],
+      "yaxis": {
+        "align": false,
+        "alignLevel": null
+      }
     },
     {
       "aliasColors": {},
       "bars": false,
       "dashLength": 10,
       "dashes": false,
-      "datasource": null,
       "editable": true,
       "error": false,
       "fill": 1,
@@ -636,6 +638,7 @@
         }
       ],
       "timeFrom": null,
+      "timeRegions": [],
       "timeShift": null,
       "title": "SE CPU%",
       "tooltip": {
@@ -667,21 +670,24 @@
           "min": null,
           "show": true
         }
-      ]
+      ],
+      "yaxis": {
+        "align": false,
+        "alignLevel": null
+      }
     },
     {
       "aliasColors": {},
       "bars": false,
       "dashLength": 10,
       "dashes": false,
-      "datasource": null,
       "editable": true,
       "error": false,
       "fill": 0,
       "grid": {},
       "gridPos": {
         "h": 7,
-        "w": 8,
+        "w": 12,
         "x": 0,
         "y": 10
       },
@@ -716,6 +722,7 @@
       ],
       "thresholds": [],
       "timeFrom": null,
+      "timeRegions": [],
       "timeShift": null,
       "title": "VS per SE",
       "tooltip": {
@@ -747,7 +754,11 @@
           "min": null,
           "show": true
         }
-      ]
+      ],
+      "yaxis": {
+        "align": false,
+        "alignLevel": null
+      }
     },
     {
       "aliasColors": {},
@@ -755,15 +766,14 @@
       "cacheTimeout": "60",
       "dashLength": 10,
       "dashes": false,
-      "datasource": null,
       "editable": true,
       "error": false,
       "fill": 0,
       "grid": {},
       "gridPos": {
         "h": 7,
-        "w": 8,
-        "x": 8,
+        "w": 12,
+        "x": 12,
         "y": 10
       },
       "id": 2,
@@ -798,6 +808,7 @@
       ],
       "thresholds": [],
       "timeFrom": null,
+      "timeRegions": [],
       "timeShift": null,
       "title": "SE Healthscore",
       "tooltip": {
@@ -830,92 +841,17 @@
           "min": null,
           "show": true
         }
-      ]
-    },
-    {
-      "aliasColors": {},
-      "bars": false,
-      "dashLength": 10,
-      "dashes": false,
-      "datasource": null,
-      "fill": 1,
-      "gridPos": {
-        "h": 7,
-        "w": 8,
-        "x": 16,
-        "y": 10
-      },
-      "id": 17,
-      "legend": {
-        "avg": false,
-        "current": false,
-        "max": false,
-        "min": false,
-        "show": true,
-        "total": false,
-        "values": false
-      },
-      "lines": true,
-      "linewidth": 1,
-      "links": [],
-      "nullPointMode": "null",
-      "percentage": false,
-      "pointradius": 5,
-      "points": false,
-      "renderer": "flot",
-      "seriesOverrides": [],
-      "spaceLength": 10,
-      "stack": false,
-      "steppedLine": false,
-      "targets": [
-        {
-          "refId": "A",
-          "target": "aliasByMetric(network-script.avi.$location.$environment.$device.serviceengine.$serviceengine.dispatcher_usage.se_dp0)",
-          "textEditor": false
-        }
       ],
-      "thresholds": [],
-      "timeFrom": null,
-      "timeShift": null,
-      "title": "SE Dispatcher CPU %",
-      "tooltip": {
-        "shared": true,
-        "sort": 0,
-        "value_type": "individual"
-      },
-      "type": "graph",
-      "xaxis": {
-        "buckets": null,
-        "mode": "time",
-        "name": null,
-        "show": true,
-        "values": []
-      },
-      "yaxes": [
-        {
-          "format": "short",
-          "label": null,
-          "logBase": 1,
-          "max": null,
-          "min": null,
-          "show": true
-        },
-        {
-          "format": "short",
-          "label": null,
-          "logBase": 1,
-          "max": null,
-          "min": null,
-          "show": true
-        }
-      ]
+      "yaxis": {
+        "align": false,
+        "alignLevel": null
+      }
     },
     {
       "aliasColors": {},
       "bars": false,
       "dashLength": 10,
       "dashes": false,
-      "datasource": null,
       "editable": true,
       "error": false,
       "fill": 0,
@@ -957,6 +893,7 @@
       ],
       "thresholds": [],
       "timeFrom": null,
+      "timeRegions": [],
       "timeShift": null,
       "title": "SE RX PPS",
       "tooltip": {
@@ -988,14 +925,17 @@
           "min": null,
           "show": true
         }
-      ]
+      ],
+      "yaxis": {
+        "align": false,
+        "alignLevel": null
+      }
     },
     {
       "aliasColors": {},
       "bars": false,
       "dashLength": 10,
       "dashes": false,
-      "datasource": null,
       "editable": true,
       "error": false,
       "fill": 0,
@@ -1037,6 +977,7 @@
       ],
       "thresholds": [],
       "timeFrom": null,
+      "timeRegions": [],
       "timeShift": null,
       "title": "SE TX PPS",
       "tooltip": {
@@ -1068,14 +1009,17 @@
           "min": null,
           "show": true
         }
-      ]
+      ],
+      "yaxis": {
+        "align": false,
+        "alignLevel": null
+      }
     },
     {
       "aliasColors": {},
       "bars": false,
       "dashLength": 10,
       "dashes": false,
-      "datasource": null,
       "editable": true,
       "error": false,
       "fill": 1,
@@ -1117,6 +1061,7 @@
       ],
       "thresholds": [],
       "timeFrom": null,
+      "timeRegions": [],
       "timeShift": null,
       "title": "SE CPS",
       "tooltip": {
@@ -1148,14 +1093,17 @@
           "min": null,
           "show": true
         }
-      ]
+      ],
+      "yaxis": {
+        "align": false,
+        "alignLevel": null
+      }
     },
     {
       "aliasColors": {},
       "bars": false,
       "dashLength": 10,
       "dashes": false,
-      "datasource": null,
       "editable": true,
       "error": false,
       "fill": 1,
@@ -1197,6 +1145,7 @@
       ],
       "thresholds": [],
       "timeFrom": null,
+      "timeRegions": [],
       "timeShift": null,
       "title": "VS Capacity Used",
       "tooltip": {
@@ -1228,14 +1177,17 @@
           "min": null,
           "show": true
         }
-      ]
+      ],
+      "yaxis": {
+        "align": false,
+        "alignLevel": null
+      }
     },
     {
       "aliasColors": {},
       "bars": false,
       "dashLength": 10,
       "dashes": false,
-      "datasource": null,
       "editable": true,
       "error": false,
       "fill": 1,
@@ -1277,6 +1229,7 @@
       ],
       "thresholds": [],
       "timeFrom": null,
+      "timeRegions": [],
       "timeShift": null,
       "title": "SE Missed Heartbeats",
       "tooltip": {
@@ -1308,14 +1261,17 @@
           "min": null,
           "show": true
         }
-      ]
+      ],
+      "yaxis": {
+        "align": false,
+        "alignLevel": null
+      }
     },
     {
       "aliasColors": {},
       "bars": false,
       "dashLength": 10,
       "dashes": false,
-      "datasource": null,
       "editable": true,
       "error": false,
       "fill": 1,
@@ -1357,6 +1313,7 @@
       ],
       "thresholds": [],
       "timeFrom": null,
+      "timeRegions": [],
       "timeShift": null,
       "title": "Per VS Client BW - Top 10",
       "tooltip": {
@@ -1390,14 +1347,17 @@
           "min": null,
           "show": true
         }
-      ]
+      ],
+      "yaxis": {
+        "align": false,
+        "alignLevel": null
+      }
     },
     {
       "aliasColors": {},
       "bars": false,
       "dashLength": 10,
       "dashes": false,
-      "datasource": null,
       "editable": true,
       "error": false,
       "fill": 1,
@@ -1439,6 +1399,7 @@
       ],
       "thresholds": [],
       "timeFrom": null,
+      "timeRegions": [],
       "timeShift": null,
       "title": "Per VS SSL TPS - Top 10",
       "tooltip": {
@@ -1472,14 +1433,17 @@
           "min": null,
           "show": true
         }
-      ]
+      ],
+      "yaxis": {
+        "align": false,
+        "alignLevel": null
+      }
     },
     {
       "aliasColors": {},
       "bars": false,
       "dashLength": 10,
       "dashes": false,
-      "datasource": null,
       "editable": true,
       "error": false,
       "fill": 4,
@@ -1521,6 +1485,7 @@
       ],
       "thresholds": [],
       "timeFrom": null,
+      "timeRegions": [],
       "timeShift": null,
       "title": "Connection Memory Usage",
       "tooltip": {
@@ -1553,14 +1518,17 @@
           "min": null,
           "show": true
         }
-      ]
+      ],
+      "yaxis": {
+        "align": false,
+        "alignLevel": null
+      }
     },
     {
       "aliasColors": {},
       "bars": false,
       "dashLength": 10,
       "dashes": false,
-      "datasource": null,
       "fill": 1,
       "gridPos": {
         "h": 7,
@@ -1599,6 +1567,7 @@
       ],
       "thresholds": [],
       "timeFrom": null,
+      "timeRegions": [],
       "timeShift": null,
       "title": "Per VS - Client Side Open Conns - Top10",
       "tooltip": {
@@ -1631,11 +1600,15 @@
           "min": null,
           "show": true
         }
-      ]
+      ],
+      "yaxis": {
+        "align": false,
+        "alignLevel": null
+      }
     }
   ],
   "refresh": "1m",
-  "schemaVersion": 16,
+  "schemaVersion": 18,
   "style": "dark",
   "tags": [
     "network",
@@ -1647,6 +1620,7 @@
         "allFormat": "glob",
         "allValue": null,
         "datasource": null,
+        "definition": "",
         "hide": 0,
         "includeAll": false,
         "label": null,
@@ -1657,6 +1631,7 @@
         "query": "network-script.avi.*",
         "refresh": 1,
         "regex": "",
+        "skipUrlSync": false,
         "sort": 0,
         "tagValuesQuery": "",
         "tags": [],
@@ -1668,6 +1643,7 @@
         "allFormat": "glob",
         "allValue": null,
         "datasource": null,
+        "definition": "",
         "hide": 0,
         "includeAll": false,
         "label": null,
@@ -1678,6 +1654,7 @@
         "query": "network-script.avi.$location.*",
         "refresh": 1,
         "regex": "",
+        "skipUrlSync": false,
         "sort": 0,
         "tagValuesQuery": "",
         "tags": [],
@@ -1689,6 +1666,7 @@
         "allFormat": "glob",
         "allValue": null,
         "datasource": null,
+        "definition": "",
         "hide": 0,
         "includeAll": false,
         "label": null,
@@ -1699,6 +1677,7 @@
         "query": "network-script.avi.$location.$environment.*",
         "refresh": 1,
         "regex": "",
+        "skipUrlSync": false,
         "sort": 0,
         "tagValuesQuery": "",
         "tags": [],
@@ -1710,6 +1689,7 @@
         "allFormat": "glob",
         "allValue": null,
         "datasource": null,
+        "definition": "",
         "hide": 0,
         "includeAll": false,
         "label": null,
@@ -1720,6 +1700,7 @@
         "query": "network-script.avi.$location.$environment.$device.serviceengine.*",
         "refresh": 1,
         "regex": "",
+        "skipUrlSync": false,
         "sort": 0,
         "tagValuesQuery": "",
         "tags": [],
@@ -1765,7 +1746,5 @@
     "type": "timepicker"
   },
   "timezone": "browser",
-  "title": "03-Service Engine Specific",
-  "uid": "vofjFyezz",
-  "version": 5
+  "title": "03-Service Engine Specific"
 }
