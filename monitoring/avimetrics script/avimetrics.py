@@ -1,7 +1,7 @@
 #!/usr/bin/python
 
 
-version = 'v2019-03-20'
+version = 'v2019-05-07'
 
 #########################################################################################
 #                                                                                       #
@@ -181,6 +181,7 @@ class avi_metrics():
             'l7_client.sum_application_response_time',
             'l7_client.avg_resp_4xx_avi_errors',
             'l7_client.avg_resp_5xx_avi_errors',
+            'l7_client.avg_resp_2xx',
             'l7_client.avg_resp_4xx',
             'l7_client.avg_resp_5xx',
             'l4_client.avg_total_rtt',
@@ -680,6 +681,7 @@ class avi_metrics():
                                         temp_payload = self.payload_template.copy()
                                         temp_payload['timestamp']=int(time.time())
                                         temp_payload['se_name'] = se_name
+                                        temp_payload['cloud'] = self.cloud_mapping[s]
                                         temp_payload['tenant'] = t['name']
                                         temp_payload['metric_type'] = 'serviceengine_metrics'
                                         temp_payload['metric_name'] = entry['header']['name']
@@ -1020,6 +1022,8 @@ class avi_metrics():
                                     temp1_payload = self.payload_template.copy()
                                     temp1_payload['timestamp']=int(time.time())
                                     temp1_payload['vs_name'] = vs_entry
+                                    temp1_payload['tenant'] = t['name']
+                                    temp1_payload['cloud'] = self.cloud_mapping[p['uuid']]
                                     temp1_payload['pool_name'] = pool_name
                                     temp1_payload['metric_type'] = 'virtualservice_pool_members'
                                     temp1_payload['metric_name'] = 'virtualservice_pool_members_up'
@@ -1030,6 +1034,8 @@ class avi_metrics():
                                     temp2_payload = self.payload_template.copy()
                                     temp2_payload['timestamp']=int(time.time())
                                     temp2_payload['vs_name'] = vs_entry
+                                    temp2_payload['tenant'] = t['name']
+                                    temp2_payload['cloud'] = self.cloud_mapping[p['uuid']]                                    
                                     temp2_payload['pool_name'] = pool_name
                                     temp2_payload['metric_type'] = 'virtualservice_pool_members'
                                     temp2_payload['metric_name'] = 'virtualservice_pool_members'
@@ -1476,74 +1482,96 @@ class avi_metrics():
 
     #-----------------------------------
     #----- GET Pool Member specific statistics
-    def pool_server_stats(self):
+    def pool_server_stats_threaded(self):
+        try:
+            temp_start_time = time.time()
+            proc = []
+            for t in self.tenants:
+                if t['name'] in self.pool_dict['tenants'] and self.pool_dict['tenants'][t['name']]['count'] > 0:
+                    p = Process(target = self.pool_server_stats, args = (t['name'],))
+                    p.start()
+                    proc.append(p)
+                elif 'admin' in self.pool_dict['tenants'] and self.pool_dict['tenants']['admin']['count'] > 0:
+                    p = Process(target = self.pool_server_stats, args = (t['name'],))
+                    p.start()
+                    proc.append(p)
+            for p in proc:
+                    p.join()
+            temp_total_time = str(time.time()-temp_start_time)
+            if args.debug == True:
+                print(str(datetime.now())+' '+self.avi_cluster_ip+': func pool_server_stats_threaded completed, executed in '+temp_total_time+' seconds')
+        except:
+            exception_text = traceback.format_exc()
+            print(str(datetime.now())+' '+self.avi_cluster_ip+': '+exception_text)
+
+
+
+
+
+    #-----------------------------------
+    #----- GET Pool Member specific statistics
+    def pool_server_stats(self,tenant):
         try:
             temp_start_time = time.time()
             endpoint_payload_list = []
             discovered_servers = []
-            try:
-                for t in self.tenants:
-                    payload = {
-                        "metric_requests": [
-                            {
-                                "step": 300,
-                                "limit": 1,
-                                "aggregate_entity": False,
-                                "entity_uuid": "*",
-                                "obj_id": "*",
-                                "pool_uuid": "*",
-                                "id": "collItemRequest:AllServers",
-                                "metric_id": self.pool_server_metric_list
-                            }
-                            ]}
-                    api_url = 'analytics/metrics/collection?pad_missing_data=false&dimension_limit=1000&include_name=true&include_refs=true'
-                    resp = self.avi_post(api_url,t['name'],payload)
-                    if 'series' in resp.json():
-                        if len(resp.json()['series']['collItemRequest:AllServers']) != 0:
-                            for p in resp.json()['series']['collItemRequest:AllServers']:
-                                if p not in discovered_servers:
-                                    discovered_servers.append(p)
-                                    server_object = p.split(',')[2]
-                                    for d in resp.json()['series']['collItemRequest:AllServers'][p]:
-                                        if 'data' in d:
-                                            pool_name = d['header']['pool_ref'].rsplit('#',1)[1]                                            
-                                            metric_name = d['header']['name']
-                                            temp_payload = self.payload_template.copy()
-                                            temp_payload['timestamp']=int(time.time())
-                                            temp_payload['pool_name'] = pool_name
-                                            temp_payload['tenant'] = t['name']
-                                            temp_payload['cloud'] = self.cloud_mapping[d['header']['pool_ref'].split('/pool/')[1].split('#')[0]]
-                                            temp_payload['pool_member'] = server_object
-                                            temp_payload['metric_type'] = 'pool_member_metrics'
-                                            temp_payload['metric_name'] = metric_name
-                                            temp_payload['metric_value'] = d['data'][0]['value']
-                                            if 'entity_ref' in d['header']:
-                                                vs_name = d['header']['entity_ref'].rsplit('#',1)[1]
-                                                temp_payload['vs_name'] = vs_name
-                                                temp_payload['name_space'] = 'avi||'+self.host_location+'||'+self.host_environment+'||'+self.avi_cluster_ip+'||virtualservice||%s||pool||%s||%s||%s' %(vs_name, pool_name, server_object,metric_name)
-                                                endpoint_payload_list.append(temp_payload)
-                                            else:
-                                                for x in self.pool_dict['tenants'][t['name']]['results']:
-                                                    if x['config']['name'] == pool_name:
-                                                        for v in x['virtualservices']:
-                                                            vs_name = self.vs_dict[v.split('/api/virtualservice/')[1]]
-                                                            temp_payload1 = temp_payload.copy()
-                                                            temp_payload1['vs_name'] = vs_name
-                                                            temp_payload1['name_space'] = 'avi||'+self.host_location+'||'+self.host_environment+'||'+self.avi_cluster_ip+'||virtualservice||%s||pool||%s||%s||%s' %(vs_name, pool_name, server_object,metric_name)
-                                                            endpoint_payload_list.append(temp_payload1)
-            except:
-                print(str(datetime.now())+' '+self.avi_cluster_ip+': func pool_server_metrics encountered an error for tenant '+t['name'])
-                exception_text = traceback.format_exc()
-                print(str(datetime.now())+' '+self.avi_cluster_ip+': '+exception_text)
+            payload = {
+                "metric_requests": [
+                    {
+                        "step": 300,
+                        "limit": 1,
+                        "aggregate_entity": False,
+                        "entity_uuid": "*",
+                        "obj_id": "*",
+                        "pool_uuid": "*",
+                        "id": "collItemRequest:AllServers",
+                        "metric_id": self.pool_server_metric_list
+                    }
+                    ]}
+            api_url = 'analytics/metrics/collection?pad_missing_data=false&dimension_limit=1000&include_name=true&include_refs=true'
+            resp = self.avi_post(api_url,tenant,payload)
+            if 'series' in resp.json():
+                if len(resp.json()['series']['collItemRequest:AllServers']) != 0:
+                    for p in resp.json()['series']['collItemRequest:AllServers']:
+                        if p not in discovered_servers:
+                            discovered_servers.append(p)
+                            server_object = p.split(',')[2]
+                            for d in resp.json()['series']['collItemRequest:AllServers'][p]:
+                                if 'data' in d:
+                                    pool_name = d['header']['pool_ref'].rsplit('#',1)[1]                                            
+                                    metric_name = d['header']['name']
+                                    temp_payload = self.payload_template.copy()
+                                    temp_payload['timestamp']=int(time.time())
+                                    temp_payload['pool_name'] = pool_name
+                                    temp_payload['tenant'] = tenant
+                                    temp_payload['cloud'] = self.cloud_mapping[d['header']['pool_ref'].split('/pool/')[1].split('#')[0]]
+                                    temp_payload['pool_member'] = server_object
+                                    temp_payload['metric_type'] = 'pool_member_metrics'
+                                    temp_payload['metric_name'] = metric_name
+                                    temp_payload['metric_value'] = d['data'][0]['value']
+                                    if 'entity_ref' in d['header']:
+                                        vs_name = d['header']['entity_ref'].rsplit('#',1)[1]
+                                        temp_payload['vs_name'] = vs_name
+                                        temp_payload['name_space'] = 'avi||'+self.host_location+'||'+self.host_environment+'||'+self.avi_cluster_ip+'||virtualservice||%s||pool||%s||%s||%s' %(vs_name, pool_name, server_object,metric_name)
+                                        endpoint_payload_list.append(temp_payload)
+                                    else:
+                                        for x in self.pool_dict['tenants'][tenant]['results']:
+                                            if x['config']['name'] == pool_name:
+                                                for v in x['virtualservices']:
+                                                    vs_name = self.vs_dict[v.split('/api/virtualservice/')[1]]
+                                                    temp_payload1 = temp_payload.copy()
+                                                    temp_payload1['vs_name'] = vs_name
+                                                    temp_payload1['name_space'] = 'avi||'+self.host_location+'||'+self.host_environment+'||'+self.avi_cluster_ip+'||virtualservice||%s||pool||%s||%s||%s' %(vs_name, pool_name, server_object,metric_name)
+                                                    endpoint_payload_list.append(temp_payload1)
             if len(endpoint_payload_list) > 0:
                 send_metriclist_to_endpoint(endpoint_list, endpoint_payload_list)
             temp_total_time = str(time.time()-temp_start_time)
             if args.debug == True:
-                print(str(datetime.now())+' '+self.avi_cluster_ip+': pool_server_metrics, executed in '+temp_total_time+' seconds')
+                print(str(datetime.now())+' '+self.avi_cluster_ip+': func pool_server_stats for tenant '+tenant+', executed in '+temp_total_time+' seconds')
         except:
-            print(str(datetime.now())+' '+self.avi_cluster_ip+': func pool_server_metrics encountered an error encountered an error')
-            exception_text = traceback.format_exc()
-            print(str(datetime.now())+' '+self.avi_cluster_ip+': '+exception_text)
+                print(str(datetime.now())+' '+self.avi_cluster_ip+': func pool_server_stats  encountered an error for tenant '+tenant)
+                exception_text = traceback.format_exc()
+                print(str(datetime.now())+' '+self.avi_cluster_ip+': '+exception_text)
 
 
 
@@ -1634,7 +1662,7 @@ class avi_metrics():
             test_functions.append(self.service_engine_vs_capacity)
             test_functions.append(self.license_expiration)
             test_functions.append(self.get_avi_version)
-            test_functions.append(self.pool_server_stats)
+            test_functions.append(self.pool_server_stats_threaded)
             test_functions.append(self.controller_cluster_metrics)
             test_functions.append(self.se_connected)
             test_functions.append(self.vs_primary_se)
