@@ -220,7 +220,28 @@ class avi_metrics():
             'dns_server.avg_complete_queries',
             'dns_server.avg_errored_queries',
             'dns_server.avg_tcp_queries',
-            'dns_server.avg_udp_queries']
+            'dns_server.avg_udp_queries',
+            'l4_server.avg_rx_pkts',
+            'l4_server.avg_tx_pkts',
+            'l4_server.avg_rx_bytes',
+            'l4_server.avg_tx_bytes',
+            'l4_server.avg_bandwidth',
+            'l7_server.avg_complete_responses',
+            'l4_server.avg_new_established_conns',
+            'l4_server.avg_pool_open_conns',
+            'l4_server.avg_pool_complete_conns',
+            'l4_server.avg_open_conns',
+            'l4_server.max_open_conns',
+            'l4_server.avg_errored_connections',
+            'l4_server.apdexc',
+            'l4_server.avg_total_rtt',
+            'l7_server.avg_resp_latency',
+            'l7_server.apdexr',
+            'l7_server.avg_application_response_time',
+            'l7_server.pct_response_errors',
+            'l7_server.avg_frustrated_responses',
+            'l7_server.avg_total_requests'            
+            ]
         #------        
         self.se_metric_list = [
             'se_if.avg_bandwidth',
@@ -526,26 +547,30 @@ class avi_metrics():
     def remove_version_specific_metrics(self):
         try:
         #----- Generate List of Available Metrics
-            available_metrics = []
+            available_metrics = {}
             resp = self.avi_request('analytics/metric_id',self.tenants[0]['name']).json()
             vs_metrics = []
             se_metrics = []
             pool_server_metrics = []
             controller_metrics = []
             for m in resp['results']:
-                available_metrics.append(m['name'])
+                available_metrics[m['name']]=m['entity_types']
             for vm in self.vs_metric_list:
                 if vm in available_metrics:
-                    vs_metrics.append(vm)
+                    if 'virtualservice' in available_metrics[vm]:
+                        vs_metrics.append(vm)
             for sm in self.se_metric_list:
                 if sm in available_metrics:
-                    se_metrics.append(sm)
-            for cm in self.controller_metric_list:
+                    if 'serviceengine' in available_metrics[sm]:
+                        se_metrics.append(sm)
+            for cm in self.controller_metric_list:                
                 if cm in available_metrics:
-                    controller_metrics.append(cm)
+                    if 'cluster' in available_metrics[cm]:
+                        controller_metrics.append(cm)
             for pm in self.pool_server_metric_list:
                 if pm in available_metrics:
-                    pool_server_metrics.append(pm)
+                    if 'pool' in available_metrics[pm]:
+                        pool_server_metrics.append(pm)
             vs_metric_list = ','.join(vs_metrics)          
             se_metric_list = ','.join(se_metrics)
             controller_metric_list = ','.join(controller_metrics)
