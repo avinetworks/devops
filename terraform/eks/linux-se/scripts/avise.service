@@ -1,0 +1,18 @@
+[Unit]
+Description=AviSE
+After=docker.service
+Requires=docker.service
+
+[Service]
+TimeoutStartSec=0
+Restart=always
+ExecStartPre=-/usr/bin/docker rm -f avise
+ExecStartPre=/usr/bin/docker run --name=avise -d -m ${se_mem_mb}m --cpus=${se_cores} -e NTHREADS=${se_cores} -e SEMEMMB=${se_mem_mb} -e CLOUD_UUID=${cloud_uuid} -e AVICOOKIE=DUMM4C00K13 -e SEGROUP_UUID=${segroup_uuid} -e DOCKERNETWORKMODE=HOST  -e DISKSZ=${se_disk_gb} -e CNTRL_SSH_PORT=22 -e SYSINT_PORT=8443 -e HTTP_PORT=80 -e HTTPS_PORT=443 -e SE_INBAND_MGMT=true  --net=host -v /mnt:/mnt -v /dev:/dev -v /etc/sysconfig/network-scripts:/etc/sysconfig/network-scripts -v /:/hostroot/ -v /etc/hostname:/etc/host_hostname -v /etc/localtime:/etc/localtime -v /var/run/docker.sock:/var/run/docker.sock  -v /opt/avi/se/data:/vol/  -e CONTROLLERIP=${avi_controller} -e CONTAINER_NAME=avise --privileged=true avinetworks/se:${se_docker_tag}
+ExecStart=/usr/bin/docker wait avise
+ExecStop=-/bin/bash -c "fstrim /proc/$(docker inspect --format='{{ .State.Pid }}' avise)/root"
+ExecStop=-/usr/bin/docker exec -t avise systemctl stop se_shutdown
+ExecStop=-/usr/bin/docker stop -t 60 avise
+ExecStopPost=-/usr/bin/docker rm -f avise
+
+[Install]
+WantedBy=multi-user.target
