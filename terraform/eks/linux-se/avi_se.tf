@@ -55,7 +55,7 @@ resource "aws_instance" "AviSE" {
   connection {
     type        = "ssh"
     user        = "ubuntu"
-    private_key = "${file("demo_oregon_key.pem")}"
+    private_key = "${file("${var.ssh_key_name}.pem")}"
   } 
 
   provisioner "file" {
