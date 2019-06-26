@@ -39,7 +39,7 @@ resource "aws_instance" "AviSE" {
   count           = "${var.se_count}"
   ami             = "${data.aws_ami.ubuntu.id}"
   instance_type   = "${var.se_instance_type}"
-  subnet_id       = "${var.se_subnet}"
+  subnet_id       = "${element(var.se_subnet, count.index)}"
   key_name        = "${var.ssh_key_name}"
   security_groups = "${var.se_security_groups}"
   associate_public_ip_address = "${var.ec2_public_ip}"

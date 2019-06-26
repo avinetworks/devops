@@ -40,10 +40,10 @@ variable "se_count" {
   default = "1"
 }
 
-# Subnet ID where the SE must be connected
+# Subnet IDs where the SE must be connected
 variable "se_subnet" {
-  type    = "string"
-  default = "subnet-01cd5963745b6775d"
+  type    = "list"
+  default = ["subnet-050fd3525a1e1a06f", "subnet-01cd5963745b6775d", "subnet-0ba0cf2692dd8dbba"]
 }
 
 # Instance type of the ec2 instance
