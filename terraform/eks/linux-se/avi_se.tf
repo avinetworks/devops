@@ -81,6 +81,7 @@ resource "aws_instance" "AviSE" {
       "sudo mv /home/ubuntu/avise.service /etc/systemd/system/",
       "sudo systemctl daemon-reload",
       "sudo systemctl start avise.service",
+      "sudo systemctl enable avise.service",
       "sudo rm -rf /home/ubuntu/*"
     ]
   }
