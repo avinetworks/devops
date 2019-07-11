@@ -1,0 +1,38 @@
+title: "AVI Service Engine Project Role"
+description: "Access to resources required for operations on Service Engines and Virtual Services"
+stage: "ALPHA"
+includedPermissions:
+- compute.addresses.create
+- compute.addresses.delete
+- compute.addresses.get
+- compute.addresses.list
+- compute.addresses.use
+- compute.disks.create
+- compute.forwardingRules.create
+- compute.forwardingRules.delete
+- compute.forwardingRules.list
+- compute.globalOperations.get
+- compute.images.create
+- compute.images.delete
+- compute.images.list
+- compute.images.useReadOnly
+- compute.instances.create
+- compute.instances.delete
+- compute.instances.get
+- compute.instances.list
+- compute.instances.setLabels
+- compute.instances.setMetadata
+- compute.instances.setTags
+- compute.instances.use
+- compute.regionOperations.get
+- compute.regions.get
+- compute.regions.list
+- compute.targetPools.addInstance
+- compute.targetPools.create
+- compute.targetPools.delete
+- compute.targetPools.get
+- compute.targetPools.list
+- compute.targetPools.removeInstance
+- compute.targetPools.use
+- compute.zoneOperations.get
+- compute.zones.list

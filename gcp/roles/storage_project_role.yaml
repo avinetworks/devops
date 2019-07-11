@@ -1,0 +1,9 @@
+title: "AVI Storage Project Role"
+description: "Access to resources required for operations on GCS Buckets and Objects"
+stage: "ALPHA"
+includedPermissions:
+- storage.buckets.create
+- storage.buckets.delete
+- storage.objects.create
+- storage.objects.delete
+- storage.objects.list
