@@ -1,0 +1,7 @@
+title: "AVI Cluster VIP Role"
+description: "Access to resources required for configuring cluster VIP"
+stage: "ALPHA"
+includedPermissions:
+- compute.instances.get
+- compute.instances.list
+- compute.instances.updateNetworkInterface
