@@ -1,0 +1,14 @@
+title: "AVI Network Project Role"
+description: "Access to resources required for operations in Network Project"
+stage: "ALPHA"
+includedPermissions:
+- compute.networks.get
+- compute.networks.list
+- compute.networks.updatePolicy
+- compute.regions.get
+- compute.routes.create
+- compute.routes.delete
+- compute.routes.list
+- compute.subnetworks.get
+- compute.subnetworks.list
+- compute.subnetworks.use
