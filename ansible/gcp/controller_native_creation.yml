@@ -1,0 +1,100 @@
+- name: Creating Controller
+  hosts: localhost
+  gather_facts: no
+  vars:
+    ###########################################
+    ####-- DEFINE THE FOLLOWING VARIABLES--####
+    ###########################################
+    gcp_project: # GCP Project
+    gcp_cred_kind: serviceaccount # There are other options, please see "auth_kind" at https://docs.ansible.com/ansible/latest/modules/gcp_compute_instance_module.html
+    gcp_cred_file: # Credential File Path
+    # Disk size for VM
+    disk_size: 50
+    # Machine type for VM
+    machine_type: custom-8-24576
+    # Name of the controllers, will determine how many controllers to create, give names of either 1 or 3 controllers
+    controller_names:
+      - controller-name-0
+      - controller-name-1
+      - controller-name-2
+    # Name of the firewall rule
+    firewall_rules_name: firewall-rule-name
+    # Should be of form https://www.googleapis.com/compute/alpha/projects/project-name/global/image/.....
+    # Can be obtained by using REST API
+    # Link to custom source image
+    source_image: https://www.googleapis.com/compute/alpha/projects/...
+    # Should be of form https://www.googleapis.com/compute/alpha/projects/project-name/global/network/.....
+    # Link to the network
+    network_self_link: https://www.googleapis.com/compute/alpha/projects/...
+    # Should be of form https://www.googleapis.com/compute/alpha/projects/project-name/regions/.....
+    # Link to the subnetwork
+    subnetwork_self_link: https://www.googleapis.com/compute/alpha/projects/...
+    # Should be of form global/network/...
+    # Network for firewall creation
+    firewall_network_self_link: global/networks/...
+    # Zone of the VM
+    zone:
+
+  tasks:
+    - name: Creating VM(s)
+      gcp_compute_instance:
+        # Read more about this here: https://docs.ansible.com/ansible/latest/modules/gcp_compute_instance_module.html
+        auth_kind: "{{ gcp_cred_kind }}"
+        service_account_file: "{{ gcp_cred_file }}"
+        project: "{{ gcp_project }}"
+        name: "{{ item }}"
+        disks:
+          - boot: yes
+            initialize_params:
+              disk_size_gb: "{{ disk_size }}" # minimum 50 gb
+              disk_type: pd-ssd
+              source_image: "{{  source_image }}"
+        network_interfaces:
+          - network:
+              selfLink: "{{ network_self_link }}"
+            subnetwork:
+              selfLink: "{{  subnetwork_self_link }}"
+            # network_ip: xxx.xxx.xxx.xxx # Can mention network ip, read: https://docs.ansible.com/ansible/latest/modules/gcp_compute_instance_module.html
+        machine_type: "{{ machine_type }}" # minimum demands custom-8-24576
+        # service_accounts: # A list of service accounts, with their specified scopes, authorized for this instance. Read more about it here: https://docs.ansible.com/ansible/latest/modules/gcp_compute_instance_module.html
+        #   - email: xxx
+        #     scopes:
+        #       - compute-rw
+        #       - storage-rw
+
+        tags:
+          items:
+            - "avi-controller-firewall-rules" # Thus you may create this firewall rule as done below.
+        zone: "{{ zone }}"
+        state: present
+      with_items: "{{ controller_names }}"
+
+    - name: Creating our firewall
+      gcp_compute_firewall:
+        auth_kind: "{{ gcp_cred_kind }}"
+        service_account_file: "{{ gcp_cred_file }}"
+        project: "{{ gcp_project }}"
+        name: "{{ firewall_rules_name }}"
+        description: Firewall Rules for our Avi Controller
+        network:
+          selfLink: "{{ firewall_network_self_link }}"
+        priority: 1000
+        target_tags:
+          - avi-controller-firewall-rules
+        direction: INGRESS
+        source_ranges:
+          - 0.0.0.0/0
+
+        allowed:
+          - ip_protocol: tcp
+            ports:
+              - "0-65534"
+              - "80"
+              - "443"
+              - "73"
+              - "74"
+              - "75"
+              - "63"
+              - "97"
+          - ip_protocol: udp
+        state: present

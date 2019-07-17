@@ -1,0 +1,50 @@
+- name: Cluster Creation
+  hosts: localhost
+  gather_facts: no
+  vars:
+    ###########################################
+    ####-- DEFINE THE FOLLOWING VARIABLES--####
+    ###########################################
+    # API Version
+    api_version: 18.2.5
+    # AVI Username
+    username:
+    # AVI Password
+    password:
+    # Controller 0 IP
+    controller_0_ip: xx.xxx.xx.xx
+    # Controller 1 IP
+    controller_1_ip: xx.xxx.xx.xx
+    # Controller 2 IP
+    controller_2_ip: xx.xxx.xx.xx
+    # Cluster Name
+    cluster_name:
+    # Controller 0 Name
+    controller_0_name:
+    # Controller 0 Name
+    controller_1_name:
+    # Controller 0 Name
+    controller_2_name:
+
+  tasks:
+    - name: Creating Cluster
+      avi_cluster:
+        controller: "{{ controller_0_ip }}"
+        username: "{{ username }}"
+        password: "{{ password }}"
+        state: present
+        name: "{{ cluster_name }}"
+        api_version: "{{ api_version }}"
+        nodes:
+          - ip:
+              type: "V4"
+              addr: "{{ controller_0_ip }}"
+            name: "{{ controller_0_name }}"
+          - ip:
+              type: "V4"
+              addr: "{{ controller_1_ip }}"
+            name: "{{ controller_1_name }}"
+          - ip:
+              type: "V4"
+              addr: "{{ controller_2_ip }}"
+            name: "{{ controller_2_name }}"
