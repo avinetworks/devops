@@ -1,6 +1,6 @@
 ---
 # tasks to add a DNS-VS to System Configuration
-- name: SaaS Actions | Render DNS VS UUID from Name
+- name: Render DNS VS UUID from Name
   avi_api_session:
     controller: "{{ controller_ip }}"
     username: "{{ username }}"
@@ -11,12 +11,12 @@
     path: virtualservice?name.in={{ dns_vs_list }}
   register: dns_vs_uuid_list
 
-- name: SaaS Actions | Build DNS-VS List
+- name: Build DNS-VS List
   set_fact:
     dns_vs_uuids: "{{ dns_vs_uuids|default([]) + [ item.uuid ] }}"
   with_items: "{{ dns_vs_uuid_list.obj.results }}"
 
-- name: SaaS Actions | Add DNS-VS to System Configuration
+- name: Add DNS-VS to System Configuration
   avi_systemconfiguration:
     controller: "{{ controller_ip }}"
     username: "{{ username }}"
