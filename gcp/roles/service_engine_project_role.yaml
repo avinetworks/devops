@@ -24,6 +24,7 @@ includedPermissions:
 - compute.instances.setMetadata
 - compute.instances.setTags
 - compute.instances.use
+- compute.machineTypes.get
 - compute.regionOperations.get
 - compute.regions.get
 - compute.regions.list
