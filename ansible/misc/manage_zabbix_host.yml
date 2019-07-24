@@ -1,0 +1,33 @@
+---
+- block:
+    - name: Ensure deployment is {{ deployment_state }} in Zabbix
+      zabbix_host:
+        login_user: "{{ zabbix_user }}"
+        login_password: "{{ zabbix_password }}"
+        server_url: "{{ zabbix_server }}"
+        host_name: "{{ deployment_domain }}"
+        host_groups:
+          - "Avi/Controllers"
+        link_templates:
+          - "Template Avi Controller"
+        interfaces:
+          - type: 1
+            main: 1
+            useip: 1
+            ip: 127.0.0.1
+            dns: ""
+            port: 10050
+        status: "{{ host_status|default(omit) }}"
+        state: "{{ deployment_state }}"
+      register: zabbix_host
+    - name: Add K8s Namespace macro to Zabbix
+      zabbix_hostmacro:
+        login_user: "{{ zabbix_user }}"
+        login_password: "{{ zabbix_password }}"
+        server_url: "{{ zabbix_server }}"
+        host_name: "{{ deployment_domain }}"
+        macro_name: "K8S_NAMESPACE"
+        macro_value: "{{ k8s_namespace }}"
+        state: present
+      when: deployment_state == "present"
+  when: deployment_domain is defined

@@ -1,0 +1,32 @@
+---
+- name: Monitoring | Create monitoring role
+  avi_role:
+    avi_credentials: "{{ avi_credentials }}"
+    api_version: 17.2.13
+    name: Monitor-Operator
+    privileges:
+      - type: READ_ACCESS
+        resource: PERMISSION_VIRTUALSERVICE
+      - type: READ_ACCESS
+        resource: PERMISSION_CLOUD
+      - type: READ_ACCESS
+        resource: PERMISSION_SERVICEENGINE
+      - type: READ_ACCESS
+        resource: PERMISSION_SERVICEENGINEGROUP
+      - type: READ_ACCESS
+        resource: PERMISSION_TENANT
+
+- name: Monitoring | Create the monitoring user on the controller
+  avi_user:
+    avi_credentials: "{{ avi_credentials }}"
+    api_version: 17.2.13
+    name: monitor
+    obj_username: monitor
+    obj_password: "{{ monitor_user_password }}"
+    is_active: true
+    access:
+      - all_tenants: true
+        tenant_ref: '/api/tenant?name=admin'
+        role_ref: '/api/role?name=Monitor-Operator'
+    default_tenant_ref: '/api/tenant?name=admin'
+    user_profile_ref: /api/useraccountprofile?name=No-Lockout-User-Account-Profile

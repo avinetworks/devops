@@ -1,0 +1,40 @@
+---
+- name: Remove deployment | Remove Active Deployment
+  include_tasks: remove_deployment/verification.yml
+  vars:
+    controller: "{{ item }}"
+    username: admin
+    avi_credentials:
+      password: "{{ password }}"
+  loop: "{{ controllers }}"
+  when: deployment_status == "active"
+
+- name: Remove deployment | Remove deployment from Zabbix monitoring
+  include_tasks: manage_zabbix_host.yml
+
+- name: Remove deployment | Remove domain names
+  include_tasks: manage_r53_dns_record.yml
+  vars:
+    dns_record: "{{ item }}"
+    dns_addresses: "{{ controllers }}"
+    deployment_state: absent
+  loop:
+    - "www.{{ deployment_domain }}"
+    - "{{ deployment_domain }}"
+  when: deployment_domain is defined
+
+- name: Remove deployment | Delete network address
+  gcp_compute_address:
+    name: "{{ item }}"
+    region: "{{ gcloud_region }}"
+    project: "{{ gcloud_project }}"
+    auth_kind: serviceaccount
+    state: absent
+  loop: "{{ address_names }}"
+
+- name: Remove deployment | Delete K8s namespace
+  k8s:
+    name: "{{ k8s_namespace }}"
+    api_version: v1
+    kind: Namespace
+    state: absent

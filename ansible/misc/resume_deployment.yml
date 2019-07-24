@@ -1,0 +1,8 @@
+---
+- name: Common | Wait for cluster
+  include_tasks: "common_tasks/wait_cluster_runtime.yml"
+
+- name: Resume Deployment | Enable Deployment on Zabbix
+  include_tasks: manage_zabbix_host.yml
+  vars:
+    host_status: enabled

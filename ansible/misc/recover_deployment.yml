@@ -1,0 +1,13 @@
+---
+- name: Recover deployment | Recover domain names
+  include_tasks: manage_r53_dns_record.yml
+  vars:
+    dns_record: "{{ item }}"
+    dns_addresses: "{{ controllers }}"
+  loop:
+    - "www.{{ deployment_domain }}"
+    - "{{ deployment_domain }}"
+  when: deployment_domain is defined
+
+- name: Recover deployment | Add deployment to Zabbix monitoring
+  include_tasks: manage_zabbix_host.yml

@@ -1,0 +1,33 @@
+---
+- name: find the region compute disks
+  gcp_compute_region_disk_facts:
+    # current bug in ansible code which works for only regions
+    # Git Bug - https://github.com/ansible/ansible/issues/52197
+    auth_kind: serviceaccount
+    region: "{{ region_name }}"
+    project: "{{ project_name }}"
+    service_account_file: "{{ credentials_file }}"
+    scopes:
+     - 'https://www.googleapis.com/auth/compute'
+  register: disk_list_obj
+
+- name: find unused gcp disks list
+  set_fact:
+   unused_disk_obj: "{{ disk_list_obj['items'] }}"
+
+- name: Delete the unused disks
+  gcp_compute_region_disk:
+   auth_kind: serviceaccount
+   name: "{{ item.name }}"
+   region: "{{ region_name }}"
+   project: "{{ project_name }}"
+   replica_zones: "{{ item.replicaZones }}"
+   service_account_file: "{{ credentials_file }}"
+   scopes:
+    - 'https://www.googleapis.com/auth/compute'
+   state: absent
+  loop: "{{ unused_disk_obj }}"
+  when:
+   - item.lastDetachTimestamp is defined
+   - item.replicaZones is defined
+   - item.lastDetachTimestamp[0:19]|to_datetime('%Y-%m-%dT%H:%M:%S') > item.lastAttachTimestamp[0:19]|to_datetime('%Y-%m-%dT%H:%M:%S')

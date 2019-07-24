@@ -1,0 +1,49 @@
+---
+- name: AlertConfig | Configure System-Controller-Alert
+  avi_alertconfig:
+    avi_credentials: "{{ avi_credentials }}"
+    api_version: 17.2.13
+    category: REALTIME
+    expiry_time: 86400
+    enabled: true
+    tenant_ref: /api/tenant?name=admin
+    summary: System-Controller-Alert System Alert Triggered
+    rolling_window: 300
+    source: EVENT_LOGS
+    alert_rule:
+      operator: OPERATOR_OR
+      sys_event_rule:
+        - event_id: CONTROLLER_NODE_LEFT
+          not_cond: false
+        - event_id: CONTROLLER_WARM_REBOOT
+          not_cond: false
+        - event_id: CLUSTER_CONFIG_FAILED
+          not_cond: false
+        - event_id: SYSTEM_UPGRADE_ABORTED
+          not_cond: false
+        - event_id: SYSTEM_ROLLBACK_ABORTED
+          not_cond: false
+        - event_id: CONTROLLER_NODE_DB_REPLICATION_FAILED
+          not_cond: false
+        - event_id: CONTROLLER_PROCESS_STOPPED
+          not_cond: false
+        - event_id: CONTROLLER_MEMORY_BALANCER_DISABLED
+          not_cond: false
+        - event_id: LICENSE_LIMIT_SERVERS
+          not_cond: false
+        - event_id: LICENSE_LIMIT_SE_VCPUS
+          not_cond: false
+        - event_id: LICENSE_LIMIT_THROUGHPUT
+          not_cond: false
+        - event_id: LICENSE_LIMIT_VS
+          not_cond: false
+        - event_id: LICENSE_LIMIT_HOSTS
+          not_cond: false
+        - event_id: LICENSE_LIMIT_SE_SOCKETS
+          not_cond: false
+        - event_id: BURST_RESOURCE_EXPIRY_ALERT
+          not_cond: false
+    threshold: 1
+    throttle: 0
+    action_group_ref: /api/actiongroupconfig?name=System-Alert-Level-High
+    name: System-Controller-Alert

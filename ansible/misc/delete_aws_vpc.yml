@@ -1,0 +1,18 @@
+---
+- name: Check if the stack is already exists
+  cloudformation_facts:
+     stack_name: "{{ stack_name }}"
+     aws_access_key: "{{ aws_access_key }}"
+     aws_secret_key: "{{ aws_secret_key }}"
+     region: "{{ availability_zone[:-1] }}"
+  register: cf_rtn_obj
+
+- name: Delete the Stack
+  cloudformation:
+      stack_name: "{{ stack_name }}"
+      aws_access_key: "{{ aws_access_key }}"
+      aws_secret_key: "{{ aws_secret_key }}"
+      state: "absent"
+      region: "{{ availability_zone[:-1] }}"
+  when:
+     - cf_rtn_obj.ansible_facts.cloudformation[stack_name] is defined

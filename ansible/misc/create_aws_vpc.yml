@@ -1,0 +1,33 @@
+---
+- name: Gather the info to check if the VPC stack already exists or not
+  include_tasks: create_aws_vpc/check_aws_vpc.yml
+  vars:
+     stck_name: "{{ stack_name }}"
+     access_key: "{{ aws_access_key }}"
+     secret_key: "{{ aws_secret_key }}"
+     avail_zone: "{{ availability_zone }}"
+
+- name: Copy the template locally on the jenkins system
+  copy:
+    src: aws_cloud.yml
+    dest: /tmp/aws_cloud.yml
+
+- name: Create the Stack
+  cloudformation:
+      stack_name: "{{ stack_name }}"
+      aws_access_key: "{{ aws_access_key }}"
+      aws_secret_key: "{{ aws_secret_key }}"
+      state: "present"
+      region: "{{ availability_zone[:-1] }}"
+      disable_rollback: false
+      template: "/tmp/aws_cloud.yml"
+      template_parameters:
+        EnvironmentName: "{{ environment_name }}"
+        AvailabilityZone: "{{ availability_zone }}"
+        VpcCIDR: "{{ vpccidr }}"
+        MgmtSubnetCIDR: "{{ mgmtsubnetcidr }}"
+        DataSubnetCIDR: "{{ datasubnetcidr }}"
+        InstanceType: "t2.micro"
+      create_timeout: "{{ cf_creation_time_out }}"
+      tags:
+        Stack: "cloudformation"

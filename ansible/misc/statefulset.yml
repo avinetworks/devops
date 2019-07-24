@@ -1,0 +1,10 @@
+---
+- name: Create controller external service
+  k8s:
+    state: present
+    definition: "{{ lookup('template', 'k8s/controller-service-external.yml.j2') }}"
+
+- name: Create controller statefulset
+  k8s:
+    state: present
+    definition: "{{ lookup('template', 'k8s/controller-stateful-set.yml.j2') }}"
