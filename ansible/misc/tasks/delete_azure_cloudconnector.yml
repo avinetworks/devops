@@ -1,9 +1,7 @@
 ---
 - name: Make sure Azure CloudConnector information exists before deletion
   avi_api_session:
-    controller: "{{ controller }}"
-    username: "{{ username }}"
-    password: "{{ password }}"
+    avi_credentials: "{{ avi_credentials }}"
     tenant: "{{ tenant_name }}"
     http_method: get
     path: cloudconnectoruser
@@ -13,9 +11,7 @@
 
 - name: Delete the Azure CloudConnector
   avi_cloudconnectoruser:
-    controller: "{{ controller }}"
-    username: "{{ username }}"
-    password: "{{ password }}"
+    avi_credentials: "{{ avi_credentials }}"
     tenant: "{{ tenant_name }}"
     api_version: 17.2.5
     name: "azure-credentials"

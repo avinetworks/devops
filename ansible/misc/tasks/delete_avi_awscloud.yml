@@ -1,9 +1,7 @@
 ---
 - name: Get the details of the Avi Cloud Object
   avi_api_session:
-    controller: "{{ controller }}"
-    username: "{{ username }}"
-    password: "{{ password }}"
+    avi_credentials: "{{ avi_credentials }}"
     http_method: get
     tenant: "{{ tenant_name }}"
     path: "{{ avi_obj }}"
@@ -21,9 +19,7 @@
 
     - name: Re-estanlish the session to get the cloud object
       avi_api_session:
-        controller: "{{ controller }}"
-        username: "{{ username }}"
-        password: "{{ password }}"
+        avi_credentials: "{{ avi_credentials }}"
         http_method: get
         tenant: "{{ tenant_name }}"
         path: "{{ avi_obj }}"
@@ -46,9 +42,7 @@
 
 - name: Delete the Avi Cloud Object
   avi_api_session:
-    controller: "{{ controller }}"
-    username: "{{ username }}"
-    password: "{{ password }}"
+    avi_credentials: "{{ avi_credentials }}"
     api_version: 17.2.15
     http_method: delete
     tenant: "{{ tenant_name }}"

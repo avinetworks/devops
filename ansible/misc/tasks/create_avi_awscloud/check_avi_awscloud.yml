@@ -1,10 +1,8 @@
 ---
 - name: Check if the specified Cloud Name exists or not
   avi_api_session:
-    controller: "{{ contrler }}"
+    avi_credentials: "{{ avi_credentials }}"
     tenant: "{{ avi_tenant }}"
-    username: "{{ usrname }}"
-    password: "{{ passwrd }}"
     http_method: get
     path: cloud
     params:
@@ -15,10 +13,8 @@
 
 - name: Check if the VS exists or not
   avi_api_session:
-    controller: "{{ contrler }}"
+    avi_credentials: "{{ avi_credentials }}"
     tenant: "{{ avi_tenant }}"
-    username: "{{ usrname }}"
-    password: "{{ passwrd }}"
     http_method: get
     path: virtualservice
     params:
@@ -29,10 +25,8 @@
 
 - name: Check if the Pool Exists or not
   avi_api_session:
-    controller: "{{ contrler }}"
+    avi_credentials: "{{ avi_credentials }}"
     tenant: "{{ avi_tenant }}"
-    username: "{{ usrname }}"
-    password: "{{ passwrd }}"
     http_method: get
     path: pool
     params:
@@ -43,9 +37,7 @@
 
 - name: Check if the Service Engines are exists or not
   avi_api_session:
-    controller: "{{ contrler }}"
-    username: "{{ usrname }}"
-    password: "{{ passwrd }}"
+    avi_credentials: "{{ avi_credentials }}"
     http_method: get
     tenant: "{{ avi_tenant }}"
     path: serviceengine

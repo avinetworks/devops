@@ -9,9 +9,7 @@
 
 - name:  Get the Cloud Connector info for getting ssh public key
   avi_api_session:
-    controller: "{{ controller }}"
-    username: "{{ username }}"
-    password: "{{ password }}"
+    avi_credentials: "{{ avi_credentials }}"
     tenant: "{{ tenant_name }}"
     http_method: get
     path: cloudconnectoruser

@@ -1,9 +1,7 @@
 ---
 - name: Check if the user is already existing or not
   avi_api_session:
-    controller: "{{ controller }}"
-    username: "{{ username }}"
-    password: "{{ password }}"
+    avi_credentials: "{{ avi_credentials }}"
     tenant: "{{ tenant_name }}"
     http_method: get
     path: cloudconnectoruser
@@ -14,9 +12,7 @@
 
 - name: Create the Azure Cloud Connector object
   avi_cloudconnectoruser:
-    controller: "{{ controller }}"
-    username: "{{ username }}"
-    password: "{{ password }}"
+    avi_credentials: "{{ avi_credentials }}"
     tenant: "{{ tenant_name }}"
     api_version: 17.2.5
     azure_userpass:

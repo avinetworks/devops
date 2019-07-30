@@ -2,12 +2,13 @@
 - name: To check if the Avi Cloud objects already present or not
   include_tasks: create_avi_awscloud/check_avi_awscloud.yml
   vars:
-     contrler: "{{ controller }}"
-     usrname: "{{ username }}"
-     passwrd: "{{ password }}"
-     avi_tenant: "{{ tenant_name }}"
-     environ_name: "{{ environment_name }}"
-     cloud_name: "{{ cloud }}"
+    avi_credentials:
+      controller: "{{ controller }}"
+      username: "{{ username }}"
+      password: "{{ password }}"
+    avi_tenant: "{{ tenant_name }}"
+    environ_name: "{{ environment_name }}"
+    cloud_name: "{{ cloud }}"
 
 - name: Gather the AWS CF Stack facts
   cloudformation_facts:
@@ -27,9 +28,7 @@
     vtype: CLOUD_AWS
     license_tier: "ENTERPRISE_18"
     enable_vip_static_routes: false
-    controller: "{{ controller }}"
-    username: "{{ username }}"
-    password: "{{ password }}"
+    avi_credentials: "{{ avi_credentials }}"
     tenant: "{{ tenant_name }}"
     tenant_ref: "/api/tenant?name={{ tenant_name }}"
     dhcp_enabled: true
@@ -70,10 +69,8 @@
 
 - name: Wait for the Creation of the AWS Cloud and then create VS/SE
   avi_api_session:
-    controller: "{{ controller }}"
+    avi_credentials: "{{ avi_credentials }}"
     tenant: "{{ tenant_name }}"
-    username: "{{ username }}"
-    password: "{{ password }}"
     http_method: get
     path: "cloud/{{ aws_cloud_obj.obj.uuid }}/status"
     params:
@@ -90,10 +87,8 @@
 
 - name: Create the Required pool
   avi_pool:
-    controller: "{{ controller }}"
+    avi_credentials: "{{ avi_credentials }}"
     tenant: "{{ tenant_name }}"
-    username: "{{ username }}"
-    password: "{{ password }}"
     api_version: 17.2.15
     lb_algorithm: LB_ALGORITHM_LEAST_CONNECTIONS
     tenant_ref: "/api/tenant?name={{ tenant_name }}"
@@ -132,10 +127,8 @@
    enable_autogw: true
    east_west_placement: false
    name: "{{ environment_name }}-VS"
-   controller: "{{ controller }}"
+   avi_credentials: "{{ avi_credentials }}"
    tenant: "{{ tenant_name }}"
-   username: "{{ username }}"
-   password: "{{ password }}"
    type: VS_TYPE_NORMAL
    api_version: 17.2.15
    active_standby_se_tag: "ACTIVE_STANDBY_SE_1"
