@@ -1,10 +1,7 @@
 ---
 - name: Upload Avi License to server
   avi_api_session:
-    controller: "{{ controller_ip }}"
-    username: "{{ username }}"
-    avi_credentials:
-      password: "{{ password }}"
+    avi_credentials: "{{ avi_credentials }}"
     api_version: 17.2.13
     http_method: put
     path: license

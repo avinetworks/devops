@@ -3,17 +3,17 @@
 - hosts: localhost
   connection: local
   vars:
-    controller:
-    username: admin
-    password: AviNetworks123!
+    avi_credentials:
+      controller: "{{ avi_controller }}"
+      username: "{{ avi_username }}"
+      password: "{{ avi_password }}"
     tenant: admin
   roles:
     - role: avinetworks.avisdk
   tasks:
-    - avi_pool:
-        controller: "{{ controller }}"
-        username: "{{ username }}"
-        password: "{{ password }}"
+    - name: create pool
+      avi_pool:
+        avi_credentials: "{{ avi_credentials }}"
         tenant: "{{ tenant }}"
         name: testpool1
         state: present
@@ -26,10 +26,9 @@
           - ip:
               addr: 10.90.130.7
               type: V4
-    - avi_pool:
-        controller: "{{ controller }}"
-        username: "{{ username }}"
-        password: "{{ password }}"
+    - name: create testpool2
+      avi_pool:
+        avi_credentials: "{{ avi_credentials }}"
         tenant: "{{ tenant }}"
         name: testpool2
         state: present
@@ -42,10 +41,9 @@
           - ip:
               addr: 10.90.132.7
               type: V4
-    - avi_httppolicyset:
-        controller: "{{ controller }}"
-        username: "{{ username }}"
-        password: "{{ password }}"
+    - name: create test http policy set
+      avi_httppolicyset:
+        avi_credentials: "{{ avi_credentials }}"
         tenant: "{{ tenant }}"
         name: test-HTTP-Policy-Set
         tenant_ref: admin
@@ -78,10 +76,9 @@
                 status_code: HTTP_LOCAL_RESPONSE_STATUS_CODE_200
                 pool_ref: '/api/pool?name=testpool2'
         is_internal_policy: false
-    - avi_virtualservice:
-        controller: "{{ controller }}"
-        username: "{{ username }}"
-        password: "{{ password }}"
+    - name: create virtual service
+      avi_virtualservice:
+        avi_credentials: "{{ avi_credentials }}"
         tenant: "{{ tenant }}"
         name: newtestvs
         state: present

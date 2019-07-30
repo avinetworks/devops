@@ -1,0 +1,14 @@
+---
+- name: Disable TCP Sack on remote host
+  sysctl:
+    name: net.ipv4.tcp_sack
+    value: 0
+    state: present
+  become: yes
+  delegate_to: "{{ avi_credentials.controller }}"
+  vars:
+    ansible_hostname: "{{ avi_credentials.controller }}"
+    ansible_ssh_user: "{{ avi_credentials.username }}"
+    ansible_password: "{{ avi_credentials.password }}"
+    ansible_sudo_pass: "{{ avi_credentials.password }}"
+    ansible_ssh_extra_args: "-o StrictHostKeyChecking=no"

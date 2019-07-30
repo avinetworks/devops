@@ -1,0 +1,30 @@
+- name: Remove deployment | Check if deployment is reachable
+  uri:
+    url: https://{{ controller }}/api/initial-data
+    method: GET
+    return_content: yes
+    validate_certs: no
+  register: initial_data
+  failed_when: false
+- name: Remove deployment | Verify no service engines exist
+  avi_api_session:
+    avi_credentials: "{{ avi_credentials }}"
+    api_version: 17.2.13
+    http_method: get
+    tenant: "*"
+    path: serviceengine
+  register: serviceengine
+  failed_when: serviceengine.obj.count > 0
+  when:
+    - initial_data.status == 200
+- name: Remove deployment | Verify no virtual services exist
+  avi_api_session:
+    avi_credentials: "{{ avi_credentials }}"
+    api_version: 17.2.13
+    http_method: get
+    tenant: "*"
+    path: virtualservice
+  register: virtualservice
+  failed_when: virtualservice.obj.count > 0
+  when:
+    - initial_data.status == 200

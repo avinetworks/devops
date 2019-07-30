@@ -1,0 +1,15 @@
+---
+- name: Wait for the controller to finish making modifications
+  uri:
+    url: https://{{ controller_ip }}/api/cluster/runtime
+    return_content: yes
+    timeout: 300
+    validate_certs: no
+  register: deployment_cluster_runtime
+  until:
+    - deployment_cluster_runtime.status == 200
+    - deployment_cluster_runtime.json is defined
+    - deployment_cluster_runtime.json.cluster_state.state == "CLUSTER_UP_NO_HA" or
+      deployment_cluster_runtime.json.cluster_state.state == "CLUSTER_UP_HA_ACTIVE"
+  retries: 120
+  delay: 10

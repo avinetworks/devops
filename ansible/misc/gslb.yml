@@ -4,6 +4,10 @@
 - connection: local
   hosts: localhost
   vars:
+    avi_credentials:
+      controller: "{{ controller }}"
+      username: "{{ username }}"
+      password: "{{ password }}"
     group_obj: ''
     member_obj: ''
     member_ip: 10.30.10.10
@@ -14,9 +18,7 @@
   tasks:
   - name: create GS
     avi_gslbservice:
-      controller: '{{ controller }}'
-      password: '{{ password }}'
-      username: '{{ username }}'
+      avi_credentials: "{{ avi_credentials }}"
       name: gs-3
       domain_names:
       - cloud5.avi.com
@@ -58,12 +60,10 @@
       num_dns_ip: 2
     register: gs
     when:
-      - create_gs|bool == true
+      - create_gs|bool
   - name: Get GS
     avi_gslbservice:
-      controller: '{{ controller }}'
-      password: '{{ password }}'
-      username: '{{ username }}'
+      avi_credentials: "{{ avi_credentials }}"
       name: gs-3
     register: gs
 
@@ -72,9 +72,7 @@
 
   - name: Try Patch to add a member
     avi_api_session:
-      controller: '{{ controller }}'
-      password: '{{ password }}'
-      username: '{{ username }}'
+      avi_credentials: "{{ avi_credentials }}"
       http_method: patch
       path: "gslbservice/{{ gs.obj.uuid }}"
       data:
@@ -97,7 +95,7 @@
     register: gs
   - name: find existing GSLB group
     set_fact:
-      group_obj: "{{item}}"
+      group_obj: "{{ item }}"
     with_items:
       - "{{ gs.obj.groups }}"
     when:
@@ -116,7 +114,7 @@
     set_fact:
       group_obj:
         algorithm: GSLB_ALGORITHM_ROUND_ROBIN
-        priority: "{{ priority | int}}"
+        priority: "{{ priority | int }}"
         name: "{{ group_name }}"
         members:
           - "{{ base_member }}"
@@ -126,15 +124,15 @@
   - name: find existing Member
     set_fact:
       member_index: item.0
-      member_obj: "{{item.1}}"
+      member_obj: "{{ item.1 }}"
     with_indexed_items:
       - "{{ group_obj.members }}"
     when:
-      - item.1.ip.addr == "{{member_ip}}"
+      - item.1.ip.addr == "{{ member_ip }}"
 
   - name: update member if found
     set_fact:
-      member_obj: "{{member_obj|combine(base_member)}}"
+      member_obj: "{{ member_obj|combine(base_member) }}"
     when:
       - member_obj != ''
 
@@ -146,7 +144,7 @@
 
   - name: member list without the new member
     set_fact:
-      members_list: "{{members_list|default([]) + [item.1]}}"
+      members_list: "{{ members_list|default([]) + [item.1] }}"
     with_indexed_items:
       - "{{ group_obj.members }}"
     when:
@@ -156,11 +154,11 @@
 
   - name: Add new member to the list
     set_fact:
-      members_list: "{{members_list|default([]) + [member_obj]}}"
+      members_list: "{{ members_list|default([]) + [member_obj] }}"
 
   - name: member list after member
     set_fact:
-      members_list: "{{members_list|default([]) + [item.1]}}"
+      members_list: "{{ members_list|default([]) + [item.1] }}"
     with_indexed_items:
       - "{{ group_obj.members }}"
     when:
@@ -170,7 +168,7 @@
 
   - name: update group with new list
     set_fact:
-      group_obj: "{{ group_obj|combine({'members': members_list})}}"
+      group_obj: "{{ group_obj|combine({'members': members_list}) }}"
 
   - name: group_obj
     debug: msg="{{ group_obj }}"
@@ -195,9 +193,7 @@
     tags:
       - debug
     avi_gslbservice_patch_member:
-      controller: '{{ controller }}'
-      password: '{{ password }}'
-      username: '{{ username }}'
+      avi_credentials: "{{ avi_credentials }}"
       name: gs-3
       data:
         group:
@@ -214,9 +210,7 @@
     tags:
       - debug
     avi_gslbservice_patch_member:
-      controller: '{{ controller }}'
-      password: '{{ password }}'
-      username: '{{ username }}'
+      avi_credentials: "{{ avi_credentials }}"
       name: gs-3
       data:
         group:
@@ -232,9 +226,7 @@
     tags:
       - delete
     avi_gslbservice_patch_member:
-      controller: '{{ controller }}'
-      password: '{{ password }}'
-      username: '{{ username }}'
+      avi_credentials: "{{ avi_credentials }}"
       name: gs-3
       state: absent
       data:
@@ -250,9 +242,7 @@
     tags:
       - delete
     avi_gslbservice_patch_member:
-      controller: '{{ controller }}'
-      password: '{{ password }}'
-      username: '{{ username }}'
+      avi_credentials: "{{ avi_credentials }}"
       name: gs-3
       state: absent
       data:
@@ -264,15 +254,3 @@
                 addr:  10.30.10.44 #"{{ vs.obj.ip_address.addr }}"
                 type: V4
               ratio: 3
-
-
-
-
-
-
-
-
-
-
-
-

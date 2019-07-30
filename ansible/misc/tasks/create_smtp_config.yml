@@ -17,10 +17,10 @@
   avi_alertemailconfig:
     avi_credentials: "{{ avi_credentials }}"
     api_version: 17.2.13
-    name: email_group
+    name: Operations
     tenant_ref: "/api/tenant?name=admin"
-    to_emails: email-group@avinetworks.com
-    description: Send important events to email_group
+    to_emails: ops@avinetworks.com
+    description: Send important events to Operations
 
 - name: Create the Action Group Configuration
   avi_actiongroupconfig:
@@ -28,7 +28,7 @@
     api_version: 17.2.13
     level: ALERT_HIGH
     tenant_ref: "/api/tenant?name=admin"
-    email_config_ref: "/api/alertemailconfig?name=email_group"
+    email_config_ref: "/api/alertemailconfig?name=Operations"
     external_only: false
     name: System-Alert-Level-High
 

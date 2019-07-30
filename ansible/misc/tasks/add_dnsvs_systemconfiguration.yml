@@ -2,8 +2,6 @@
 # tasks to add a DNS-VS to System Configuration
 - name: Render DNS VS UUID from Name
   avi_api_session:
-    controller: "{{ controller_ip }}"
-    username: "{{ username }}"
     avi_credentials: "{{ avi_credentials }}"
     api_version: 17.2.13
     tenant: "{{ customer_tenant }}"
@@ -18,8 +16,6 @@
 
 - name: Add DNS-VS to System Configuration
   avi_systemconfiguration:
-    controller: "{{ controller_ip }}"
-    username: "{{ username }}"
     avi_credentials: "{{ avi_credentials }}"
     api_version: 17.2.13
     avi_api_update_method: patch

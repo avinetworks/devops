@@ -1,4 +1,12 @@
 ---
+- name: Check whether the Deployment is already existing or not
+  include_tasks: create_azure_stack/check_azure_deployment.yml
+  vars:
+    proj: "{{ project_name }}"
+    subscription: "{{ subscription_id }}"
+    ad_user: "{{ azure_ad_user }}"
+    ad_password: "{{ azure_ad_password }}"
+
 - name:  Get the Cloud Connector info for getting ssh public key
   avi_api_session:
     controller: "{{ controller }}"

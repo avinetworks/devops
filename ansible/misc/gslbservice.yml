@@ -1,4 +1,3 @@
-#
 # @author: Gaurav Rastogi grastogi@avinetworks.com
 # Simple playbook to create virtualservice and get on it using
 # avi_api_session module
@@ -7,51 +6,49 @@
 - hosts: localhost
   connection: local
   vars:
-    controller: 10.10.25.42
-    username: admin
-    password: password
+    avi_credentials:
+      controller: 10.10.25.42
+      username: admin
+      password: password
     vs_uuid: vs1
     gslbsvc_name: gs1
     product: myproduct
     cluster_uuid: c1
   tasks:
-  - name: Fetch GSLBService object
-    avi_gslbservice:
-      controller: '{{ controller }}'
-      password: '{{ password }}'
-      username: '{{ username }}'
-      name: '{{ gslbsvc_name }}'
-      gslb_pool: '{{ gslb_pool }}'
-    register: gslbservice
+    - name: Fetch GSLBService object
+      avi_gslbservice:
+        avi_credentials: "{{ avi_credentials }}"
+        name: "{{ gslbsvc_name }}"
+        gslb_pool: "{{ gslb_pool }}"
+      register: gslbservice
 
-  - name: Fetch index of the existing member
+    - name: Fetch index of the existing member
       set_fact:
         group_index: "{{ item.0 }}"
         member_index: "{{ item.1 }}"
       with_indexed_items: "{{ gslbservice_obj.obj.groups }}"
       when: item.1.name == gslb_pool
 
-  - avi_api_session:
-      controller: '{{ controller }}'
-      password: '{{ password }}'
-      username: '{{ username }}'
-      http_method: patch
-      path:  "gslbservice/{{ gslbservice_obj.obj.uuid }}"
-      data:
-        add:
-          name: "{{ product }}-{{ availability_zone }}-gslb"
-          state: present
-          domain_names:
-            - '{{ product }}.gslb.internal.betfair'
-          groups:
-            - algorithm: GSLB_ALGORITHM_ROUND_ROBIN
-              members:
-                - enabled: true
-                  vs_uuid: "{{ vs_uuid }}"
-                  cluster_uuid: "{{ cluster_uuid }}"
-                  ip:
-                    addr:  1.2.3.4 #"{{ vs.obj.ip_address.addr }}"
-                    type: V4
-                  ratio: 3
-              name: '{{ product }}-pool-gslb'
-              priority: 20
+    - name: patch to add gslbservice
+      avi_api_session:
+        avi_credentials: "{{ avi_credentials }}"
+        http_method: patch
+        path:  "gslbservice/{{ gslbservice_obj.obj.uuid }}"
+        data:
+          add:
+            name: "{{ product }}-{{ availability_zone }}-gslb"
+            state: present
+            domain_names:
+              - "{{ product }}.gslb.internal.betfair"
+            groups:
+              - algorithm: GSLB_ALGORITHM_ROUND_ROBIN
+                members:
+                  - enabled: true
+                    vs_uuid: "{{ vs_uuid }}"
+                    cluster_uuid: "{{ cluster_uuid }}"
+                    ip:
+                      addr:  1.2.3.4 #"{{ vs.obj.ip_address.addr }}"
+                      type: V4
+                    ratio: 3
+                name: "{{ product }}-pool-gslb"
+                priority: 20
