@@ -11,16 +11,18 @@
   vars:
     app_name: foo
     api_version: 17.1.2
+    avi_credentials:
+      controller: "{{ avi_controller }}"
+      username: "{{ avi_username }}"
+      password: "{{ avi_password }}"
   roles:
     - role: avinetworks.avisdk
   tasks:
     - name: Create or Update Pool
       avi_pool:
-        controller: "{{ avi_controller}}"
-        username: "{{ avi_username }}"
-        password: "{{ avi_password }}"
+        avi_credentials: "{{ avi_credentials }}"
         api_version: "{{ api_version }}"
-        name: "{{app_name}}-pool"
+        name: "{{ app_name }}-pool"
         health_monitor_refs:
           - '/api/healthmonitor?name=System-HTTP'
           - '/api/healthmonitor?name=System-Ping'
@@ -35,12 +37,10 @@
 
     - name: Create Virtual Service >= 17
       avi_virtualservice:
-        controller: "{{ avi_controller}}"
-        username: "{{ avi_username }}"
-        password: "{{ avi_password }}"
+        avi_credentials: "{{ avi_credentials }}"
         api_version: "{{ api_version }}"
-        name: "{{app_name}}"
-        pool_ref: "/api/pool?name={{app_name}}-pool"
+        name: "{{ app_name }}"
+        pool_ref: "/api/pool?name={{ app_name }}-pool"
         cloud_ref: '/api/cloud?name=Default-Cloud'
         vip:
           - ip_address:
@@ -54,12 +54,12 @@
 
     - name: Create Virtual Service < 17
       avi_virtualservice:
-        controller: "{{ avi_controller}}"
+        controller: "{{ avi_controller }}"
         username: "{{ avi_username }}"
         password: "{{ avi_password }}"
         api_version: "{{ api_version }}"
-        name: "{{app_name}}"
-        pool_ref: "/api/pool?name={{app_name}}-pool"
+        name: "{{ app_name }}"
+        pool_ref: "/api/pool?name={{ app_name }}-pool"
         cloud_ref: '/api/cloud?name=Default-Cloud'
         ip_address:
           addr: '10.90.64.222'

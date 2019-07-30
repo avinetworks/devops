@@ -28,8 +28,8 @@
         path: analytics/metrics/pool
         params:
           name: "{{ pool_name }}"
-          metric_id: "{{metric_id}}"
+          metric_id: "{{ metric_id }}"
           step: 300
           limit: 10
       register: pool_metrics
-    - debug: msg="{{pool_metrics.obj}}"
+    - debug: msg="{{ pool_metrics.obj }}"

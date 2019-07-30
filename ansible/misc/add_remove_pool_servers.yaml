@@ -24,8 +24,8 @@
   tasks:
     - name: build server list
       set_fact:
-        servers_list: "{{servers_list|default([]) + [{'ip': {'addr': item, 'type': 'V4'}, 'enabled': enabled | bool}] }}"
-      with_items: "{{pool_servers.split(',')}}"
+        servers_list: "{{ servers_list|default([]) + [{'ip': {'addr': item, 'type': 'V4'}, 'enabled': enabled | bool}] }}"
+      with_items: "{{ pool_servers.split(',') }}"
       # each server_list item has ansible fact as server
     - avi_api_session:
         # get pool information
@@ -45,10 +45,10 @@
         patch_data: "{
           patch_op: {
             servers: servers_list
-          }
-        }"
+            }
+          }"
     - debug:
-        msg: "{{patch_data}}"
+        msg: "{{ patch_data }}"
     - avi_api_session:
         controller: "{{ controller }}"
         username: "{{ username }}"

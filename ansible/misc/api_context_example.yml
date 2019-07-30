@@ -10,16 +10,16 @@
     - "vars/creds_unsecure.yml"
   vars:
     avi_credentials:
-
+      controller: "{{ avi_controller }}"
+      username: "{{ avi_username }}"
+      password: "{{ avi_password }}"
   tasks:
     - name: Create or Update Pool
       avi_pool:
-        controller: "{{ avi_controller}}"
-        username: "{{ avi_username }}"
-        password: "{{ avi_password }}"
+        avi_credentials: "{{ avi_credentials }}"
         api_version: "{{ api_version }}"
-        api_context: "{{avi_api_context | default(omit)}}"
-        name: "{{app_name}}-pool"
+        api_context: "{{ avi_api_context | default(omit) }}"
+        name: "{{ app_name }}-pool"
         health_monitor_refs:
           - '/api/healthmonitor?name=System-HTTP'
           - '/api/healthmonitor?name=System-Ping'
@@ -34,13 +34,11 @@
 
     - name: Create Virtual Service >= 17
       avi_virtualservice:
-        controller: "{{ avi_controller}}"
-        username: "{{ avi_username }}"
-        password: "{{ avi_password }}"
+        avi_credentials: "{{ avi_credentials }}"
         api_version: "{{ api_version }}"
-        api_context: "{{avi_api_context | default(omit)}}"
-        name: "{{app_name}}"
-        pool_ref: "/api/pool?name={{app_name}}-pool"
+        api_context: "{{ avi_api_context | default(omit) }}"
+        name: "{{ app_name }}"
+        pool_ref: "/api/pool?name={{ app_name }}-pool"
         cloud_ref: '/api/cloud?name=Default-Cloud'
         vip:
           - ip_address:
@@ -54,13 +52,11 @@
 
     - name: Create Virtual Service < 17
       avi_virtualservice:
-        controller: "{{ avi_controller}}"
-        username: "{{ avi_username }}"
-        password: "{{ avi_password }}"
+        avi_credentials: "{{ avi_credentials }}"
         api_version: "{{ api_version }}"
-        api_context: "{{avi_api_context | default(omit)}}"
-        name: "{{app_name}}"
-        pool_ref: "/api/pool?name={{app_name}}-pool"
+        api_context: "{{ avi_api_context | default(omit) }}"
+        name: "{{ app_name }}"
+        pool_ref: "/api/pool?name={{ app_name }}-pool"
         cloud_ref: '/api/cloud?name=Default-Cloud'
         ip_address:
           addr: '10.90.64.222'

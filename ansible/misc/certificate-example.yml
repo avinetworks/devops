@@ -2,13 +2,17 @@
 ---
 - hosts: localhost
   connection: local
+  vars:
+    avi_credentials:
+      controller: "{{ avi_controller }}"
+      username: "{{ avi_username }}"
+      password: "{{ avi_password }}"
   roles:
     - role: avientworks.avisdk
   tasks:
-    - avi_sslkeyandcertificate:
-        controller: "{{controller}}"
-        username: admin
-        password: "{{password}}"
+    - name: upload sslkeyandcertificate
+      avi_sslkeyandcertificate:
+        avi_credentials: "{{ avi_credentials }}"
         tenant: admin
         key: |
           -----BEGIN PRIVATE KEY-----

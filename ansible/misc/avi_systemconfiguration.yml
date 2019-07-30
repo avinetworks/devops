@@ -1,14 +1,17 @@
 ---
 - hosts: localhost
   connection: local
+  vars:
+    avi_credentials:
+      controller: 10.91.12.11
+      username: admin
+      password: XXXX
   roles:
     - role: avinetworks.avisdk
   tasks:
     - name: update system configuration
       avi_systemconfiguration:
-        controller: 10.91.12.11
-        username: admin
-        password: XXXX
+        avi_credentials: "{{ avi_credentials }}"
         api_version: 17.1.4
         tenant: admin
         state: present
