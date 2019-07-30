@@ -2,14 +2,17 @@
 ---
 - hosts: localhost
   connection: local
+  vars:
+    avi_credentials:
+      controller: 10.10.27.90
+      username: admin
+      password: AviNetworks123!
   roles:
     - role: avinetworks.avisdk
   tasks:
     - name: Create the testpool1 pool
       avi_pool:
-        controller: 10.10.27.90
-        username: admin
-        password: AviNetworks123!
+        avi_credentials: "{{ avi_credentials }}"
         tenant: admin
         name: testpool1
         state: present
@@ -25,9 +28,7 @@
               type: V4
     - name: Create the Virtual Service testvs1 and assign testpool1 to it
       avi_virtualservice:
-        controller: 10.10.27.90
-        username: admin
-        password: AviNetworks123!
+        avi_credentials: "{{ avi_credentials }}"
         tenant: admin
         name: testvs1
         state: present
@@ -47,7 +48,8 @@
         pool_ref: '/api/pool?name=testpool1'
       register: myvip
     - debug: var=myvip
-    - set_fact:
+    - name: set myvip_json
+      set_fact:
         myvip_json: "{{ myvip.obj }}"
     - debug: var=myvip_json
     - name: get services

@@ -1,18 +1,17 @@
 ---
 - hosts: localhost
   vars:
-    controller: 10.130.181.11
-    username: admin
-    password: avi123$%
+    avi_credentials:
+      controller: 10.130.181.11
+      username: admin
+      password: avi123$%
     tenant: CRES
   connection: local
   roles:
     - role: avinetworks.avisdk
   tasks:
     - avi_pool:
-        controller: "{{ controller }}"
-        username: "{{ username }}"
-        password: "{{ password }}"
+        avi_credentials: "{{ avi_credentials }}"
         tenant: "{{ tenant }}"
         tenant_ref: "/api/tenant?name={{ tenant }}"
         api_version: 17.2.9
@@ -25,9 +24,7 @@
                type: 'V4'
       register: mypool
     - avi_virtualservice:
-        controller: "{{ controller }}"
-        username: "{{ username }}"
-        password: "{{ password }}"
+        avi_credentials: "{{ avi_credentials }}"
         tenant: "{{ tenant }}"
         tenant_ref: "/api/tenant?name={{ tenant }}"
         name: testvs2

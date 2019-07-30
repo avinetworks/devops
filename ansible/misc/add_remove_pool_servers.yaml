@@ -11,9 +11,10 @@
 - hosts: localhost
   connection: local
   vars:
-    controller: "{{ controller }}"
-    username: "{{ username }}"
-    password: "{{ password }}"
+    avi_credentials:
+      controller: "{{ controller }}"
+      username: "{{ username }}"
+      password: "{{ password }}"
     pool_name: "{{ pool_name }}"
     pool_servers: "{{ pool_servers }}"
     patch_op: "{{ patch_op }}"
@@ -29,9 +30,7 @@
       # each server_list item has ansible fact as server
     - avi_api_session:
         # get pool information
-        controller: "{{ controller }}"
-        username: "{{ username }}"
-        password: "{{ password }}"
+        avi_credentials: "{{ avi_credentials }}"
         http_method: get
         path: pool
         params:
@@ -50,9 +49,7 @@
     - debug:
         msg: "{{ patch_data }}"
     - avi_api_session:
-        controller: "{{ controller }}"
-        username: "{{ username }}"
-        password: "{{ password }}"
+        avi_credentials: "{{ avi_credentials }}"
         http_method: patch
         path: "{{ pool_path }}"
         data: "{{ patch_data }}"

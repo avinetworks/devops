@@ -13,9 +13,10 @@
 - hosts: localhost
   connection: local
   vars:
-    controller: "{{ controller }}"
-    username: "{{ username }}"
-    password: "{{ password }}"
+    avi_credentials:
+      controller: "{{ controller }}"
+      username: "{{ username }}"
+      password: "{{ password }}"
     pool_name: "{{ pool_name }}"
     pool_servers_ip: "{{ pool_servers }}"
   roles:
@@ -23,14 +24,13 @@
   tasks:
     - name: build server list
       set_fact:
-        servers: "{{servers|default([]) + [{'ip': {'addr': item, 'type': 'V4'}}] }}"
-      with_items: "{{pool_servers_ip.split(',')}}"
+        servers: "{{ servers|default([]) + [{'ip': {'addr': item, 'type': 'V4'}}] }}"
+      with_items: "{{ pool_servers_ip.split(',') }}"
     - debug:
-        msg: "{{servers}}"
-    - avi_pool:
-        controller: "{{ controller }}"
-        username: "{{ username }}"
-        password: "{{ password }}"
+        msg: "{{ servers }}"
+    - name: create pool
+      avi_pool:
+        avi_credentials: "{{ avi_credentials }}"
         name: "{{ pool_name }}"
         state: present
         servers: "{{ servers }}"

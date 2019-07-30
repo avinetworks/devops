@@ -54,9 +54,7 @@
 
     - name: Create Virtual Service < 17
       avi_virtualservice:
-        controller: "{{ avi_controller }}"
-        username: "{{ avi_username }}"
-        password: "{{ avi_password }}"
+        avi_credentials: "{{ avi_credentials }}"
         api_version: "{{ api_version }}"
         name: "{{ app_name }}"
         pool_ref: "/api/pool?name={{ app_name }}-pool"
