@@ -6,6 +6,11 @@
   vars:
     app_name_1: vs_app_1
     app_name_2: vs_app_2
+    avi_credentials:
+      controller: "{{ controller }}"
+      username: "{{ username }}"
+      password: "{{ password }}"
+      api_version: "{{ api_version }}"
   
   vars_files:
     - "{{ site_dir }}/vars/creds.yml"
@@ -23,10 +28,6 @@
     - name: "Avi Example | Create Cloud"
       register: cloud
       avi_cloud:
-        controller: "{{ avi_credentials.controller }}"
-        username: "{{ avi_credentials.username }}"
-        password: "{{ avi_credentials.password }}"
-        api_version: "{{avi_credentials.api_version}}"
         avi_credentials: "{{ avi_credentials | default(omit)}}"
         api_context: "{{avi_api_context | default(omit)}}"
         name: "Test-Cloud"
@@ -48,10 +49,6 @@
     - name: "Avi Example | Create Tenant"
       register: tenant
       avi_tenant:
-        controller: "{{ avi_credentials.controller }}"
-        username: "{{ avi_credentials.username }}"
-        password: "{{ avi_credentials.password }}"
-        api_version: "{{avi_credentials.api_version}}"
         avi_credentials: "{{ avi_credentials | default(omit)}}"
         api_context: "{{avi_api_context | default(omit)}}"
         name: "Test-Tenant"
@@ -68,10 +65,6 @@
     # https://github.com/avinetworks/ansible-role-avisdk/blob/master/library/avi_serviceenginegroup.py
     - name: "Avi Example | Create ServiceEngineGroup object"
       avi_serviceenginegroup:
-        controller: "{{ avi_credentials.controller }}"
-        username: "{{ avi_credentials.username }}"
-        password: "{{ avi_credentials.password }}"
-        api_version: "{{avi_credentials.api_version}}"
         avi_credentials: "{{ avi_credentials | default(omit)}}"
         api_context: "{{avi_api_context | default(omit)}}"
         tenant: "Test-Tenant"
@@ -85,10 +78,6 @@
     # https://github.com/avinetworks/ansible-role-avisdk/blob/master/library/avi_vrfcontext.py
     - name: "Avi Example | Create VrfContext"
       avi_vrfcontext:
-        controller: "{{ avi_credentials.controller }}"
-        username: "{{ avi_credentials.username }}"
-        password: "{{ avi_credentials.password }}"
-        api_version: "{{avi_credentials.api_version}}"
         avi_credentials: "{{ avi_credentials | default(omit)}}"
         api_context: "{{avi_api_context | default(omit)}}"
         state: "{{ state }}"
@@ -103,10 +92,6 @@
     # https://github.com/avinetworks/ansible-role-avisdk/blob/master/library/avi_healthmonitor.py
     - name: "Avi Example | Create Http health monitor"
       avi_healthmonitor:
-        controller: "{{avi_credentials.controller}}"
-        username: "{{avi_credentials.username}}"
-        password: "{{avi_credentials.password}}"
-        api_version: "{{avi_credentials.api_version}}"
         avi_credentials: "{{ avi_credentials | default(omit)}}"
         api_context: "{{avi_api_context | default(omit)}}"
         state: "{{ state }}"
@@ -126,10 +111,6 @@
 
     - name: "Avi Example | Create Https health monitor"
       avi_healthmonitor:
-        controller: "{{avi_credentials.controller}}"
-        username: "{{avi_credentials.username}}"
-        password: "{{avi_credentials.password}}"
-        api_version: "{{avi_credentials.api_version}}"
         avi_credentials: "{{ avi_credentials | default(omit)}}"
         api_context: "{{avi_api_context | default(omit)}}"
         state: "{{ state }}"
@@ -150,10 +131,6 @@
 
     - name: "Avi Example | Create Ping health monitor"
       avi_healthmonitor:
-        controller: "{{avi_credentials.controller}}"
-        username: "{{avi_credentials.username}}"
-        password: "{{avi_credentials.password}}"
-        api_version: "{{avi_credentials.api_version}}"
         avi_credentials: "{{ avi_credentials | default(omit)}}"
         api_context: "{{avi_api_context | default(omit)}}"
         state: "{{ state }}"
@@ -169,10 +146,6 @@
 
     - name: "Avi Example | Create Tcp health monitor"
       avi_healthmonitor:
-        controller: "{{avi_credentials.controller}}"
-        username: "{{avi_credentials.username}}"
-        password: "{{avi_credentials.password}}"
-        api_version: "{{avi_credentials.api_version}}"
         avi_credentials: "{{ avi_credentials | default(omit)}}"
         api_context: "{{avi_api_context | default(omit)}}"
         state: "{{ state }}"
@@ -193,10 +166,6 @@
     # https://github.com/avinetworks/ansible-role-avisdk/blob/master/library/avi_pool.py
     - name: "Avi Example | Create First Pool"
       avi_pool:
-        controller: "{{avi_credentials.controller}}"
-        username: "{{avi_credentials.username}}"
-        password: "{{avi_credentials.password}}"
-        api_version: "{{avi_credentials.api_version}}"
         avi_credentials: "{{ avi_credentials | default(omit)}}"
         api_context: "{{avi_api_context | default(omit)}}"
         state: "{{ state }}"
@@ -219,10 +188,6 @@
     # https://github.com/avinetworks/ansible-role-avisdk/blob/master/library/avi_pool.py
     - name: "Avi Example | Create Second Pool"
       avi_pool:
-        controller: "{{avi_credentials.controller}}"
-        username: "{{avi_credentials.username}}"
-        password: "{{avi_credentials.password}}"
-        api_version: "{{avi_credentials.api_version}}"
         avi_credentials: "{{ avi_credentials | default(omit)}}"
         api_context: "{{avi_api_context | default(omit)}}"
         state: "{{ state }}"
@@ -245,10 +210,6 @@
     # https://github.com/avinetworks/ansible-role-avisdk/blob/master/library/avi_pool.py
     - name: "Avi Example | Create Third Pool"
       avi_pool:
-        controller: "{{avi_credentials.controller}}"
-        username: "{{avi_credentials.username}}"
-        password: "{{avi_credentials.password}}"
-        api_version: "{{avi_credentials.api_version}}"
         avi_credentials: "{{ avi_credentials | default(omit)}}"
         api_context: "{{avi_api_context | default(omit)}}"
         state: "{{ state }}"
@@ -271,10 +232,6 @@
     # https://github.com/avinetworks/ansible-role-avisdk/blob/master/library/avi_pool.py
     - name: "Avi Example | Create Fourth Pool"
       avi_pool:
-        controller: "{{avi_credentials.controller}}"
-        username: "{{avi_credentials.username}}"
-        password: "{{avi_credentials.password}}"
-        api_version: "{{avi_credentials.api_version}}"
         avi_credentials: "{{ avi_credentials | default(omit)}}"
         api_context: "{{avi_api_context | default(omit)}}"
         state: "{{ state }}"
@@ -297,10 +254,6 @@
     # https://github.com/avinetworks/ansible-role-avisdk/blob/master/library/avi_poolgroup.py
     - name: "Avi Example | Create PoolGroup | app-poolgroup"
       avi_poolgroup:
-        controller: "{{avi_credentials.controller}}"
-        username: "{{avi_credentials.username}}"
-        password: "{{avi_credentials.password}}"
-        api_version: "{{avi_credentials.api_version}}"
         avi_credentials: "{{ avi_credentials | default(omit)}}"
         api_context: "{{avi_api_context | default(omit)}}"
         state: "{{ state }}"
@@ -321,10 +274,6 @@
     # https://github.com/avinetworks/ansible-role-avisdk/blob/master/library/avi_poolgroup.py
     - name: "Avi Example | Create PoolGroup | test-poolgroup-1"
       avi_poolgroup:
-        controller: "{{avi_credentials.controller}}"
-        username: "{{avi_credentials.username}}"
-        password: "{{avi_credentials.password}}"
-        api_version: "{{avi_credentials.api_version}}"
         avi_credentials: "{{ avi_credentials | default(omit)}}"
         api_context: "{{avi_api_context | default(omit)}}"
         state: "{{ state }}"
@@ -345,10 +294,6 @@
     # https://github.com/avinetworks/ansible-role-avisdk/blob/master/library/avi_httppolicyset.py
     - name: "Avi Example | Create http policyset"
       avi_httppolicyset:
-        username: "{{avi_credentials.username}}"
-        password: "{{avi_credentials.password}}"
-        controller: "{{avi_credentials.controller}}"
-        api_version: "{{avi_credentials.api_version}}"
         avi_credentials: "{{ avi_credentials | default(omit)}}"
         api_context: "{{avi_api_context | default(omit)}}"
         state: "{{ state }}"
@@ -386,15 +331,31 @@
               pool_ref: "/api/pool?name=app-pool-2"
         is_internal_policy: false
 
+    - name: "Avi Example | Create VS VIP | {{ app_name_1 }}"
+      avi_vsvip:
+        name: vsvip-{{ app_name_1 }}-Default-Cloud
+        avi_credentials: '{{ avi_credentials }}' 
+        api_context: '{{avi_api_context | default(omit)}}'
+        tenant_ref: /api/tenant/?name={{ tenant }}
+        cloud_ref: /api/cloud/?name=Default-Cloud
+        state: "{{ state }}"
+        vip:
+        - vip_id: '1'
+          avi_allocated_fip: false
+          auto_allocate_ip: false
+          enabled: true
+          auto_allocate_floating_ip: false
+          avi_allocated_vip: false
+          auto_allocate_ip_type: V4_ONLY
+          ip_address:
+            type: V4
+            addr: "{{ app1_vip }}"
+
     # Task to create virtualservice on the controller
     # Here is the link to get more details of parametrs of this task
     # https://github.com/avinetworks/ansible-role-avisdk/blob/master/library/avi_virtualservice.py
     - name: "Avi Example | Create Virtualservice | {{ app_name_1 }}"
       avi_virtualservice:
-        controller: "{{avi_credentials.controller}}"
-        username: "{{avi_credentials.username}}"
-        password: "{{avi_credentials.password}}"
-        api_version: "{{avi_credentials.api_version}}"
         avi_credentials: "{{ avi_credentials | default(omit)}}"
         api_context: "{{avi_api_context | default(omit)}}"
         state: "{{ state }}"
@@ -411,21 +372,33 @@
         vrf_context_ref: "/api/vrfcontext?name=sample_vrfcontext"
         http_policies:
           - http_policy_set_ref: /api/httppolicyset?name=app-policy-set
+        vsvip_ref: /api/vsvip/?name=vsvip-{{ app_name_1 }}-Default-Cloud
+
+    - name: "Avi Example | Create VS VIP | {{ app_name_2 }}"
+      avi_vsvip:
+        name: vsvip-{{ app_name_2 }}-Default-Cloud
+        avi_credentials: '{{ avi_credentials }}' 
+        api_context: '{{avi_api_context | default(omit)}}'
+        tenant_ref: /api/tenant/?name={{ tenant }}
+        cloud_ref: /api/cloud/?name=Default-Cloud
+        state: "{{ state }}"
         vip:
-          - ip_address:
-              addr: "{{ app1_vip }}"
-              type: 'V4'
-            vip_id: '1'
+        - vip_id: '1'
+          avi_allocated_fip: false
+          auto_allocate_ip: false
+          enabled: true
+          auto_allocate_floating_ip: false
+          avi_allocated_vip: false
+          auto_allocate_ip_type: V4_ONLY
+          ip_address:
+            type: V4
+            addr: "{{ app2_vip }}"
 
     # Task to create virtualservice on the controller
     # Here is the link to get more details of parametrs of this task
     # https://github.com/avinetworks/ansible-role-avisdk/blob/master/library/avi_virtualservice.py
     - name: "Avi Example | Create Virtualservice | {{ app_name_2 }}"
       avi_virtualservice:
-        controller: "{{avi_credentials.controller}}"
-        username: "{{avi_credentials.username}}"
-        password: "{{avi_credentials.password}}"
-        api_version: "{{avi_credentials.api_version}}"
         avi_credentials: "{{ avi_credentials | default(omit)}}"
         api_context: "{{avi_api_context | default(omit)}}"
         state: "{{ state }}"
@@ -440,8 +413,4 @@
         cloud_ref: "/api/cloud/?name=Test-Cloud"
         se_group_ref: '/api/serviceenginegroup?name=sample_serviceenginegroup'
         vrf_context_ref: "/api/vrfcontext?name=sample_vrfcontext"
-        vip:
-          - ip_address:
-              addr: "{{ app2_vip }}"
-              type: 'V4'
-            vip_id: '2'
+        vsvip_ref: /api/vsvip/?name=vsvip-{{ app_name_2 }}-Default-Cloud

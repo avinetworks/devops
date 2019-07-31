@@ -7,14 +7,13 @@
       controller: "{{ avi_controller }}"
       username: "{{ avi_username }}"
       password: "{{ avi_password }}"
-    tenant: admin
+      tenant: admin
   roles:
     - role: avinetworks.avisdk
   tasks:
     - name: create pool
       avi_pool:
         avi_credentials: "{{ avi_credentials }}"
-        tenant: "{{ tenant }}"
         name: testpool1
         state: present
         health_monitor_refs:
@@ -29,7 +28,6 @@
     - name: create testpool2
       avi_pool:
         avi_credentials: "{{ avi_credentials }}"
-        tenant: "{{ tenant }}"
         name: testpool2
         state: present
         health_monitor_refs:
@@ -44,9 +42,8 @@
     - name: create test http policy set
       avi_httppolicyset:
         avi_credentials: "{{ avi_credentials }}"
-        tenant: "{{ tenant }}"
         name: test-HTTP-Policy-Set
-        tenant_ref: admin
+        tenant_ref: /api/tenant/?name={{ tenant }}
         http_request_policy:
           rules:
             - index: 1
@@ -76,10 +73,27 @@
                 status_code: HTTP_LOCAL_RESPONSE_STATUS_CODE_200
                 pool_ref: '/api/pool?name=testpool2'
         is_internal_policy: false
+    - avi_vsvip:
+        name: vsvip-newtestvs-Default-Cloud
+        avi_credentials: '{{ avi_credentials }}' 
+        api_context: '{{avi_api_context | default(omit)}}'
+        tenant_ref: /api/tenant/?name={{ tenant }}
+        cloud_ref: /api/cloud/?name=Default-Cloud
+        state: "{{ state }}"
+        vip:
+        - vip_id: '1'
+          avi_allocated_fip: false
+          auto_allocate_ip: false
+          enabled: true
+          auto_allocate_floating_ip: false
+          avi_allocated_vip: false
+          auto_allocate_ip_type: V4_ONLY
+          ip_address:
+            type: V4
+            addr: 198.51.100.252
     - name: create virtual service
       avi_virtualservice:
         avi_credentials: "{{ avi_credentials }}"
-        tenant: "{{ tenant }}"
         name: newtestvs
         state: present
         performance_limits:
@@ -92,9 +106,7 @@
         application_profile_ref: '/api/applicationprofile?name=System-Secure-HTTP'
         ssl_key_and_certificate_refs:
           - '/api/sslkeyandcertificate?name=System-Default-Cert'
-        ip_address:
-          addr: 10.90.131.103
-          type: V4
+        vsvip_ref: /api/vsvip/?name=vsvip-newtestvs-Default-Cloud
         pool_ref: '/api/pool?name=testpool1'
         http_policies:
           - index: 11

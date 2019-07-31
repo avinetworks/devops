@@ -5,14 +5,13 @@
       controller: 10.130.181.11
       username: admin
       password: avi123$%
-    tenant: CRES
+      tenant: CRES
   connection: local
   roles:
     - role: avinetworks.avisdk
   tasks:
     - avi_pool:
         avi_credentials: "{{ avi_credentials }}"
-        tenant: "{{ tenant }}"
         tenant_ref: "/api/tenant?name={{ tenant }}"
         api_version: 17.2.9
         name: testpool
@@ -23,9 +22,26 @@
                addr: '10.90.64.16'
                type: 'V4'
       register: mypool
+    - avi_vsvip:
+        name: vsvip-testvs2-Default-Cloud
+        avi_credentials: '{{ avi_credentials }}' 
+        api_context: '{{avi_api_context | default(omit)}}'
+        tenant_ref: /api/tenant/?name={{ tenant }}
+        cloud_ref: /api/cloud/?name=Default-Cloud
+        state: "{{ state }}"
+        vip:
+        - vip_id: '1'
+          avi_allocated_fip: false
+          auto_allocate_ip: false
+          enabled: true
+          auto_allocate_floating_ip: false
+          avi_allocated_vip: false
+          auto_allocate_ip_type: V4_ONLY
+          ip_address:
+            type: V4
+            addr: 198.51.100.252
     - avi_virtualservice:
         avi_credentials: "{{ avi_credentials }}"
-        tenant: "{{ tenant }}"
         tenant_ref: "/api/tenant?name={{ tenant }}"
         name: testvs2
         services:
@@ -34,8 +50,5 @@
         performance_limits:
            max_concurrent_connections: 1000
         api_version: 17.2.9
-        vip:
-          - ip_address:
-              addr: '10.90.64.252'
-              type: 'V4'
+        vsvip_ref: /api/vsvip/?name=vsvip-testvs2-Default-Cloud
       register: testvs
