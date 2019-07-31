@@ -12,13 +12,14 @@ Contrail Versions: 3.2.x onwards.
 
 Why
 ----
+
 In the older versions of Avi (below 18.1.5), Virtual Service VIP
-Addresses were moved from VIP port to SE Data Ports. When the SE's get
-deleted from OpenStack (due to some user activity or other reasons),
-and the SE Data ports are deleted from OpenStack, the VIP IP addresses
-also get deleted. The VIP addresses are not available on VIP Ports.
-Disable/Enable action on Virtual Services backed by such ports will fail
-due to unavailability of IP address on the port.
+Addresses were moved from VIP port to SE Data Ports. When the Service
+Engines get deleted from OpenStack (due to some user activity or other
+reasons), and the SE Data ports are deleted from OpenStack, the VIP IP
+addresses also get deleted. The VIP addresses are not available on VIP
+Ports. Disable/Enable action on Virtual Services backed by such ports
+will fail due to unavailability of IP address on the port.
 
 In Avi versions starting from 18.2.x, the VIP address is kept on both
 the SE data ports and the VIP ports. Deletion of SE ports will not cause
