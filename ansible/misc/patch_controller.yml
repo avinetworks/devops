@@ -1,0 +1,34 @@
+---
+- name: SaaS Actions | Patch Controller | Upload package on controller
+  avi_api_fileservice:
+    avi_credentials: "{{ avi_credentials }}"
+    api_version: 17.2.13
+    upload: true
+    timeout: 300
+    path: /patch_pkgs/
+    file_path: "{{ patch_path }}"
+
+- name: SaaS Actions | Patch Controller | Upgrade controller
+  avi_api_session:
+    avi_credentials: "{{ avi_credentials }}"
+    api_version: 17.2.13
+    http_method: post
+    timeout: 300
+    path: cluster/upgrade/
+    data:
+      image_path: controller://upgrade_pkgs/{{ patch_path|basename }}
+      force: true
+      disruptive: true
+      patch: true
+
+- name: SaaS Actions | Patch Controller | Wait for the Controller Upgrade to finish
+  avi_api_session:
+    avi_credentials: "{{ avi_credentials }}"
+    api_version: 17.2.13
+    http_method: get
+    timeout: 300
+    path: cluster/upgrade/status
+  register: upgrade_status
+  until: upgrade_status.obj.result == "SUCCESS"
+  retries: 120
+  delay: 10
