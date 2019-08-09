@@ -78,8 +78,4 @@
         services:
           - port: 80
         pool_ref: '/api/pool?name=app1-pool'
-        vip:
-          - ip_address:
-              addr: "{{ app1_vip }}"
-              type: 'V4'
-            vip_id: '1'
+        vsvip_ref: /api/vsvip/?name=vsvip-{{ app1_vip }}-Default-Cloud

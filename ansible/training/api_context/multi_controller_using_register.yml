@@ -61,11 +61,7 @@
         name: "{{app_name}}"
         pool_ref: "/api/pool?name={{app_name}}-pool"
         cloud_ref: '/api/cloud?name=Default-Cloud'
-        vip:
-          - ip_address:
-              addr: '10.90.64.222'
-              type: 'V4'
-            vip_id: '1'
+        vsvip_ref: /api/vsvip/?name=vsvip-{{app_name}}-Default-Cloud
         services:
           - port: 4242
 
@@ -118,10 +114,6 @@
         name: "{{app_name}}"
         pool_ref: "/api/pool?name={{app_name}}-pool"
         cloud_ref: '/api/cloud?name=Default-Cloud'
-        vip:
-          - ip_address:
-              addr: '10.90.64.222'
-              type: 'V4'
-            vip_id: '1'
+        vsvip_ref: /api/vsvip/?name=vsvip-{{app_name}}-Default-Cloud
         services:
           - port: 4242
