@@ -1,7 +1,7 @@
 '''
 This script is to disable all VSs placed on SEs with no availability zones.
 Prerequists:
-1. Populate variables - AVI_CONTROLLER_IP, AVI_CONTROLLER_USER, AVI_CONTROLLER_PASSWORD
+1. Populate variables - AVI_CONTROLLER_IP, AVI_CONTROLLER_USER, AVI_CONTROLLER_PASSWORD, SE_CLOUD_NAME, SE_CLOUD_TENANT
 2. Enable "Basic Authentication" from Authentication -> Settings
 '''
 
@@ -15,10 +15,11 @@ except ImportError as e:
 
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
-AVI_CONTROLLER_IP = '10.145.130.214' # ip:port
-AVI_CONTROLLER_USER = 'admin'
+AVI_CONTROLLER_IP       = '10.145.130.214' # ip:port
+AVI_CONTROLLER_USER     = 'admin'
 AVI_CONTROLLER_PASSWORD = 'admin'
-
+SE_CLOUD_NAME           = 'SE-Cloud'
+SE_CLOUD_TENANT         = 'admin'
 
 
 class AviAzure(object):
@@ -29,11 +30,14 @@ class AviAzure(object):
         self.controller_ip  = AVI_CONTROLLER_IP
         self.username       = AVI_CONTROLLER_USER
         self.password       = AVI_CONTROLLER_PASSWORD
+        self.se_cloud_name  = SE_CLOUD_NAME
+        self.se_cloud_tenant= SE_CLOUD_TENANT
         self.session = requests.Session()
 
-        if not (self.controller_ip and self.username and self.username and self.password):
+        if not (self.controller_ip and self.username and self.username and self.password and
+                self.se_cloud_name and self.se_cloud_tenant):
             print('One of the field is missing - AVI_CONTROLLER_IP, AVI_CONTROLLER_USER, '
-                  'AVI_CONTROLLER_PASSWORD')
+                  'AVI_CONTROLLER_PASSWORD, SE_CLOUD_NAME, SE_CLOUD_TENANT')
             exit(1)
         self.headers = {'content-type': 'application/json', 'X-Avi-Tenant': '*', 'X-Avi-Version':self.get_version()}
         self.is_connected()
@@ -51,15 +55,17 @@ class AviAzure(object):
         return True
 
 
-    def get(self, url):
+    def get(self, url, tenant=None):
         '''
         Request api call with GET method
         :param url: controller url
         :return:
         '''
-
+        header = self.headers
+        if tenant:
+            header['X-Avi-Tenant'] = tenant
         rsp = self.session.get("https://%s/api/%s" % (self.controller_ip, url),
-                               auth=(self.username, self.password), headers=self.headers, verify=False)
+                               auth=(self.username, self.password), headers=header, verify=False)
         if rsp.status_code!=200:
             raise Exception(rsp.text)
         return rsp.status_code, rsp.json()
@@ -98,7 +104,7 @@ class AviAzure(object):
             print 'Error while getting controller version'
 
 
-    def get_se_with_no_az(self, oshift_cloud_dict):
+    def get_se_with_no_az(self, se_cloud_uuid):
         '''
         Get the list of SEs uuid with no Availability Zone
         :return:
@@ -108,7 +114,7 @@ class AviAzure(object):
         print 'SEs with no AZ:'
         for se in result['results']:
             cloud_ref = se['cloud_ref'].split('/')[-1]
-            if oshift_cloud_dict.has_key(cloud_ref) and (not se.has_key('availability_zone') or not se['availability_zone']):
+            if cloud_ref == se_cloud_uuid and (not se.has_key('availability_zone') or not se['availability_zone']):
                 se_list[se['uuid']] = se['name']
                 print se['name']
         print '\n'
@@ -156,7 +162,7 @@ class AviAzure(object):
 
     def get_all_OShift_clouds_with_azure_ipam(self):
         '''
-
+        Get all cloud uuid:name dict, across all tenants
         :return:
         '''
         cloud_list = {}
@@ -170,6 +176,19 @@ class AviAzure(object):
                     cloud_list[cloud['uuid']] = cloud['name']
         return cloud_list
 
+    def get_se_cloud_uuid(self, se_cloud_name):
+        '''
+        Get SE uuid from Given Cloud Name where SEs belongs
+        :param se_cloud_name:
+        :return:
+        '''
+        # se_cloud_tenant is needed because, there can be multiple clouds names in different tenants
+        status, result = self.get('cloud', tenant=self.se_cloud_tenant)
+        for cloud in result['results']:
+            if cloud['name'] == se_cloud_name:
+                return cloud['uuid']
+        raise Exception('Cloud %s does not exists'%se_cloud_name)
+
     def disable_all_vs(self):
         '''
         Disable all VSs placed on SEs with no availability zone
@@ -178,8 +197,9 @@ class AviAzure(object):
         try:
             # get all openshift clouds with azure ipam configured
             oshift_clouds_dict = self.get_all_OShift_clouds_with_azure_ipam()
-            # get all SEs belongs to OShift Clouds with Azure ipam with no az
-            se_with_no_az_dict = self.get_se_with_no_az(oshift_clouds_dict)
+            se_cloud_uuid = self.get_se_cloud_uuid(self.se_cloud_name)
+            # get all SEs belongs to given cloud name
+            se_with_no_az_dict = self.get_se_with_no_az(se_cloud_uuid)
             # get all VSs placed on above SEs
             vs_list = self.get_vs_placed_on_se(se_with_no_az_dict, oshift_clouds_dict)
             for vs, se_name in vs_list.iteritems():
@@ -193,7 +213,7 @@ class AviAzure(object):
                     self.disable_vs(vs)
             print 'Script Completed.'
         except Exception as e:
-            print 'Script Failed with Error %s'str(e)
+            print 'Script Failed with Error %s'%str(e)
             traceback.print_exc()
 
 
