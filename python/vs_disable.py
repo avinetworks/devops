@@ -110,7 +110,7 @@ class AviAzure(object):
         :return:
         '''
         se_list = {}
-        status, result = self.get('serviceengine')
+        status, result = self.get('serviceengine?page_size=1000')
         print 'SEs with no AZ:'
         for se in result['results']:
             cloud_ref = se['cloud_ref'].split('/')[-1]
@@ -127,7 +127,7 @@ class AviAzure(object):
         :return:
         '''
         vs_list = {}
-        status, result = self.get('virtualservice')
+        status, result = self.get('virtualservice?page_size=1000')
         result = result['results']
         for vs in result:
             cloud_ref = vs['cloud_ref'].split('/')[-1]
