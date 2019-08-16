@@ -2,13 +2,15 @@
 This script is to disable all VSs placed on SEs with no availability zones.
 Prerequists:
 1. Populate variables - AVI_CONTROLLER_IP, AVI_CONTROLLER_USER, AVI_CONTROLLER_PASSWORD, SE_CLOUD_NAME, SE_CLOUD_TENANT
-2. Enable "Basic Authentication" from Authentication -> Settings
+2. Install avisdk using "pip install avisdk"
+
+usage: python vs_disable.py
 '''
 
 try:
+    from avi.sdk.avi_api import ApiSession
     import urllib3
     import requests
-    import threading
     import traceback
 except ImportError as e:
     print 'Modules are missing %s'%str(e)
@@ -16,9 +18,9 @@ except ImportError as e:
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 AVI_CONTROLLER_IP       = '10.145.130.214' # ip:port
-AVI_CONTROLLER_USER     = 'admin'
-AVI_CONTROLLER_PASSWORD = 'admin'
-SE_CLOUD_NAME           = 'SE-Cloud'
+AVI_CONTROLLER_USER     = ''
+AVI_CONTROLLER_PASSWORD = ''
+SE_CLOUD_NAME           = 'Default-Cloud'
 SE_CLOUD_TENANT         = 'admin'
 
 
@@ -32,14 +34,13 @@ class AviAzure(object):
         self.password       = AVI_CONTROLLER_PASSWORD
         self.se_cloud_name  = SE_CLOUD_NAME
         self.se_cloud_tenant= SE_CLOUD_TENANT
-        self.session = requests.Session()
+        self.api            = None
 
         if not (self.controller_ip and self.username and self.username and self.password and
                 self.se_cloud_name and self.se_cloud_tenant):
             print('One of the field is missing - AVI_CONTROLLER_IP, AVI_CONTROLLER_USER, '
                   'AVI_CONTROLLER_PASSWORD, SE_CLOUD_NAME, SE_CLOUD_TENANT')
             exit(1)
-        self.headers = {'content-type': 'application/json', 'X-Avi-Tenant': '*', 'X-Avi-Version':self.get_version()}
         self.is_connected()
 
     def is_connected(self):
@@ -47,13 +48,8 @@ class AviAzure(object):
         To check for successful authentication
         :return: True: Success or False: Failed
         '''
-        rsp = self.session.get("https://%s/"%self.controller_ip, \
-                               auth=(self.username, self.password), headers=self.headers, verify=False)
-        if rsp.status_code!=200:
-            print rsp.text
-            return False
-        return True
-
+        self.api = ApiSession.get_session(self.controller_ip, self.username,
+                                          self.password, tenant="*", api_version=self.get_version())
 
     def get(self, url, tenant=None):
         '''
@@ -61,15 +57,14 @@ class AviAzure(object):
         :param url: controller url
         :return:
         '''
-        header = self.headers
+        header_tenant = '*'
         if tenant:
-            header['X-Avi-Tenant'] = tenant
-        rsp = self.session.get("https://%s/api/%s" % (self.controller_ip, url),
-                               auth=(self.username, self.password), headers=header, verify=False)
+            header_tenant = tenant
+
+        rsp = self.api.get(url, tenant=header_tenant)
         if rsp.status_code!=200:
             raise Exception(rsp.text)
         return rsp.status_code, rsp.json()
-
 
     def put(self, url, data):
         '''
@@ -78,12 +73,10 @@ class AviAzure(object):
         :param data: API data to be posted
         :return:
         '''
-        rsp = self.session.put("https://%s/api/%s"%(self.controller_ip, url), json=data,
-                                auth=(self.username, self.password), headers=self.headers, verify=False)
+        rsp = self.api.put(url, data=data, tenant='*')
         if rsp.status_code!=200:
             raise Exception(rsp.text)
         return rsp.status_code, rsp.json()
-
 
     def get_version(self):
         '''
@@ -103,14 +96,13 @@ class AviAzure(object):
             print resp.text
             print 'Error while getting controller version'
 
-
     def get_se_with_no_az(self, se_cloud_uuid):
         '''
         Get the list of SEs uuid with no Availability Zone
         :return:
         '''
         se_list = {}
-        status, result = self.get('serviceengine?page_size=1000')
+        status, result = self.get('serviceengine?page_size=200')
         print 'SEs with no AZ:'
         for se in result['results']:
             cloud_ref = se['cloud_ref'].split('/')[-1]
@@ -127,7 +119,7 @@ class AviAzure(object):
         :return:
         '''
         vs_list = {}
-        status, result = self.get('virtualservice?page_size=1000')
+        status, result = self.get('virtualservice?page_size=200')
         result = result['results']
         for vs in result:
             cloud_ref = vs['cloud_ref'].split('/')[-1]
@@ -218,8 +210,5 @@ class AviAzure(object):
 
 
 if __name__ == '__main__':
-
     obj = AviAzure()
     obj.disable_all_vs()
-
-
