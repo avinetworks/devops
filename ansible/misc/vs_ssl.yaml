@@ -90,7 +90,24 @@
               pool_ref: "/api/pool?name={{ APP }}_vs_sg"
         is_internal_policy: false
 
-
+    - avi_vsvip:
+        name: vsvip-{{ APP }}_vs-Default-Cloud
+        avi_credentials: '{{ avi_credentials }}' 
+        api_context: '{{avi_api_context | default(omit)}}'
+        tenant_ref: /api/tenant/?name={{ tenant }}
+        cloud_ref: /api/cloud/?name=Default-Cloud
+        state: "{{ state }}"
+        vip:
+        - vip_id: '1'
+          avi_allocated_fip: false
+          auto_allocate_ip: false
+          enabled: true
+          auto_allocate_floating_ip: false
+          avi_allocated_vip: false
+          auto_allocate_ip_type: V4_ONLY
+          ip_address:
+            type: V4
+            addr: 198.51.100.253
   #
   # Now, create the virtual service using the basic information already collected
   #
@@ -113,8 +130,6 @@
         http_policies:
           - index: 11
             http_policy_set_ref: "/api/httppolicyset?name={{ APP }}_vs_policy"
-        ip_address:
-         addr: "10.90.64.253"
-         type: "V4"
+        vsvip_ref: /api/vsvip/?name=vsvip-{{ APP }}_vs-Default-Cloud
       register: vip
     - debug: var=vip

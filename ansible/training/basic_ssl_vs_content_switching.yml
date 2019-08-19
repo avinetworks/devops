@@ -14,6 +14,11 @@
   vars:
     api_version: 17.1.2
     app_name: secured_pool_switcher
+    avi_credentials:
+      controller: "{{ avi_controller}}"
+      username: "{{ avi_username }}"
+      password: "{{ avi_password }}"
+      api_version: "{{ api_version }}"
   roles:
     - role: avinetworks.avisdk
   tasks:
@@ -21,10 +26,8 @@
       command: openssl req -new -nodes -x509 -subj "/C=US/ST=CA/L=San Francisco/O=IT/CN={{ app_name }}.com" -days 3650 -keyout ssl_certs/{{app_name}}.key -out ssl_certs/{{app_name}}.crt -extensions v3_ca creates=ssl_certs/{{app_name}}.crt
     - name: Upload or Update SSL certificate - always changed due to sensitve field
       avi_sslkeyandcertificate:
-        controller: "{{ avi_controller}}"
-        username: "{{ avi_username }}"
-        password: "{{ avi_password }}"
-        api_version: "{{ api_version }}"
+        avi_credentials: '{{ avi_credentials }}'
+        api_context: '{{avi_api_context | default(omit)}}'
         tenant: admin
         key: "{{ lookup('file', 'ssl_certs/'~app_name~'.key') }}"
         certificate:
@@ -35,10 +38,8 @@
 
     - name: Create or Update Pool A
       avi_pool:
-        controller: "{{ avi_controller}}"
-        username: "{{ avi_username }}"
-        password: "{{ avi_password }}"
-        api_version: "{{ api_version }}"
+        avi_credentials: '{{ avi_credentials }}'
+        api_context: '{{avi_api_context | default(omit)}}'
         name: "{{app_name}}-pool-bar"
         health_monitor_refs: '/api/healthmonitor?name=System-HTTP'
         cloud_ref: '/api/cloud?name=Default-Cloud'
@@ -49,10 +50,8 @@
 
     - name: Create or Update Pool B
       avi_pool:
-        controller: "{{ avi_controller}}"
-        username: "{{ avi_username }}"
-        password: "{{ avi_password }}"
-        api_version: "{{ api_version }}"
+        avi_credentials: '{{ avi_credentials }}'
+        api_context: '{{avi_api_context | default(omit)}}'
         name: "{{app_name}}-pool-foo"
         health_monitor_refs:
           - '/api/healthmonitor?name=System-HTTP'
@@ -64,10 +63,8 @@
 
     - name: Create or Update Default
       avi_pool:
-        controller: "{{ avi_controller}}"
-        username: "{{ avi_username }}"
-        password: "{{ avi_password }}"
-        api_version: "{{ api_version }}"
+        avi_credentials: '{{ avi_credentials }}'
+        api_context: '{{avi_api_context | default(omit)}}'
         name: "{{app_name}}-pool"
         health_monitor_refs: '/api/healthmonitor?name=System-HTTP'
         cloud_ref: '/api/cloud?name=Default-Cloud'
@@ -78,10 +75,8 @@
 
     - name: Create HTTP PolicySet
       avi_httppolicyset:
-        controller: "{{ avi_controller}}"
-        username: "{{ avi_username }}"
-        password: "{{ avi_password }}"
-        api_version: "{{ api_version }}"
+        avi_credentials: '{{ avi_credentials }}'
+        api_context: '{{avi_api_context | default(omit)}}'
         name: "{{app_name}}-httppolicy"
         http_request_policy:
           rules:
@@ -112,20 +107,37 @@
                 status_code: HTTP_LOCAL_RESPONSE_STATUS_CODE_200
                 pool_ref: "/api/pool?name={{app_name}}-pool-bar"
         is_internal_policy: false
+
+    - name: Create VS Vip for VS >= 17
+      avi_vsvip:
+        name: vsvip-"{{ app_name }}"-Default-Cloud
+        avi_credentials: '{{ avi_credentials }}' 
+        api_context: '{{avi_api_context | default(omit)}}'
+        tenant_ref: /api/tenant/?name={{ tenant }}
+        cloud_ref: /api/cloud/?name=Default-Cloud
+        state: "{{ state }}"
+        vip:
+        - vip_id: '1'
+          avi_allocated_fip: false
+          auto_allocate_ip: false
+          enabled: true
+          auto_allocate_floating_ip: false
+          avi_allocated_vip: false
+          auto_allocate_ip_type: V4_ONLY
+          ip_address:
+            type: V4
+            addr: 198.51.100.222
+      when:
+        - api_version >= "17"
+
     - name: Create Virtual Service > 17.1
       avi_virtualservice:
-        controller: "{{ avi_controller}}"
-        username: "{{ avi_username }}"
-        password: "{{ avi_password }}"
-        api_version: "{{ api_version }}"
+        avi_credentials: '{{ avi_credentials }}'
+        api_context: '{{avi_api_context | default(omit)}}' 
         name: "{{app_name}}"
         pool_ref: "/api/pool?name={{app_name}}-pool"
         cloud_ref: '/api/cloud?name=Default-Cloud'
-        vip:
-          - ip_address:
-              addr: '10.90.64.230'
-              type: 'V4'
-            vip_id: '1'
+        vsvip_ref: /api/vsvip/?name=vsvip-"{{app_name}}"-Default-Cloud
         ssl_key_and_certificate_refs:
           - '/api/sslkeyandcertificate?name={{app_name}}-cert'
         ssl_profile_ref: '/api/sslprofile?name=System-Standard'
@@ -142,10 +154,8 @@
 
     - name: Create Virtual Service < 17.x
       avi_virtualservice:
-        controller: "{{ avi_controller}}"
-        username: "{{ avi_username }}"
-        password: "{{ avi_password }}"
-        api_version: "{{ api_version }}"
+        avi_credentials: '{{ avi_credentials }}'
+        api_context: '{{avi_api_context | default(omit)}}'
         name: "{{app_name}}"
         pool_ref: "/api/pool?name={{app_name}}-pool"
         cloud_ref: '/api/cloud?name=Default-Cloud'

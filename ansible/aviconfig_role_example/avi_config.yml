@@ -8,6 +8,15 @@ avi_config:
              addr: 10.90.64.12
              type: 'V4'
 
+  vsvip:
+    - name: vsvip-app1-Default-Cloud
+      vip:
+      - enabled: true
+        ip_address:
+          addr: 10.90.64.244
+          type: V4
+        vip_id: '1'
+
   virtualservice:
     - name: app1
       services:
@@ -15,9 +24,5 @@ avi_config:
       pool_ref: '/api/pool?name=app1-pool'
       #pool_ref:
       #  state: absent
-      vip:
-        - ip_address:
-            addr: 10.90.64.244
-            type: 'V4'
-          vip_id: '1'
+      vsvip_ref: /api/vsvip/?name=vsvip-app1-Default-Cloud
 

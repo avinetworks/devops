@@ -32,6 +32,28 @@
                addr: '10.90.64.14'
                type: 'V4'
 
+    - name: Create VS Vip for VS >= 17
+      avi_vsvip:
+        name: vsvip-"{{ app_name }}"-Default-Cloud
+        avi_credentials: '{{ avi_credentials }}' 
+        api_context: '{{avi_api_context | default(omit)}}'
+        tenant_ref: /api/tenant/?name={{ tenant }}
+        cloud_ref: /api/cloud/?name=Default-Cloud
+        state: "{{ state }}"
+        vip:
+        - vip_id: '1'
+          avi_allocated_fip: false
+          auto_allocate_ip: false
+          enabled: true
+          auto_allocate_floating_ip: false
+          avi_allocated_vip: false
+          auto_allocate_ip_type: V4_ONLY
+          ip_address:
+            type: V4
+            addr: 198.51.100.222
+      when:
+        - api_version >= "17"
+
     - name: Create Virtual Service >= 17
       avi_virtualservice:
         avi_credentials: "{{ avi_credentials }}"
@@ -40,11 +62,7 @@
         name: "{{ app_name }}"
         pool_ref: "/api/pool?name={{ app_name }}-pool"
         cloud_ref: '/api/cloud?name=Default-Cloud'
-        vip:
-          - ip_address:
-              addr: '10.90.64.222'
-              type: 'V4'
-            vip_id: '1'
+        vsvip_ref: /api/vsvip/?name=vsvip-"{{ app_name }}"-Default-Cloud
         services:
           - port: 4242
       when:

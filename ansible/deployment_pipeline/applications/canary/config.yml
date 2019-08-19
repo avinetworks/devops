@@ -40,16 +40,20 @@ avi_config:
         - ip:
              addr: "{{ pool_server2 }}"
              type: 'V4'
-
+  vsvip:
+    - name: vsvip-canary-Default-Cloud
+      vip:
+      - enabled: true
+        ip_address:
+          addr: "{{cd_app_vip}}"
+          type: V4
+        vip_id: '1'
+        
   virtualservice:
     - name: canary
       services:
         - port: 80
-      vip:
-        - ip_address:
-            addr: "{{cd_app_vip}}"
-            type: 'V4'
-          vip_id: '1'
+      vsvip_ref: /api/vsvip/?name=vsvip-canary-Default-Cloud
 
       pool_group_ref: '/api/poolgroup?name=canary-poolgroup'
       cloud_ref: '/api/cloud?name=Default-Cloud'

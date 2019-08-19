@@ -1,5 +1,6 @@
 avi_credentials:
   controller: 10.10.29.116
   username: admin
-  password: password$%
+  password: password
   api_version: 17.1.5
+  tenant: admin
