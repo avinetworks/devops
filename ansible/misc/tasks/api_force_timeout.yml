@@ -1,0 +1,10 @@
+---
+- name: Associate Deployment | Set api_force_timeout to 24 instead of 1
+  avi_systemconfiguration:
+    avi_credentials: "{{ avi_credentials }}"
+    api_version: 18.2.3
+    avi_api_update_method: patch
+    avi_api_patch_op: replace
+    portal_configuration:
+      api_force_timeout: 24
+  when: avi_version is version('18.2.3', '>=')

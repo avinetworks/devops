@@ -1,0 +1,55 @@
+---
+- name: Patch Controller | Get the package from GCP Storage bucket
+  gcp_storage_object:
+    action: download
+    bucket: "{{ bucket_name }}"
+    project: "{{ project_name }}"
+    auth_kind: serviceaccount
+    service_account_file: "{{ credentials_file }}"
+    scopes:
+       - 'https://www.googleapis.com/auth/cloud-platform'
+       - 'https://www.googleapis.com/auth/cloud-platform.read-only'
+       - 'https://www.googleapis.com/auth/devstorage.full_control'
+       - 'https://www.googleapis.com/auth/devstorage.read_only'
+       - 'https://www.googleapis.com/auth/devstorage.read_write'
+    src: "{{ gcp_path }}"
+    dest: "{{ patch_path }}"
+    state: present
+    overwrite: yes
+
+- name: Patch Controller | Upload package on controller
+  avi_api_fileservice:
+    avi_credentials: "{{ avi_credentials }}"
+    api_version: 17.2.13
+    upload: true
+    timeout: 300
+    path: /patch_pkgs/
+    file_path: "{{ patch_path }}"
+
+- name: Patch Controller | Upgrade controller
+  avi_api_session:
+    avi_credentials: "{{ avi_credentials }}"
+    api_version: 17.2.13
+    http_method: post
+    timeout: 300
+    path: cluster/upgrade/
+    data:
+      image_path: controller://upgrade_pkgs/{{ patch_path|basename }}
+      force: true
+      disruptive: true
+      patch: true
+
+- name: Patch Controller | Wait for the Controller Upgrade to finish
+  avi_api_session:
+    avi_credentials: "{{ avi_credentials }}"
+    api_version: 17.2.13
+    http_method: get
+    timeout: 300
+    path: cluster/upgrade/status
+  register: upgrade_status
+  until: upgrade_status.obj.controller_state.state == "UPGRADE_COMPLETED"
+  retries: 120
+  delay: 80
+
+- debug:
+    msg: "{% if upgrade_status.obj.result == 'SUCCESS' %}Patching completed successfully{% else %}Patching failed{% endif %}"

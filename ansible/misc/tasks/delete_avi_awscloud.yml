@@ -1,0 +1,56 @@
+---
+- name: Get the details of the Avi Cloud Object
+  avi_api_session:
+    avi_credentials: "{{ avi_credentials }}"
+    http_method: get
+    tenant: "{{ tenant_name }}"
+    path: "{{ avi_obj }}"
+    params:
+      name: "{{ obj_name }}"
+    api_version: 17.2.15
+  register: ret_obj
+  ignore_errors: true
+
+
+- block:
+    - name: sleep for 300 seconds and continue with play
+      wait_for:
+          timeout: 180
+
+    - name: Re-estanlish the session to get the cloud object
+      avi_api_session:
+        avi_credentials: "{{ avi_credentials }}"
+        http_method: get
+        tenant: "{{ tenant_name }}"
+        path: "{{ avi_obj }}"
+        params:
+          name: "{{ obj_name }}"
+        api_version: 17.2.15
+      register: temp_obj
+
+    - name: Store the results for reestablished connections
+      set_fact:
+        cloud_obj: "{{ temp_obj }}"
+  when: ret_obj.module_stderr is defined
+
+- name: Store the results either from first session or new session
+  set_fact:
+    obj_info: "{% if cloud_obj is defined %}{{ cloud_obj }}{% else %}{{ ret_obj }}{% endif %}"
+
+- debug:
+    msg: "{{ obj_info }}"
+
+- name: Delete the Avi Cloud Object
+  avi_api_session:
+    avi_credentials: "{{ avi_credentials }}"
+    api_version: 17.2.15
+    http_method: delete
+    tenant: "{{ tenant_name }}"
+    path: "{{ avi_obj }}/{{ item.uuid }}"
+    params:
+      name: "{{ obj_name }}"
+  loop: "{{ obj_info.obj.results }}"
+  when:
+    - obj_info.obj.count > 0
+    - item.name is defined
+    - item.name == obj_name

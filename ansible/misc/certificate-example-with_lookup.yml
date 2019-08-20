@@ -2,20 +2,24 @@
 ---
 - hosts: localhost
   connection: local
+  vars:
+    avi_credentials:
+      controller: "{{ avi_controller }}"
+      username: "{{ avi_username }}"
+      password: "{{ avi_password }}"
   roles:
     - role: avinetworks.avisdk
   tasks:
     - debug: msg="Private Key is {{ lookup('file', 'private_key.pem') }}"
-    - debug: msg="Public Cert is {{ lookup('file', 'certificate.crt')}}"
-    - avi_sslkeyandcertificate:
-        controller: "{{controller}}"
-        username: admin
-        password: "{{password}}"
+    - debug: msg="Public Cert is {{ lookup('file', 'certificate.crt') }}"
+    - name: create ssl certificate
+      avi_sslkeyandcertificate:
+        avi_credentials: "{{ avi_credentials }}"
         tenant: admin
         api_version: 17.2.7
         key: "{{ lookup('file', 'private_key.pem') }}"
         certificate:
           self_signed: true
-          certificate: "{{ lookup('file', 'certificate.crt')}}"
+          certificate: "{{ lookup('file', 'certificate.crt') }}"
         type: SSL_CERTIFICATE_TYPE_VIRTUALSERVICE
         name: MyTestCert

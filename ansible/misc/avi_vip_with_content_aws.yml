@@ -5,9 +5,10 @@
 ---
 - hosts: localhost
   vars:
-    controller: 10.74.25.34
-    username: admin
-    password: Football1
+    avi_credentials:
+      controller: 10.74.25.34
+      username: admin
+      password: Football1
     tenant: "{{ tenant_name }}"
     vip_name: "{{ vip_name }}"
     pool_name: "{{ pool_name }}"
@@ -22,18 +23,16 @@
   roles:
   - role: avinetworks.avisdk
   tasks:
-  - avi_api_session:
-      controller: "{{ controller }}"
-      username: "{{ username }}"
-      password: "{{ password }}"
+  - name: get cloud data
+    avi_api_session:
+      avi_credentials: "{{ avi_credentials }}"
       tenant: "{{ tenant }}"
       http_method: get
       path: "cloud?name={{ cloud_name }}"
     register: cloud_data
-  - avi_api_session:
-      controller: "{{ controller }}"
-      username: "{{ username }}"
-      password: "{{ password }}"
+  - name: get subnet list
+    avi_api_session:
+      avi_credentials: "{{ avi_credentials }}"
       tenant: "{{ tenant }}"
       http_method: get
       path: networksubnetlist
@@ -42,7 +41,7 @@
         sort: name
         name: "{{ subnet_name }}"
         auto_allocate_only: true
-        cloud_uuid: "{{ cloud_data.obj.results[0].uuid}}"
+        cloud_uuid: "{{ cloud_data.obj.results[0].uuid }}"
     register: subnets
 #  - name: Create Content switching rules
 #    set_fact:
@@ -103,15 +102,14 @@
     debug: msg="{{ cs_rules_array }}"
   - name: create cs_rule array
     set_fact:
-      cs_rules: "{{cs_rules|default([]) + [item.ansible_facts.cs_rule] }}"
+      cs_rules: "{{ cs_rules|default([]) + [item.ansible_facts.cs_rule] }}"
     with_items: "{{ cs_rules_array.results }}"
   - name: dump final
     debug: msg="{{ cs_rules }}"
-  - avi_httppolicyset:
+  - name: create httppolicyset
+    avi_httppolicyset:
       #state: absent
-      controller: "{{ controller }}"
-      username: "{{ username }}"
-      password: "{{ password }}"
+      avi_credentials: "{{ avi_credentials }}"
       tenant: "{{ tenant }}"
       name: "{{ policy_set }}"
       http_request_policy:
@@ -125,18 +123,17 @@
         fqdn: "{{ item }}"
         type: DNS_RECORD_A
     register: parsed_fqdn_array
-    with_items: "{{fqdns.split(',')}}"
+    with_items: "{{ fqdns.split(',') }}"
   - name: Create Dns info array
     set_fact:
-      dns_info: "{{dns_info|default([]) + [item.ansible_facts.fqdn_item] }}"
+      dns_info: "{{ dns_info|default([]) + [item.ansible_facts.fqdn_item] }}"
     with_items: "{{ parsed_fqdn_array.results }}"
   - name: DNS info array for virtual services
     debug:
       msg: "{{ dns_info }}"
-  - avi_virtualservice:
-      controller: "{{ controller }}"
-      username: "{{ username }}"
-      password: "{{ password }}"
+  - name: create virtualservice
+    avi_virtualservice:
+      avi_credentials: "{{ avi_credentials }}"
       tenant: "{{ tenant }}"
       cloud_ref: "/api/cloud?name={{ cloud_name }}"
       name: "{{ vip_name }}"
@@ -149,11 +146,11 @@
       ssl_profile_ref: '/api/sslprofile?name=System-Standard'
       application_profile_ref: '/api/applicationprofile?name=System-Secure-HTTP'
       ssl_key_and_certificate_refs:
-        - '/api/sslkeyandcertificate?name={{cert_name}}'
+        - '/api/sslkeyandcertificate?name={{ cert_name }}'
       subnet_uuid: "{{ subnets.obj.results[0].uuid }}"
       pool_ref: '/api/pool?name={{ pool_name }}'
       http_policies:
         - index: 11
-          http_policy_set_ref: '/api/httppolicyset?name={{policy_set}}'
+          http_policy_set_ref: '/api/httppolicyset?name={{ policy_set }}'
       auto_allocate_ip: true
     register: vip

@@ -12,15 +12,15 @@
   tasks:
   - name: Create pool with just name
     avi_pool:
-      avi_credentials: "{{avi_credentials}}"
+      avi_credentials: "{{ avi_credentials }}"
       name: test-pool
-      state: "{{ state | default('present')}}"
+      state: "{{ state | default('present') }}"
     register: pool
   - name: Patch pool with a single server using patch op
     avi_pool:
       avi_api_update_method: patch
       avi_api_patch_op: add
-      avi_credentials: "{{avi_credentials}}"
+      avi_credentials: "{{ avi_credentials }}"
       name: test-pool
       servers:
         - ip:
@@ -30,4 +30,4 @@
     when:
       - state | default("present") == "present"
   - name: New Pool with Server
-    debug: msg="{{pool}}"
+    debug: msg="{{ pool }}"

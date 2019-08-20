@@ -1,0 +1,24 @@
+---
+- name: Check if the user is already existing or not
+  avi_api_session:
+    avi_credentials: "{{ avi_credentials }}"
+    tenant: "{{ tenant_name }}"
+    http_method: get
+    path: cloudconnectoruser
+    api_version: 17.2.5
+    params:
+        name: "azure-credentials"
+  register: azure_cred_info
+
+- name: Create the Azure Cloud Connector object
+  avi_cloudconnectoruser:
+    avi_credentials: "{{ avi_credentials }}"
+    tenant: "{{ tenant_name }}"
+    api_version: 17.2.5
+    azure_userpass:
+        username: "{{ azure_username }}"
+        password: "{{ azure_password }}"
+        tenant_name: "{{ azure_ad }}"
+    name: "azure-credentials"
+  register: cloudconnector_ret_info
+  when: azure_cred_info.obj.results[0].name is not defined

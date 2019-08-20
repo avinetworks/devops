@@ -1,17 +1,16 @@
 ---
 - hosts: localhost
   vars:
-    controller: "{{ controller }}"
-    username: admin
-    password: "{{ password }}"
+    avi_credentials:
+      controller: "{{ controller }}"
+      username: admin
+      password: "{{ password }}"
   connection: local
   tasks:
     - name: test
       debug: msg="{{ controller }}"
     - name: Fetch Avi Version
       avi_api_version:
-        controller: "{{ controller }}"
-        username: "{{ username }}"
-        password: "{{ password }}"
+        avi_credentials: "{{ avi_credentials }}"
       register: avi_version
-    - debug: msg="{{avi_version}}"
+    - debug: msg="{{ avi_version }}"

@@ -7,14 +7,14 @@
 - hosts: localhost
   connection: local
   vars:
-    controller: 10.10.25.42
-    username: admin
-    password: password
+    avi_credentials:
+      controller: 10.10.25.42
+      username: admin
+      password: password
   tasks:
-    - avi_pool:
-        controller: "{{ controller }}"
-        username: "{{ username }}"
-        password: "{{ password }}"
+    - name: create pool pgm1
+      avi_pool:
+        avi_credentials: "{{ avi_credentials }}"
         name: pgm1
         description: pool group member 1
         state: present
@@ -24,10 +24,9 @@
            - ip:
                addr: '10.90.64.111'
                type: 'V4'
-    - avi_pool:
-        controller: "{{ controller }}"
-        username: "{{ username }}"
-        password: "{{ password }}"
+    - name: create pool pgm2
+      avi_pool:
+        avi_credentials: "{{ avi_credentials }}"
         name: pgm2
         description: pool group member 1
         state: present
@@ -37,10 +36,9 @@
            - ip:
                addr: '10.90.64.112'
                type: 'V4'
-    - avi_poolgroup:
-        controller: "{{ controller }}"
-        username: "{{ username }}"
-        password: "{{ password }}"
+    - name: create pool group pg1
+      avi_poolgroup:
+        avi_credentials: "{{ avi_credentials }}"
         name: pg1
         description: pool group member 1
         state: present
@@ -51,4 +49,3 @@
           - ratio: 2
             pool_ref: /api/pool?name=pgm2
             priority_label: 1000
-

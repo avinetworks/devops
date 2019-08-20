@@ -1,0 +1,11 @@
+---
+- name: Create GSLB-Admin Role
+  avi_role:
+    avi_credentials: "{{ avi_credentials }}"
+    api_version: 17.2.13
+    name: GSLB-Admin
+    privileges:
+      - resource: PERMISSION_GSLB
+        type: WRITE_ACCESS
+      - resource: PERMISSION_GSLBGEODBPROFILE
+        type: WRITE_ACCESS

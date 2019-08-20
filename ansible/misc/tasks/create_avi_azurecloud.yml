@@ -1,0 +1,150 @@
+---
+- name: To check if the Avi Cloud objects already present or not
+  include_tasks: create_avi_awscloud/check_avi_awscloud.yml
+  vars:
+    avi_credentials:
+      controller: "{{ controller }}"
+      username: "{{ username }}"
+      password: "{{ password }}"
+    avi_tenant: "{{ tenant_name }}"
+    environ_name: "{{ project_name }}"
+    cloud_name: "{{ cloud }}"
+
+- name: Get the Deployment Azure Stack Information
+  azure_rm_deployment_facts:
+    ad_user: "{{ azure_ad_user }}"
+    password: "{{ azure_ad_password }}"
+    name: "{{ project_name }}"
+    resource_group: "{{ project_name }}-ResourceGroup"
+    subscription_id: "{{ subscription_id }}"
+  register: deployment_info
+
+- name: Create the Azure Cloud once the Azure stack is created
+  avi_cloud:
+    name: "{{ cloud }}"
+    vtype: CLOUD_AZURE
+    license_tier: ENTERPRISE_18
+    enable_vip_static_routes: false
+    avi_credentials: "{{ avi_credentials }}"
+    tenant: "{{ tenant_name }}"
+    dhcp_enabled: true
+    prefer_static_routes: false
+    apic_mode: false
+    api_version: 17.2.15
+    license_type: LIC_CORES
+    mtu: 1500
+    state_based_dns_registration: true
+    azure_configuration:
+      use_managed_disks: true
+      resource_group: "{{ project_name }}-ResourceGroup"
+      use_enhanced_ha: false
+      cloud_credentials_ref: "/api/cloudconnectoruser?name={{ cloudconnector_profile }}"
+      use_azure_dns: false
+      location: "{{ location }}"
+      network_info:
+      - se_network_id: "{{ project_name }}-subnet"
+        virtual_network_id: "/subscriptions/{{ subscription_id }}/resourceGroups/{{ project_name }}-\
+          ResourceGroup/providers/Microsoft.Network/virtualNetworks/{{ project_name }}-vnet"
+      subscription_id: "{{ subscription_id }}"
+      use_standard_alb: false
+  register: azure_cloud_obj
+  ignore_errors: true
+  when:
+      - deployment_info.deployments[0].name is defined
+      - deployment_info.deployments[0].provisioning_state == "Succeeded"
+
+- name: sleep for 300 seconds and continue with play
+  wait_for:
+      timeout: 180
+
+- name: Wait for the Creation of the Azure Cloud and then create VS/SE
+  avi_api_session:
+    avi_credentials: "{{ avi_credentials }}"
+    tenant: "{{ tenant_name }}"
+    http_method: get
+    path: "cloud/{{ azure_cloud_obj.obj.uuid }}/status"
+    params:
+      name: "{{ azure_cloud_obj.obj.name }}"
+    api_version: 17.2.15
+  register: cloud_crt_obj
+  until: cloud_crt_obj.obj.state == "CLOUD_STATE_PLACEMENT_READY"
+  retries: 60
+  delay: 80
+
+
+- name: Create the Pool
+  avi_pool:
+    avi_credentials: "{{ avi_credentials }}"
+    tenant: "{{ tenant_name }}"
+    api_version: 17.2.15
+    lb_algorithm: LB_ALGORITHM_LEAST_CONNECTIONS
+    tenant_ref: "/api/tenant?name={{ tenant_name }}"
+    servers:
+      - hostname: "{{ project_name }}-VM"
+        ratio: 1
+        ip:
+          type: V4
+          addr: "{{ deployment_info.deployments[0].outputs.networkInterface.value }}"
+        discovered_networks:
+        - network_ref: "/api/network/{{ project_name }}-subnet"
+        enabled: true
+        nw_ref: "/api/vimgrnwruntime/{{ project_name }}-subnet"
+        resolve_server_by_dns: false
+        vm_ref: "/api/vimgrvmruntime/{{ project_name }}-VM"
+    networks:
+    - network_ref: "/api/vimgrnwruntime/{{ project_name }}-subnet"
+    cloud_ref: "/api/cloud?name={{ cloud }}"
+    inline_health_monitor: true
+    default_server_port: 80
+    request_queue_depth: 128
+    graceful_disable_timeout: 1
+    server_count: 1
+    sni_enabled: true
+    name: "{{ project_name }}-Pool"
+    enabled: true
+    health_monitor_refs:
+    - /api/healthmonitor?name=System-HTTP
+  register: pool_rtn_obj
+  when:
+    - cloud_crt_obj.obj.state == "CLOUD_STATE_PLACEMENT_READY"
+
+- name: Create the VS when the Cloud State is CLOUD_STATE_PLACEMENT_READY
+  avi_virtualservice:
+    enabled: true
+    traffic_enabled: true
+    enable_autogw: true
+    east_west_placement: false
+    name: "{{ project_name }}-VS"
+    avi_credentials: "{{ avi_credentials }}"
+    tenant: "{{ tenant_name }}"
+    type: VS_TYPE_NORMAL
+    api_version: 17.2.15
+    active_standby_se_tag: "ACTIVE_STANDBY_SE_1"
+    analytics_policy:
+      client_insights: "NO_INSIGHTS"
+      enabled: true
+    application_profile_ref: /api/applicationprofile?name=System-HTTP
+    network_profile_ref: /api/networkprofile?name=System-TCP-Proxy
+    se_group_ref: /api/serviceenginegroup?name=Default-Group
+    vip:
+      - vip_id: '1'
+        avi_allocated_fip: true
+        auto_allocate_ip: true
+        auto_allocate_floating_ip: true
+        enabled: true
+        avi_allocated_vip: true
+        subnet_uuid: "{{ project_name }}-subnet"
+        ipam_network_subnet:
+          subnet_uuid: "{{ project_name }}-subnet"
+          network_ref: "/api/network/{{ project_name }}-subnet"
+        network_ref: "/api/network/{{ project_name }}-subnet"
+    cloud_ref: "/api/cloud?name={{ cloud }}"
+    cloud_type: "CLOUD_AZURE"
+    services:
+    - enable_ssl: false
+      port_range_end: 80
+      port: 80
+    pool_ref: "/api/pool?name={{ project_name }}-Pool"
+  when:
+    - cloud_crt_obj.obj.state == "CLOUD_STATE_PLACEMENT_READY"
+    - pool_rtn_obj is succeeded

@@ -1,0 +1,11 @@
+---
+- name: SaaS Actions | Get the Deployment Information
+  azure_rm_deployment_facts:
+    ad_user: "{{ ad_user }}"
+    password: "{{ ad_password }}"
+    name: "{{ proj }}"
+    profile: default
+    resource_group: "{{ proj }}-ResourceGroup"
+    subscription_id: "{{ subscription_id }}"
+  register: deployment_info
+  failed_when: deployment_info.deployments[0].name is defined

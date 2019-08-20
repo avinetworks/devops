@@ -1,0 +1,236 @@
+---
+- name: Check whether the Deployment is already existing or not
+  include_tasks: create_azure_stack/check_azure_deployment.yml
+  vars:
+    proj: "{{ project_name }}"
+    subscription: "{{ subscription_id }}"
+    ad_user: "{{ azure_ad_user }}"
+    ad_password: "{{ azure_ad_password }}"
+
+- name:  Get the Cloud Connector info for getting ssh public key
+  avi_api_session:
+    avi_credentials: "{{ avi_credentials }}"
+    tenant: "{{ tenant_name }}"
+    http_method: get
+    path: cloudconnectoruser
+    params:
+        name: "azure-credentials"
+  register: cloudconnector_info
+
+- name: Create the Azure Deployment with ResouceGrp VNet Subnet and VM
+  azure_rm_deployment:
+    resource_group: "{{ project_name }}-ResourceGroup"
+    ad_user: "{{ azure_ad_user }}"
+    password: "{{ azure_ad_password }}"
+    deployment_mode: complete
+    location: "{{ location }}"
+    name: "{{ project_name }}"
+    subscription_id: "{{ subscription_id }}"
+    state: present
+    parameters:
+      projectName:
+        value: "{{ project_name }}"
+      vmName:
+        value: "{{ project_name }}-VM"
+      vmSize:
+        value: Standard_D1_v2
+      adminUsername:
+        value: admin
+      location:
+        value: "{{ location }}"
+      vNetAddressPrefix:
+        value: "{{ vnet_address }}"
+      subnetAddressPrefix:
+        value: "{{ subnet_address }}"
+      adminPublicKey:
+        value: "{{ cloudconnector_info.obj.results[0].public_key }}"
+    template:
+      $schema: "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#"
+      contentVersion: 1.0.0.0
+      parameters:
+        projectName:
+          type: string
+          defaultValue: Azure-T1
+          metadata:
+            description: Specifies a name for generating resource names.
+        vmName:
+          type: string
+          defaultValue: "[concat(parameters('projectName'), '-VM')]"
+          metadata:
+            description: VM Name
+        vmSize:
+          type: string
+          defaultValue: Standard_D1_v2
+          metadata:
+            description: VM Size
+        adminUsername:
+          type: string
+          defaultValue: admin
+          metadata:
+            description: Administrator name
+        location:
+          type: string
+          defaultValue: "[resourceGroup().location]"
+          metadata:
+            description: Location for all resources.
+        vNetAddressPrefix:
+          type: string
+          defaultValue: 10.16.0.0/16
+          metadata:
+            description: vNet Address Space
+        subnetAddressPrefix:
+          type: string
+          defaultValue: 10.16.1.0/24
+          metadata:
+            description: Subnet Address Space
+        adminPublicKey:
+          type: string
+          metadata:
+            description: Admin ssh public key
+      variables:
+        vnetName: "[concat(parameters('projectName'), '-vnet')]"
+        vNetAddressSpace: "[parameters('vNetAddressPrefix')]"
+        subnetName: "[concat(parameters('projectName'), '-subnet')]"
+        subnetAdressPrefix: "[parameters('subnetAddressPrefix')]"
+        subnetId: "[resourceId('Microsoft.Network/virtualNetworks/subnets',variables('vnetName'),variables('subnetName'))]"
+        nsgName: "[concat(parameters('projectName'), '-Nsg')]"
+        nsgId: "[resourceId('Microsoft.Network/networkSecurityGroups',variables('nsgName'))]"
+        imageInfo:
+          publisher: Canonical
+          offer: UbuntuServer
+          sku: 18.04-LTS
+          version: latest
+        vmStorageType: Standard_LRS
+      resources:
+          - comments: Network Security Group
+            name: "[variables('nsgName')]"
+            type: Microsoft.Network/networkSecurityGroups
+            apiVersion: '2017-09-01'
+            location: "[parameters('location')]"
+            properties:
+              securityRules:
+                  - name: http
+                    properties:
+                      protocol: TCP
+                      sourcePortRange: "*"
+                      destinationPortRange: '80'
+                      sourceAddressPrefix: "*"
+                      destinationAddressPrefix: "*"
+                      access: Allow
+                      priority: 1010
+                      direction: Inbound
+                      sourcePortRanges: []
+                      destinationPortRanges: []
+                      sourceAddressPrefixes: []
+                      destinationAddressPrefixes: []
+                  - name: ssh
+                    properties:
+                      protocol: TCP
+                      sourcePortRange: "*"
+                      destinationPortRange: '22'
+                      sourceAddressPrefix: "*"
+                      destinationAddressPrefix: "*"
+                      access: Allow
+                      priority: 1030
+                      direction: Inbound
+                      sourcePortRanges: []
+                      destinationPortRanges: []
+                      sourceAddressPrefixes: []
+                      destinationAddressPrefixes: []
+          - comments: Virtual Network
+            name: "[variables('vNetName')]"
+            type: Microsoft.Network/virtualNetworks
+            apiVersion: '2016-03-30'
+            location: "[parameters('location')]"
+            dependsOn:
+              - "[variables('nsgName')]"
+            properties:
+              addressSpace:
+                addressPrefixes:
+                  - "[variables('vNetAddressSpace')]"
+              subnets:
+                - name: "[variables('subnetName')]"
+                  properties:
+                    addressPrefix: "[variables('subnetAdressPrefix')]"
+                    networkSecurityGroup:
+                      id: "[variables('nsgId')]"
+          - comments: Web Server Network Interface
+            name: "[concat(parameters('vmName'),'-NIC')]"
+            type: Microsoft.Network/networkInterfaces
+            location: "[parameters('location')]"
+            apiVersion: '2017-09-01'
+            dependsOn:
+              - "[variables('vNetName')]"
+              - "[variables('nsgName')]"
+            properties:
+              ipConfigurations:
+                - name: ipconfig1
+                  properties:
+                    privateIPAllocationMethod: Dynamic
+                    subnet:
+                      id: "[variables('subnetId')]"
+              networkSecurityGroup:
+                  id: "[variables('nsgId')]"
+              primary: true
+          - comments: Linux Web Server
+            name: "[parameters('vmName')]"
+            type: Microsoft.Compute/virtualMachines
+            apiVersion: '2017-03-30'
+            location: "[parameters('location')]"
+            dependsOn:
+              - "[concat(parameters('vmName'),'-NIC')]"
+            properties:
+              hardwareProfile:
+                vmSize: "[parameters('vmSize')]"
+              osProfile:
+                computerName: "[parameters('vmName')]"
+                adminUsername: "[parameters('adminUsername')]"
+                linuxConfiguration:
+                  disablePasswordAuthentication: true
+                  ssh:
+                    publicKeys:
+                      - path: "[concat('/home/', parameters('adminUsername'), '/.ssh/authorized_keys')]"
+                        keyData: "[parameters('adminPublicKey')]"
+              storageProfile:
+                imageReference: "[variables('imageInfo')]"
+                osDisk:
+                  name: "[concat(parameters('vmName'),'-osdisk')]"
+                  caching: ReadWrite
+                  createOption: FromImage
+                  managedDisk:
+                    storageAccountType: "[variables('vmStorageType')]"
+              networkProfile:
+                networkInterfaces:
+                  - id: "[resourceId('Microsoft.Network/networkInterfaces',concat(parameters('vmName'),'-NIC'))]"
+          - comments: Installs NGNIX
+            type: Microsoft.Compute/virtualMachines/extensions
+            name: "[concat(parameters('vmName'),'/linuxconfig')]"
+            apiVersion: '2015-06-15'
+            location: "[parameters('location')]"
+            dependsOn:
+              - "[parameters('vmName')]"
+            properties:
+              publisher: Microsoft.Azure.Extensions
+              type: CustomScript
+              typeHandlerVersion: '2.0'
+              autoUpgradeMinorVersion: true
+              settings:
+                commandToExecute: sudo apt-get update -y && sudo apt-get install nginx -y && sudo /etc/init.d/nginx start
+      outputs:
+            networkInterface:
+              type: string
+              value: "[reference(concat(parameters('vmName'),'-NIC')).ipConfigurations[0].properties.privateIPAddress]"
+
+- name: Get the Deployment Information
+  azure_rm_deployment_facts:
+    ad_user: "{{ azure_ad_user }}"
+    password: "{{ azure_ad_password }}"
+    name: "{{ project_name }}"
+    resource_group: "{{ project_name }}-ResourceGroup"
+    subscription_id: "{{ subscription_id }}"
+  register: deployment_info
+  until: deployment_info.deployments[0].provisioning_state == "Succeeded"
+  retries: 15
+  delay: 60
+  when:
+      - deployment_info.deployments[0].name is defined

@@ -1,0 +1,72 @@
+---
+- name: GSLB Config | Make sure GSLB Role exists
+  include_tasks: add_gslb_role.yml
+
+- name: GSLB Config | Follower | Generate Password for GSLB User
+  set_fact:
+    gslbadmin_password: "{{ lookup('password', '/dev/null chars=ascii_letters,digits,punctuation') }}"
+    ipaddr_fqdntype: DNS
+    ipaddr_iptype: V4
+  no_log: true
+
+- name: GSLB Config | Follower | Create GSLB User
+  avi_user:
+    avi_credentials: "{{ avi_credentials_follower }}"
+    api_version: 17.2.13
+    name: gslbadmin
+    obj_username: gslbadmin
+    obj_password: "{{ gslbadmin_password }}"
+    access:
+      - role_ref: "/api/role?name=GSLB-Admin"
+        tenant_ref: "/api/tenant?name=admin"
+    user_profile_ref: "/api/useraccountprofile?name=No-Lockout-User-Account-Profile"
+    is_active: true
+    default_tenant_ref: "/api/tenant?name=admin"
+
+- name: GSLB Config | Leader | Get leader GSLB site configuration
+  avi_api_session:
+    avi_credentials: "{{ avi_credentials }}"
+    api_version: 17.2.13
+    http_method: get
+    path: gslb
+    data:
+      name: Default
+  register: leader_gslb_obj
+
+- name: GSLB Config | Leader | Verify GSLB site configuration
+  avi_api_session:
+    avi_credentials: "{{ avi_credentials }}"
+    api_version: 17.2.13
+    http_method: post
+    path: gslbsiteops/verify
+    data:
+      name: filler_till_api_fixed
+      username: gslbadmin
+      password: "{{ gslbadmin_password }}"
+      port: 443
+      ip_addresses:
+        - type: "{% if avi_credentials_follower.controller|ipaddr %}{{ ipaddr_iptype }}{% else %}{{ ipaddr_fqdntype }}{% endif %}"
+          addr: "{{ avi_credentials_follower.controller }}"
+  register: gslb_verify
+
+- name: GSLB Config | Leader | Create the GSLB Site
+  avi_gslb:
+    avi_credentials: "{{ avi_credentials }}"
+    api_version: 17.2.13
+    avi_api_patch_op: add
+    avi_api_update_method: patch
+    name: Default
+    tenant_ref: "/api/tenant?name=admin"
+    leader_cluster_uuid: "{{ leader_gslb_obj.obj.results[0].leader_cluster_uuid }}"
+    sites:
+      - cluster_uuid: "{{ gslb_verify.obj.rx_uuid }}"
+        enabled: true
+        port: 443
+        member_type: GSLB_ACTIVE_MEMBER
+        ip_addresses:
+          - type: "{% if avi_credentials_follower.controller|ipaddr %}{{ ipaddr_iptype }}{% else %}{{ ipaddr_fqdntype }}{% endif %}"
+            addr: "{{ avi_credentials_follower.controller }}"
+        name: "{{ deployment_name }}"
+        username: gslbadmin
+        password: "{{ gslbadmin_password }}"
+    state: present

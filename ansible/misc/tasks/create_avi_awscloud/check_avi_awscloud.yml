@@ -1,0 +1,50 @@
+---
+- name: Check if the specified Cloud Name exists or not
+  avi_api_session:
+    avi_credentials: "{{ avi_credentials }}"
+    tenant: "{{ avi_tenant }}"
+    http_method: get
+    path: cloud
+    params:
+      name: "{{ cloud_name }}"
+    api_version: 17.2.15
+  register: cloud_rtn_obj
+  failed_when: cloud_rtn_obj.obj.count >= 1
+
+- name: Check if the VS exists or not
+  avi_api_session:
+    avi_credentials: "{{ avi_credentials }}"
+    tenant: "{{ avi_tenant }}"
+    http_method: get
+    path: virtualservice
+    params:
+      name: "{{ environ_name }}-VS"
+    api_version: 17.2.15
+  register: vs_rtn_obj
+  failed_when: vs_rtn_obj.obj.count >= 1
+
+- name: Check if the Pool Exists or not
+  avi_api_session:
+    avi_credentials: "{{ avi_credentials }}"
+    tenant: "{{ avi_tenant }}"
+    http_method: get
+    path: pool
+    params:
+      name: "{{ environ_name }}-Pool"
+    api_version: 17.2.15
+  register: pool_rtn_obj
+  failed_when: pool_rtn_obj.obj.count >= 1
+
+- name: Check if the Service Engines are exists or not
+  avi_api_session:
+    avi_credentials: "{{ avi_credentials }}"
+    http_method: get
+    tenant: "{{ avi_tenant }}"
+    path: serviceengine
+    api_version: 17.2.15
+    data:
+        cloud_ref: "/api/cloud?name={{ cloud_name }}"
+  register: se_rtn_obj
+  failed_when: se_rtn_obj.obj.count >= 1
+  when:
+    - vs_rtn_obj.obj.count >= 1

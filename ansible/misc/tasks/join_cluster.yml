@@ -1,0 +1,31 @@
+---
+- name: Join controller cluster
+  avi_cluster:
+    avi_credentials: "{{ avi_credentials }}"
+    api_version: 17.2.13
+    name: "{{ code }}-0"
+    nodes:
+      - name: "{{ leader_internal_dns }}"
+        ip:
+          addr: "{{ leader_internal_dns }}"
+          type: "DNS"
+        public_ip_or_name:
+          addr: "{{ leader_public_ip }}"
+          type: "V4"
+      - name: "{{ follower_one_internal_dns }}"
+        ip:
+          addr: "{{ follower_one_internal_dns }}"
+          type: "DNS"
+        public_ip_or_name:
+          addr: "{{ follower_one_public_ip }}"
+          type: "V4"
+      - name: "{{ follower_two_internal_dns }}"
+        ip:
+          addr: "{{ follower_two_internal_dns }}"
+          type: "DNS"
+        public_ip_or_name:
+          addr: "{{ follower_two_public_ip }}"
+          type: "V4"
+
+- name: Common | Wait for cluster
+  include_tasks: "common_tasks/wait_cluster_runtime.yml"

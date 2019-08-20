@@ -1,0 +1,86 @@
+---
+- name: Create SAML auth profile
+  avi_authprofile:
+    avi_credentials: "{{ avi_credentials }}"
+    api_version: 17.2.13
+    name: "OktaSAML"
+    type: "AUTH_PROFILE_SAML"
+    saml:
+      idp:
+        metadata: "{{ idp_metadata }}"
+      sp:
+        fqdn: "{{ fqdn }}"
+        saml_entity_type: "AUTH_SAML_DNS_FQDN"
+  register: auth_profile
+
+- name: Create auth mapping rules
+  avi_systemconfiguration:
+    avi_credentials: "{{ avi_credentials }}"
+    api_version: 17.2.13
+    avi_api_update_method: patch
+    avi_api_patch_op: add
+    admin_auth_configuration:
+      allow_local_user_login: True
+      auth_profile_ref: "{{ auth_profile.obj.url }}"
+      mapping_rules:
+        - index: 0
+          attribute_match:
+            criteria: "AUTH_MATCH_REGEX"
+            name: "Tenant1"
+            values:
+              - "^Avi-All$"
+          assign_role: "ASSIGN_MATCHING_ATTRIBUTE_VALUE"
+          role_attribute_name: "Role1"
+          assign_tenant: "ASSIGN_ALL"
+          tenant_attribute_name: "Tenant1"
+        - index: 1
+          assign_role: "ASSIGN_MATCHING_ATTRIBUTE_VALUE"
+          role_attribute_name: "Role1"
+          assign_tenant: "ASSIGN_MATCHING_ATTRIBUTE_VALUE"
+          tenant_attribute_name: "Tenant1"
+        - index: 2
+          assign_role: "ASSIGN_MATCHING_ATTRIBUTE_VALUE"
+          role_attribute_name: "Role2"
+          assign_tenant: "ASSIGN_MATCHING_ATTRIBUTE_VALUE"
+          tenant_attribute_name: "Tenant2"
+        - index: 3
+          assign_role: "ASSIGN_MATCHING_ATTRIBUTE_VALUE"
+          role_attribute_name: "Role3"
+          assign_tenant: "ASSIGN_MATCHING_ATTRIBUTE_VALUE"
+          tenant_attribute_name: "Tenant3"
+        - index: 4
+          assign_role: "ASSIGN_MATCHING_ATTRIBUTE_VALUE"
+          role_attribute_name: "Role4"
+          assign_tenant: "ASSIGN_MATCHING_ATTRIBUTE_VALUE"
+          tenant_attribute_name: "Tenant4"
+        - index: 5
+          assign_role: "ASSIGN_MATCHING_ATTRIBUTE_VALUE"
+          role_attribute_name: "Role5"
+          assign_tenant: "ASSIGN_MATCHING_ATTRIBUTE_VALUE"
+          tenant_attribute_name: "Tenant5"
+        - index: 6
+          assign_role: "ASSIGN_MATCHING_ATTRIBUTE_VALUE"
+          role_attribute_name: "Role6"
+          assign_tenant: "ASSIGN_MATCHING_ATTRIBUTE_VALUE"
+          tenant_attribute_name: "Tenant6"
+        - index: 7
+          assign_role: "ASSIGN_MATCHING_ATTRIBUTE_VALUE"
+          role_attribute_name: "Role7"
+          assign_tenant: "ASSIGN_MATCHING_ATTRIBUTE_VALUE"
+          tenant_attribute_name: "Tenant7"
+        - index: 8
+          assign_role: "ASSIGN_MATCHING_ATTRIBUTE_VALUE"
+          role_attribute_name: "Role8"
+          assign_tenant: "ASSIGN_MATCHING_ATTRIBUTE_VALUE"
+          tenant_attribute_name: "Tenant8"
+        - index: 9
+          assign_role: "ASSIGN_MATCHING_ATTRIBUTE_VALUE"
+          role_attribute_name: "Role9"
+          assign_tenant: "ASSIGN_MATCHING_ATTRIBUTE_VALUE"
+          tenant_attribute_name: "Tenant9"
+        - index: 10
+          assign_role: "ASSIGN_MATCHING_ATTRIBUTE_VALUE"
+          role_attribute_name: "Role10"
+          assign_tenant: "ASSIGN_MATCHING_ATTRIBUTE_VALUE"
+          tenant_attribute_name: "Tenant10"
+  register: system_config

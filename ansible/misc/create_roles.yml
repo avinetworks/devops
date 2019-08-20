@@ -1,18 +1,17 @@
 ---
 - hosts: localhost
   vars:
-    master_ctl_ip: ec2-34-250-111-254.eu-west-1.compute.amazonaws.com
-    master_ctl_username: admin
-    master_ctl_password: "{{password}}"
+    avi_credentials:
+      controller: ec2-34-250-111-254.eu-west-1.compute.amazonaws.com
+      username: admin
+      password: "{{ password }}"
   roles:
     - role: avinetworks.avisdk
   tasks:
     - name: Create Read Only ROle
       avi_role:
-        controller: "{{ master_ctl_ip }}"
-        username: "{{ master_ctl_username }}"
-        password: "{{ master_ctl_password }}"
-        name: newrole1
+        avi_credentials: "{{ avi_credentials }}"
+        name: read-only-role
         privileges:
         - resource: PERMISSION_VIRTUALSERVICE
           type: READ_ACCESS

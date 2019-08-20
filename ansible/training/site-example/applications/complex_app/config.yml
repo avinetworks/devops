@@ -10,14 +10,19 @@ avi_config:
              addr: "{{ pool_server2 }}"
              type: 'V4'
 
+  vsvip:
+    - name: vsvip-app1-Default-Cloud
+      vip:
+      - enabled: true
+        ip_address:
+          addr: "{{ app1_vip }}"
+          type: V4
+        vip_id: '1'
+
   virtualservice:
     - name: app1
       services:
         - port: 80
       pool_ref: '/api/pool?name=app1-pool'
-      vip:
-        - ip_address:
-            addr: "{{ app1_vip }}"
-            type: 'V4'
-          vip_id: '1'
+      vsvip_ref: /api/vsvip/?name=vsvip-app1-Default-Cloud
 

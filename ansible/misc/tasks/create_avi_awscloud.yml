@@ -1,0 +1,161 @@
+---
+- name: To check if the Avi Cloud objects already present or not
+  include_tasks: create_avi_awscloud/check_avi_awscloud.yml
+  vars:
+    avi_credentials:
+      controller: "{{ controller }}"
+      username: "{{ username }}"
+      password: "{{ password }}"
+    avi_tenant: "{{ tenant_name }}"
+    environ_name: "{{ environment_name }}"
+    cloud_name: "{{ cloud }}"
+
+- name: Gather the AWS CF Stack facts
+  cloudformation_facts:
+    stack_name: "{{ stack_name }}"
+    aws_access_key: "{{ aws_access_key }}"
+    aws_secret_key: "{{ aws_secret_key }}"
+    region: "{{ availability_zone[:-1] }}"
+  register: cf_rtn_obj
+
+- name: Get the AWS VPC details
+  set_fact:
+    vpc_info: "{{ cf_rtn_obj.ansible_facts.cloudformation[stack_name] }}"
+
+- name: Create the AWS Cloud if the VPC stack creation is complete
+  avi_cloud:
+    name: "{{ cloud }}"
+    vtype: CLOUD_AWS
+    license_tier: "ENTERPRISE_18"
+    enable_vip_static_routes: false
+    avi_credentials: "{{ avi_credentials }}"
+    tenant: "{{ tenant_name }}"
+    tenant_ref: "/api/tenant?name={{ tenant_name }}"
+    dhcp_enabled: true
+    prefer_static_routes: false
+    apic_mode: false
+    api_version: 17.2.15
+    aws_configuration:
+      use_iam_roles: false
+      publish_vip_to_public_zone: false
+      ebs_encryption:
+        mode: AWS_ENCRYPTION_MODE_NONE
+      route53_integration: false
+      region: "{{ availability_zone[:-1] }}"
+      s3_encryption:
+        mode: AWS_ENCRYPTION_MODE_NONE
+      secret_access_key: "{{ aws_secret_key }}"
+      vpc_id: "{{ vpc_info.stack_outputs.VPC }}"
+      zones:
+      - mgmt_network_name: "{{ stack_name }}-mgmt-subnet"
+        mgmt_network_uuid: "{{ vpc_info.stack_outputs.ManagementSubnet }}"
+        availability_zone: "{{ availability_zone }}"
+      asg_poll_interval: 600
+      use_sns_sqs: false
+      vpc: "{{ stack_name }}-vpc"
+      ttl: 60
+      free_elasticips: true
+      access_key_id: "{{ aws_access_key }}"
+    license_type: LIC_CORES
+    mtu: 1500
+    state_based_dns_registration: true
+  register: aws_cloud_obj
+  when:
+    - cf_rtn_obj.ansible_facts.cloudformation[stack_name] is defined
+    - vpc_info.stack_description.stack_status == 'CREATE_COMPLETE'
+
+- debug:
+    msg: "{{ aws_cloud_obj }}"
+
+- name: Wait for the Creation of the AWS Cloud and then create VS/SE
+  avi_api_session:
+    avi_credentials: "{{ avi_credentials }}"
+    tenant: "{{ tenant_name }}"
+    http_method: get
+    path: "cloud/{{ aws_cloud_obj.obj.uuid }}/status"
+    params:
+      name: "{{ aws_cloud_obj.obj.name }}"
+    api_version: 17.2.15
+  register: cloud_crt_obj
+  until: cloud_crt_obj.obj.state == "CLOUD_STATE_PLACEMENT_READY"
+  retries: 45
+  delay: 80
+
+- name: Get the AWS Cloud facts
+  set_fact:
+    aws_rtn_obj: "{{ cloud_crt_obj }}"
+
+- name: Create the Required pool
+  avi_pool:
+    avi_credentials: "{{ avi_credentials }}"
+    tenant: "{{ tenant_name }}"
+    api_version: 17.2.15
+    lb_algorithm: LB_ALGORITHM_LEAST_CONNECTIONS
+    tenant_ref: "/api/tenant?name={{ tenant_name }}"
+    servers:
+    - static: false
+      discovered_networks:
+      - network_ref: "/api/network/{{ vpc_info.stack_outputs.DataSubnet }}"
+      ratio: 1
+      availability_zone: "{{ availability_zone }}"
+      ip:
+        type: V4
+        addr: "{{ vpc_info.stack_outputs.WebServerInstance }}"
+      enabled: true
+      nw_ref: "/api/network/{{ vpc_info.stack_outputs.DataSubnet }}"
+    networks:
+    - network_ref: "/api/vimgrnwruntime/{{ vpc_info.stack_outputs.DataSubnet }}"
+    cloud_ref: "/api/cloud?name={{ cloud }}"
+    inline_health_monitor: true
+    default_server_port: 80
+    request_queue_depth: 128
+    graceful_disable_timeout: 1
+    server_count: 1
+    sni_enabled: true
+    name: "{{ environment_name }}-Pool"
+    enabled: true
+    health_monitor_refs:
+    - /api/healthmonitor?name=System-HTTP
+  register: pool_rtn_obj
+  when:
+    - aws_rtn_obj.obj.state == "CLOUD_STATE_PLACEMENT_READY"
+
+- name: Create the VS when the Cloud State is CLOUD_STATE_PLACEMENT_READY
+  avi_virtualservice:
+   enabled: true
+   traffic_enabled: true
+   enable_autogw: true
+   east_west_placement: false
+   name: "{{ environment_name }}-VS"
+   avi_credentials: "{{ avi_credentials }}"
+   tenant: "{{ tenant_name }}"
+   type: VS_TYPE_NORMAL
+   api_version: 17.2.15
+   active_standby_se_tag: "ACTIVE_STANDBY_SE_1"
+   analytics_policy:
+     client_insights: "NO_INSIGHTS"
+     enabled: true
+   application_profile_ref: '/api/applicationprofile?name=System-HTTP'
+   network_profile_ref: '/api/networkprofile?name=System-TCP-Proxy'
+   se_group_ref: '/api/serviceenginegroup?name=Default-Group'
+   vip:
+     - vip_id: '1'
+       availability_zone: "{{ availability_zone }}"
+       avi_allocated_fip: true
+       auto_allocate_ip: true
+       auto_allocate_floating_ip: true
+       enabled: true
+       subnet_uuid: "{{ vpc_info.stack_outputs.DataSubnet }}"
+       ipam_network_subnet:
+         subnet_uuid: "{{ vpc_info.stack_outputs.DataSubnet }}"
+       avi_allocated_vip: true
+   cloud_ref: "/api/cloud?name={{ cloud }}"
+   cloud_type: "CLOUD_AWS"
+   services:
+   - enable_ssl: false
+     port_range_end: 80
+     port: 80
+   pool_ref: "/api/pool?name={{ environment_name }}-Pool"
+  when:
+   - aws_rtn_obj.obj.state == "CLOUD_STATE_PLACEMENT_READY"
+   - pool_rtn_obj is succeeded

@@ -32,34 +32,44 @@
                addr: '10.90.64.14'
                type: 'V4'
 
+    - avi_vsvip:
+        name: vsvip-{{app_name}}-Default-Cloud
+        avi_credentials: "{{ avi_credentials }}"
+        api_context: '{{avi_api_context | default(omit)}}'
+        tenant_ref: /api/tenant/?name={{ tenant }}
+        cloud_ref: /api/cloud/?name=Default-Cloud
+        state: "{{ state }}"
+        vip:
+        - vip_id: '1'
+          avi_allocated_fip: false
+          auto_allocate_ip: false
+          enabled: true
+          auto_allocate_floating_ip: false
+          avi_allocated_vip: false
+          auto_allocate_ip_type: V4_ONLY
+          ip_address:
+            type: V4
+            addr: 198.51.100.222
 
     - name: Create Virtual Service on controller 1
       register: results1
       avi_virtualservice:
-        controller: "{{ avi_credentials1.avi_controller}}"
-        username: "{{ avi_credentials1.avi_username }}"
-        password: "{{ avi_credentials1.avi_password }}"
-        api_version: "{{ avi_credentials1.api_version }}"
+        avi_credentials: "{{ avi_credentials }}"
+        api_context: '{{avi_api_context | default(omit)}}'
         avi_disable_session_cache_as_fact: "{{ avi_credentials1.avi_disable_session_cache_as_fact }}"
         api_context: "{{results1.avi_api_context | default(omit)}}"
         name: "{{app_name}}"
         pool_ref: "/api/pool?name={{app_name}}-pool"
         cloud_ref: '/api/cloud?name=Default-Cloud'
-        vip:
-          - ip_address:
-              addr: '10.90.64.222'
-              type: 'V4'
-            vip_id: '1'
+        vsvip_ref: /api/vsvip/?name=vsvip-{{app_name}}-Default-Cloud
         services:
           - port: 4242
 
     - name: Create or Update Pool on controller 2
       register: results2
       avi_pool:
-        controller: "{{ avi_credentials2.avi_controller}}"
-        username: "{{ avi_credentials2.avi_username }}"
-        password: "{{ avi_credentials2.avi_password }}"
-        api_version: "{{ avi_credentials2.api_version }}"
+        avi_credentials: "{{ avi_credentials }}"
+        api_context: '{{avi_api_context | default(omit)}}'
         avi_disable_session_cache_as_fact: "{{ avi_credentials2.avi_disable_session_cache_as_fact }}"
         api_context: "{{results2.avi_api_context | default(omit)}}"
         name: "{{app_name}}-pool"
@@ -75,23 +85,35 @@
                addr: '10.90.64.14'
                type: 'V4'
 
+    - avi_vsvip:
+        name: vsvip-{{app_name}}-Default-Cloud
+        avi_credentials: "{{ avi_credentials2 }}"
+        api_context: '{{avi_api_context | default(omit)}}'
+        tenant_ref: /api/tenant/?name={{ tenant }}
+        cloud_ref: /api/cloud/?name=Default-Cloud
+        state: "{{ state }}"
+        vip:
+        - vip_id: '1'
+          avi_allocated_fip: false
+          auto_allocate_ip: false
+          enabled: true
+          auto_allocate_floating_ip: false
+          avi_allocated_vip: false
+          auto_allocate_ip_type: V4_ONLY
+          ip_address:
+            type: V4
+            addr: 198.51.100.222
 
     - name: Create Virtual Service on controller 2
       register: results2
       avi_virtualservice:
-        controller: "{{ avi_credentials2.avi_controller}}"
-        username: "{{ avi_credentials2.avi_username }}"
-        password: "{{ avi_credentials2.avi_password }}"
-        api_version: "{{ avi_credentials2.api_version }}"
+        avi_credentials: "{{ avi_credentials2 }}"
+        api_context: '{{avi_api_context | default(omit)}}'
         avi_disable_session_cache_as_fact: "{{ avi_credentials2.avi_disable_session_cache_as_fact }}"
         api_context: "{{results2.avi_api_context | default(omit)}}"
         name: "{{app_name}}"
         pool_ref: "/api/pool?name={{app_name}}-pool"
         cloud_ref: '/api/cloud?name=Default-Cloud'
-        vip:
-          - ip_address:
-              addr: '10.90.64.222'
-              type: 'V4'
-            vip_id: '1'
+        vsvip_ref: /api/vsvip/?name=vsvip-{{app_name}}-Default-Cloud
         services:
           - port: 4242

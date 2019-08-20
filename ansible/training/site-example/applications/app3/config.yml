@@ -74,16 +74,23 @@ avi_config:
               pool_ref: "/api/pool?name=app3-pool-B"
       is_internal_policy: false
 
+  vsvip:
+    - name: vsvip-app3-Default-Cloud
+      tenant: admin
+      tenant_ref: /api/tenant/?name=admin
+      vip:
+      - enabled: true
+        ip_address:
+          addr: "{{ app3_vip }}"
+          type: V4
+        vip_id: '1'
+
   virtualservice:
     - name: app3
       services:
         - port: 80
       pool_ref: '/api/pool?name=app3-pool-A'
-      vip:
-        - ip_address:
-            addr: "{{app3_vip}}"
-            type: 'V4'
-          vip_id: '1'
+      vsvip_ref: /api/vsvip/?name=vsvip-app3-Default-Cloud
       cloud_ref: '/api/cloud?name=Default-Cloud'
       ssl_key_and_certificate_refs:
         - '/api/sslkeyandcertificate?name=app3-cert'

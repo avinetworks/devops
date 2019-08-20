@@ -1,0 +1,17 @@
+---
+- name: Set public IP address
+  avi_cluster:
+    avi_credentials: "{{ avi_credentials }}"
+    api_version: 17.2.13
+    name: "{{ name }}"
+    nodes:
+      - name: "{{ leader_internal_dns }}"
+        ip:
+          addr: "{{ leader_internal_dns }}"
+          type: "DNS"
+        public_ip_or_name:
+          addr: "{{ leader_hostname }}"
+          type: "{{ type }}"
+
+- name: Common | Wait for cluster
+  include_tasks: "common_tasks/wait_cluster_runtime.yml"

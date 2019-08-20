@@ -27,16 +27,20 @@ avi_config:
         - ip:
              addr: "{{ pool_server2 }}"
              type: 'V4'
-
+  vsvip:
+    - name: vsvip-bluegreen-Default-Cloud
+      vip:
+      - enabled: true
+        ip_address:
+          addr: "{{bluegreen_vip}}"
+          type: V4
+        vip_id: '1'
+        
   virtualservice:
     - name: bluegreen
       services:
         - port: 80
-      vip:
-        - ip_address:
-            addr: "{{bluegreen_vip}}"
-            type: 'V4'
-          vip_id: '1'
+      vsvip_ref: /api/vsvip/?name=vsvip-bluegreen-Default-Cloud
 
       pool_group_ref: '/api/poolgroup?name=bluegreen-poolgroup'
       cloud_ref: '/api/cloud?name=Default-Cloud'

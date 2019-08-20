@@ -32,14 +32,14 @@
         password: "{{ password }}"
         tenant: "{{ tenant }}"
         http_method: get
-        path: "networksubnetlist/?cloud_uuid={{ cloud_resp.obj.results[0].uuid }}&name={{item}}"
+        path: "networksubnetlist/?cloud_uuid={{ cloud_resp.obj.results[0].uuid }}&name={{ item }}"
       register: subnet_filter_objs
-      with_items: "{{subnets.split(',')}}"
+      with_items: "{{ subnets.split(',') }}"
     - name: Filter the subnets that match the name
       set_fact:
-        subnet_objs: "{{subnet_objs|default({})|combine({item.1.name: item.1})}}"
+        subnet_objs: "{{ subnet_objs|default({})|combine({item.1.name: item.1}) }}"
       when:
-        - item.1.name in "{{subnets.split(',')}}"
+        - item.1.name in "{{ subnets.split(',') }}"
       with_subelements:
         - "{{ subnet_filter_objs.results }}"
         - obj.results
@@ -47,11 +47,11 @@
       debug: msg="{{ subnet_objs }}"
     - name: Create VIP Objects
       set_fact:
-        vips: "{{vips|default([]) + [{'vip_id': item.0, 'subnet_uuid': item.1.uuid, 'auto_allocate_ip': true}]}}"
+        vips: "{{ vips|default([]) + [{'vip_id': item.0, 'subnet_uuid': item.1.uuid, 'auto_allocate_ip': true}] }}"
       with_indexed_items:
         - "{{ subnet_objs.values() }}"
     - name: Vip objects
-      debug: msg="{{vips}}"
+      debug: msg="{{ vips }}"
 
     - name: Creating multi vip VS
       avi_virtualservice:
@@ -69,4 +69,3 @@
       register: vs
     - name: VS created
       debug: msg="{{ vs.obj }}"
-

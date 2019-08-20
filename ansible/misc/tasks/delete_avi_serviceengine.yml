@@ -1,0 +1,53 @@
+---
+- name: Get the Cloud object
+  avi_api_session:
+    avi_credentials: "{{ avi_credentials }}"
+    http_method: get
+    tenant: "{{ tenant_name }}"
+    path: cloud
+    params:
+      name: "{{ cloud_name }}"
+    api_version: 17.2.15
+  register: cloud_rtn_obj
+
+- name: Get the details of the Avi Service Engine
+  avi_api_session:
+    avi_credentials: "{{ avi_credentials }}"
+    http_method: get
+    tenant: "{{ tenant_name }}"
+    path: "{{ avi_obj }}"
+    api_version: 17.2.15
+  register: ret_obj
+  when:
+   - cloud_rtn_obj.obj.count > 0
+
+- name: Delete the Avi Service Engine
+  avi_api_session:
+    avi_credentials: "{{ avi_credentials }}"
+    api_version: 17.2.15
+    http_method: delete
+    tenant: "{{ tenant_name }}"
+    path: "{{ obj_name }}/{{ item.uuid }}"
+    params:
+      uuid: "{{ item.uuid }}"
+    data:
+        cloud_ref: "/api/cloud?name={{ cloud_name }}"
+  loop: "{{ ret_obj.obj.results }}"
+  when:
+    - cloud_rtn_obj.obj.count > 0
+    - ret_obj.obj.count > 0
+    - item.uuid is defined
+
+- name: Check if the Avi Service Engines are deleted
+  avi_api_session:
+    avi_credentials: "{{ avi_credentials }}"
+    http_method: get
+    tenant: "{{ tenant_name }}"
+    path: "{{ avi_obj }}"
+    api_version: 17.2.15
+  register: avise_status
+  until: avise_status.obj.count <= 0
+  delay: 15
+  retries: 80
+  when:
+   - cloud_rtn_obj.obj.count > 0

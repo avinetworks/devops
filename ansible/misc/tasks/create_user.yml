@@ -1,0 +1,31 @@
+---
+- name: Check if user exists on Avi
+  avi_api_session:
+    avi_credentials: "{{ avi_credentials }}"
+    api_version: 17.2.13
+    http_method: get
+    path: user?name={{ item.username }}
+  register: user_exists
+  with_items:
+    - "{{ target_users }}"
+
+- name: Create User on Avi
+  avi_api_session:
+    avi_credentials: "{{ avi_credentials }}"
+    api_version: 17.2.13
+    http_method: post
+    path: user
+    data:
+      require_password_confirmation: false
+      is_active: true
+      access:
+        - tenant_ref: '/api/tenant?name=admin'
+          role_ref: '/api/role?name=Customer-Admin'
+      default_tenant_ref: '/api/tenant?name=admin'
+      name: "{{ item.item.name }}"
+      full_name: "{{ item.item.full_name }}"
+      username: "{{ item.item.username }}"
+      password: "{{ item.item.password }}"
+  when: item.obj.count < 1
+  with_items:
+    - "{{ user_exists.results }}"

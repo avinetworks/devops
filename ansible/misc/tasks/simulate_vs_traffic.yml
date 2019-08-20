@@ -1,0 +1,52 @@
+---
+- name: Get the VS information to retrieve floating_ip
+  avi_api_session:
+      controller: "{{ controller }}"
+      username: "{{ username }}"
+      password: "{{ password }}"
+      http_method: get
+      tenant: "{{ tenant_name }}"
+      path: virtualservice
+      params:
+        name: "{{ environment_name }}-VS"
+      api_version: 17.2.15
+  register: vs_rtn_obj
+
+- name: Wait for the Virtual Service status to become OPER_UP
+  avi_api_session:
+    controller: "{{ controller }}"
+    username: "{{ username }}"
+    password: "{{ password }}"
+    http_method: get
+    tenant: "{{ tenant_name }}"
+    path: "virtualservice/{{ vs_rtn_obj.obj.results[0].uuid }}/runtime"
+    params:
+      name: "{{ environment_name }}-VS"
+    api_version: 17.2.15
+  register: vs_runtime_obj
+  until: vs_runtime_obj.obj.oper_status.state == "OPER_UP"
+  retries: 15
+  delay: 80
+  when:
+     - vs_rtn_obj.obj.count >= 1
+
+- name: Store the floating_ip in the variable
+  set_fact:
+   ipaddr: "{{ vs_rtn_obj.obj.results[0].vip[0].floating_ip.addr }}"
+  when:
+   - vs_rtn_obj.obj.count >= 1
+
+- name: Hit the nginx index page on port 80 and display the result
+  uri:
+   url: "http://{{ ipaddr }}"
+   return_content: yes
+   method: GET
+   status_code: 200
+  register: content_return
+  with_sequence: 0-7
+  when:
+    - vs_rtn_obj.obj.count >= 1
+    - vs_runtime_obj.obj.oper_status.state == "OPER_UP"
+
+- debug:
+    msg: "{{ content_return.results[0:] | map(attribute='content') | list }}"

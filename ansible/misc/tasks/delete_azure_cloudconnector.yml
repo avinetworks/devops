@@ -1,0 +1,20 @@
+---
+- name: Make sure Azure CloudConnector information exists before deletion
+  avi_api_session:
+    avi_credentials: "{{ avi_credentials }}"
+    tenant: "{{ tenant_name }}"
+    http_method: get
+    path: cloudconnectoruser
+    params:
+        name: "azure-credentials"
+  register: cloudconnect_info
+
+- name: Delete the Azure CloudConnector
+  avi_cloudconnectoruser:
+    avi_credentials: "{{ avi_credentials }}"
+    tenant: "{{ tenant_name }}"
+    api_version: 17.2.5
+    name: "azure-credentials"
+    state: absent
+  when:
+    - cloudconnect_info.obj.results[0].name is defined

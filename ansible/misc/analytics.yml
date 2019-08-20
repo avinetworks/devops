@@ -10,9 +10,10 @@
 - hosts: localhost
   connection: local
   vars:
-    controller: "{{ controller }}"
-    username: "{{ username }}"
-    password: "{{ password }}"
+    avi_credentials:
+      controller: "{{ controller }}"
+      username: "{{ username }}"
+      password: "{{ password }}"
     pool_name: "{{ pool_name }}"
     metric_id: l4_server.avg_bandwidth,l4_server.avg_complete_conns
   roles:
@@ -21,15 +22,13 @@
     - name: Fetch Pool metrics
       avi_api_session:
         # get pool information
-        controller: "{{ controller }}"
-        username: "{{ username }}"
-        password: "{{ password }}"
+        avi_credentials: "{{ avi_credentials }}"
         http_method: get
         path: analytics/metrics/pool
         params:
           name: "{{ pool_name }}"
-          metric_id: "{{metric_id}}"
+          metric_id: "{{ metric_id }}"
           step: 300
           limit: 10
       register: pool_metrics
-    - debug: msg="{{pool_metrics.obj}}"
+    - debug: msg="{{ pool_metrics.obj }}"

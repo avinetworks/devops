@@ -1,0 +1,36 @@
+---
+- name: Create cloud connector user for backup
+  avi_api_session:
+    avi_credentials: "{{ avi_credentials }}"
+    api_version: 17.2.13
+    http_method: post
+    path: cloudconnectoruser
+    data:
+      name: "{{ backup_username }}"
+      password: "{{ backup_password }}"
+  register: cloud_connector_user
+
+- name: Set the backup entry
+  avi_backupconfiguration:
+    avi_credentials: "{{ avi_credentials }}"
+    api_version: 17.2.13
+    name: "Backup-Configuration"
+    maximum_backups_stored: 10
+    upload_to_remote_host: True
+    ssh_user_ref: "{{ cloud_connector_user.obj.url }}"
+    remote_directory: "{{ remote_directory }}"
+    remote_hostname: "{{ remote_hostname }}"
+    backup_file_prefix: "{{ prefix }}"
+    backup_passphrase: "{{ passphrase }}"
+  register: backup_config
+
+- name: Set the scheduler entry
+  avi_scheduler:
+    avi_credentials: "{{ avi_credentials }}"
+    api_version: 17.2.13
+    name: "Default-Scheduler"
+    run_mode: RUN_MODE_PERIODIC
+    enabled: True
+    backup_config_ref: "{{ backup_config.obj.url }}"
+    frequency: 30
+    frequency_unit: SCHEDULER_FREQUENCY_UNIT_MIN

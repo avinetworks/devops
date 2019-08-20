@@ -1,0 +1,6 @@
+---
+- name: Create a tenant for an organization
+  avi_tenant:
+    avi_credentials: "{{ avi_credentials }}"
+    api_version: 17.2.13
+    name: "{{ tenant_name }}"

@@ -1,0 +1,9 @@
+---
+- name: Check for the Cloudformation Stack already exists
+  cloudformation_facts:
+     stack_name: "{{ stck_name }}"
+     aws_access_key: "{{ access_key }}"
+     aws_secret_key: "{{ secret_key }}"
+     region: "{{ avail_zone[:-1] }}"
+  register: cf_rtn_obj
+  failed_when: cf_rtn_obj.ansible_facts.cloudformation[stck_name] is defined

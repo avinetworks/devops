@@ -1,4 +1,5 @@
-#
+
+  #
 # @author: Gaurav Rastogi grastogi@avinetworks.com
 # Simple playbook to create virtualservice and get on it using
 # avi_api_session module
@@ -6,25 +7,22 @@
 ---
 - hosts: localhost
   vars:
+    avi_credentials:
+      controller: 10.10.25.42
+      username: admin
+      password: password
     state: absent
-    controller: 10.10.25.42
-    username: admin
-    password: password
     tenant: Metrics_Test_Tenant
   roles:
     - role: avinetworks.avisdk
   tasks:
     - name: Create or Update Custom Tenant
       avi_tenant:
-        controller: "{{ controller }}"
-        username: "{{ username }}"
-        password: "{{ password }}"
+        avi_credentials: "{{ avi_credentials }}"
         name: Metrics_Test_Tenant
     - name: Create Pool in the above tenant
       avi_pool:
-        controller: "{{ controller }}"
-        username: "{{ username }}"
-        password: "{{ password }}"
+        avi_credentials: "{{ avi_credentials }}"
         #state: absent
         tenant: "{{ tenant }}"
         tenant_ref: '/api/tenant?name=Metrics_Test_Tenant'

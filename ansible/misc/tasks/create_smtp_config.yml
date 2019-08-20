@@ -1,0 +1,53 @@
+---
+- name: Create the Email Configuration
+  avi_systemconfiguration:
+    avi_credentials: "{{ avi_credentials }}"
+    api_version: 17.2.13
+    avi_api_update_method: patch
+    avi_api_patch_op: replace
+    email_configuration:
+      mail_server_name: smtp.sendgrid.net
+      from_email: noreply@avinetworks.com
+      smtp_type: SMTP_SERVER
+      auth_password: "{{ sendgrid_api_key }}"
+      auth_username: apikey
+      mail_server_port: 2525
+
+- name: Create the Alert Email Configuration
+  avi_alertemailconfig:
+    avi_credentials: "{{ avi_credentials }}"
+    api_version: 17.2.13
+    name: Operations
+    tenant_ref: "/api/tenant?name=admin"
+    to_emails: ops@avinetworks.com
+    description: Send important events to Operations
+
+- name: Create the Action Group Configuration
+  avi_actiongroupconfig:
+    avi_credentials: "{{ avi_credentials }}"
+    api_version: 17.2.13
+    level: ALERT_HIGH
+    tenant_ref: "/api/tenant?name=admin"
+    email_config_ref: "/api/alertemailconfig?name=Operations"
+    external_only: false
+    name: System-Alert-Level-High
+
+- name: Create the Alert Configuration
+  avi_alertconfig:
+    avi_credentials: "{{ avi_credentials }}"
+    api_version: 17.2.13
+    category: REALTIME
+    expiry_time: 30
+    enabled: true
+    tenant_ref: "/api/tenant?name=admin"
+    rolling_window: 300
+    source: EVENT_LOGS
+    alert_rule:
+      operator: OPERATOR_OR
+      sys_event_rule:
+        - event_id: SCHEDULER_ACTION_FAILURE
+          not_cond: false
+    threshold: 1
+    throttle: 0
+    action_group_ref: "/api/actiongroupconfig?name=System-Alert-Level-High"
+    name: Scheduler_Action_Failure

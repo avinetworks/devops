@@ -20,7 +20,7 @@
       avi_api_session:
         avi_credentials: "{{ credentials }}"
         http_method: post
-        path: "virtualservice/{{ vs_result.obj.uuid}}/scaleout"
+        path: "virtualservice/{{ vs_result.obj.uuid }}/scaleout"
         data:
           "to_new_se": true
           "vip_id": "0"

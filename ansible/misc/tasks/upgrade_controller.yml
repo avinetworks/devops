@@ -1,0 +1,31 @@
+---
+- name: Upgrade Controller | Upgrade controller
+  avi_api_session:
+    avi_credentials: "{{ avi_credentials }}"
+    api_version: 17.2.13
+    http_method: post
+    timeout: 300
+    path: "{%- if rollback -%}cluster/rollback{%- else -%}cluster/upgrade{%- endif -%}"
+    data:
+      kubernetes_info:
+        password: "{{ cluster_password }}"
+        cluster_ip: "https://{{ cluster_hostname }}"
+        service_account: "{{ cluster_service_account }}"
+        namespace: "{{ namespace }}"
+        target_image_location: "{{ target_image_location }}"
+        previous_image_location: "{{ previous_image_location }}"
+        resources:
+          - resource_type: statefulset
+            resource_name: node-0
+
+- name: Upgrade Controller | Wait for the Controller Upgrade to finish
+  avi_api_session:
+    avi_credentials: "{{ avi_credentials }}"
+    api_version: 17.2.13
+    http_method: get
+    timeout: 300
+    path: cluster/upgrade/status
+  register: upgrade_status
+  until: upgrade_status.obj.result == "SUCCESS"
+  retries: 120
+  delay: 10

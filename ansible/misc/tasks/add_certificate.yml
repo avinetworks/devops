@@ -1,0 +1,12 @@
+---
+- name: Upload Key and Certificate to Server
+  avi_sslkeyandcertificate:
+    avi_credentials: "{{ avi_credentials }}"
+    api_version: 17.2.13
+    tenant: admin
+    key: "{{ private_key }}"
+    certificate:
+      self_signed: false
+      certificate: "{{ certificate }}"
+    type: SSL_CERTIFICATE_TYPE_SYSTEM
+    name: "{{ name }}"

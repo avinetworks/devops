@@ -1,0 +1,24 @@
+---
+# tasks to add a DNS-VS to System Configuration
+- name: Render DNS VS UUID from Name
+  avi_api_session:
+    avi_credentials: "{{ avi_credentials }}"
+    api_version: 17.2.13
+    tenant: "{{ customer_tenant }}"
+    http_method: get
+    path: virtualservice?name.in={{ dns_vs_list }}
+  register: dns_vs_uuid_list
+
+- name: Build DNS-VS List
+  set_fact:
+    dns_vs_uuids: "{{ dns_vs_uuids|default([]) + [ item.uuid ] }}"
+  with_items: "{{ dns_vs_uuid_list.obj.results }}"
+
+- name: Add DNS-VS to System Configuration
+  avi_systemconfiguration:
+    avi_credentials: "{{ avi_credentials }}"
+    api_version: 17.2.13
+    avi_api_update_method: patch
+    avi_api_patch_op: add
+    tenant: admin
+    dns_virtualservice_refs: "{{ dns_vs_uuids }}"

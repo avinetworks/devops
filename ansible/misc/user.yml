@@ -2,9 +2,10 @@
 # ansible-playbook user_create.yml -e "master_ctl_ip=10.10.20.10,master_ctl_username=admin,..."
 - hosts: localhost
   vars:
-    master_ctl_ip: another-test.saas.avinetworks.com
-    master_ctl_username: admin
-    master_ctl_password: "{{password}}"
+    avi_credentials:
+      controller: "{{ controller }}"
+      username: "{{ username }}"
+      password: "{{ password }}"
     avi_users:
       - username: vnair
         name: Vivek Nair
@@ -18,10 +19,7 @@
     - name: Check if user exists on Avi
       avi_api_session:
         api_version: 17.2.7
-        controller: "{{ master_ctl_ip }}"
-        username: "{{ master_ctl_username }}"
-        password: "{{ master_ctl_password }}"
-        http_method: get
+        avi_credentials: "{{ avi_credentials }}"
         path: user
         params:
           name: "{{ item.username }}"
@@ -29,14 +27,12 @@
       with_items:
         - "{{ avi_users }}"
     - name: Existing User
-      debug: msg="{{ user_exists}}"
+      debug: msg="{{ user_exists }}"
 
     - name: Create User on Avi
       avi_api_session:
         api_version: 17.2.7
-        controller: "{{ master_ctl_ip }}"
-        username: "{{ master_ctl_username }}"
-        password: "{{ master_ctl_password }}"
+        avi_credentials: "{{ avi_credentials }}"
         http_method: post
         path: user
         data:

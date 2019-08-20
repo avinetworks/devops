@@ -1,0 +1,13 @@
+---
+- name: Ensure Route53 DNS record for {{ dns_record }} is {{ deployment_state|default('present') }}
+  route53:
+    aws_access_key: "{{ aws_access_key }}"
+    aws_secret_key: "{{ aws_secret_key }}"
+    zone: "{{ dns_zone }}"
+    record: "{{ dns_record }}"
+    type: A
+    ttl: 900
+    value: "{{ dns_addresses }}"
+    wait: no
+    overwrite: yes
+    state: "{{ deployment_state | default('present') }}"

@@ -10,9 +10,10 @@
 - hosts: localhost
   connection: local
   vars:
-    controller: "{{ controller }}"
-    username: "{{ username }}"
-    password: "{{ password }}"
+    avi_credentials:
+      controller: "{{ controller }}"
+      username: "{{ username }}"
+      password: "{{ password }}"
     pool_name: "{{ pool_name }}"
     pool_servers_ip: "{{ pool_servers }}"
   roles:
@@ -20,14 +21,12 @@
   tasks:
     - name: build server list
       set_fact:
-        servers: "{{servers|default([]) + [{'ip': {'addr': item, 'type': 'V4'}}] }}"
-      with_items: "{{pool_servers_ip.split(',')}}"
+        servers: "{{ servers|default([]) + [{'ip': {'addr': item, 'type': 'V4'}}] }}"
+      with_items: "{{ pool_servers_ip.split(',') }}"
       # each server_list item has ansible fact as server
-    - avi_api_session:
-        # get pool information
-        controller: "{{ controller }}"
-        username: "{{ username }}"
-        password: "{{ password }}"
+    - name: get pool information
+      avi_api_session:
+        avi_credentials: "{{ avi_credentials }}"
         http_method: get
         path: pool
         params:
@@ -36,10 +35,9 @@
     - name: get_pool_path
       set_fact:
         pool_path: pool/{{ pool_results.obj.results[0].uuid }}
-    - avi_api_session:
-        controller: "{{ controller }}"
-        username: "{{ username }}"
-        password: "{{ password }}"
+    - name: delete servers from pool
+      avi_api_session:
+        avi_credentials: "{{ avi_credentials }}"
         http_method: patch
         path: "{{ pool_path }}"
         data:

@@ -1,0 +1,5 @@
+---
+- name: Suspend Deployment | Disable Deployment on Zabbix
+  include_tasks: manage_zabbix_host.yml
+  vars:
+    host_status: disabled

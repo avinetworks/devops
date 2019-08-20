@@ -1,0 +1,21 @@
+---
+- name: Check if deployment exists
+  azure_rm_deployment_facts:
+    ad_user: "{{ azure_ad_user }}"
+    password: "{{ azure_ad_password }}"
+    name: "{{ project_name }}"
+    resource_group: "{{ project_name }}-ResourceGroup"
+    subscription_id: "{{ subscription_id }}"
+  register: deployment_info
+
+- name: Delete Azure Deployment stack
+  azure_rm_deployment:
+    resource_group: "{{ project_name }}-ResourceGroup"
+    ad_user: "{{ azure_ad_user }}"
+    password: "{{ azure_ad_password }}"
+    deployment_mode: complete
+    location: "{{ location }}"
+    name: "{{ project_name }}"
+    subscription_id: "{{ subscription_id }}"
+    state: absent
+  when: deployment_info.deployments[0].name is defined

@@ -2,14 +2,14 @@
 - hosts: localhost
   connection: local
   vars:
-    LB_host: 10.10.25.42
-    LB_user: admin
-    LB_password: password$%
+    avi_credentials:
+      controller: 10.10.25.42
+      username: admin
+      password: password$%
   tasks:
-    - avi_healthmonitor:
-        controller: "{{ LB_host }}"
-        username:   "{{ LB_user }}"
-        password:   "{{ LB_password }}"
+    - name: create http monitor
+      avi_healthmonitor:
+        avi_credentials: "{{ avi_credentials }}"
         http_monitor:
           http_request: HEAD / HTTP/1.0
           http_response_code:
@@ -24,16 +24,13 @@
       register: hm_obj
     - debug:
         msg: "{{ hm_obj }}"
-    - avi_pool:
-        controller: "{{ LB_host }}"
-        username:   "{{ LB_user }}"
-        password:   "{{ LB_password }}"
+    - name: get pool information
+      avi_pool:
+        avi_credentials: "{{ avi_credentials }}"
         name: p1
     - name: Associate the Monitor to the Application
       avi_api_session:
-        controller: "{{ LB_host }}"
-        username:   "{{ LB_user }}"
-        password:   "{{ LB_password }}"
+        avi_credentials: "{{ avi_credentials }}"
         tenant:     "admin"
         http_method: get
         path: pool
@@ -46,9 +43,7 @@
 
     - name: Update API Session
       avi_api_session:
-        controller:  "{{ LB_host }}"
-        username:    "{{ LB_user }}"
-        password:    "{{ LB_password }}"
+        avi_credentials: "{{ avi_credentials }}"
         tenant:      "admin"
         http_method: patch
         path:        "{{ pool_path }}"

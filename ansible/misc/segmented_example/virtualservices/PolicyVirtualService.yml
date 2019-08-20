@@ -1,8 +1,24 @@
+- avi_vsvip:
+    name: vsvip-PolicyVirtualService-Default-Cloud
+    avi_credentials: '{{ avi_credentials }}' 
+    api_context: '{{avi_api_context | default(omit)}}'
+    tenant_ref: /api/tenant/?name={{ tenant }}
+    cloud_ref: /api/cloud/?name=Default-Cloud
+    state: "{{ state }}"
+    vip:
+    - vip_id: '1'
+      avi_allocated_fip: false
+      auto_allocate_ip: false
+      enabled: true
+      auto_allocate_floating_ip: false
+      avi_allocated_vip: false
+      auto_allocate_ip_type: V4_ONLY
+      ip_address:
+        type: V4
+        addr: 198.51.100.103
+        
 - avi_virtualservice:
-    controller: "{{ controller }}"
-    username: "{{ username }}"
-    password: "{{ password }}"
-    tenant: "{{ tenant }}"
+    avi_credentials: '{{ avi_credentials }}' 
     name: PolicyVirtualService
     state: present
     performance_limits:
@@ -15,9 +31,7 @@
     application_profile_ref: '/api/applicationprofile?name=System-Secure-HTTP'
     ssl_key_and_certificate_refs:
       - '/api/sslkeyandcertificate?name=System-Default-Cert'
-    ip_address:
-      addr: 10.90.131.103
-      type: V4
+    vsvip_ref: /api/vsvip/?name=vsvip-PolicyVirtualService-Default-Cloud
     http_policies:
       - index: 11
         http_policy_set_ref: '/api/httppolicyset?name=test-HTTP-Policy-Set'

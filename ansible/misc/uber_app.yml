@@ -10,37 +10,35 @@
 ---
 - hosts: localhost
   connection: local
-  vars_files:
-    - "vars/creds_unsecure.yml"
   vars:
+    avi_credentials:
+      controller: "{{ avi_controller }}"
+      username: "{{ avi_username }}"
+      password: "{{ avi_password }}"
     api_version: 17.1.2
     app_name: mega
   roles:
     - role: avinetworks.avisdk
   tasks:
     - name: create self-signed SSL cert
-      command: openssl req -new -nodes -x509 -subj "/C=US/ST=CA/L=San Francisco/O=IT/CN={{ app_name }}.com" -days 3650 -keyout ssl_certs/{{app_name}}.key -out ssl_certs/{{app_name}}.crt -extensions v3_ca creates=ssl_certs/{{app_name}}.crt
+      command: openssl req -new -nodes -x509 -subj "/C=US/ST=CA/L=San Francisco/O=IT/CN={{ app_name }}.com" -days 3650 -keyout ssl_certs/{{ app_name }}.key -out ssl_certs/{{ app_name }}.crt -extensions v3_ca creates=ssl_certs/{{ app_name }}.crt
     - name: Upload or Update SSL certificate - always changed due to sensitve field
       avi_sslkeyandcertificate:
-        controller: "{{ avi_controller}}"
-        username: "{{ avi_username }}"
-        password: "{{ avi_password }}"
+        avi_credentials: "{{ avi_credentials }}"
         api_version: "{{ api_version }}"
         tenant: admin
         key: "{{ lookup('file', 'ssl_certs/'~app_name~'.key') }}"
         certificate:
           self_signed: true
-          certificate: "{{ lookup('file', 'ssl_certs/'~app_name~'.crt')}}"
+          certificate: "{{ lookup('file', 'ssl_certs/'~app_name~'.crt') }}"
         type: SSL_CERTIFICATE_TYPE_VIRTUALSERVICE
-        name: "{{app_name}}-cert"
+        name: "{{ app_name }}-cert"
 
     - name: Create or Update Pool A
       avi_pool:
-        controller: "{{ avi_controller}}"
-        username: "{{ avi_username }}"
-        password: "{{ avi_password }}"
+        avi_credentials: "{{ avi_credentials }}"
         api_version: "{{ api_version }}"
-        name: "{{app_name}}-pool-bar"
+        name: "{{ app_name }}-pool-bar"
         health_monitor_refs: '/api/healthmonitor?name=System-HTTP'
         cloud_ref: '/api/cloud?name=Default-Cloud'
         servers:
@@ -50,11 +48,9 @@
 
     - name: Create or Update Pool B
       avi_pool:
-        controller: "{{ avi_controller}}"
-        username: "{{ avi_username }}"
-        password: "{{ avi_password }}"
+        avi_credentials: "{{ avi_credentials }}"
         api_version: "{{ api_version }}"
-        name: "{{app_name}}-pool-foo"
+        name: "{{ app_name }}-pool-foo"
         health_monitor_refs:
           - '/api/healthmonitor?name=System-HTTP'
         cloud_ref: '/api/cloud?name=Default-Cloud'
@@ -65,11 +61,9 @@
 
     - name: Create or Update Default Pool
       avi_pool:
-        controller: "{{ avi_controller}}"
-        username: "{{ avi_username }}"
-        password: "{{ avi_password }}"
+        avi_credentials: "{{ avi_credentials }}"
         api_version: "{{ api_version }}"
-        name: "{{app_name}}-pool"
+        name: "{{ app_name }}-pool"
         health_monitor_refs:
           - '/api/healthmonitor?name=System-HTTP'
         cloud_ref: '/api/cloud?name=Default-Cloud'
@@ -81,16 +75,14 @@
 
     - name: Create HTTP PolicySet
       avi_httppolicyset:
-        controller: "{{ avi_controller}}"
-        username: "{{ avi_username }}"
-        password: "{{ avi_password }}"
+        avi_credentials: "{{ avi_credentials }}"
         api_version: "{{ api_version }}"
-        name: "{{app_name}}-httppolicy"
+        name: "{{ app_name }}-httppolicy"
         http_request_policy:
           rules:
             - index: 1
               enable: true
-              name: "{{app_name}}-pool-foo"
+              name: "{{ app_name }}-pool-foo"
               match:
                 path:
                   match_case: INSENSITIVE
@@ -100,7 +92,7 @@
               switching_action:
                 action: HTTP_SWITCHING_SELECT_POOL
                 status_code: HTTP_LOCAL_RESPONSE_STATUS_CODE_200
-                pool_ref: "/api/pool?name={{app_name}}-pool-foo"
+                pool_ref: "/api/pool?name={{ app_name }}-pool-foo"
             - index: 2
               enable: true
               name: test-test2
@@ -113,24 +105,36 @@
               switching_action:
                 action: HTTP_SWITCHING_SELECT_POOL
                 status_code: HTTP_LOCAL_RESPONSE_STATUS_CODE_200
-                pool_ref: "/api/pool?name={{app_name}}-pool-bar"
+                pool_ref: "/api/pool?name={{ app_name }}-pool-bar"
         is_internal_policy: false
+    - avi_vsvip:
+        name: vsvip-testvs-Default-Cloud
+        avi_credentials: '{{ avi_credentials }}' 
+        api_context: '{{avi_api_context | default(omit)}}'
+        tenant_ref: /api/tenant/?name={{ tenant }}
+        cloud_ref: /api/cloud/?name=Default-Cloud
+        state: "{{ state }}"
+        vip:
+        - vip_id: '1'
+          avi_allocated_fip: false
+          auto_allocate_ip: false
+          enabled: true
+          auto_allocate_floating_ip: false
+          avi_allocated_vip: false
+          auto_allocate_ip_type: V4_ONLY
+          ip_address:
+            type: V4
+            addr: 198.51.100.253
     - name: Create Virtual Service
       avi_virtualservice:
-        controller: "{{ avi_controller}}"
-        username: "{{ avi_username }}"
-        password: "{{ avi_password }}"
+        avi_credentials: "{{ avi_credentials }}"
         api_version: "{{ api_version }}"
-        name: "{{app_name}}"
-        pool_ref: "/api/pool?name={{app_name}}-pool"
+        name: "{{ app_name }}"
+        pool_ref: "/api/pool?name={{ app_name }}-pool"
         cloud_ref: '/api/cloud?name=Default-Cloud'
-        vip:
-          - ip_address:
-              addr: '10.90.64.235'
-              type: 'V4'
-            vip_id: '1'
+        vsvip_ref: /api/vsvip/?name=vsvip-testvs-Default-Cloud
         ssl_key_and_certificate_refs:
-          - '/api/sslkeyandcertificate?name={{app_name}}-cert'
+          - '/api/sslkeyandcertificate?name={{ app_name }}-cert'
         ssl_profile_ref: '/api/sslprofile?name=System-Standard'
         application_profile_ref: '/api/applicationprofile?name=System-Secure-HTTP'
         services:
@@ -139,4 +143,4 @@
             enable_ssl: true
         http_policies:
           - index: 11
-            http_policy_set_ref: '/api/httppolicyset?name={{app_name}}-httppolicy'
+            http_policy_set_ref: '/api/httppolicyset?name={{ app_name }}-httppolicy'

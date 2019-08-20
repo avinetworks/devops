@@ -6,20 +6,22 @@
 ---
 - hosts: localhost
   vars:
-    #state: absent
-    controller: 10.10.25.42
-    username: admin
-    password: "{{avi_password}}"
+    avi_credentials:
+      controller: 10.10.25.42
+      username: admin
+      password: "{{ avi_password }}"
+    # state: absent
     tenant: admin
   connection: local
   roles:
     - role: avinetworks.avisdk
   tasks:
       #fidelity-xfwd-http
-    - avi_applicationprofile:
-        api_context: '{{api_context | default(omit)}}'
+    - name: 'Create or Update applicationprofile: xfwd-http'
+      avi_applicationprofile:
+        avi_credentials: "{{ avi_credentials }}"
+        api_context: "{{ api_context | default(omit) }}"
         api_version: 17.2.6
-        controller: '{{ controller }}'
         http_profile:
           connection_multiplexing_enabled: true
           secure_cookie_enabled: false
@@ -27,11 +29,7 @@
           xff_alternate_name: null
           xff_enabled: true
         name: xfwd-http
-        password: '{{ password }}'
-        state: '{{ state | default(omit)}}'
+        state: "{{ state | default(omit) }}"
         tenant: admin
         tenant_ref: /api/tenant/?name=admin
         type: APPLICATION_PROFILE_TYPE_HTTP
-        username: '{{ username }}'
-      name: 'Create or Update applicationprofile: xfwd-http'
-
