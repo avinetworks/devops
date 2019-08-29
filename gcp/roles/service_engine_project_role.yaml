@@ -15,6 +15,7 @@ includedPermissions:
 - compute.images.create
 - compute.images.delete
 - compute.images.list
+- compute.images.setLabels
 - compute.images.useReadOnly
 - compute.instances.create
 - compute.instances.delete
