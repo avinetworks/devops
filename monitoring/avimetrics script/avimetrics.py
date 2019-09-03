@@ -1,7 +1,7 @@
 #!/usr/bin/python
 
 
-version = 'v2019-05-07'
+version = 'v2019-09-03'
 
 #########################################################################################
 #                                                                                       #
@@ -302,15 +302,12 @@ class avi_metrics():
         try:
             login = pickle.load(open((os.path.join(fdir,self.avi_cluster_ip)),'rb'))
             cookies=dict()
-            for c in login.cookies:
-                expires = c.expires
             if 'avi-sessionid' in login.cookies.keys():
                 cookies['avi-sessionid'] = login.cookies['avi-sessionid']
             else:
                 cookies['sessionid'] = login.cookies['sessionid']
             headers = ({"X-Avi-Tenant": "admin", 'content-type': 'application/json'})
             resp = requests.get('https://%s/api/cluster' %self.avi_cluster_ip, verify=False, headers = headers,cookies=cookies,timeout=5)
-            #if expires > time.time():
             if resp.status_code == 200:
                 return login
             else:
@@ -318,9 +315,15 @@ class avi_metrics():
                 pickle.dump(login, open((os.path.join(fdir,self.avi_cluster_ip)),'wb'))
                 return login
         except:
-            login = requests.post('https://%s/login' %self.avi_cluster_ip, verify=False, data={'username': self.avi_user, 'password': self.avi_pass},timeout=15)
-            pickle.dump(login, open((os.path.join(fdir,self.avi_cluster_ip)),'wb'))
-            return login
+            try:
+                login = requests.post('https://%s/login' %self.avi_cluster_ip, verify=False, data={'username': self.avi_user, 'password': self.avi_pass},timeout=15)
+                pickle.dump(login, open((os.path.join(fdir,self.avi_cluster_ip)),'wb'))
+                return login
+            except requests.exceptions.Timeout:
+                class timedout:pass
+                login = timedout()
+                login.status_code = 'timedout'
+                return login
 
 
     def avi_request(self,avi_api,tenant,api_version='17.2.1'):
@@ -1660,66 +1663,73 @@ class avi_metrics():
         try:
             start_time = time.time()
             self.login = self.avi_login()
-            self.tenants = self.login.json()['tenants']
-            #self.avi_controller = self.controller_to_poll()
-            self.avi_controller = self.avi_cluster_ip
-            print '=====> Chose '+self.avi_controller
-            self.vs_dict, self.se_dict, self.pool_dict, self.seg_dict, self.cloud_mapping = self.gen_inventory_dict()
-            #---- remove metrics that are not available in the current version
-            self.vs_metric_list, self.se_metric_list, self.controller_metric_list, self.pool_server_metric_list = self.remove_version_specific_metrics()
-            #-----------------------------------
-            #----- Add Test functions to list for threaded execution
-            #-----------------------------------
-            test_functions = []
-            test_functions.append(self.virtual_service_stats_threaded)
-            test_functions.append(self.vs_metrics_per_se_threaded)
-            test_functions.append(self.srvc_engn_stats)
-            test_functions.append(self.srvc_engn_vs_count)
-            test_functions.append(self.srvc_engn_count)
-            test_functions.append(self.vs_se_healthscores)
-            test_functions.append(self.vs_oper_status)
-            test_functions.append(self.se_missed_hb)
-            test_functions.append(self.vs_active_pool_members)
-            test_functions.append(self.cluster_status)
-            test_functions.append(self.avi_subnet_usage)
-            test_functions.append(self.virtual_service_hosted_se)
-            test_functions.append(self.license_usage)
-            test_functions.append(self.service_engine_vs_capacity)
-            test_functions.append(self.license_expiration)
-            test_functions.append(self.get_avi_version)
-            test_functions.append(self.pool_server_stats_threaded)
-            test_functions.append(self.controller_cluster_metrics)
-            test_functions.append(self.se_connected)
-            test_functions.append(self.vs_primary_se)
-            #-----------------------------------
-            #-----------------------------------
-            #-----
-            #-----------------------------------
-            #----- BEGIN Running Test Functions
-            #-----------------------------------
-            proc = []
-            for f in test_functions:
-                p = Process(target = f, args = ())
-                p.start()
-                proc.append(p)
-            for p in proc:
-                p.join()
-            #-----------------------------------
-            #-----
-            #-----------------------------------
-            #----- Log time it took to execute script
-            #-----------------------------------
-            total_time = str(time.time()-start_time)
-            print(str(datetime.now())+' '+self.avi_cluster_ip+': controller specific tests have completed, executed in '+total_time+' seconds')
-            endpoint_payload_list = []
-            temp_payload = self.payload_template.copy()
-            temp_payload['timestamp']=int(time.time())
-            temp_payload['metric_type'] = 'metricscript'
-            temp_payload['metric_name'] = 'execution_time'
-            temp_payload['metric_value'] = float(total_time)*1000
-            temp_payload['name_space'] = 'avi||'+self.host_location+'||'+self.host_environment+'||'+self.avi_cluster_ip+'||metricscript||executiontime'
-            endpoint_payload_list.append(temp_payload)
-            send_metriclist_to_endpoint(endpoint_list, endpoint_payload_list)
+            if self.login.status_code == 200:
+                self.tenants = self.login.json()['tenants']
+                #self.avi_controller = self.controller_to_poll()
+                self.avi_controller = self.avi_cluster_ip
+                print '=====> Chose '+self.avi_controller
+                self.vs_dict, self.se_dict, self.pool_dict, self.seg_dict, self.cloud_mapping = self.gen_inventory_dict()
+                #---- remove metrics that are not available in the current version
+                self.vs_metric_list, self.se_metric_list, self.controller_metric_list, self.pool_server_metric_list = self.remove_version_specific_metrics()
+                #-----------------------------------
+                #----- Add Test functions to list for threaded execution
+                #-----------------------------------
+                test_functions = []
+                test_functions.append(self.virtual_service_stats_threaded)
+                test_functions.append(self.vs_metrics_per_se_threaded)
+                test_functions.append(self.srvc_engn_stats)
+                test_functions.append(self.srvc_engn_vs_count)
+                test_functions.append(self.srvc_engn_count)
+                test_functions.append(self.vs_se_healthscores)
+                test_functions.append(self.vs_oper_status)
+                test_functions.append(self.se_missed_hb)
+                test_functions.append(self.vs_active_pool_members)
+                test_functions.append(self.cluster_status)
+                test_functions.append(self.avi_subnet_usage)
+                test_functions.append(self.virtual_service_hosted_se)
+                test_functions.append(self.license_usage)
+                test_functions.append(self.service_engine_vs_capacity)
+                test_functions.append(self.license_expiration)
+                test_functions.append(self.get_avi_version)
+                test_functions.append(self.pool_server_stats_threaded)
+                test_functions.append(self.controller_cluster_metrics)
+                test_functions.append(self.se_connected)
+                test_functions.append(self.vs_primary_se)
+                #-----------------------------------
+                #-----------------------------------
+                #-----
+                #-----------------------------------
+                #----- BEGIN Running Test Functions
+                #-----------------------------------
+                proc = []
+                for f in test_functions:
+                    p = Process(target = f, args = ())
+                    p.start()
+                    proc.append(p)
+                for p in proc:
+                    p.join()
+                #-----------------------------------
+                #-----
+                #-----------------------------------
+                #----- Log time it took to execute script
+                #-----------------------------------
+                total_time = str(time.time()-start_time)
+                print(str(datetime.now())+' '+self.avi_cluster_ip+': controller specific tests have completed, executed in '+total_time+' seconds')
+                endpoint_payload_list = []
+                temp_payload = self.payload_template.copy()
+                temp_payload['timestamp']=int(time.time())
+                temp_payload['metric_type'] = 'metricscript'
+                temp_payload['metric_name'] = 'execution_time'
+                temp_payload['metric_value'] = float(total_time)*1000
+                temp_payload['name_space'] = 'avi||'+self.host_location+'||'+self.host_environment+'||'+self.avi_cluster_ip+'||metricscript||executiontime'
+                endpoint_payload_list.append(temp_payload)
+                send_metriclist_to_endpoint(endpoint_list, endpoint_payload_list)
+            elif self.login.status_code == 'timedout':
+                logging.info(self.avi_cluster_ip+': AVI ERROR: timeout trying to access '+self.avi_cluster_ip)
+            elif self.login.status_code == '401':
+                logging.info(self.avi_cluster_ip+': AVI ERROR: unable to login to '+self.avi_cluster_ip+' : '+self.login.text)
+            else:
+                logging.info(self.avi_cluster_ip+': AVI ERROR: unknown login error to '+self.avi_cluster_ip)                
         except:
             exception_text = traceback.format_exc()
             print(str(datetime.now())+' Unable to login to: '+self.avi_cluster_ip)
