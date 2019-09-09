@@ -66,7 +66,8 @@ def determine_endpoint_type():
         'datadog',
         'influxdb',
         'logstash',
-        'elasticsearch'
+        'elasticsearch',
+        'ns1'
         ]
     if args.metrics == None:
         print '=====> No end point will be used'
@@ -115,6 +116,11 @@ def determine_endpoint_type():
                     endpoint_info = json.load(elasticsearch)['elasticsearch']
                     endpoint_info['type'] = 'elasticsearch'
                     endpoint_list.append(endpoint_info)                                                              
+            elif a.lower() == 'ns1':
+                with open(os.path.join(fdir,'ns1.json')) as ns1:
+                    endpoint_info = json.load(ns1)['ns1']
+                    endpoint_info['type'] = 'ns1'
+                    endpoint_list.append(endpoint_info)
         return endpoint_list
 
 
