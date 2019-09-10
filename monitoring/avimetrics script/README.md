@@ -256,7 +256,7 @@ EXAMPLE:
 
 ## ns1.json
 
-Define the values for publishing metrics to a NS1 data feed.  The script will publish a subset of Virtual Server metrics to their corresponding NS1 meta keys, using the Virtual Server name as a label.  See [ns1.readme](./ns1.readme) for further information on configuration options and examples.
+Define the values for publishing metrics to a NS1 data feed.  The script will publish a subset of Virtual Server metrics to their corresponding NS1 meta keys, using the Virtual Server name as a label.  Further information on configuration options and examples can be found [here](./ns1.md).
 
 EXAMPLE:
 
