@@ -1,6 +1,6 @@
 # NS1 Metric Configuration
 
-## Attributes
+## Options
 * `api_key` - The NS1 API key to use for authorization when publishing updates.
 * `datasource_id` - The ID of the NS1 Data Source to publish updates to.
 * `endpoint` (optional) - The absolute URL of the NS1 API endpoint to publish updates to.  If not defined in configuration, defaults to `https://api.nsone.net`.
