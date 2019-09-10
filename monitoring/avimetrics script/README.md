@@ -256,14 +256,13 @@ EXAMPLE:
 
 ## ns1.json
 
-Define the values for publishing metrics to a NS1 data feed.  The script will publish the virtual server metrics `l4_server.avg_bandwidth`, `l4_client.avg_complete_conns` and `l7_server.avg_total_requests` to the `loadavg`, `connections` and `requests` NS1 meta keys, respectively.  It will use the virtual server name as the label in the update.  If `endpoint` is not defined in `ns1.json`, the script will publish updates to `https://api.nsone.net`.  However, this can be overwritten to publish updates to a Private DNS or Enterprise DDI API endpoint.
+Define the values for publishing metrics to a NS1 data feed.  By default, the script will publish the virtual server metrics `l4_server.avg_bandwidth`, `l4_client.avg_complete_conns` and `l7_server.avg_total_requests` to the `loadavg`, `connections` and `requests` NS1 meta keys, respectively.  This mapping can be overridden by defining a `metric_map` dict in `ns1.json`. It will use the virtual server name as the label in the update.  If `endpoint` is not defined in `ns1.json`, the script will publish updates to `https://api.nsone.net`.  However, this can be overridden to publish updates to a Private DNS or Enterprise DDI API endpoint.
 
 EXAMPLE:
 
 ```sh
 {"ns1":
     {
-        "endpoint": "https://api.nsone.net",
         "api_key": "qACMD09OJXBxT7XOuRs8",
         "datasource_id": "a53252f9e583c6708331a1daeb172e12"
     }

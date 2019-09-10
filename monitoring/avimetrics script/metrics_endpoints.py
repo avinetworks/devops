@@ -318,11 +318,14 @@ def send_value_logstash(endpoint_info, payload):
 def send_value_ns1(endpoint_info, payload):
     try:
         # Map of avi metrics to NS1 meta key equivilent.
-        metric_map = {
-            'l4_server.avg_bandwidth': 'loadavg',
-            'l4_client.avg_complete_conns': 'connections',
-            'l7_server.avg_total_requests': 'requests'
-        }
+        if 'metric_map' in endpoint_info:
+            metric_map = endpoint_info['metric_map']
+        else:
+            metric_map = {
+                'l4_server.avg_bandwidth': 'loadavg',
+                'l4_client.avg_complete_conns': 'connections',
+                'l7_server.avg_total_requests': 'requests'
+            }
         temp_payload = {}
         for entry in payload:
             if entry['metric_name'] in metric_map and entry['metric_type'] == 'virtualservice_metrics':
@@ -331,9 +334,10 @@ def send_value_ns1(endpoint_info, payload):
                 temp_payload[entry['vs_name']][metric_map[entry['metric_name']]] = entry['metric_value']
         if temp_payload:
             headers = ({'content-type': 'application/json', 'X-NSONE-Key': endpoint_info['api_key'], 'User-Agent': 'avimetrics'})
-            endpoint = 'https://api.nsone.net'
-            if endpoint in endpoint_info:
+            if 'endpoint' in endpoint_info:
                 endpoint = endpoint_info['endpoint']
+            else:
+                endpoint = 'https://api.nsone.net'
             resp = requests.post('%s/v1/feed/%s' %(endpoint, endpoint_info['datasource_id']), headers = headers, data=json.dumps(temp_payload))
             if resp.status_code < 200 or resp.status_code > 299:
                 print resp.text
