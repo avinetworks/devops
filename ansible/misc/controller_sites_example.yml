@@ -1,0 +1,38 @@
+# Simple application name foo
+# It has following characterstics
+# Pool with two servers and HTTP health monitor
+# Single VIP
+# HTTP application
+---
+- hosts: localhost
+  connection: local
+  vars:
+    api_version: 18.2.5
+    controllersites:
+      - name: mycontroller
+        address: 10.10.25.42
+      - name: grastogi
+        address: 10.10.25.42
+    avi_credentials:
+      username: "{{ avi_username }}"
+      password: "{{ avi_password }}"
+  roles:
+    - role: avinetworks.avisdk
+  tasks:
+
+    - name: Build list of Avi Credentials for each Controller
+      set_fact:
+        avi_credentials_list: "{{ avi_credentials_list|default([]) + [avi_credentials | combine({'controller': item.address})] }}"
+      loop: "{{ controllersites }}"
+
+    - name: Printing Credentials List
+      debug: msg="{{ avi_credentials_list }}"
+
+    - name: Setup ControllerSite on every controller
+      avi_controllersite:
+        avi_credentials: "{{ item.0 }}"
+        api_version: 18.2.5
+        name: "{{ item.1.name }}"
+        address: "{{ item.1.address }}"
+      loop: "{{ avi_credentials_list | product(controllersites) | list }}"
+

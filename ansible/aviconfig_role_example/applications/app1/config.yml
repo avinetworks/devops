@@ -13,7 +13,7 @@ avi_config:
   vsvip:
     - cloud_ref: /api/cloud?name=Default-Cloud
       east_west_placement: false
-      name: vsvip-app2-Default-Cloud
+      name: vsvip-app1-Default-Cloud
       tenant: admin
       tenant_ref: /api/tenant/?name=admin
       vip:

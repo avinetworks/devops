@@ -1,0 +1,33 @@
+---
+- hosts: localhost
+  connection: local
+
+  roles:
+      - role: avinetworks.avisdk
+  tasks:
+    - block:
+      - name: Upload package on controller
+        avi_api_fileservice:
+            controller: "{{ controller }}"
+            username: "{{ username }}"
+            password: "{{ password }}"
+            upload: true
+            timeout: 300
+            path: /upload/
+            file_path: "{{ file_path }}"
+            api_version: "{{ api_version }}"
+
+      - name: Upgrade controller
+        avi_api_session:
+            controller: "{{ controller }}"
+            username: "{{ username }}"
+            password: "{{ password }}"
+            http_method: post
+            timeout: 300
+            path: cluster/upgrade/
+            data:
+              image_path: controller://upgrade_pkgs/controller.pkg
+              force: true
+              disruptive: true
+            api_version: "{{ api_version }}"
+

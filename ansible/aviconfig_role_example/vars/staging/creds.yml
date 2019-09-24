@@ -5,7 +5,7 @@ avi_credentials:
   controller: 10.10.25.42
   username: admin
   password: "{{avi_password}}"
-  api_version: 17.2.7
+  api_version: 18.2.6
 
 # all apps use the same backend servers
 app1_vip: 10.90.64.200
