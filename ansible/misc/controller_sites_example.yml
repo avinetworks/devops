@@ -1,0 +1,37 @@
+# This is script to synchronize the controller sites information across
+# multiple controllers. It takes the information about controllers
+# from the list of controllersites variable.
+# takes the common avi_credentials and updates it with each controllersite
+# ipaddress. The expectation is that admins have SSO between the controllers
+# so the same credentials should work across controllers.
+
+---
+- hosts: localhost
+  connection: local
+  vars:
+    api_version: 18.2.5
+    controllersites:
+      - name: mycontroller
+        address: 10.10.25.42
+      - name: grastogi
+        address: 10.10.25.42
+    avi_credentials:
+      username: "{{ avi_username }}"
+      password: "{{ avi_password }}"
+  roles:
+    - role: avinetworks.avisdk
+  tasks:
+
+    - name: Build list of Avi Credentials for each Controller
+      no_log: true
+      set_fact:
+        avi_credentials_list: "{{ avi_credentials_list|default([]) + [avi_credentials | combine({'controller': item.address})] }}"
+      loop: "{{ controllersites }}"
+
+    - name: Setup ControllerSite on every controller
+      avi_controllersite:
+        avi_credentials: "{{ item.0 }}"
+        api_version: 18.2.5
+        name: "{{ item.1.name }}"
+        address: "{{ item.1.address }}"
+      loop: "{{ avi_credentials_list | product(controllersites) | list }}"
