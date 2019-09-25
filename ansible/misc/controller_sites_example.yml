@@ -1,8 +1,10 @@
-# Simple application name foo
-# It has following characterstics
-# Pool with two servers and HTTP health monitor
-# Single VIP
-# HTTP application
+# This is script to synchronize the controller sites information across
+# multiple controllers. It takes the information about controllers
+# from the list of controllersites variable.
+# takes the common avi_credentials and updates it with each controllersite
+# ipaddress. The expectation is that admins have SSO between the controllers
+# so the same credentials should work across controllers.
+
 ---
 - hosts: localhost
   connection: local
@@ -21,12 +23,10 @@
   tasks:
 
     - name: Build list of Avi Credentials for each Controller
+      no_log: true
       set_fact:
         avi_credentials_list: "{{ avi_credentials_list|default([]) + [avi_credentials | combine({'controller': item.address})] }}"
       loop: "{{ controllersites }}"
-
-    - name: Printing Credentials List
-      debug: msg="{{ avi_credentials_list }}"
 
     - name: Setup ControllerSite on every controller
       avi_controllersite:
@@ -35,4 +35,3 @@
         name: "{{ item.1.name }}"
         address: "{{ item.1.address }}"
       loop: "{{ avi_credentials_list | product(controllersites) | list }}"
-
