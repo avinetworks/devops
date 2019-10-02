@@ -31,3 +31,4 @@ To run the proxy in the same network namespace as your host machine
 `--network=host`
 To run the proxy in the same network namespace as your docker container application
 `--network=container:<name>`
+
