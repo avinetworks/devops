@@ -197,5 +197,5 @@ monitoring/graphite/avi-metric-script-graphite-OLD.py
 # Microsoft Visual Studio
 /.vs
 
-# Allow avi_proxy Makefile
-!tools/avi_proxy/Makefile
+# Allow avi-api-proxy Makefile
+!tools/avi-api-proxy/Makefile
