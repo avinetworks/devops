@@ -122,7 +122,7 @@ def get_clients(oscfg):
     return get_cls(oscfg.admin_tenant, auth_url, oscfg)
 
 
-def fix_vip_ports(selist, novc, neuc, jnc, vscfg, ip, pid):
+def fix_vip_ports(selist, novc, neuc, jnc, vscfg, ip, pid, nwid):
     error = False
     dportid = None
     f = False
@@ -186,13 +186,43 @@ def fix_vip_ports(selist, novc, neuc, jnc, vscfg, ip, pid):
                 jnc._update_vmi_ref(piip, [spvmi], None, dvmis=[spvmi,vpvmi])
                 jnc._vnc_put_iip(piip, None)
                 print 'Fixed vip port for VS {}'.format(vscfg.name)
-        except:
+        except Exception as e:
             log.error('Error during fix: %s', traceback.format_exc())
+            print 'Failed to fix the vip port for VS {}: {}'.format(vscfg.name, e)
+            print 'Failure in detail: {}'.format(traceback.format_exc())
     elif not error:
-        print 'No SE found with data port having ip {} for VS {}'.format(ip, vscfg.name)
+        print 'No SE found with data port having ip {} for VS {}. Creating dummy port'.format(ip, vscfg.name)
+        log.info('Creating dummy port with ip %s as fixedip', ip)
+        try:
+            pdata = {'name': 'dummy-vip-{}-port'.format(ip), 'network_id': nwid, 'fixed_ips': [{'ip_address' : ip}]}
+            dummy_port = neuc.create_port({'port': pdata})['port']
+        except Exception as e:
+            log.error('Failed to create dummy port with ip %s: %s', ip, traceback.format_exc())
+            print 'Failed to create dummy port with ip {}: {}'.format(ip, e)
+            print 'Failure in detail: {}'.format(traceback.format_exc())
+            print 'Failed to fix the vip port for VS {}'.format(vscfg.name)
+        else:
+            try:
+                spvmi, piip, _ = jnc._vnc_get_vmi_iip(dummy_port['id'], ip)
+                vpvmi, _, _ = jnc._vnc_get_vmi_iip(pid)
+                if piip:
+                    jnc._update_vmi_ref(piip, [spvmi], None, dvmis=[spvmi,vpvmi])
+                    jnc._vnc_put_iip(piip, None)
+                    print 'Fixed vip port for VS {}. Please disable and enable the VS'.format(vscfg.name)
+            except Exception as e:
+                log.error('Error during fix: %s', traceback.format_exc())
+                print 'Failed to fix the vip port for VS {}: {}'.format(vscfg.name, e)
+                print 'Failure in detail: {}'.format(traceback.format_exc())
+            else:
+                log.info('Deleting dummy port with id %s', dummy_port['id'])
+                try:
+                    neuc.delete_port(dummy_port['id'])
+                except:
+                    log.error('Error during dummy port delete: %s', traceback.format_exc())
+                    print 'Error during dummy port delete, please check the log for more info and delete the port manually'
 
 def check_vip_ports(args):
-    def check(ip, neuc, novc, jnc, vs, pid):
+    def check(ip, neuc, novc, jnc, vs, pid, nwid):
         try:
             port = neuc.show_port(pid)['port']
         except:
@@ -208,7 +238,7 @@ def check_vip_ports(args):
                 print 'VS {} IP {} not found on port {}'.format(vs['config'].name, ip, pid)
                 if args.fix:
                     se_list = vs['runtime'].vip_runtime[0].se_list
-                    fix_vip_ports(se_list, novc, neuc, jnc, vs['config'], ip, pid)
+                    fix_vip_ports(se_list, novc, neuc, jnc, vs['config'], ip, pid, nwid)
             else:
                 print 'found VS {} IP {} on port {}'.format(vs['config'].name, ip, pid)
 
@@ -251,9 +281,9 @@ def check_vip_ports(args):
                 if not (vip.ip_address and vip.ip_address.addr) and not (vip.ip6_address and vip.ip6_address.addr):
                     continue
                 if vip.ip_address and vip.ip_address.addr:
-                    check(vip.ip_address.addr, neuc, novc, jnc, vs, vip.port_uuid)
+                    check(vip.ip_address.addr, neuc, novc, jnc, vs, vip.port_uuid, vip.network_uuid)
                 if vip.ip6_address and vip.ip6_address.addr:
-                    check(vip.ip6_address.addr, neuc, novc, jnc, vs, vip.port_uuid)
+                    check(vip.ip6_address.addr, neuc, novc, jnc, vs, vip.port_uuid, vip.network_uuid)
 
 
 if __name__ == '__main__':
