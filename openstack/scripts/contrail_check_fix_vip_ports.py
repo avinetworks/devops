@@ -186,16 +186,20 @@ def fix_vip_ports(selist, novc, neuc, jnc, vscfg, ip, pid, nwid):
                 jnc._update_vmi_ref(piip, [spvmi], None, dvmis=[spvmi,vpvmi])
                 jnc._vnc_put_iip(piip, None)
                 print 'Fixed vip port for VS {}'.format(vscfg.name)
-        except:
+        except Exception as e:
             log.error('Error during fix: %s', traceback.format_exc())
+            print 'Failed to fix the vip port for VS {}: {}'.format(vscfg.name, e)
+            print 'Failure in detail: {}'.format(traceback.format_exc())
     elif not error:
-        print 'No SE found with data port having ip {} for VS {}'.format(ip, vscfg.name)
+        print 'No SE found with data port having ip {} for VS {}. Creating dummy port'.format(ip, vscfg.name)
         log.info('Creating dummy port with ip %s as fixedip', ip)
         try:
             pdata = {'name': 'dummy-vip-{}-port'.format(ip), 'network_id': nwid, 'fixed_ips': [{'ip_address' : ip}]}
             dummy_port = neuc.create_port({'port': pdata})['port']
-        except:
-            log.error('Failed to create dummy port with ip %s as fixedip', ip)
+        except Exception as e:
+            log.error('Failed to create dummy port with ip %s: %s', ip, traceback.format_exc())
+            print 'Failed to create dummy port with ip {}: {}'.format(ip, e)
+            print 'Failure in detail: {}'.format(traceback.format_exc())
             print 'Failed to fix the vip port for VS {}'.format(vscfg.name)
         else:
             try:
@@ -204,10 +208,11 @@ def fix_vip_ports(selist, novc, neuc, jnc, vscfg, ip, pid, nwid):
                 if piip:
                     jnc._update_vmi_ref(piip, [spvmi], None, dvmis=[spvmi,vpvmi])
                     jnc._vnc_put_iip(piip, None)
-                    print 'Fixed vip port for VS {}'.format(vscfg.name)
-            except:
+                    print 'Fixed vip port for VS {}. Please disable and enable the VS'.format(vscfg.name)
+            except Exception as e:
                 log.error('Error during fix: %s', traceback.format_exc())
-                print 'Failed to fix the vip port for VS {}'.format(vscfg.name)
+                print 'Failed to fix the vip port for VS {}: {}'.format(vscfg.name, e)
+                print 'Failure in detail: {}'.format(traceback.format_exc())
             else:
                 log.info('Deleting dummy port with id %s', dummy_port['id'])
                 try:
