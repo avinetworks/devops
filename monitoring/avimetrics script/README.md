@@ -22,6 +22,7 @@ This repository includes that necessary files to deploy a centralized metrics sc
     - **logstash.json**:  This file contains the values required to send to a Logstash input
     - **elasticsearch_host.json**:  This file contains the values required to send to the Elasticsearch document API
     - **influxdb.json**:  This file contains the values required to send to an InfluxDB HTTP API endpoint
+    - **ns1.json**:  This file contains the values required to publish to a NS1 data feed
 
 
 
@@ -62,6 +63,7 @@ Send Metrics to one or more metrics endpoints.  Valid values are:
  - logstash
  - elasticsearch
  - influxdb
+ - ns1
 
 
 ```sh
@@ -247,6 +249,22 @@ EXAMPLE:
         "server_port": 8086,
         "protocol": "https",
         "db": "avi"
+    }
+}
+```
+
+
+## ns1.json
+
+Define the values for publishing metrics to a NS1 data feed.  The script will publish a subset of Virtual Server metrics to their corresponding NS1 meta keys, using the Virtual Server name as a label.  Further information on configuration options and examples can be found [here](./ns1.md).
+
+EXAMPLE:
+
+```sh
+{"ns1":
+    {
+        "api_key": "qACMD09OJXBxT7XOuRs8",
+        "datasource_id": "a53252f9e583c6708331a1daeb172e12"
     }
 }
 ```
