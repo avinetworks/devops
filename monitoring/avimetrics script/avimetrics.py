@@ -1563,14 +1563,14 @@ class avi_metrics():
                     }
                     ]}
             api_url = 'analytics/metrics/collection?pad_missing_data=false&dimension_limit=1000&include_name=true&include_refs=true'
-            resp = self.avi_post(api_url,tenant,payload)
-            if 'series' in resp.json():
-                if len(resp.json()['series']['collItemRequest:AllServers']) != 0:
-                    for p in resp.json()['series']['collItemRequest:AllServers']:
+            resp = self.avi_post(api_url,tenant,payload).json()
+            if 'series' in resp:
+                if len(resp['series']['collItemRequest:AllServers']) != 0:
+                    for p in resp['series']['collItemRequest:AllServers']:
                         if p not in discovered_servers:
                             discovered_servers.append(p)
                             server_object = p.split(',')[2]
-                            for d in resp.json()['series']['collItemRequest:AllServers'][p]:
+                            for d in resp['series']['collItemRequest:AllServers'][p]:
                                 if 'data' in d:
                                     pool_name = d['header']['pool_ref'].rsplit('#',1)[1]                                            
                                     metric_name = d['header']['name']
