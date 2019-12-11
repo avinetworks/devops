@@ -1,0 +1,203 @@
+- hosts: localhost
+  connection: local
+
+  vars_files:
+     creds.yml
+  roles:
+    - avinetworks.avisdk
+
+  tasks:
+  - name : hm_config
+    vars:
+     avi_creds_file: "creds.yml"
+    avi_healthmonitor:
+     avi_credentials: "{{ AVI_CREDENTIALS }}"
+     monitor_port: 443
+     https_monitor:
+      http_request: "HEAD /favicon.ico HTTP/1.0"
+      http_response_code:
+        - HTTP_2XX
+      ssl_attributes:
+        ssl_profile_ref: "/api/sslprofile?name={{ SSL_PROFILE }}"
+        ssl_key_and_certificate_ref: "/api/sslkeyandcertificate?name={{ HORIZON_CERT }}"
+     name: "{{ HORIZON_HM }}"
+     receive_timeout: 10
+     failed_checks: 3
+     send_interval: 30
+     type: HEALTH_MONITOR_HTTPS
+  
+  - name : IP_group_config
+    vars: 
+     avi_creds_file: "creds.yml"
+    avi_ipaddrgroup:
+     avi_credentials: "{{ AVI_CREDENTIALS }}"
+     name: "{{ IP_GROUP }}"
+     addrs:
+       - addr: "{{ POOL_SERVER1 }}"
+         type: V4
+       - addr: "{{ POOL_SERVER2 }}"
+         type: V4
+       
+
+  - name: TCP_profile_config
+    vars:
+     avi_creds_file: "creds.yml"
+    avi_networkprofile:
+     avi_credentials: "{{ AVI_CREDENTIALS }}"
+     name: "{{ TCP_PROFILE }}"
+     connection_mirror: false
+     profile:
+         tcp_proxy_profile:
+           receive_window: 64
+           time_wait_delay: 2000
+           cc_algo: "CC_ALGO_NEW_RENO"
+           nagles_algorithm: false
+           max_syn_retransmissions: 8
+           ignore_time_wait: false
+           use_interface_mtu: true
+           idle_connection_type: "KEEP_ALIVE"
+           keepalive_in_halfclose_state: true
+           slow_start_scaling_factor: 1
+           congestion_recovery_scaling_factor: 2
+           idle_connection_timeout: 600
+           reassembly_queue_size: 0
+           max_retransmissions: 8
+           automatic: true
+           aggressive_congestion_avoidance: false
+           ip_dscp: 0
+         type: "PROTOCOL_TYPE_TCP_PROXY"
+         
+  - name: UDP_profile_config
+    vars:
+     avi_creds_file: "creds.yml"
+    avi_networkprofile:
+     avi_credentials: "{{ AVI_CREDENTIALS }}"
+     name: "{{ UDP_PROFILE }}" 
+     profile:
+         udp_fast_path_profile: 
+           per_pkt_loadbalance: false
+           snat: true
+           session_idle_timeout: 60 
+         type: "PROTOCOL_TYPE_UDP_FAST_PATH"
+
+  - name : pool_config
+    vars:
+     avi_creds_file: "creds.yml"
+    avi_pool:
+     avi_credentials: "{{ AVI_CREDENTIALS }}"
+     cloud_ref: '/api/cloud?name={{ CLOUD_NAME }}'
+     lb_algorithm: LB_ALGORITHM_CONSISTENT_HASH
+     lb_algorithm_hash: LB_ALGORITHM_CONSISTENT_HASH_SOURCE_IP_ADDRESS
+     default_server_port: 443
+     use_service_port: true
+     health_monitor_refs:
+       - "/api/healthmonitor?name={{ HORIZON_HM }}"
+     ipaddrgroup_ref: '/api/ipaddrgroup?name={{ IP_GROUP }}'
+     placement_networks:
+       - subnet:
+          ip_addr:
+            addr: "{{ IPADDR_PLACEMENT }}"
+            type: V4
+          mask: 24
+         network_ref: '/api/network?name={{ MGMT_NET }}'
+     name: "{{ L4_POOL }}"
+
+  - name : pool_config
+    vars:
+     avi_creds_file: "creds.yml"
+    avi_pool:
+     avi_credentials: "{{ AVI_CREDENTIALS }}"
+     cloud_ref: '/api/cloud?name={{ CLOUD_NAME }}'
+     lb_algorithm: LB_ALGORITHM_CONSISTENT_HASH
+     lb_algorithm_hash: LB_ALGORITHM_CONSISTENT_HASH_SOURCE_IP_ADDRESS
+     default_server_port: 443
+     ssl_profile_ref: "/api/sslprofile?name={{ SSL_PROFILE }}"
+     health_monitor_refs:
+       - "/api/healthmonitor?name={{ HORIZON_HM }}"
+     ipaddrgroup_ref: '/api/ipaddrgroup?name={{ IP_GROUP }}'
+     placement_networks:
+       - subnet:
+          ip_addr:
+            addr: "{{ IPADDR_PLACEMENT }}"
+            type: V4
+          mask: 24
+         network_ref: '/api/network?name={{ MGMT_NET }}'
+     name: "{{ L7_POOL }}"
+
+  - name: L4_app_profile
+    vars:
+     avi_creds_file: "creds.yaml"
+    avi_applicationprofile:
+     avi_credentials: "{{ AVI_CREDENTIALS }}"
+     name: "{{ L4_APP_PROFILE }}"
+     type: APPLICATION_PROFILE_TYPE_L4
+     preserve_client_port: false
+     preserve_client_ip: false
+
+  - name : app_profile
+    vars:
+     avi_creds_file: "creds.yaml"
+    avi_applicationprofile:
+     avi_credentials: "{{ AVI_CREDENTIALS }}"
+     name: "{{ APP_PROFILE }}"
+     http_profile:
+      connection_multiplexing_enabled: false
+      respond_with_100_continue: false
+      ssl_everywhere_enabled: true
+      http_to_https: true
+      http2_enabled: true
+     type: APPLICATION_PROFILE_TYPE_HTTP
+
+  - name : l7_vs_config
+    vars:
+     avi_creds_file: "creds.yml"
+    avi_virtualservice:
+     avi_credentials: "{{ AVI_CREDENTIALS }}"
+     name: "{{ L7_VS }}"
+     services:
+      - port: 443
+        enable_ssl: true
+     pool_ref: '/api/pool?name={{ L7_POOL }}'
+     ssl_profile_ref: '/api/sslprofile?name={{ SSL_PROFILE }}'
+     ssl_key_and_certificate_refs: '/api/sslkeyandcertificate?name={{ HORIZON_CERT }}'
+     application_profile_ref: '/api/applicationprofile?name={{ APP_PROFILE }}'
+     network_profile_ref: '/api/networkprofile?name={{ TCP_PROFILE }}'
+     cloud_ref: '/api/cloud?name={{ CLOUD_NAME }}'
+     vip:
+      - ip_address:
+         addr: "{{ IP_VIP }}"
+         type: V4
+        placement_networks:
+        - subnet:
+            ip_addr:
+              addr: "{{ IPADDR_PLACEMENT }}"
+              type: V4
+            mask: 24
+          network_ref: '/api/network?name={{ MGMT_NET }}'
+     dns_info:
+      - fqdn: "{{ DOMAIN_NAME  }}"
+  - name: Getting VSVIP pref
+    avi_api_session:
+     avi_credentials: "{{ AVI_CREDENTIALS }}"
+     http_method : get
+     path : virtualservice/?name={{ L7_VS }}
+    register: vs_data
+
+  - name: l4_vs_config
+    vars:
+     avi_creds_file: "creds.yml"
+    avi_virtualservice:
+     avi_credentials: "{{ AVI_CREDENTIALS }}"
+     name: "{{L4_VS}}"
+     services:
+      - port: 8443
+      - port: 8443
+        override_network_profile_ref: '/api/networkprofile?name={{ UDP_PROFILE }}'
+      - port: 4172
+      - port: 4172
+        override_network_profile_ref: '/api/networkprofile?name={{ UDP_PROFILE }}'
+     application_profile_ref: '/api/applicationprofile?name={{ L4_APP_PROFILE }}'
+     network_profile_ref: '/api/networkprofile?name={{ TCP_PROFILE }}'
+     cloud_ref: '/api/cloud?name={{ CLOUD_NAME }}'
+     pool_ref: '/api/pool?name={{L4_POOL}}'
+     vsvip_ref: "{{ vs_data['obj']['results'][0]['vsvip_ref'] }}"
