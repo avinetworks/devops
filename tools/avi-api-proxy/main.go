@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"flag"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"net/http"
 	"net/url"
@@ -18,25 +19,25 @@ import (
 )
 
 func proxyRequest(aviSession *session.AviSession, w http.ResponseWriter, r *http.Request) {
-	glog.Infof("[AVIPROXY]: Proxy request %s %s", r.Method, r.URL.Path)
+	glog.Infof("[AVIPROXY]: Proxy request %s %s", r.Method, r.URL.RequestURI())
 	var err error
 	url := strings.TrimPrefix(r.URL.RequestURI(), "/")
 
 	// exported restRequest from goSDK, to get *http.Response as the response and not just []byte.
 	// Modified goSDK code in vendors/ dir
 	var payload interface{}
-	if err = json.NewDecoder(r.Body).Decode(&payload); err != nil {
-		glog.Errorf("[AVIPROXY]: %v", err)
+	if err = json.NewDecoder(r.Body).Decode(&payload); err != nil && err != io.EOF {
+		glog.Errorf("[AVIPROXY]: Unable to decode payload - %v", err)
 	}
 
 	var resp *http.Response
 	if resp, err = aviSession.RestRequest(r.Method, url, payload, "admin"); resp == nil && err != nil {
-		glog.Errorf("[AVIPROXY]: %v", err)
+		glog.Errorf("[AVIPROXY]: REST request error - %v", err)
 	}
 
-	data, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		glog.Errorf("[AVIPROXY]: %v", err)
+	var data []byte
+	if data, err = ioutil.ReadAll(resp.Body); err != nil {
+		glog.Errorf("[AVIPROXY]: Unable to read response content - %v", err)
 	}
 	resp.Body.Close()
 
@@ -75,7 +76,7 @@ func main() {
 		var caCert []byte
 		caCertPath := fmt.Sprintf("/avi/cacert/%s", caCertFile)
 		if caCert, err = ioutil.ReadFile(caCertPath); err != nil {
-			glog.Errorf("[AVIPROXY]: %v", err)
+			glog.Errorf("[AVIPROXY]: Unable to read CA cert file - %v", err)
 		}
 
 		caCertPool := x509.NewCertPool()
@@ -95,7 +96,7 @@ func main() {
 		session.SetTransport(transport),
 		session.SetVersion(version))
 	if err != nil {
-		glog.Errorf("%v", err)
+		glog.Errorf("Unable to initiate AviSession - %v", err)
 	}
 
 	defer aviSession.Logout()
