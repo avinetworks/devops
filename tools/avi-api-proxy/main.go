@@ -20,7 +20,7 @@ import (
 func proxyRequest(aviSession *session.AviSession, w http.ResponseWriter, r *http.Request) {
 	glog.Infof("[AVIPROXY]: Proxy request %s %s", r.Method, r.URL.Path)
 	var err error
-	url := strings.TrimPrefix(r.URL.Path, "/")
+	url := strings.TrimPrefix(r.URL.RequestURI(), "/")
 
 	// exported restRequest from goSDK, to get *http.Response as the response and not just []byte.
 	// Modified goSDK code in vendors/ dir
