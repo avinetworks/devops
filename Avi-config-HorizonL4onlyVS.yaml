@@ -1,0 +1,97 @@
+# This playbook configures all objects required for Horizon deployment with single L4 VS.
+
+- hosts: localhost
+  connection: local
+
+  vars_files:
+     credsL4.yml
+  roles:
+    - avinetworks.avisdk
+
+  tasks:
+  - name : Configuring HTTPS Health Monitor for UAG
+    vars:
+     avi_creds_file: "creds.yml"
+    avi_healthmonitor:
+     avi_credentials: "{{ AVI_CREDENTIALS }}"
+     monitor_port: 443
+     https_monitor:
+      http_request: "HEAD /favicon.ico HTTP/1.0"
+      http_response_code:
+        - HTTP_2XX
+      ssl_attributes:
+        ssl_profile_ref: "/api/sslprofile?name={{ SSL_PROFILE }}"
+        ssl_key_and_certificate_ref: "/api/sslkeyandcertificate?name={{ HORIZON_CERT }}"
+     name: "{{ HORIZON_HM }}"
+     receive_timeout: 10
+     failed_checks: 3
+     send_interval: 30
+     type: HEALTH_MONITOR_HTTPS
+  
+  - name : Configuring IP Group with UAG as members
+    vars: 
+     avi_creds_file: "creds.yml"
+    avi_ipaddrgroup:
+     avi_credentials: "{{ AVI_CREDENTIALS }}"
+     name: "{{ IP_GROUP }}"
+     addrs:
+       - addr: "{{ POOL_SERVER1 }}"
+         type: V4
+       - addr: "{{ POOL_SERVER2 }}"
+         type: V4
+
+
+  - name : Configuring pool for all protocols
+    vars:
+     avi_creds_file: "creds.yml"
+    avi_pool:
+     avi_credentials: "{{ AVI_CREDENTIALS }}"
+     cloud_ref: '/api/cloud?name={{ CLOUD_NAME }}'
+     lb_algorithm: LB_ALGORITHM_CONSISTENT_HASH
+     lb_algorithm_hash: LB_ALGORITHM_CONSISTENT_HASH_SOURCE_IP_ADDRESS
+     default_server_port: 443
+     use_service_port: true
+     health_monitor_refs:
+       - "/api/healthmonitor?name={{ HORIZON_HM }}"
+     ipaddrgroup_ref: '/api/ipaddrgroup?name={{ IP_GROUP }}'
+     placement_networks:
+       - subnet:
+          ip_addr:
+            addr: "{{ IPADDR_PLACEMENT }}"
+            type: V4
+          mask: 24
+         network_ref: '/api/network?name={{ MGMT_NET }}'
+     name: "{{ L4_POOL }}"
+
+  - name: Configuring L4 Virtual Service for all protocols
+    vars:
+     avi_creds_file: "creds.yml"
+    avi_virtualservice:
+     avi_credentials: "{{ AVI_CREDENTIALS }}"
+     name: "{{L4_VS_ONLY}}"
+     services:
+      - port: 443
+      - port: 443
+        override_network_profile_ref: '/api/networkprofile?name={{ UDP_PROFILE }}'
+      - port: 8443
+      - port: 8443
+        override_network_profile_ref: '/api/networkprofile?name={{ UDP_PROFILE }}'
+      - port: 4172
+      - port: 4172
+        override_network_profile_ref: '/api/networkprofile?name={{ UDP_PROFILE }}'
+     application_profile_ref: '/api/applicationprofile?name={{ L4_APP_PROFILE }}'
+     network_profile_ref: '/api/networkprofile?name={{ TCP_PROFILE }}'
+     cloud_ref: '/api/cloud?name={{ CLOUD_NAME }}'
+     pool_ref: '/api/pool?name={{L4_POOL}}'
+     vip:
+      - ip_address:
+         addr: "{{ IP_VIP_L4 }}"
+         type: V4
+        placement_networks:
+        - subnet:
+            ip_addr:
+              addr: "{{ IPADDR_PLACEMENT }}"
+              type: V4
+            mask: 24
+          network_ref: '/api/network?name={{ MGMT_NET }}'
+ 
