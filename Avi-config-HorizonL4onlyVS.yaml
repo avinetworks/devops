@@ -1,3 +1,5 @@
+# This playbook configures all objects required for Horizon deployment with single L4 VS.
+
 - hosts: localhost
   connection: local
 
@@ -7,7 +9,7 @@
     - avinetworks.avisdk
 
   tasks:
-  - name : hm_config
+  - name : Configuring HTTPS Health Monitor for UAG
     vars:
      avi_creds_file: "creds.yml"
     avi_healthmonitor:
@@ -26,7 +28,7 @@
      send_interval: 30
      type: HEALTH_MONITOR_HTTPS
   
-  - name : IP_group_config
+  - name : Configuring IP Group with UAG as members
     vars: 
      avi_creds_file: "creds.yml"
     avi_ipaddrgroup:
@@ -37,50 +39,9 @@
          type: V4
        - addr: "{{ POOL_SERVER2 }}"
          type: V4
-       
 
-  - name: TCP_profile_config
-    vars:
-     avi_creds_file: "creds.yml"
-    avi_networkprofile:
-     avi_credentials: "{{ AVI_CREDENTIALS }}"
-     name: "{{ TCP_PROFILE }}"
-     connection_mirror: false
-     profile:
-         tcp_proxy_profile:
-           receive_window: 64
-           time_wait_delay: 2000
-           cc_algo: "CC_ALGO_NEW_RENO"
-           nagles_algorithm: false
-           max_syn_retransmissions: 8
-           ignore_time_wait: false
-           use_interface_mtu: true
-           idle_connection_type: "KEEP_ALIVE"
-           keepalive_in_halfclose_state: true
-           slow_start_scaling_factor: 1
-           congestion_recovery_scaling_factor: 2
-           idle_connection_timeout: 600
-           reassembly_queue_size: 0
-           max_retransmissions: 8
-           automatic: true
-           aggressive_congestion_avoidance: false
-           ip_dscp: 0
-         type: "PROTOCOL_TYPE_TCP_PROXY"
-         
-  - name: UDP_profile_config
-    vars:
-     avi_creds_file: "creds.yml"
-    avi_networkprofile:
-     avi_credentials: "{{ AVI_CREDENTIALS }}"
-     name: "{{ UDP_PROFILE }}" 
-     profile:
-         udp_fast_path_profile: 
-           per_pkt_loadbalance: false
-           snat: true
-           session_idle_timeout: 60 
-         type: "PROTOCOL_TYPE_UDP_FAST_PATH"
 
-  - name : pool_config
+  - name : Configuring pool for all protocols
     vars:
      avi_creds_file: "creds.yml"
     avi_pool:
@@ -102,18 +63,7 @@
          network_ref: '/api/network?name={{ MGMT_NET }}'
      name: "{{ L4_POOL }}"
 
-  - name: L4_app_profile
-    vars:
-     avi_creds_file: "creds.yaml"
-    avi_applicationprofile:
-     avi_credentials: "{{ AVI_CREDENTIALS }}"
-     name: "{{ L4_APP_PROFILE }}"
-     type: APPLICATION_PROFILE_TYPE_L4
-     preserve_client_port: false
-     preserve_client_ip: false
-
-
-  - name: l4_vs_config
+  - name: Configuring L4 Virtual Service for all protocols
     vars:
      avi_creds_file: "creds.yml"
     avi_virtualservice:
