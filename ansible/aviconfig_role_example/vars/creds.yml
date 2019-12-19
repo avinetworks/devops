@@ -6,13 +6,13 @@
 # avi_password: password$%
 
 # all apps use the same backend servers
-app1_vip: 10.90.64.200
-app2_vip: 10.90.64.201
-app3_vip: 10.90.64.202
-app4_vip: 10.90.64.203
-complex_app_vip: 10.90.64.204
-app_test_tenant_vip: 10.90.64.205
+app1_vip: 100.64.72.200
+app2_vip: 100.64.72.201
+app3_vip: 100.64.72.202
+app4_vip: 100.64.72.203
+complex_app_vip: 100.64.72.204
+app_test_tenant_vip: 100.64.72.205
 
 
-pool_server1: 10.90.64.16
-pool_server2: 10.90.64.14
+pool_server1: 100.64.72.10
+pool_server2: 100.64.73.10

@@ -6,20 +6,20 @@ avi_config:
       dhcp_enabled: true
       license_type: "LIC_CORES"
       vcenter_configuration:
-        username: root
-        password: vmware
-        datacenter: "10GTest"
-        management_network: "/api/vimgrnwruntime?name=Mgmt_Arista_3"
+        username: aviuser1
+        password: "{{vcenter_password}}"
+        datacenter: "wdc-02-vc14"
+        management_network: "/api/vimgrnwruntime?name=vxw-dvs-34-virtualwire-3-sid-2140002-wdc-02-vc14-avi-mgmt"
         privilege: "WRITE_ACCESS"
-        vcenter_url: "10.10.2.10"
+        vcenter_url: "{{vcenter_url}}"
 
   serviceenginegroup:
     - name: Default-Group
       cloud_ref: '/api/cloud?name=Default-Cloud'
-      vcenter_folder: Gaurav/grse
+      vcenter_folder: "Gaurav Rastogi/se"
       vcenter_clusters:
         cluster_refs:
-          - '/api/vimgrclusterruntime?name=Arista'
+          - '/api/vimgrclusterruntime?name=wdc-02-vc14c01'
         include: True
       max_se: 4
       buffer_se: 1

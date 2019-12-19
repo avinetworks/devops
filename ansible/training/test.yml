@@ -146,3 +146,5 @@
       debug: msg="It worked"
       when:
         - cloud_type_foo | default("os") == "os"
+    - name: test new loop
+      debug: "

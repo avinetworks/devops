@@ -18,7 +18,7 @@ avi_config:
     - cloud_ref: /api/cloud?name=Default-Cloud
       east_west_placement: false
       name: vsvip-app_testtenant-Default-Cloud
-      tenant: admin
+      tenant: TestTenant
       tenant_ref: '/api/tenant?name=TestTenant'
       vip:
       - auto_allocate_floating_ip: false

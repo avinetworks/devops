@@ -11,11 +11,13 @@
   vars:
     api_version: 18.2.5
     controllersites:
-      - name: mycontroller
+      - name: avidc
         address: 10.10.25.42
-      - name: grastogi
-        address: 10.10.25.42
-    avi_credentials:
+      - name: sddc
+        address: 10.79.109.241
+      - name: sddc2
+        address: 10.79.111.58
+    credentials:
       username: "{{ avi_username }}"
       password: "{{ avi_password }}"
   roles:
@@ -25,7 +27,7 @@
     - name: Build list of Avi Credentials for each Controller
       no_log: true
       set_fact:
-        avi_credentials_list: "{{ avi_credentials_list|default([]) + [avi_credentials | combine({'controller': item.address})] }}"
+        avi_credentials_list: "{{ avi_credentials_list|default([]) + [credentials | combine({'controller': item.address})] }}"
       loop: "{{ controllersites }}"
 
     - name: Setup ControllerSite on every controller
@@ -34,4 +36,5 @@
         api_version: 18.2.5
         name: "{{ item.1.name }}"
         address: "{{ item.1.address }}"
+        state: "{{state | default('present')}}"
       loop: "{{ avi_credentials_list | product(controllersites) | list }}"

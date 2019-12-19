@@ -1,0 +1,56 @@
+# These settings are for demo purpose only. Pl. modify it as per target
+# environment
+
+avi_credentials:
+  controller: "{{avi_controller}}"
+  username: admin
+  password: "{{avi_password}}"
+  api_version: 18.2.6
+
+# all apps use the same backend servers
+
+app1_vip: 100.64.72.200
+app2_vip: 100.64.72.201
+app3_vip: 100.64.72.202
+app4_vip: 100.64.72.203
+complex_app_vip: 100.64.72.204
+app_test_tenant_vip: 100.64.72.205
+      
+      
+pool_server1: 100.64.72.10
+pool_server2: 100.64.73.10
+
+# VMware Setup
+controller_ip1: 100.64.72.240
+controller_ip2: 100.64.72.241
+controller_ip3: 100.64.72.242
+
+vcenter_password: ""
+vcenter_url: "{{vcenter_url}}"
+vm_prefex: grastogi
+discovery_time: 900
+vcenter_host: "wdc-02-vc14.oc.vmware.com"
+vcenter_user: aviuser1
+datacenter: "wdc-02-vc14"
+datastore: "wdc-02-vc14c01-vsan"
+vmware_cloud_name: "vmwarecloud"
+vmware_cluster_name: "wdc-02-vc14c01"
+#mgmt_network: "vxw-dvs-34-virtualwire-72-sid-2140071-wdc-02-vc14-avi-dev064"
+mgmt_network: "vxw-dvs-34-virtualwire-71-sid-2140070-wdc-02-vc14-avi-dev064"
+mgmt_mask: 255.255.252.0
+default_gw: 10.79.108.0/22
+
+
+#mgmt_network: "vxw-dvs-34-virtualwire-3-sid-2140002-wdc-02-vc14-avi-mgmt"
+
+# Deploy controller on vcenter
+ova_path: "/mnt/builds/eng/ci-build-20.1.1-5636/controller.ova"
+vm_prefix: grastogi
+folder: "Gaurav Rastogi"
+#mgmt_ip: "{{ controller }}"
+
+# initial controll config
+old_password: "{{avi_default_password}}"
+
+# VMWare cloud connector config
+

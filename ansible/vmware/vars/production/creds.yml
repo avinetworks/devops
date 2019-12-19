@@ -1,0 +1,21 @@
+# These settings are for demo purpose only. Pl. modify it as per target
+# environment
+
+avi_credentials:
+  controller: 10.10.25.42
+  username: admin
+  password: "{{avi_password}}"
+  api_version: 17.2.7
+
+# all apps use the same backend servers
+app1_vip: 10.90.64.220
+app2_vip: 10.90.64.221
+app3_vip: 10.90.64.222
+app4_vip: 10.90.64.223
+complex_app_vip: 10.90.64.224
+app_test_tenant_vip: 10.90.64.225
+
+
+pool_server1: 10.90.64.16
+pool_server2: 10.90.64.14
+

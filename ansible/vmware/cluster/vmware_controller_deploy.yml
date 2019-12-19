@@ -1,0 +1,114 @@
+---
+#ansible-playbook initialControllerConfig.yml -e "controller=10.10.29.250"
+- hosts: localhost
+  connection: local
+  roles:
+    - { role: avinetworks.avicontroller_vmware }
+    - { role: avinetworks.avisdk }
+# commom vars
+  vars_files:
+    - "{{ site_dir }}/vars/{{deployment_target | default('staging')}}/creds.yml"
+  vars:
+    controllers:
+      - "{{controller_ip1}}"
+      - "{{controller_ip2}}"
+      - "{{controller_ip3}}"
+  # deploy controller vcenter
+  tasks:
+    - name: Get virtual machine info
+      vmware_vm_info:
+        hostname: '{{ vcenter_host }}'
+        username: '{{ vcenter_user }}'
+        password: '{{ vcenter_password }}'
+        folder: "/{{ datacenter }}/vm/{{ folder }}"
+        validate_certs: false
+      delegate_to: localhost
+      register: vm_info
+
+    - name: Find the expected controller VMS that are of interest
+      set_fact:
+        controller_vm_names: "{{ controller_vm_names|default([]) + [vm_prefex+'-'+index|string+'-'+item] }}"
+      loop: "{{controllers | list}}"
+      loop_control:
+        index_var: index
+    - name: Controller vms expected
+      debug: msg="{{ controller_vm_names }}"
+
+    - name: Check which VMs are present in vm_info
+      set_fact:
+        controller_vms_present: "{{ controller_vms_present|default([]) + [item.guest_name] }}"
+      loop: "{{vm_info.virtual_machines | list}}"
+      when:
+        - item.guest_name in controller_vm_names
+
+    - name: Check VMs absent
+      set_fact:
+        controller_vms_absent: "{{ controller_vm_names | difference(controller_vms_present)}}"
+
+    - name: VMs absent
+      debug: msg="{{controller_vms_absent}}"
+
+    - name: Deploy Avi Controller "{{ vm_prefex }}-{{ index }}-{{ ip }}"
+      deploy_controller:
+        state: "{{ state | default('present')}}"
+        ovftool_path: /usr/bin/
+        vcenter_host: "{{ vcenter_host }}"
+        vcenter_user: "{{ vcenter_user }}"
+        vcenter_password: "{{ vcenter_password }}"
+        con_datacenter: "{{ datacenter }}"
+        con_cluster: "{{ vmware_cluster_name }}"
+        con_ova_path: "{{ ova_path }}"
+        con_vm_name: "{{ item }}"
+        con_vcenter_folder: "{{ folder }}"
+        con_datastore: "{{ datastore | default(omit)}}"
+        con_mgmt_network: "{{ mgmt_network }}"
+        con_power_on: "{{ power_on | default(true)}}"
+        con_mgmt_ip: "{{ item }}"
+        con_mgmt_mask: "{{ mgmt_mask }}"
+        con_default_gw: "{{ default_gw }}"
+        #con_number_of_cpus: 16
+        #con_memory: 32
+        #con_disk_size: 500
+      loop: "{{controller_vms_absent | list}}"
+      loop_control:
+        index_var: index
+
+  # initial controller configuration
+    - name: Wait for Controller be ready
+      uri:
+        validate_certs: False
+        url: "http://{{ controllers }}/"
+        method: GET
+        status_code: 200,302,301,503
+      register: statusCode_output
+      loop: "{{controllers | list}}"
+      until: statusCode_output.status == 200
+      retries: 120
+      delay: 60
+
+    - name: Join controller cluster
+      avi_cluster:
+        avi_credentials: "{{ avi_credentials }}"
+        api_version: 18.2.5
+        name: "{{ vm_prefix }}-cluster"
+        nodes:
+          - name: "{{ controller_ip1 }}"
+            ip:
+              addr: "{{ controller_ip1 }}"
+              type: "V4"
+          - name: "{{ controller_ip2 }}"
+            ip:
+              addr: "{{ controller_ip2 }}"
+              type: "V4"
+          - name: "{{ controller_ip3 }}"
+            ip:
+              addr: "{{ controller_ip3 }}"
+              type: "V4"
+
+    - name: Common | Wait for cluster
+      include_tasks: "../../misc/tasks/common_tasks/wait_cluster_runtime.yml"
+
+    - name: Change admin default password
+      avi_useraccount:
+        avi_credentials: "{{ avi_credentials}}"
+        old_password: "{{ old_password }}"
