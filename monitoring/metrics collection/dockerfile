@@ -1,5 +1,5 @@
 ############################################################
-# Dockerfile to build python avi-monitor script container
+# Dockerfile to build python metrics collection script container
 # Based on alpine:edge
 ############################################################
 
@@ -26,11 +26,11 @@ RUN pip3 install --no-cache-dir requests pyyaml
 
 # Copy scripts to directory
 COPY "configuration_example.yaml" "/usr/src/avi"
-COPY "avimetrics.py" "/usr/src/avi"
+COPY "metricscollection.py" "/usr/src/avi"
 
 
 
 
 
 # Execute script
-CMD ["python3", "/usr/src/avi/avimetrics.py"]
+CMD ["python3", "/usr/src/avi/metricscollection.py"]

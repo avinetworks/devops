@@ -12,7 +12,7 @@ This repository includes that necessary files to deploy a centralized metrics co
 
 
 - **Files**
-    - **avimetrics.py**:  The collection script that will retrieve values from the Avi Controller API and forward to the metrics enpdoints
+    - **metricscollection.py**:  The collection script that will retrieve values from the Avi Controller API and forward to the metrics enpdoints
     - **configuration_example.yaml**:  This is an example of a <strong> required </strong> configuration.yaml file.  Further details covering configuration options are found below.
     - **dockerfile**:  If deploying the script as a container is desired, this file contains the commands to build that container
 
@@ -26,19 +26,19 @@ This repository includes that necessary files to deploy a centralized metrics co
 
 # Installation
 When locally running the script manually or via a cron job, the following files are required and must exist within the same directory for successful metric collection.
-- **avimetrics.py**
+- **metricscollection.py**
 - **configuration.yaml**
 
 
 <br></br>
 
 # Local Script Usage
-## avimetrics.py
+## metricscollection.py
 
 The metrics script will look in the local directory for the configuration.yaml file.  Using the values from this file the script will pull the relevant data from the Avi Controller API and forward the values to the defined metrics endpoints.
 
 ```sh
-$ python3 avimetrics.py
+$ python3 metricscollection.py
 ```
 
 <br></br>
@@ -49,7 +49,7 @@ $ python3 avimetrics.py
 ### <strong>Build the container</strong>
 Using the included dockerfile
 ```sh
-$ docker build -t avimetrics .
+$ docker build -t metricscollection .
 ```
 ### <strong>Start the container</strong>
 To start the container it is required to specify the configuration via the <strong>EN_CONFIGURATION</strong> environment variable.  
@@ -57,7 +57,7 @@ To start the container it is required to specify the configuration via the <stro
 Here is an example for using the contents of a local configuration.yaml as the value for EN_CONFIGURATION when creating the local container.  Once the container has been created and started the local configuration.yaml file is no longer needed for successful operation.  It is recommended to keep it though to rebuild new container images in case configuration modifications need to made.
 
 ```sh
-$ docker run -d --name avimetrics --restart always --log-opt max-size=1m -e "EN_CONFIGURATION=$(<configuration.yaml)"  avinetworks/avimetrics:3
+$ docker run -d --name metricscollection --restart always --log-opt max-size=1m -e "EN_CONFIGURATION=$(<configuration.yaml)"  avinetworks/metricscollection:3
 ```
 
 <br></br>
@@ -1586,7 +1586,7 @@ controllers:
          server: 169.254.0.1
          server_port: 9200
          protocol : https
-         index: avimetrics
+         index: metricscollection
          timestamp: "@timestamp"
          auth-enabled: True
          username: admin
