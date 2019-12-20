@@ -41,7 +41,6 @@ import logging
 import traceback
 import sys
 import os
-#from metrics_endpoints import *
 import _pickle as pickle
 import socket
 from requests.auth import HTTPBasicAuth
@@ -60,8 +59,12 @@ from requests.auth import HTTPBasicAuth
 def send_value_appdynamics_machine(endpoint_info, appd_payload):
     try:
         for entry in appd_payload:
-            name_space = entry['name_space'].replace('||','|')
-            print('name=Custom Metrics|%s,value=%d,aggregator=OBSERVATION,time-rollup=CURRENT,cluster-rollup=INDIVIDUAL' % (name_space, long(entry['metric_value'])))
+            if 'name_space' in entry:
+                name_space = entry['name_space'].replace('||','|')
+                #----- used for migration from old script
+                if 'host_location' and 'host_environment' in entry:
+                    name_space = name_space.replace('avi.', 'avi.'+entry['host_location']+'.'+entry['host_environment']+'.')            
+                print('name=Custom Metrics|%s,value=%d,aggregator=OBSERVATION,time-rollup=CURRENT,cluster-rollup=INDIVIDUAL' % (name_space, long(entry['metric_value'])))
     except:
         exception_text = traceback.format_exc()
         print(str(datetime.now())+'   '+exception_text)
@@ -74,16 +77,21 @@ def send_value_appdynamics_http(endpoint_info, appd_payload):
     try:
         payload = []
         for entry in appd_payload:
-            name_space = entry['name_space'].replace('||','|')
-            temp_payload = {}
-            temp_payload['metricName'] = 'Custom Metrics|'+name_space
-            temp_payload['aggregatorType'] = 'OBSERVATION'
-            temp_payload['value'] = long(entry['metric_value'])
-            payload.append(temp_payload)
-        headers = ({'content-type': 'application/json'})
-        resp = requests.post('http://%s:%s/api/v1/metrics' %(endpoint_info['server'],endpoint_info['server_port']),headers = headers, data=json.dumps(payload), timeout=15)
-        if resp.status_code != 204:
-            print(resp)
+            if 'name_space' in entry:
+                name_space = entry['name_space'].replace('||','|')
+                #----- used for migration from old script
+                if 'host_location' and 'host_environment' in entry:
+                    name_space = name_space.replace('avi.', 'avi.'+entry['host_location']+'.'+entry['host_environment']+'.')            
+                temp_payload = {}
+                temp_payload['metricName'] = 'Custom Metrics|'+name_space
+                temp_payload['aggregatorType'] = 'OBSERVATION'
+                temp_payload['value'] = long(entry['metric_value'])
+                payload.append(temp_payload)
+        if len(payload) > 0:
+            headers = ({'content-type': 'application/json'})
+            resp = requests.post('http://%s:%s/api/v1/metrics' %(endpoint_info['server'],endpoint_info['server_port']),headers = headers, data=json.dumps(payload), timeout=15)
+            if resp.status_code != 204:
+                print(resp)
         #if resp.status_code != 202:
         #    print resp
     except:
@@ -158,23 +166,28 @@ def send_value_graphite(endpoint_info, graphite_payload):
         message_list = []
         name_space_prefix = 'network-script||'
         for entry in graphite_payload:
-            name_space = (name_space_prefix+entry['name_space']).replace('.','_').replace('||','.').replace(' ','_')
-            message_list.append('%s %f %d' %(name_space, entry['metric_value'], entry['timestamp']))
-            #----- I believe there is a message list limit on graphite for plain text
-            if sys.getsizeof(message_list) > 4915:
-                message = '\n'.join(message_list) + '\n'
-                socket.setdefaulttimeout(10)
-                sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-                sock.connect((endpoint_info['server'], endpoint_info['server_port']))
-                sock.send(message.encode())
-                sock.close()
-                message_list = []
-        message = '\n'.join(message_list) + '\n'
-        socket.setdefaulttimeout(10)
-        sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        sock.connect((endpoint_info['server'], endpoint_info['server_port']))
-        sock.send(message.encode())
-        sock.close()
+            if 'name_space' in entry:
+                name_space = (name_space_prefix+entry['name_space']).replace('.','_').replace('||','.').replace(' ','_')
+                #----- used for migration from old script
+                if 'host_location' and 'host_environment' in entry:
+                    name_space = name_space.replace('avi.', 'avi.'+entry['host_location']+'.'+entry['host_environment']+'.')            
+                message_list.append('%s %f %d' %(name_space, entry['metric_value'], entry['timestamp']))
+                #----- I believe there is a message list limit on graphite for plain text
+                if sys.getsizeof(message_list) > 4915:
+                    message = '\n'.join(message_list) + '\n'
+                    socket.setdefaulttimeout(10)
+                    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+                    sock.connect((endpoint_info['server'], endpoint_info['server_port']))
+                    sock.send(message.encode())
+                    sock.close()
+                    message_list = []
+        if len(message_list) > 0:
+            message = '\n'.join(message_list) + '\n'
+            socket.setdefaulttimeout(10)
+            sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            sock.connect((endpoint_info['server'], endpoint_info['server_port']))
+            sock.send(message.encode())
+            sock.close()
 
     except:
         exception_text = traceback.format_exc()
@@ -481,9 +494,9 @@ def determine_endpoint_type(configuration):
 #----- This function allows for passwords to be either plaintext or base64 encoded
 def isBase64(password):
     try:
-        if base64.b64encode(base64.b64decode(b''+password)) == password:
-            if all(ord(c) < 128 for c in base64.b64decode(b''+password)):
-                return base64.b64decode(b''+password)
+        if base64.b64encode(base64.b64decode(password)).decode('utf-8') == password:
+            if all(ord(c) < 128 for c in base64.b64decode(password).decode('utf-8')):
+                return base64.b64decode(password).decode('utf-8')
             else:
                 return password
         else:
