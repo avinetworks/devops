@@ -1,8 +1,10 @@
+#!/usr/bin/python
+#pylint:  skip-file
 
+import sys, os
 if __name__ != "__main__":
     sys.exit(0)
 
-import sys, os
 import django
 from django.conf import settings
 from django.apps import apps
@@ -10,8 +12,7 @@ import simplejson
 
 print "# Script to list objects which would cause issue during full system export or upgrade due to non-ASCII characters in names"
     
-os.environ['PYTHONPATH'] = '/opt/avi/python/lib:/opt/avi/python/bin/portal'
-os.environ['DJANGO_SETTINGS_MODULE'] = 'portal.settings_local'
+os.environ['DJANGO_SETTINGS_MODULE'] = 'portal.settings_full'
 sys.path.append("/opt/avi/python/bin/portal")
 if not apps.ready and not settings.configured:
     django.setup()
