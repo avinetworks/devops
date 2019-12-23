@@ -1,0 +1,24 @@
+#This is the creds file for deploying Avi for Horizon in the single L4 VS deployment.
+#Modify all fields according to your deployment.
+
+IPADDR_PLACEMENT: 10.10.24.0
+MGMT_NET: Mgmt_Arista
+CLOUD_NAME: VMwareCloud-Horizon
+AVI_CREDENTIALS:
+ controller: 10.10.24.93
+ username: admin
+ password: <your password>
+ api_version: 18.2.6
+POOL_SERVER1: 10.10.24.90
+POOL_SERVER2: 10.10.24.108
+HORIZON_CERT: HorizonDemoCert
+HORIZON_HM: https-L4-monitor-horizon
+UDP_PROFILE: System-UDP-Fast-Path-VDI
+TCP_PROFILE: System-TCP-Proxy
+IP_GROUP: UAG_Servers
+SSL_PROFILE: System-Standard
+L4_POOL: L4only-pool-horizon
+L4_APP_PROFILE: System-L4-Application
+L4_VS: L4_VS_Horizon
+IP_VIP_L4: 10.10.24.250
+L4_VS_ONLY: L4_VIP_Horizon
