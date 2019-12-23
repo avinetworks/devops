@@ -1,0 +1,27 @@
+---
+controller_cluster_1: "10.90.64.16"
+controller_cluster_2: "10.90.64.17"
+controller_cluster_3: "10.90.64.18"
+
+avi_credentials:
+  controller: "{{ controller_cluster_1 }}"
+  username: "admin"
+  password: "password"
+  api_version: "18.2.7"
+
+# controller default password and vcenter password.
+old_password: "default old password"
+vcenter_password: "vcenter password"
+
+# vars for cloud configuration.
+mgmt_network: "pg-mgmt"
+mgmt_subnet: 10.128.3.0
+mgmt_subnet_mask: 24
+mgmt_dgw: 10.128.3.1
+
+# Vcenter host configuration.
+vcenter_host: 10.10.2.10
+vcenter_user: root
+vcenter_pwd: "{{ vcenter_password }}"
+datacenter: 10GTest
+vmware_cluster_name: "Arista"
