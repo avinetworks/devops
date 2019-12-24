@@ -1,0 +1,11 @@
+- hosts: localhost
+  connection: local
+  roles:
+    - role: avinetworks.avisdk
+  tasks:
+    - name: Avi | Setup cluster and cloud
+      include_role:
+        name: avinetworks.aviconfig
+      vars:
+        avi_config_file: "avi_config.yml"
+        avi_creds_file: "creds.yml"

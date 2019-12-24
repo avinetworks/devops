@@ -1,0 +1,87 @@
+- hosts: localhost
+  connection: local
+  roles:
+    - { role: avinetworks.avicontroller_vmware }
+    - { role: avinetworks.avisdk }
+  vars_files:
+    - creds.yml
+  vars:
+    controller_creds:
+      - mgmt_ip: "{{ controller_cluster_1 }}"
+        datastore: AS01
+        vm_name: cluster-node1
+      - mgmt_ip: "{{ controller_cluster_2 }}"
+        datastore: AS02
+        vm_name: cluster-node2
+      - mgmt_ip: "{{ controller_cluster_3 }}"
+        datastore: AS05
+        vm_name: cluster-node3
+
+    # Deploy controller on vcenter
+    ova_path: /mnt/builds/18.2.7/last-good-smoke/controller.ova
+    folder: /Opcito/Rohan
+    datastore: AS01
+    mgmt_network: "Mgmt_Arista_3"
+    power_on: true
+    mgmt_mask: 255.255.254.0
+    default_gw: 10.10.28.1
+
+  # deploy controller vcenter
+  tasks:
+    - name: Deploy Avi Controller
+      with_items: "{{ controller_creds }}"
+      deploy_controller:
+        state: "{{ state }}"
+        ovftool_path: /usr/bin/
+        vcenter_host: "{{ vcenter_host }}"
+        vcenter_user: "{{ vcenter_user }}"
+        vcenter_password: "{{ vcenter_pwd }}"
+        con_datacenter: "{{ datacenter }}"
+        con_cluster: "{{ vmware_cluster_name }}"
+        con_ova_path: "{{ ova_path }}"
+        con_vm_name: "{{ item.vm_name }}"
+        con_vcenter_folder: "{{ folder }}"
+        con_datastore: "{{ item.datastore }}"
+        con_mgmt_network: "{{ mgmt_network }}"
+        con_power_on: "{{ power_on }}"
+        con_mgmt_ip: "{{ item.mgmt_ip }}"
+        con_mgmt_mask: "{{ mgmt_mask }}"
+        con_default_gw: "{{ default_gw }}"
+
+    # initial controller configuration
+    - name: Wait for Controller be ready
+      uri:
+        validate_certs: False
+        url: "http://{{ item.mgmt_ip }}/"
+        method: GET
+        status_code: 200,302,301,503
+      register: statusCode_output
+      until: statusCode_output.status == 200
+      retries: 120
+      delay: 60
+      with_items: "{{ controller_creds }}"
+
+    - name: Check Cluster Status
+      uri:
+        validate_certs: false
+        url: "https://{{ item.mgmt_ip }}/api/cluster/runtime"
+        method: GET
+        status_code: 200,302,301,503
+      register: cluster_status
+      until: cluster_status.json.cluster_state.progress == 100
+      retries: 120
+      delay: 60
+      with_items: "{{ controller_creds }}"
+
+    - name: Wait to all services be ready
+      pause:
+        echo: no
+        seconds: 60
+
+    - name: Change admin default password
+      avi_useraccount:
+        controller: "{{ controller_creds[0].mgmt_ip }}"
+        username: "{{ avi_credentials.username }}"
+        password: "{{ avi_credentials.password }}"
+        api_version: "{{ avi_credentials.api_version }}"
+        old_password: "{{ old_password }}"

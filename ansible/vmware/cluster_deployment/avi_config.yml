@@ -1,0 +1,34 @@
+avi_config:
+  cloud:
+    - name: Default-Cloud
+      vtype: CLOUD_VCENTER
+      dhcp_enabled: true
+      license_type: "LIC_CORES"
+      vcenter_configuration:
+        username: root
+        password: "{{ vcenter_password }}"
+        datacenter: "{{ datacenter }}"
+        management_network: "/api/vimgrnwruntime/?name={{ mgmt_network }}"
+        privilege: "WRITE_ACCESS"
+        vcenter_url: "{{ vcenter_host }}"
+        management_ip_subnet:
+          ip_addr:
+            addr: "{{ mgmt_subnet }}"
+            type: V4
+          mask: "{{ mgmt_subnet_mask }}"
+  cluster:
+   - nodes:
+      - ip:
+          type: V4
+          addr: "{{ controller_cluster_1 }}"
+        name: "{{ controller_cluster_1 }}"
+      - ip:
+          type: V4
+          addr: "{{ controller_cluster_2 }}"
+        name: "{{ controller_cluster_2 }}"
+      - ip:
+          type: V4
+          addr: "{{ controller_cluster_3 }}"
+        name: "{{ controller_cluster_3 }}"
+     name: cluster-0-1
+     tenant_uuid: "admin"
