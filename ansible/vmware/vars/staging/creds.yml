@@ -25,6 +25,7 @@ controller_ip1: 100.64.72.240
 controller_ip2: 100.64.72.241
 controller_ip3: 100.64.72.242
 
+controller_ip: "{{ controller_ip1 }}"
 vcenter_password: ""
 vcenter_url: "{{vcenter_url}}"
 vm_prefex: grastogi

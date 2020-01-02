@@ -31,6 +31,7 @@
       loop: "{{controllers | list}}"
       loop_control:
         index_var: index
+
     - name: Controller vms expected
       debug: msg="{{ controller_vm_names }}"
 
@@ -43,12 +44,12 @@
 
     - name: Check VMs absent
       set_fact:
-        controller_vms_absent: "{{ controller_vm_names | difference(controller_vms_present)}}"
+        controller_vms_absent: "{{ controller_vm_names | difference(controller_vms_present | default([])) }}"
 
     - name: VMs absent
-      debug: msg="{{controller_vms_absent}}"
+      debug: msg="{{ controller_vms_absent }}"
 
-    - name: Deploy Avi Controller "{{ vm_prefex }}-{{ index }}-{{ ip }}"
+    - name: "Deploy Avi Controllers '{{ controller_vms_absent }}'"
       deploy_controller:
         state: "{{ state | default('present')}}"
         ovftool_path: /usr/bin/
@@ -63,7 +64,7 @@
         con_datastore: "{{ datastore | default(omit)}}"
         con_mgmt_network: "{{ mgmt_network }}"
         con_power_on: "{{ power_on | default(true)}}"
-        con_mgmt_ip: "{{ item }}"
+        con_mgmt_ip: "{{ item.split('-')[2] }}"
         con_mgmt_mask: "{{ mgmt_mask }}"
         con_default_gw: "{{ default_gw }}"
         #con_number_of_cpus: 16
@@ -77,7 +78,7 @@
     - name: Wait for Controller be ready
       uri:
         validate_certs: False
-        url: "http://{{ controllers }}/"
+        url: "http://{{ item }}/"
         method: GET
         status_code: 200,302,301,503
       register: statusCode_output
@@ -85,6 +86,11 @@
       until: statusCode_output.status == 200
       retries: 120
       delay: 60
+
+    - name: Change admin default password
+      avi_useraccount:
+        avi_credentials: "{{ avi_credentials}}"
+        old_password: "{{ old_password }}"
 
     - name: Join controller cluster
       avi_cluster:
@@ -108,7 +114,3 @@
     - name: Common | Wait for cluster
       include_tasks: "../../misc/tasks/common_tasks/wait_cluster_runtime.yml"
 
-    - name: Change admin default password
-      avi_useraccount:
-        avi_credentials: "{{ avi_credentials}}"
-        old_password: "{{ old_password }}"
