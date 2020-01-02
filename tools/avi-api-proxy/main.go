@@ -13,39 +13,44 @@ import (
 	"os"
 	"strings"
 
-	"github.com/avinetworks/sdk/go/session"
+	"avi-api-proxy/session"
 	"github.com/golang/glog"
 	"github.com/julienschmidt/httprouter"
 )
+
+func proxyErrorResponse(w http.ResponseWriter, err *session.AviError) {
+	w.Header().Set("Content-Type", "application/json")
+	data := make(map[string]string)
+	data["error"] = fmt.Sprintf("%v", err)
+	if err.HttpStatusCode == 0 {
+		err.HttpStatusCode = 504
+		data["error"] = fmt.Sprintf("avi-api-proxy: %v", err)
+	}
+	w.WriteHeader(err.HttpStatusCode)
+	json.NewEncoder(w).Encode(data)
+}
 
 func proxyRequest(aviSession *session.AviSession, w http.ResponseWriter, r *http.Request) {
 	glog.Infof("[AVIPROXY]: Proxy request %s %s", r.Method, r.URL.RequestURI())
 	var err error
 	url := strings.TrimPrefix(r.URL.RequestURI(), "/")
 
-	// exported restRequest from goSDK, to get *http.Response as the response and not just []byte.
-	// Modified goSDK code in vendors/ dir
 	var payload interface{}
 	if err = json.NewDecoder(r.Body).Decode(&payload); err != nil && err != io.EOF {
 		glog.Errorf("[AVIPROXY]: Unable to decode payload - %v", err)
 	}
 
-	var resp *http.Response
-	if resp, err = aviSession.RestRequest(r.Method, url, payload, "admin"); resp == nil && err != nil {
-		glog.Errorf("[AVIPROXY]: REST request error - %v", err)
+	resp, avierror := aviSession.RestRequest(r.Method, url, payload, "admin")
+	if resp == nil && avierror != nil {
+		glog.Errorf("[AVIPROXY]: REST request error - %v", avierror)
+		proxyErrorResponse(w, avierror)
+		return
 	}
 
-	var data []byte
-	if data, err = ioutil.ReadAll(resp.Body); err != nil {
-		glog.Errorf("[AVIPROXY]: Unable to read response content - %v", err)
-	}
+	w.Header().Set("Content-Type", resp.Header.Get("Content-Type"))
+	w.WriteHeader(resp.StatusCode)
+	io.Copy(w, resp.Body)
 	resp.Body.Close()
-
-	contentTypeHeader := resp.Header.Get("Content-Type")
-	w.Header().Set("Content-Type", contentTypeHeader)
-	if _, err = w.Write(data); err != nil {
-		glog.Errorf("[AVIPROXY]: Couldn't write to response writer - %v", err)
-	}
 }
 
 func main() {
@@ -65,7 +70,7 @@ func main() {
 	var err error
 	_, err = url.Parse(aviurl)
 	if err != nil {
-		glog.Errorf("[AVIPROXY]: Invalid URL provided: %s", err.Error())
+		glog.Errorf("[AVIPROXY]: Invalid URL provided: %v", err)
 		os.Exit(-1)
 	}
 
@@ -97,6 +102,7 @@ func main() {
 		session.SetVersion(version))
 	if err != nil {
 		glog.Errorf("Unable to initiate AviSession - %v", err)
+		os.Exit(-1)
 	}
 
 	defer aviSession.Logout()
