@@ -10,8 +10,8 @@
                 "iam:ListPolicyVersions"
             ],
             "Resource": [
-                "arn:aws:iam::*:role/AviControllerRole",
-                "arn:aws:iam::*:policy/avicontroller*"
+                "arn:aws:iam::*:role/AviController-Refined-Role",
+                "arn:aws:iam::*:policy/AviController*"
             ]
         },
         {
@@ -25,10 +25,10 @@
                 "iam:ListRolePolicies"
             ],
             "Resource": [
-                "arn:aws:iam::*:instance-profile/AviControllerRole",
-                "arn:aws:iam::*:policy/avicontroller*",
+                "arn:aws:iam::*:instance-profile/AviController-Refined-Role",
+                "arn:aws:iam::*:policy/AviController*",
                 "arn:aws:iam::*:role/vmimport",
-                "arn:aws:iam::*:role/AviControllerRole"
+                "arn:aws:iam::*:role/AviController-Refined-Role"
             ]
         },
         {
