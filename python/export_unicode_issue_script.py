@@ -18,18 +18,22 @@ if not apps.ready and not settings.configured:
     django.setup()
 
 from avi.rest.view_utils import get_model_from_name
-from api.models import config_models
-config_model_list = config_models[:]
+from api.models import pb_ordered
+from avi.config_migration.export_import import custom_models
 
+all_model_list = pb_ordered + custom_models
 error_list = []
 max_model_name_len = 0
 max_model_field_len = 0
 max_model_uuid_len = 0
 
-for model_name in config_model_list:
+for model_name in all_model_list:
     model = get_model_from_name(model_name)
-    if 'name' not in model._meta.get_all_field_names():
-        continue
+    try:
+        if 'name' not in model._meta.get_all_field_names():
+            continue
+    except AttributeError:
+        pass
     try:
         query = "select id,uuid,name from %s;"%(model._meta.db_table)
         rows = model.objects.raw(query)
