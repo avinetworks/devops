@@ -32,6 +32,8 @@ for model_name in all_model_list:
     try:
         if 'name' not in model._meta.get_all_field_names():
             continue
+        if 'uuid' not in model._meta.get_all_field_names():
+            continue
     except AttributeError:
         pass
     try:
