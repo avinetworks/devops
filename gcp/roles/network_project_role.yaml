@@ -6,6 +6,7 @@ includedPermissions:
 - compute.networks.list
 - compute.networks.updatePolicy
 - compute.regions.get
+- compute.routes.get
 - compute.routes.create
 - compute.routes.delete
 - compute.routes.list
