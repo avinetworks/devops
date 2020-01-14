@@ -8,6 +8,7 @@ includedPermissions:
 - compute.addresses.list
 - compute.addresses.use
 - compute.disks.create
+- compute.forwardingRules.get
 - compute.forwardingRules.create
 - compute.forwardingRules.delete
 - compute.forwardingRules.list
