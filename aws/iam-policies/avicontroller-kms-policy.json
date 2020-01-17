@@ -13,7 +13,7 @@
                 "kms:ReEncryptFrom",
                 "kms:ReEncryptTo"
             ],
-            "Resource": "arn:aws:kms:::key/*"
+            "Resource": "arn:aws:kms:*:*:key/*"
         },
         {
             "Sid": "VisualEditor1",
