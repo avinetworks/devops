@@ -16,6 +16,11 @@ mgmt_network:  'VM Network'
 # Turn on the VM after the push
 power_on: true
 
+#
+#
+#Which  inventory info do I use
+mycloud: home
+
 # Folder where to push the Avi Controller
 vcenter_folder: Avi
 
