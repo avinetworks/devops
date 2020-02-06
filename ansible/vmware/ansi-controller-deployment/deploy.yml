@@ -5,9 +5,6 @@
     - role: avinetworks.avicontroller_vmware
     - role: avinetworks.avisdk
     - role: avinetworks.aviconfig
-  # vars:
-  #   - deploy: deploy.yml
-  #   - state: present
   gather_facts: false
   tasks:
     - name: Deploy Avi Controllers
