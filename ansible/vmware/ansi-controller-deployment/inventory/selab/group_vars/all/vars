@@ -1,0 +1,50 @@
+---
+ovftool_path: /usr/lib/vmware-ovftool
+datacenter: 'Sales'
+#datacenter: '{{ vcenter.datacenter }}'
+cluster: Sales-01
+mgmt_network:  'pg-mgmt'
+ova_path: './software/controller-18.2.7-9129.ova'
+power_on: true
+vcenter_folder: CSAA
+number_of_cpus: 8
+mycloud: selab
+memory: 24
+old_password: '{{ oldpassword }}'
+avi_email: remo@avinetworks.com
+username: admin
+password: '{{ avi_password }}'
+api_version: 18.2.7
+search_domains: remo.local
+dns_server01: 1.1.1.1
+dns_server02: 4.2.2.2
+ntp_server01: time.apple.com
+ntp_server02: 0.us.pool.ntp.org
+vcenter:
+  vcenter_url: 10.10.2.8
+  username: 'root'
+  password: '{{ vmware_pass }}'
+  datacenter: 'Sales'
+avi_credentials:
+  controller: 10.56.0.125
+  username: 'admin'
+  password: '{{ avi_password }}'
+  api_version: 18.2.7
+controller1:
+   - name: Avi_Controller1
+     mgmt_ip:  10.56.0.125
+     mgmt_mask: 255.255.0.0
+     default_gw: 10.56.0.1
+     password: '{{ avi_password }}'
+controller2:
+   - name: Avi_Controller2
+     mgmt_ip: 10.56.0.127
+     mgmt_mask: 255.255.0.0
+     default_gw: 10.56.0.1
+     password: '{{ avi_password }}'
+controller3:
+   - name: Avi_Controller3
+     mgmt_ip: 192.168.38.73
+     mgmt_mask: 255.255.255.0
+     default_gw: 192.168.38.1
+     password: '{{ avi_password }}'
