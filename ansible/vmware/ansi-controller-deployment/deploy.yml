@@ -30,8 +30,8 @@
       no_log: true
       with_items:
         - "{{ controller1 }}"
-      #  - "{{ controller2 }}"
-      # - "{{ controller3}}"
+      # - "{{ controller2 }}"
+      # - "{{ controller3 }}"
       tags:
         - avicontrollers
     - name: Wait for Controller be ready
@@ -98,6 +98,7 @@
           enable_https: true
           password_strength_check: true
           allow_basic_authentication: false
+          disable_swagger: false
         ntp_configuration:
           ntp_servers:
             - server:
@@ -107,5 +108,37 @@
                 type: DNS
                 addr: "{{ ntp_server02 }}"
         default_license_tier: ENTERPRISE_18
+        welcome_workflow_complete: true
+        linux_configuration:
+          motd: "{{ motd_welcome }}"
+          banner: "{{ banner_txt }}"
       tags:
         - controllerconfig
+    - name: Setup VMware CC
+      avi_cloud:
+        controller: '{{ controller1[0].mgmt_ip }}'
+        username: '{{ username }}'
+        password: '{{ password }}'
+        api_version: '{{ api_version }}'
+        name: "VMware"
+        vtype: CLOUD_VCENTER
+        dhcp_enabled: false
+        prefer_static_routes: false
+        license_type: "LIC_CORES"
+        tenant_ref: /api/tenant/?name=admin
+        license_tier: ENTERPRISE_18
+        # se_group_template_ref: Default-Group
+        vcenter_configuration:
+          username: "{{ vcenter.username }}"
+          password: "{{ vcenter.password }}"
+          datacenter: "{{ vcenter.datacenter }}"
+          privilege: "WRITE_ACCESS"
+          vcenter_url: "{{ vcenter.vcenter_url }}"
+          management_network: "/api/vimgrnwruntime?name={{ vcenter.network_mgmt }}"
+          management_ip_subnet:
+            ip_addr:
+              addr: 192.168.100.0
+              type: V4
+            mask: 24
+      tags:
+        - vcenter

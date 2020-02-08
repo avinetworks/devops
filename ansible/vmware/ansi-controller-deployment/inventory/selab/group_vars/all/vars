@@ -47,6 +47,11 @@ api_version: 18.2.7
 # Domain to search for the Avi Controller
 search_domains: remo.local
 
+#Portal UI Display Banner and MOTD
+banner_txt: "Ciao Ciao!! - Test Msg"
+motd_welcome:
+
+
 # DNS servers
 dns_server01: 1.1.1.1
 dns_server02: 4.2.2.2
@@ -62,29 +67,33 @@ controller1:
      mgmt_mask: 255.255.0.0
      default_gw: 10.56.0.1
      password: '{{ avi_password }}'
+     ctl: yes
 controller2:
    - name: Avi_Controller2
      mgmt_ip: 10.56.0.127
      mgmt_mask: 255.255.0.0
      default_gw: 10.56.0.1
      password: '{{ avi_password }}'
+     ctl: no
 controller3:
    - name: Avi_Controller3
      mgmt_ip: 192.168.38.73
      mgmt_mask: 255.255.255.0
      default_gw: 192.168.38.1
      password: '{{ avi_password }}'
+     ctl: no
 
 # vsphere
 vcenter:
   vcenter_url: 10.10.2.8
   username: 'root'
   password: '{{ vmware_pass }}'
-  datacenter: '{{ cluster }}'
+  datacenter: '{{ datacenter }}'
+  network_mgmt: 'pg-mgmt'
 
 # Avi info used in the script
 avi_credentials:
-  controller: 10.56.0.128
+  controller: '{{ controller1[0].mgmt_ip }}'
   username: '{{ username }}'
   password: '{{ avi_password }}'
   api_version:  '{{ api_version }}'
