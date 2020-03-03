@@ -64,7 +64,7 @@ def send_value_appdynamics_machine(endpoint_info, appd_payload):
                 #----- used for migration from old script
                 if 'host_location' and 'host_environment' in entry:
                     name_space = name_space.replace('avi.', 'avi.'+entry['host_location']+'.'+entry['host_environment']+'.')            
-                print('name=Custom Metrics|%s,value=%d,aggregator=OBSERVATION,time-rollup=CURRENT,cluster-rollup=INDIVIDUAL' % (name_space, long(entry['metric_value'])))
+                print('name=Custom Metrics|%s,value=%d,aggregator=OBSERVATION,time-rollup=CURRENT,cluster-rollup=INDIVIDUAL' % (name_space, int(entry['metric_value'])))
     except:
         exception_text = traceback.format_exc()
         print(str(datetime.now())+'   '+exception_text)
@@ -85,7 +85,7 @@ def send_value_appdynamics_http(endpoint_info, appd_payload):
                 temp_payload = {}
                 temp_payload['metricName'] = 'Custom Metrics|'+name_space
                 temp_payload['aggregatorType'] = 'OBSERVATION'
-                temp_payload['value'] = long(entry['metric_value'])
+                temp_payload['value'] = int(entry['metric_value'])
                 payload.append(temp_payload)
         if len(payload) > 0:
             headers = ({'content-type': 'application/json'})

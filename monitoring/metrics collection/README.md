@@ -167,7 +167,7 @@ The configuration.yaml file will include the parameters to define what data valu
 <td>
 </td>
 <td>
-<div>Optional dictionary of key:value pairs that will be added to them metrics data being sent to the metrics endpoints</div>
+<div>Optional dictionary of key:value pairs that will be added to the metrics data being sent to the metrics endpoints</div>
 </td>
 </tr>
 
