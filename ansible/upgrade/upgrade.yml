@@ -1,0 +1,26 @@
+---
+- hosts: localhost
+  connection: local
+  vars_files:
+    - "{{ site_dir }}/vars/creds.yml"
+  roles:
+    - role: "avinetworks.avisdk"
+
+  tasks:
+    - name: Upgrade Controller to base image | Upgrade controller
+      avi_api_session:
+        avi_credentials: "{{ avi_credentials }}"
+        api_version: "{{ api_version }}"
+        http_method: post
+        timeout: 300
+        path: "upgrade"
+        data:
+          "image_uuid": "{{ image_uuid }}"
+          "system": true
+          "skip_warnings": true
+#          "controller_patch_uuid": "{{ controller_patch_uuid }}"
+#          "se_patch_uuid": "{{ se_patch_uuid }}"
+#          "disruptive": true
+#          "suspend_on_failure": true
+#          "se_group_uuids":
+#            - "{{  se_group_uuid }}"

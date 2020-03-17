@@ -1,0 +1,8 @@
+avi_credentials:
+  controller: "{{avi_controller}}"
+  username: "{{avi_username}}"
+  password: "{{avi_password}}"
+  api_version: "{{avi_api_version}}"
+api_version: "{{avi_api_version}}"
+
+image_uuid: "{{image_uuid}}"
