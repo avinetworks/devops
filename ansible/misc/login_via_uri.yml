@@ -1,0 +1,27 @@
+---
+- hosts: localhost
+  roles:
+    - role: avinetworks.avisdk
+  tasks:
+    - name: Get login info
+      uri:
+        url: "https://{{ controller }}/login"
+        method: POST
+        body:
+          username: "{{ username }}"
+          password: "{{ password }}"
+        validate_certs: no
+        body_format: json
+      register: login_info
+    - name: Get cloud inventory
+      avi_api_session:
+        avi_credentials:
+          username: "{{ username }}"
+          password: "{{ password }}"
+        controller: "{{ controller }}"
+        api_context:
+          session_id: "{{ login_info.cookies.sessionid }}"
+          csrftoken: "{{ login_info.cookies.csrftoken }}"
+        http_method: get
+        path: cloud-inventory
+      register: cloud_results
