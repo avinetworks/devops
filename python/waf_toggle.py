@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 
-#example PATCH request script for zoll to turn off waf policy on vs
+#example PATCH request script to turn off waf policy on vs
 #requires avisdk packages. install here https://github.com/avinetworks/sdk/tree/befb93b0ad06340862b0d173a244786fe728d876/python/avi/sdk
 #API token generation needed. for token generation help, see https://avinetworks.com/docs/18.2/saas-rest-api-access/ 
 import json
