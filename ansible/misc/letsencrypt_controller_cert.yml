@@ -2,6 +2,20 @@
 - hosts: localhost
   connection: local
   vars:
+    deployment_certificate:
+      name: "{{ deployment_name }}"
+      private_key_path: /etc/letsencrypt/live/{{ deployment_domain }}/privkey.pem
+      csr_path: /etc/letsencrypt/live/{{ deployment_domain }}/{{ deployment_domain }}.csr
+      certificate: /etc/letsencrypt/live/{{ deployment_domain }}/cert.pem
+      chain: /etc/letsencrypt/live/{{ deployment_domain }}/chain.pem
+      fullchain: /etc/letsencrypt/live/{{ deployment_domain }}/fullchain.pem
+    deployment_letsencrypt:
+      account_uri: https://acme-v02.api.letsencrypt.org/acme/acct/youraccount
+      directory: https://acme-v02.api.letsencrypt.org/directory
+      version: 2
+      account_key_src: /var/run/credentials/letsencrypt_account.key
+      contacts:
+        - mailto:youremail@email.com
   tasks:
     - name: Create the certificate directory for the deployment
       file:
