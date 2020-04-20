@@ -1,0 +1,44 @@
+#Var File for Horizon Deployment to address multiple scenarios
+
+avi_credentials:
+ controller: 10.206.41.160
+ username: admin
+ password: AviNetworks123!
+ api_version: 18.2.7
+
+#DEPLOYMENT_NAME - USED AS NAMING PREFIX
+DEPLOYMENT_NAME: HORIZON
+CLOUD_NAME: VMwareCloud-Horizon
+TENANT_NAME: admin
+# Reference KB: 
+# L4L7 https://avinetworks.com/docs/18.2/avi-horizon-reference-architecture-guide/#a
+# More details: 
+# L4ONLY https://avinetworks.com/docs/18.2/avi-horizon-reference-architecture-guide/#b
+# More details:
+DEPLOYMENT_TYPE: L4L7
+
+# EXTERNAL HORIZON UAG VIRTUAL SERVICES VARIABLES
+EXTERNAL_SEG_NAME: Default-Group
+EXTERNAL_UAG_VIP: 10.206.41.165
+EXTERNAL_UAG_CERT: hzn_external_20200420
+EXTERNAL_UAG_SSLPROFILE: System-Standard
+UAG_APP_PROFILE: System-Secure-HTTP-VDI
+UAG_TCP_PROFILE: System-TCP-Proxy
+UAG_UDP_PROFILE: System-UDP-Fast-Path-VDI
+UAG_L4_APP_PROFILE: System-L4-Application
+UAG_SERVERS_POOL: [10.206.41.162, 10.206.41.161]
+
+LOAD_BALANCE_CONNECTION_SERVERS: true
+# If true, the variables below have to be supplied
+# Reference KB
+# CS https://avinetworks.com/docs/18.2/avi-horizon-reference-architecture-guide/#avi-vantage-for-connection-server-load-balancing
+
+# INTERNAL HORIZON CONNECTION SERVERS VIRTUAL SERVICE VARIABLES
+INTERNAL_SEG_NAME: Default-Group
+INTERNAL_CS_VIP: 100.64.88.90
+INTERNAL_CS_CERT: hzn_internal_20200420
+INTERNAL_CS_SSLPROFILE: System-Standard
+CS_SERVERS_POOL: [100.64.88.200, 100.64.88.201]
+CS_APP_PROFILE: System-Secure-HTTP-VDI
+CS_TCP_PROFILE: System-TCP-Proxy
+
