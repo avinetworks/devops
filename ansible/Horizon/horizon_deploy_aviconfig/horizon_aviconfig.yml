@@ -1,0 +1,352 @@
+# Auto-generated from Avi Configuration
+---
+- connection: local
+  hosts: localhost
+  gather_facts: false
+  vars_files:
+  - horizon_vars.yml
+  tasks:
+  - set_fact:
+      uag_pool_servers: "{{ uag_pool_servers | default([]) + [{'type': 'V4', 'addr': uag_servers_member_ip }]}}"
+    loop: "{{ UAG_SERVERS_POOL }}"
+    loop_control:
+      loop_var: uag_servers_member_ip
+    name: Build UAG Pool List
+    when: UAG_SERVERS_POOL is defined
+
+#UAG Deployment Type L4L7
+  - set_fact:
+      uag_avi_config:
+        pool:
+          - 
+              lb_algorithm: LB_ALGORITHM_CONSISTENT_HASH
+              tenant: "{{ TENANT_NAME }}"
+              lb_algorithm_hash: LB_ALGORITHM_CONSISTENT_HASH_SOURCE_IP_ADDRESS
+              cloud_ref: "{{ '/api/cloud/?name=' + CLOUD_NAME}}"
+              ipaddrgroup_ref: "{{ '/api/ipaddrgroup/?name=' + DEPLOYMENT_NAME + '_uag_ipgroup' }}"
+              default_server_port: 443
+              name: "{{ DEPLOYMENT_NAME +'-L4-UAG-Pool' }}"
+              health_monitor_refs:
+                  - "{{ '/api/healthmonitor/?name=' + DEPLOYMENT_NAME +'-UAG-HM' }}"
+          - 
+              lb_algorithm: LB_ALGORITHM_CONSISTENT_HASH
+              tenant: "{{ TENANT_NAME }}"
+              lb_algorithm_hash: LB_ALGORITHM_CONSISTENT_HASH_SOURCE_IP_ADDRESS
+              cloud_ref: "{{ '/api/cloud/?name=' + CLOUD_NAME}}"
+              ssl_profile_ref: '/api/sslprofile/?name=System-Standard'
+              ipaddrgroup_ref: "{{ '/api/ipaddrgroup/?name=' + DEPLOYMENT_NAME + '_uag_ipgroup' }}"
+              default_server_port: 443
+              name: "{{ DEPLOYMENT_NAME +'-L7-UAG-Pool' }}"
+              health_monitor_refs:
+                  - "{{ '/api/healthmonitor/?name=' + DEPLOYMENT_NAME +'-UAG-HM' }}"
+        vsvip:
+          - 
+            tenant: "{{ TENANT_NAME }}"
+            cloud_ref: "{{ '/api/cloud/?name=' + CLOUD_NAME}}"
+            vip:
+                - 
+                    vip_id: 1
+                    auto_allocate_floating_ip: false
+                    avi_allocated_vip: false
+                    enabled: true
+                    auto_allocate_ip_type: V4_ONLY
+                    ip_address:
+                        type: V4
+                        addr: "{{ EXTERNAL_UAG_VIP }}"
+            name: "{{ DEPLOYMENT_NAME +'-UAG-VSVIP' }}"
+        healthmonitor:
+          - 
+              monitor_port: 443
+              https_monitor:
+                  ssl_attributes:
+                      ssl_profile_ref: '/api/sslprofile/?name=System-Standard'
+                  http_request: GET /favicon.ico HTTP/1.0
+                  http_response_code:
+                      - HTTP_2XX
+              receive_timeout: 10
+              tenant: "{{ TENANT_NAME }}"
+              name: "{{ DEPLOYMENT_NAME +'-UAG-HM' }}"
+              send_interval: 30
+              type: HEALTH_MONITOR_HTTPS
+        virtualservice:
+          - 
+              tenant: "{{ TENANT_NAME }}"
+              cloud_ref: "{{ '/api/cloud/?name=' + CLOUD_NAME}}"
+              se_group_ref: "{{ '/api/serviceenginegroup/?name=' + EXTERNAL_SEG_NAME }}"
+              ssl_profile_ref: "{{ '/api/sslprofile/?name=' + EXTERNAL_UAG_SSLPROFILE }}"
+              ssl_key_and_certificate_refs:
+                  - "{{ '/api/sslkeyandcertificate/?name=' + EXTERNAL_UAG_CERT }}"
+              vsvip_ref: "{{ '/api/vsvip/?name=' + DEPLOYMENT_NAME + '-UAG-VSVIP' }}"
+              application_profile_ref: "{{ '/api/applicationprofile/?name=' + UAG_APP_PROFILE }}"
+              network_profile_ref: '/api/networkprofile?name={{ UAG_TCP_PROFILE }}'
+              services:
+                  - 
+                      enable_ssl: true
+                      port_range_end: 443
+                      port: 443
+                  - 
+                      enable_ssl: false
+                      port_range_end: 80
+                      port: 80
+              pool_ref: "{{ '/api/pool/?name=' + DEPLOYMENT_NAME +'-L7-UAG-Pool' }}"
+              analytics_policy:
+                udf_log_throttle: 10
+                full_client_logs:
+                  duration: 30
+                  throttle: 10
+                  enabled: true
+              metrics_realtime_update:
+                duration: 30
+                enabled: true
+              name: "{{ DEPLOYMENT_NAME + '-UAG-L7-VS' }}"
+          - 
+              tenant: "{{ TENANT_NAME }}"
+              cloud_ref: "{{ '/api/cloud/?name=' + CLOUD_NAME}}"
+              se_group_ref: "{{ '/api/serviceenginegroup/?name=' + EXTERNAL_SEG_NAME }}"
+              vsvip_ref: "{{ '/api/vsvip/?name=' + DEPLOYMENT_NAME + '-UAG-VSVIP' }}"
+              application_profile_ref: "{{ '/api/applicationprofile/?name=' + UAG_L4_APP_PROFILE }}"
+              network_profile_ref: '/api/networkprofile?name={{ UAG_TCP_PROFILE }}'
+              services:
+                  - 
+                      enable_ssl: false
+                      port_range_end: 443
+                      port: 443
+                      override_network_profile_ref: "{{ '/api/networkprofile/?name=' + UAG_UDP_PROFILE }}"
+                  - 
+                      enable_ssl: false
+                      port_range_end: 4172
+                      port: 4172
+                  - 
+                      enable_ssl: false
+                      port_range_end: 4172
+                      port: 4172
+                      override_network_profile_ref: "{{ '/api/networkprofile/?name=' + UAG_UDP_PROFILE }}"
+                  - 
+                      enable_ssl: false
+                      port_range_end: 8443
+                      port: 8443
+                  - 
+                      enable_ssl: false
+                      port_range_end: 8443
+                      port: 8443
+                      override_network_profile_ref: "{{ '/api/networkprofile/?name=' + UAG_UDP_PROFILE }}"
+              pool_ref: "{{ '/api/pool/?name=' + DEPLOYMENT_NAME +'-L4-UAG-Pool' }}"
+              analytics_policy:
+                udf_log_throttle: 10
+                full_client_logs:
+                  duration: 30
+                  throttle: 10
+                  enabled: true
+              metrics_realtime_update:
+                duration: 30
+                enabled: true
+              name: "{{ DEPLOYMENT_NAME + '-UAG-L4-VS' }}"
+        ipaddrgroup:
+          -
+              tenant: "{{ TENANT_NAME }}"
+              name: "{{ DEPLOYMENT_NAME + '_uag_ipgroup' }}"
+              addrs: "{{  uag_pool_servers }}"
+    name: Build L4L7 VS Deployment Type
+    when: DEPLOYMENT_TYPE == "L4L7"
+
+#UAG Deployment Type L4
+  - set_fact:
+      uag_avi_config:
+        pool:
+          - 
+              lb_algorithm: LB_ALGORITHM_CONSISTENT_HASH
+              tenant: "{{ TENANT_NAME }}"
+              lb_algorithm_hash: LB_ALGORITHM_CONSISTENT_HASH_SOURCE_IP_ADDRESS
+              cloud_ref: "{{ '/api/cloud/?name=' + CLOUD_NAME}}"
+              ipaddrgroup_ref: "{{ '/api/ipaddrgroup/?name=' + DEPLOYMENT_NAME + '_uag_ipgroup' }}"
+              default_server_port: 443
+              name: "{{ DEPLOYMENT_NAME +'-L4-UAG-Pool' }}"
+              health_monitor_refs:
+                  - "{{ '/api/healthmonitor/?name=' + DEPLOYMENT_NAME +'-UAG-HM' }}"
+        vsvip:
+          - 
+            tenant: "{{ TENANT_NAME }}"
+            cloud_ref: "{{ '/api/cloud/?name=' + CLOUD_NAME}}"
+            vip:
+                - 
+                    vip_id: 1
+                    auto_allocate_floating_ip: false
+                    avi_allocated_vip: false
+                    enabled: true
+                    auto_allocate_ip_type: V4_ONLY
+                    ip_address:
+                        type: V4
+                        addr: "{{ EXTERNAL_UAG_VIP }}"
+            name: "{{ DEPLOYMENT_NAME +'-UAG-VSVIP' }}"
+        healthmonitor:
+          - 
+              monitor_port: 443
+              https_monitor:
+                  ssl_attributes:
+                      ssl_profile_ref: '/api/sslprofile/?name=System-Standard'
+                  http_request: GET /favicon.ico HTTP/1.0
+                  http_response_code:
+                      - HTTP_2XX
+              receive_timeout: 10
+              tenant: "{{ TENANT_NAME }}"
+              name: "{{ DEPLOYMENT_NAME +'-UAG-HM' }}"
+              send_interval: 30
+              type: HEALTH_MONITOR_HTTPS
+        virtualservice:
+          - 
+              tenant: "{{ TENANT_NAME }}"
+              cloud_ref: "{{ '/api/cloud/?name=' + CLOUD_NAME}}"
+              se_group_ref: "{{ '/api/serviceenginegroup/?name=' + EXTERNAL_SEG_NAME }}"
+              vsvip_ref: "{{ '/api/vsvip/?name=' + DEPLOYMENT_NAME + '-UAG-VSVIP' }}"
+              application_profile_ref: "{{ '/api/applicationprofile/?name=' + UAG_L4_APP_PROFILE }}"
+              network_profile_ref: '/api/networkprofile?name={{ UAG_TCP_PROFILE }}'
+              services:
+                  - 
+                      enable_ssl: false
+                      port_range_end: 443
+                      port: 443
+                  - 
+                      enable_ssl: false
+                      port_range_end: 443
+                      port: 443
+                      override_network_profile_ref: "{{ '/api/networkprofile/?name=' + UAG_UDP_PROFILE }}"
+                  - 
+                      enable_ssl: false
+                      port_range_end: 4172
+                      port: 4172
+                  - 
+                      enable_ssl: false
+                      port_range_end: 4172
+                      port: 4172
+                      override_network_profile_ref: "{{ '/api/networkprofile/?name=' + UAG_UDP_PROFILE }}"
+                  - 
+                      enable_ssl: false
+                      port_range_end: 8443
+                      port: 8443
+                  - 
+                      enable_ssl: false
+                      port_range_end: 8443
+                      port: 8443
+                      override_network_profile_ref: "{{ '/api/networkprofile/?name=' + UAG_UDP_PROFILE }}"
+              pool_ref: "{{ '/api/pool/?name=' + DEPLOYMENT_NAME +'-L4-UAG-Pool' }}"
+              analytics_policy:
+                udf_log_throttle: 10
+                full_client_logs:
+                  duration: 30
+                  throttle: 10
+                  enabled: true
+              metrics_realtime_update:
+                duration: 30
+                enabled: true
+              name: "{{ DEPLOYMENT_NAME + '-UAG-L4-VS' }}"
+        ipaddrgroup:
+          -
+              tenant: "{{ TENANT_NAME }}"
+              name: "{{ DEPLOYMENT_NAME + '_uag_ipgroup' }}"
+              addrs: "{{  uag_pool_servers }}"
+    name: Build L4 VS Deployment Type
+    when: DEPLOYMENT_TYPE == "L4ONLY"
+
+  - name: UAG Loadbalancer Deployment
+    import_role:
+      name: avinetworks.aviconfig
+    vars:
+      avi_config: "{{ uag_avi_config }}"
+    when: uag_avi_config is defined
+
+# CS Deployment
+  - set_fact:
+      cs_pool_servers: "{{ cs_pool_servers | default([]) + [{'type': 'V4', 'addr': cs_servers_member_ip}]}}"
+    loop: "{{ CS_SERVERS_POOL }}"
+    loop_control:
+      loop_var: cs_servers_member_ip
+    name: Build UAG Pool List
+    when: CS_SERVERS_POOL is defined and LOAD_BALANCE_CONNECTION_SERVERS|bool == true
+  - set_fact:
+      cs_avi_config:
+        pool:
+          - 
+              lb_algorithm: LB_ALGORITHM_CONSISTENT_HASH
+              tenant: "{{ TENANT_NAME }}"
+              lb_algorithm_hash: LB_ALGORITHM_CONSISTENT_HASH_SOURCE_IP_ADDRESS
+              cloud_ref: "{{ '/api/cloud/?name=' + CLOUD_NAME}}"
+              ssl_profile_ref: '/api/sslprofile/?name=System-Standard'
+              ipaddrgroup_ref: "{{ '/api/ipaddrgroup/?name=' + DEPLOYMENT_NAME + '_cs_ipgroup' }}"
+              default_server_port: 443
+              name: "{{ DEPLOYMENT_NAME +'-CS-Pool' }}"
+              health_monitor_refs:
+                  - "{{ '/api/healthmonitor/?name=' + DEPLOYMENT_NAME +'-CS-HM' }}"
+        vsvip:
+          - 
+            tenant: "{{ TENANT_NAME }}"
+            cloud_ref: "{{ '/api/cloud/?name=' + CLOUD_NAME}}"
+            vip:
+                - 
+                    vip_id: 1
+                    auto_allocate_floating_ip: false
+                    avi_allocated_vip: false
+                    enabled: true
+                    auto_allocate_ip_type: V4_ONLY
+                    ip_address:
+                        type: V4
+                        addr: "{{ INTERNAL_CS_VIP }}"
+            name: "{{ DEPLOYMENT_NAME +'-CS-VSVIP' }}"
+        healthmonitor:
+          - 
+              monitor_port: 443
+              https_monitor:
+                  ssl_attributes:
+                      ssl_profile_ref: '/api/sslprofile/?name=System-Standard'
+                  http_request: GET /favicon.ico HTTP/1.0
+                  http_response_code:
+                      - HTTP_2XX
+              receive_timeout: 10
+              tenant: "{{ TENANT_NAME }}"
+              name: "{{ DEPLOYMENT_NAME +'-CS-HM' }}"
+              send_interval: 30
+              type: HEALTH_MONITOR_HTTPS
+        virtualservice:
+          - 
+              tenant: "{{ TENANT_NAME }}"
+              cloud_ref: "{{ '/api/cloud/?name=' + CLOUD_NAME}}"
+              se_group_ref: "{{ '/api/serviceenginegroup/?name=' + INTERNAL_SEG_NAME }}"
+              ssl_profile_ref: "{{ '/api/sslprofile/?name=' + INTERNAL_CS_SSLPROFILE }}"
+              ssl_key_and_certificate_refs:
+                  - "{{ '/api/sslkeyandcertificate/?name=' + INTERNAL_CS_CERT }}"
+              vsvip_ref: "{{ '/api/vsvip/?name=' + DEPLOYMENT_NAME + '-CS-VSVIP' }}"
+              application_profile_ref: "{{ '/api/applicationprofile/?name=' + CS_APP_PROFILE }}"
+              network_profile_ref: '/api/networkprofile?name={{ CS_TCP_PROFILE }}'
+              services:
+                  - 
+                      enable_ssl: true
+                      port_range_end: 443
+                      port: 443
+                  - 
+                      enable_ssl: false
+                      port_range_end: 80
+                      port: 80
+              pool_ref: "{{ '/api/pool/?name=' + DEPLOYMENT_NAME +'-CS-Pool' }}"
+              analytics_policy:
+                udf_log_throttle: 10
+                full_client_logs:
+                  duration: 30
+                  throttle: 10
+                  enabled: true
+              metrics_realtime_update:
+                duration: 30
+                enabled: true
+              name: "{{ DEPLOYMENT_NAME + '-CS-VS' }}"
+        ipaddrgroup:
+          -
+              tenant: "{{ TENANT_NAME }}"
+              name: "{{ DEPLOYMENT_NAME + '_cs_ipgroup' }}"
+              addrs: "{{ cs_pool_servers }}"
+    name: Build CS VS Deployment
+    when: LOAD_BALANCE_CONNECTION_SERVERS|bool == true
+
+  - name: CS Loadbalancer Deployment
+    import_role:
+      name: avinetworks.aviconfig
+    vars:
+      avi_config: "{{ cs_avi_config }}"
+    when: cs_avi_config is defined
