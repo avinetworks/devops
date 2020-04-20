@@ -1,0 +1,139 @@
+---
+- hosts: localhost
+  connection: local
+  vars:
+    deployment_certificate:
+      name: "{{ deployment_name }}"
+      private_key_path: /etc/letsencrypt/live/{{ deployment_domain }}/privkey.pem
+      csr_path: /etc/letsencrypt/live/{{ deployment_domain }}/{{ deployment_domain }}.csr
+      certificate: /etc/letsencrypt/live/{{ deployment_domain }}/cert.pem
+      chain: /etc/letsencrypt/live/{{ deployment_domain }}/chain.pem
+      fullchain: /etc/letsencrypt/live/{{ deployment_domain }}/fullchain.pem
+    deployment_letsencrypt:
+      account_uri: https://acme-v02.api.letsencrypt.org/acme/acct/youraccount
+      directory: https://acme-v02.api.letsencrypt.org/directory
+      version: 2
+      account_key_src: /var/run/credentials/letsencrypt_account.key
+      contacts:
+        - mailto:youremail@email.com
+  tasks:
+    - name: Create the certificate directory for the deployment
+      file:
+        path: /etc/letsencrypt/live/{{ deployment_domain }}
+        state: directory
+        mode: '0755'
+
+    - name: Ensure that the account is valid and exists
+      acme_account:
+        acme_directory: "{{ deployment_letsencrypt.directory }}"
+        acme_version: "{{ deployment_letsencrypt.version }}"
+        account_key_src: "{{ deployment_letsencrypt.account_key_src }}"
+        account_uri: "{{ deployment_letsencrypt.account_uri }}"
+        terms_agreed: yes
+        allow_creation: no
+        contact: "{{ deployment_letsencrypt.contacts }}"
+        state: present
+
+    - name: Generate an OpenSSL private key with the default values (2048 bits, RSA)
+      openssl_privatekey:
+        path: "{{ deployment_certificate.private_key_path }}"
+        size: 2048
+        force: "{{ deployment_certificate_force | default(False) }}"
+
+    - name: Generate an OpenSSL Certificate Signing Request
+      openssl_csr:
+        path: "{{ deployment_certificate.csr_path }}"
+        privatekey_path: "{{ deployment_certificate.private_key_path }}"
+        common_name: "{{ deployment_domain }}"
+        subject_alt_name: "DNS:{{ deployment_domain }},DNS:www.{{ deployment_domain }}"
+        force: "{{ deployment_certificate_force | default(False) }}"
+
+    - name: Create a challenge for {{ deployment_domain }} using a account key file.
+      acme_certificate:
+        acme_directory: "{{ deployment_letsencrypt.directory }}"
+        acme_version: "{{ deployment_letsencrypt.version }}"
+        account_key_src: "{{ deployment_letsencrypt.account_key_src }}"
+        account_uri: "{{ deployment_letsencrypt.account_uri }}"
+        account_email: "{{ deployment_letsencrypt.contacts[0] }}"
+        csr: "{{ deployment_certificate.csr_path }}"
+        dest: "{{ deployment_certificate.certificate }}"
+        challenge: dns-01
+        remaining_days: 60
+        force: "{{ deployment_certificate_force | default(False) }}"
+      register: domain_challenge
+
+    - debug: var=domain_challenge
+
+    - name: Create the {{ deployment_domain }} acme challenge records
+      route53:
+        zone: "{{ deployment_dns_zone }}"
+        record: "{{ item.key }}"
+        type: TXT
+        ttl: 60
+        state: present
+        wait: yes
+        value: "{{ item.value | map('regex_replace', '^(.*)$', '\"\\1\"' ) | list }}"
+      loop: "{{ domain_challenge.challenge_data_dns | default({}) | dict2items }}"
+      when:
+        - domain_challenge is changed
+        - domain_challenge.challenge_data_dns is defined
+
+    - name: Let the challenge be validated and retrieve the cert and intermediate certificate
+      acme_certificate:
+        acme_directory: "{{ deployment_letsencrypt.directory }}"
+        acme_version: "{{ deployment_letsencrypt.version }}"
+        account_key_src: "{{ deployment_letsencrypt.account_key_src }}"
+        account_uri: "{{ deployment_letsencrypt.account_uri }}"
+        account_email: "{{ deployment_letsencrypt.contacts[0] }}"
+        csr: "{{ deployment_certificate.csr_path }}"
+        dest: "{{ deployment_certificate.certificate }}"
+        fullchain_dest: "{{ deployment_certificate.fullchain }}"
+        chain_dest: "{{ deployment_certificate.chain }}"
+        challenge: dns-01
+        remaining_days: 60
+        data: "{{ domain_challenge }}"
+        force: "{{ deployment_certificate_force | default(False) }}"
+      when: domain_challenge is changed
+
+    - name: Save key and certificate contents to vars
+      set_fact:
+        deployment_private_key_contents: "{{ lookup('file', deployment_certificate.private_key_path) }}"
+        deployment_fullchain_contents: "{{ lookup('file', deployment_certificate.fullchain) }}"
+
+    - name: Run tasks to update the controller certificate
+      block:
+        - name: Upload Key and Certificate to Server
+          avi_sslkeyandcertificate:
+            avi_credentials: "{{ avi_credentials }}"
+            api_version: 17.2.13
+            tenant: admin
+            key: "{{ private_key | default(deployment_private_key_contents) }}"
+            certificate:
+              self_signed: false
+              certificate: "{{ certificate | default(deployment_fullchain_contents) }}"
+            type: SSL_CERTIFICATE_TYPE_SYSTEM
+            name: "{{ deployment_name }}"
+        # This portion is a work around due to a bug that updating an in-use
+        # sslkeyandcertificate that it does not update the active one.
+        - name: Update the SSL system configuration to have the latest SSL certificate
+          avi_systemconfiguration:
+            avi_api_update_method: patch
+            avi_api_patch_op: replace
+            avi_credentials: "{{ avi_credentials }}"
+            api_version: 17.2.13
+            tenant: admin
+            portal_configuration:
+              sslkeyandcertificate_refs:
+                - /api/sslkeyandcertificate?name=System-Default-Portal-Cert
+        - name: Update the SSL system configuration to have the latest SSL certificate
+          avi_systemconfiguration:
+            avi_api_update_method: patch
+            avi_api_patch_op: replace
+            avi_credentials: "{{ avi_credentials }}"
+            api_version: 17.2.13
+            tenant: admin
+            portal_configuration:
+              sslkeyandcertificate_refs:
+                - "/api/sslkeyandcertificate?name={{ deployment_name }}"
+      when: (private_key is defined and certificate is defined) or
+            domain_challenge.changed
