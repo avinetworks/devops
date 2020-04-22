@@ -2,10 +2,31 @@
   connection: local
   roles:
     - role: avinetworks.avisdk
+  vars_files:
+    - vars.yml
   tasks:
+    - avi_systemconfiguration:
+        avi_credentials: "{{ avi_credentials }}"
+        welcome_workflow_complete: true
+        dns_configuration:
+          server_list:
+            - addr: "{{ dns_server1 }}"
+              type: V4
+            - addr: "{{ dns_server2 }}"
+              type: V4
+        ntp_configuration:
+          ntp_server_list:
+            - addr: 0.pool.ntp.org
+              type: DNS
+            - addr: 1.pool.ntp.org
+              type: DNS
+            - addr: 2.pool.ntp.org
+              type: DNS
+            - addr: 3.pool.ntp.org
+              type: DNS
     - name: Avi | Setup cluster and cloud
       include_role:
         name: avinetworks.aviconfig
       vars:
         avi_config_file: "avi_config.yml"
-        avi_creds_file: "creds.yml"
+    
