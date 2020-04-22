@@ -8,7 +8,7 @@ avi_config:
         username: "{{ vcenter_user }}"
         password: "{{ vcenter_password }}"
         datacenter: "{{ datacenter }}"
-        management_network: "/api/vimgrnwruntime/?name={{ mgmt_network }}"
+        management_network: "{{ '/api/vimgrnwruntime/?name=' + mgmt_network }}"
         privilege: "WRITE_ACCESS"
         vcenter_url: "{{ vcenter_host }}"
         management_ip_subnet:
