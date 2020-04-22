@@ -4,34 +4,21 @@
     - { role: avinetworks.avicontroller_vmware }
     - { role: avinetworks.avisdk }
   vars_files:
-    - creds.yml
+    - vars.yml
   vars:
     controller_creds:
       - mgmt_ip: "{{ controller_cluster_1 }}"
-        datastore: AS01
-        vm_name: cluster-node1
+        vm_name: "{{ controller_name_1 }}"
       - mgmt_ip: "{{ controller_cluster_2 }}"
-        datastore: AS02
-        vm_name: cluster-node2
+        vm_name: "{{ controller_name_2 }}"
       - mgmt_ip: "{{ controller_cluster_3 }}"
-        datastore: AS05
-        vm_name: cluster-node3
-
-    # Deploy controller on vcenter
-    ova_path: /mnt/builds/18.2.7/last-good-smoke/controller.ova
-    folder: /Opcito/Rohan
-    datastore: AS01
-    mgmt_network: "Mgmt_Arista_3"
-    power_on: true
-    mgmt_mask: 255.255.254.0
-    default_gw: 10.10.28.1
+        vm_name: "{{ controller_name_3 }}"
 
   # deploy controller vcenter
   tasks:
     - name: Deploy Avi Controller
       with_items: "{{ controller_creds }}"
       deploy_controller:
-        state: "{{ state }}"
         ovftool_path: /usr/bin/
         vcenter_host: "{{ vcenter_host }}"
         vcenter_user: "{{ vcenter_user }}"
@@ -41,12 +28,12 @@
         con_ova_path: "{{ ova_path }}"
         con_vm_name: "{{ item.vm_name }}"
         con_vcenter_folder: "{{ folder }}"
-        con_datastore: "{{ item.datastore }}"
+        con_datastore: "{{ vmware_datastore }}"
         con_mgmt_network: "{{ mgmt_network }}"
         con_power_on: "{{ power_on }}"
         con_mgmt_ip: "{{ item.mgmt_ip }}"
-        con_mgmt_mask: "{{ mgmt_mask }}"
-        con_default_gw: "{{ default_gw }}"
+        con_mgmt_mask: "{{ mgmt_subnet_mask }}"
+        con_default_gw: "{{ mgmt_dgw }}"
 
     # initial controller configuration
     - name: Wait for Controller be ready

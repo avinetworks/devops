@@ -1,0 +1,39 @@
+---
+controller_cluster_1: "10.206.41.146"
+controller_name_1: avi_controller_01
+controller_cluster_2: "10.206.41.148"
+controller_name_2: avi_controller_2
+controller_cluster_3: "10.206.41.147"
+controller_name_3: avi_controller_03
+
+avi_credentials:
+  controller: "{{ controller_cluster_1 }}"
+  username: "admin"
+  password: "Secret_Controller_Password1234"
+  api_version: "18.2.6"
+
+# controller default password and vcenter password.
+old_password: "default_password"
+vcenter_password: "VMWARE_PASSWORD"
+
+# vars for cloud configuration.
+mgmt_network: "wdc-06-vc10-avi-mgmt"
+mgmt_subnet: 10.206.40.0
+mgmt_subnet_mask: 22
+mgmt_dgw: 10.206.40.1
+
+# Vcenter host configuration.
+vcenter_host: vcenter.ip.vmware.ca
+vcenter_user: testuser123
+vcenter_pwd: VMWARE_PASSWORD
+datacenter: wdc-06-dc01
+vmware_cluster_name: "wdc-c01"
+vmware_datastore: "wdc-ds01"
+
+ova_path: controller.ova
+folder: AviFolder
+power_on: true
+cloud_name: VMware_Cloud
+
+dns_server1: 8.8.8.8
+dns_server2: 8.8.4.4

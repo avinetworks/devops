@@ -1,14 +1,14 @@
 avi_config:
   cloud:
-    - name: Default-Cloud
+    - name: "{{ cloud_name }}"
       vtype: CLOUD_VCENTER
       dhcp_enabled: true
       license_type: "LIC_CORES"
       vcenter_configuration:
-        username: root
+        username: "{{ vcenter_user }}"
         password: "{{ vcenter_password }}"
         datacenter: "{{ datacenter }}"
-        management_network: "/api/vimgrnwruntime/?name={{ mgmt_network }}"
+        management_network: "{{ '/api/vimgrnwruntime/?name=' + mgmt_network }}"
         privilege: "WRITE_ACCESS"
         vcenter_url: "{{ vcenter_host }}"
         management_ip_subnet:
