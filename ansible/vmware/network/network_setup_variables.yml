@@ -1,0 +1,28 @@
+---
+# TEMPLATE FOR Configuration of Networks Populated from VMware Cloud
+
+controller_cluster_vip: 10.10.10.203
+
+# Avi controller credentials
+#
+avi_credentials:
+  controller: "{{ controller_cluster_vip }}"
+  username: "admin"
+  password: "nsxalb-password"
+  api_version: "18.2.8"       # Version of Controller
+
+cloud_name: VMware_Cloud
+
+# Networks to Configure
+#
+network_list:
+- network_portgroup: "pg-app40"
+  network_network: 10.10.40.0
+  network_mask: 24
+  network_start_range: 10.10.40.10
+  network_end_range: 10.10.40.15
+- network_portgroup: "pg-dev30"
+  network_network: 10.10.30.0
+  network_mask: 24
+  network_start_range: 10.10.30.10
+  network_end_range: 10.10.30.15

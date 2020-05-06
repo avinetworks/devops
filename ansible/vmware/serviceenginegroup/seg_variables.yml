@@ -1,0 +1,40 @@
+---
+# TEMPLATE FOR SEG Creation in VMWARE
+
+# Cluster IP for Avi Controller
+#
+controller_cluster_vip: 10.10.10.203
+
+# Avi controller credentials
+#
+avi_credentials:
+  controller: "{{ controller_cluster_vip }}"
+  username: "admin"
+  password: "nsxalb-password"
+  api_version: "18.2.8"
+
+cloud_name: VMware_Cloud
+tenant_name: admin
+
+# SEG Configuration
+# KB: https://avinetworks.com/docs/18.2/service-engine-group/
+# HA_MODE_SHARED_PAIR = ACTIVE/ACTIVE
+# HA_MODE_SHARED = N+M
+#
+seg_list:
+- name: CS-SEG
+  folder: connectionserver
+  se_prefix: csseg
+  se_vcpu: 4
+  se_memory: 8192
+  se_disk: 29
+- name: APP01-SEG
+  folder: webbapp
+  ha_mode: HA_MODE_SHARED_PAIR
+  min_scaleout_per_vs: 3
+  max_scaleout_per_vs: 4
+  se_prefix: app01
+  se_vcpu: 2
+  se_memory: 4096
+  se_disk: 19
+#SEG KB: 
