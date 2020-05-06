@@ -1,0 +1,26 @@
+---
+- hosts: localhost
+  connection: local
+  roles:
+    - role: avinetworks.avisdk
+  tasks:
+    - name: Configure Networks 
+      avi_network:
+        name: "{{ item.network_portgroup }}"
+        avi_credentials: "{{ avi_credentials }}"
+        cloud_ref: "{{'/api/cloud?name='+ cloud_name }}"
+        dhcp_enabled: false
+        configured_subnets:
+          - prefix:
+              mask: '{{ item.network_mask }}'
+              ip_addr:
+                type: V4
+                addr: '{{ item.network_network }}'
+            static_ranges:
+            - begin:
+                type: V4
+                addr: '{{ item.network_start_range }}'
+              end:
+                type: V4
+                addr: '{{ item.network_end_range }}'
+      with_items: "{{ network_list }}"

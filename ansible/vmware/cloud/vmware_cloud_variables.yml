@@ -1,0 +1,30 @@
+---
+# TEMPLATE FOR Cloud Creation in VMware
+
+# Cluster IP for Avi Controller
+#
+controller_cluster_vip: 10.10.10.203
+
+# Avi Controller Credentials
+#
+avi_credentials:
+  controller: "{{ controller_cluster_vip }}"
+  username: "admin"
+  password: "nsxalb-password"
+  api_version: "18.2.8"       # Version of Controller
+
+# Cloud Setup
+#
+cloud_name: VMware_Cloud
+vcenter_host: vcs01.internal.lab
+vcenter_user: user01
+vcenter_password: "secret-password"
+datacenter: vcs-dc01
+
+# SE Properties
+se_mgmt_portgroup: "dvpg-avi-mgmt"
+se_mgmt_network: 10.10.20.0
+se_mgmt_mask: 22
+se_mgmt_start_range: 10.10.20.10
+se_mgmt_end_range: 10.10.20.15
+se_default_gateway: 10.10.20.1

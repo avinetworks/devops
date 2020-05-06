@@ -1,0 +1,108 @@
+- hosts: localhost
+  connection: local
+  roles:
+    - { role: avinetworks.avicontroller_vmware }
+    - { role: avinetworks.avisdk }
+  vars:
+    controller_configuration:
+      - mgmt_ip: "{{ controller_ip_1 }}"
+        vm_name: "{{ controller_name_1 }}"
+      - mgmt_ip: "{{ controller_ip_2 }}"
+        vm_name: "{{ controller_name_2 }}"
+      - mgmt_ip: "{{ controller_ip_3 }}"
+        vm_name: "{{ controller_name_3 }}"
+  tasks:
+    - name: Deploy Avi Controller
+      with_items: "{{ controller_configuration }}"
+      deploy_controller:
+        ovftool_path: /usr/bin/
+        vcenter_host: "{{ vcenter_host }}"
+        vcenter_user: "{{ vcenter_user }}"
+        vcenter_password: "{{ vcenter_password }}"
+        con_datacenter: "{{ datacenter }}"
+        con_cluster: "{{ vmware_cluster_name }}"
+        con_ova_path: "{{ ova_path }}"
+        con_vm_name: "{{ item.vm_name }}"
+        con_disk_size: "{{ con_disk_size | default(omit) }}"
+        con_vcenter_folder: "{{ con_folder }}"
+        con_datastore: "{{ vmware_datastore }}"
+        con_mgmt_network: "{{ con_mgmt_portgroup }}"
+        con_power_on: true
+        con_mgmt_ip: "{{ item.mgmt_ip }}"
+        con_mgmt_mask: "{{ con_mgmt_mask }}"
+        con_default_gw: "{{ con_default_gw }}"
+    - name: Check Cluster Status
+      uri:
+        validate_certs: false
+        url: "https://{{ item.mgmt_ip }}/api/initial-data"
+        method: GET
+        status_code: 200
+      register: result
+      until: result.status == 200
+      retries: 600
+      delay: 10
+      with_items: "{{ controller_configuration }}"
+    - name: Change admin default password
+      avi_useraccount:
+        controller: "{{ controller_ip_1 }}"
+        username: "{{ avi_credentials.username }}"
+        password: "{{ avi_credentials.password }}"
+        api_version: "{{ avi_credentials.api_version }}"
+        old_password: "{{ old_password }}"
+        email: "{{ admin_email }}"
+    - set_fact:
+        dns_list: "{{ dns_list | default([]) + [{'type': 'V4', 'addr': dserver }] }}"
+      loop: "{{ dns_servers }}"
+      loop_control:
+        loop_var: dserver
+      name: "Prepare DNS Server List"
+    - set_fact:
+        ntp_list: "{{ ntp_list | default([]) + [{'server': {'type': ntp_type, 'addr': nserver }}] }}"
+      loop: "{{ ntp_servers }}"
+      loop_control:
+        loop_var: nserver
+      name: "Prepare NTP Server List"
+    - name: Initial Controller System Configuration
+      avi_systemconfiguration:
+        controller: "{{ controller_ip_1 }}"
+        username: "{{ avi_credentials.username }}"
+        password: "{{ avi_credentials.password }}"
+        api_version: "{{ avi_credentials.api_version }}"
+        welcome_workflow_complete: true
+        dns_configuration:
+          server_list: "{{ dns_list }}"
+        ntp_configuration:
+          ntp_servers: "{{ ntp_list }}"
+    - name: Set Backup Passphrase
+      avi_backupconfiguration:
+        controller: "{{ controller_ip_1 }}"
+        username: "{{ avi_credentials.username }}"
+        password: "{{ avi_credentials.password }}"
+        api_version: "{{ avi_credentials.api_version }}"
+        name: Backup-Configuration
+        backup_passphrase: "{{ backup_passphrase }}"
+        upload_to_remote_host: false
+    - name: Cloud Cluster Configuration
+      avi_cluster:
+        controller: "{{ controller_ip_1 }}"
+        username: "{{ avi_credentials.username }}"
+        password: "{{ avi_credentials.password }}"
+        api_version: "{{ avi_credentials.api_version }}"
+        virtual_ip:
+          type: V4
+          addr: "{{ controller_cluster_vip }}"
+        nodes:
+            - name: "{{ controller_name_1 }}" 
+              ip:
+                type: V4
+                addr: "{{ controller_ip_1 }}"
+            - name: "{{ controller_name_2 }}"
+              ip:
+                type: V4
+                addr: "{{ controller_ip_2 }}"
+            - name: "{{ controller_name_3 }}"
+              ip:
+                type: V4
+                addr: "{{ controller_ip_3 }}"
+        name: cluster01
+        tenant_uuid: "admin"

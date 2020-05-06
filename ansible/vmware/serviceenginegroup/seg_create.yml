@@ -1,0 +1,31 @@
+---
+- connection: local
+  hosts: localhost
+  gather_facts: false
+  roles:
+    - role: avinetworks.avisdk
+  tasks:
+    - name: Configure SEGroup
+      avi_serviceenginegroup:
+        avi_credentials: "{{ avi_credentials }}"
+        tenant_ref: "{{ '/api/tenant?name=' + tenant_name }}"
+        name: "{{ item.name }}"
+        cloud_ref: "{{'/api/cloud?name='+ cloud_name }}"
+        se_name_prefix: "{{ item.se_prefix }}"
+        vcpus_per_se: "{{ item.se_vcpu }}"
+        ha_mode: "{{ ha_mode | default('HA_MODE_SHARED') }}"
+        mem_reserve: true
+        memory_per_se: "{{ item.se_memory }}"
+        disk_per_se: "{{ item.se_disk }}"
+        min_se: "{{ item.min_se | default(1) }}"
+        max_se: "{{ item.max_se | default(10) }}"
+        buffer_se: "{{ item.buffer | default(1) }}"
+        min_scaleout_per_vs: "{{ item.min_scaleout_per_vs | default(1) }}"
+        max_scaleout_per_vs: "{{ item.max_scaleout_per_vs | default(4) }}"
+        dedicated_dispatcher_core: "{{ dispatcher | default(omit) }}"
+        vcenter_folder: "{{ item.folder }}"
+      with_items: "{{ seg_list }}"
+
+
+
+
