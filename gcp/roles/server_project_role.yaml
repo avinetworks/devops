@@ -1,0 +1,15 @@
+title: "AVI Server Project Role"
+description: "Access to resources required for collecting servers information"
+stage: "ALPHA"
+includedPermissions:
+- compute.instanceGroupManagers.list
+- compute.instanceGroups.get
+- compute.instanceGroups.list
+- compute.instances.get
+- compute.instances.list
+- compute.projects.get
+- logging.sinks.create
+- logging.sinks.delete
+- logging.sinks.get
+- logging.sinks.list
+- logging.sinks.update
