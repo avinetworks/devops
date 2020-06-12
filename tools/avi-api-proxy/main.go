@@ -14,7 +14,7 @@ import (
 	"strings"
 	"time"
 
-	"avi-api-proxy/session"
+	"github.com/avinetworks/sdk/go/session"
 	"github.com/golang/glog"
 	"github.com/julienschmidt/httprouter"
 )
@@ -41,11 +41,11 @@ func proxyRequest(aviSession *session.AviSession, w http.ResponseWriter, r *http
 		glog.Errorf("[AVIPROXY]: Unable to decode payload - %v", err)
 	}
 
-	resp, avierror := aviSession.RestRequest(r.Method, url, payload, "admin")
+	resp, avierror := aviSession.RestRequest(r.Method, url, payload, "admin", nil)
 	if resp == nil && avierror != nil {
 		glog.Errorf("[AVIPROXY]: REST request error - %v", avierror)
 		// capture timeout and unreachable errors
-		proxyErrorResponse(w, avierror)
+		proxyErrorResponse(w, avierror.(*session.AviError))
 		return
 	}
 
