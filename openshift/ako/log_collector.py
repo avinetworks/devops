@@ -341,8 +341,8 @@ def findHelmchartName(namespace, podType):
 if __name__ == "__main__":
     #Parsing cli arguments
     parser = argparse.ArgumentParser(formatter_class=argparse.RawTextHelpFormatter, description="General description :\nThe script can fetch logs for both AKO and AMKO pod\nIf AKO pod logs are wanted, \'akoNamespace\' is mandatory, \'since\' arguments is optional.\nIf AMKO pod logs are wanted, \'amkoNamespace\' is mandatory, \'since\' argument is optional.\nEither of akoNamespace or amkoNamespace is mandatory\n")
-    parser.add_argument('-n1', '--akoNamespace', help='Namespace in which the AKO pod is present' )
-    parser.add_argument('-n2', '--amkoNamespace', help='Namespace in which the AMKO pod is present' )
+    parser.add_argument('-ako', '--akoNamespace', help='Namespace in which the AKO pod is present' )
+    parser.add_argument('-amko', '--amkoNamespace', help='Namespace in which the AMKO pod is present' )
     parser.add_argument('-s', '--since',default='24h', help='(Optional) For pod not having persistent volume storage the logs since a given time duration can be fetched.\nMention the time as 2s(for 2 seconds) or 4m(for 4 mins) or 24h(for 24 hours)\nExample: if 24h is mentioned, the logs from the last 24 hours are fetched.\nDefault is taken to be 24h' )
     args = parser.parse_args()
 
