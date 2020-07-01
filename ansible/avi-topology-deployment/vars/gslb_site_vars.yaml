@@ -1,0 +1,7 @@
+gslb_sites:
+  - controller: 10.10.10.10
+    name: gslb-1a
+    api_version: 18.2.8
+    cloud_name: Default-Cloud
+    tenant_name: admin
+    vs_name: dns-vip 

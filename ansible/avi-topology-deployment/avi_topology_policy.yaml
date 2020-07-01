@@ -1,0 +1,30 @@
+---
+- name: Avi Topology Policy
+  hosts: localhost
+  connection: local
+
+  vars_files:
+    - "vars/dns_topology_policy_vars.yaml"
+    - "vars/gslb_site_vars.yaml"
+    - "vars/creds.yaml"
+
+  tasks:
+    - name: Avi | Topology Policy (ipaddrgroup, dnspolicy, virtualservice)
+      include_role:
+        name: avinetworks.aviconfig
+      vars:
+        cloud_name: "{{ loop_item.cloud_name | default('Default-Cloud') }}"
+        tenant_name: "{{ loop_item.tenant_name | default('admin') }}"
+        vs_name: "{{ loop_item.vs_name | default('dns-vs') }}"
+        topology_policies: "{{ dns_topology_policies | default([]) }}"
+        avi_config_state: "{{ loop_item.avi_config_state | default('present') }}"
+        avi_controller: "{{ loop_item.controller }}"
+        avi_username: "{{ avi_controller_username }}"
+        avi_password: "{{ avi_controller_password }}"
+        api_version: "{{ loop_item.api_version | default('18.2.5') }}"
+        tmp_avi_config: "{{ lookup('template','templates/aviconfig_topology_policy.j2') | from_yaml }}"
+        avi_config: "{{tmp_avi_config.avi_config }}"
+      with_items: "{{ gslb_sites }}"
+      loop_control:
+        loop_var: loop_item
+
