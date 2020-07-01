@@ -1,0 +1,12 @@
+dns_topology_policies:
+  - ipaddrgroup_name: region-site-1
+    topology_rule_name: regional-policy-site-1-rule
+    topology_rule_index: 1
+    preferred_site: gslb-1b
+    fallback_sites:
+      - thirdparty-site1
+      - thirdparty-site2
+      - thirdparty-site3
+    prefixes:
+      - ip: 10.0.0.0
+        mask: 8

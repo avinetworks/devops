@@ -1,0 +1,68 @@
+#jinja2: lstrip_blocks: True
+avi_config:
+  {% if avi_config_state != "absent" %}
+  tenant:
+    - name: "{{ tenant_name | default('admin') }}"
+      avi_config_state: {{ config_state | default('present') }}
+  {%  endif %}
+
+  ipaddrgroup:
+  {% for topology_policy in topology_policies %}
+    - api_version: "{{ api_version | default('18.2.4') }}"
+      avi_config_state: present
+      name: "{{ topology_policy.ipaddrgroup_name | default('ipg-dns-policy') }}"
+      tenant: "{{ tenant_name | default('admin') }}"
+      tenant_ref: "/api/tenant?name={{ tenant_name | default('admin') }}"
+      prefixes:
+        {% for prefix in topology_policy.prefixes %}
+        - ip_addr:
+            addr: "{{ prefix.ip }}"
+            type: V4
+          mask: "{{ prefix.mask }}"
+        {% endfor %}
+  {% endfor %}
+
+  dnspolicy:
+    - api_version: "{{ api_version | default('18.2.4') }}"
+      avi_config_state: present
+      avi_api_update_method: patch
+      avi_api_patch_op: replace
+      name: "{{ vs_name }}-{{ cloud_name }}-Topology-Policy-0"
+      cloud_ref: "/api/cloud?name={{ cloud_name | default('Default-Cloud') }}"
+      tenant: "{{ tenant_name | default('admin') }}"
+      tenant_ref: "/api/tenant?name={{ tenant_name | default('admin') }}"
+      rule:
+        {% for topology_policy in topology_policies %}
+        - index: "{{ topology_policy.topology_rule_index | default(1) }}"
+          name: "{{ topology_policy.topology_rule_name | default('test-topology-policy') }}"
+          enable: true
+          match:
+            client_ip_address:
+              use_edns_client_subnet_ip: false
+              client_ip:
+                group_refs:
+                  - "/api/ipaddrgroup?name={{ topology_policy.ipaddrgroup_name }}"
+                match_criteria: "IS_IN"
+          action:
+            gslb_site_selection:
+              is_site_preferred: true
+              site_name: "{{ topology_policy.preferred_site | default('gslb-1') }}"
+              fallback_site_names:
+              {% for fallback_site in topology_policy.fallback_sites %}
+                - "{{ fallback_site }}"
+              {% endfor %}
+        {% endfor %}
+  {% if avi_config_state != "absent" %}
+  virtualservice:
+    - api_version: "{{ api_version | default('18.2.4') }}"
+      avi_config_state: present
+      avi_api_update_method: patch
+      avi_api_patch_op: replace
+      name: "{{ vs_name }}"
+      cloud_ref: "/api/cloud?name={{ cloud_name | default('Default-Cloud') }}"
+      tenant: "{{ tenant_name | default('admin') }}"
+      tenant_ref: "/api/tenant?name={{ tenant_name | default('admin') }}"
+      topology_policies:
+        - index: 11
+          dns_policy_ref: "/api/dnspolicy?name={{ vs_name }}-{{ cloud_name }}-Topology-Policy-0"
+  {% endif %}
