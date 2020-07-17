@@ -3,7 +3,7 @@ Import-Module AviSDK
 #Disable certificate errors if self-signed cert is being used
 Disable-AviCertificateWarnings
 
-$AviSession = New-AviSession -Controller controller.avi.local -Username admin -Password password123 -ApiVersion 17.1.5
+$AviSession = New-AviSession -Controller controller.avi.local -Username admin -Password password123 -ApiVersion 18.2.8
 
 #Use the macro API to configure a VS, pool and health monitor in one
 #call to New-AviObject
@@ -12,14 +12,17 @@ $MacroVS = @{
   data=@{
     name="rc-example-vs";
     services=@(@{port=80});
-    vip=@(
-      @{vip_id=0;
-        ip_address=@{
-          type="V4";
-          addr="1.2.3.4"
+    vsvip_ref_data=@{
+      name="vsvip-rc-example-vs";
+      vip=@(
+        @{vip_id=0;
+          ip_address=@{
+            type="V4";
+            addr="1.2.3.4"
+          }
         }
-      }
-    );
+      )
+    };
     application_profile_ref="/api/applicationprofile?name=System-HTTP";
     pool_ref_data=@{
       name="rc-example-vs-pool";
