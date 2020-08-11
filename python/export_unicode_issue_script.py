@@ -37,8 +37,7 @@ for model_name in all_model_list:
     except AttributeError:
         pass
     try:
-        query = "select id,uuid,name from %s;"%(model._meta.db_table)
-        rows = model.objects.raw(query)
+        rows = model.objects.all()
     except:
         continue
     for row in rows:
@@ -54,7 +53,9 @@ for model_name in all_model_list:
                 max_model_field_len = len(name)
             if max_model_uuid_len < len(uuid):
                 max_model_uuid_len = len(uuid)
-
+            pf = row.protobuf()
+            pf.name = name.encode("ascii","ignore")
+            row.save()
 print ""
 for rec in error_list:
     print " " + rec[0].ljust(max_model_name_len+5,' ') + rec[1].ljust(max_model_field_len+5,' ') + rec[2].ljust(max_model_uuid_len+5,' ')
