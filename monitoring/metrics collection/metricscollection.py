@@ -2175,13 +2175,20 @@ if 'EN_DOCKER' in os.environ:
 else:
     # ----- Get the file path to import configuration, needed for cron
     try:
+        n = len(sys.argv) - 1
+        if n <= 0:
+            print("No configuration file specified\nUsage: python3 metricscollection.py config1.yaml")
+            sys.exit(1)
+        else:
+            file_name = sys.argv[1]
+
         fdir = os.path.abspath(os.path.dirname(__file__))
         configuration = False
         global_endpoint_config = None
         import yaml
         print(fdir)
-        if os.path.isfile(fdir+'/configuration.yaml') == True:
-            with open(fdir+'/configuration.yaml', 'r') as yaml_file:
+        if os.path.isfile(fdir+'/%s' % file_name) == True:
+            with open(fdir+'/%s' % file_name, 'r') as yaml_file:
                 configuration = yaml.safe_load(yaml_file)
             # ----- Import avi controller info from json file
             if 'metrics_endpoint_config' in configuration:
