@@ -2174,14 +2174,13 @@ if 'EN_DOCKER' in os.environ:
         print(str(datetime.now())+' No Configuration provided')
 else:
     # ----- Get the file path to import configuration, needed for cron
+    n = len(sys.argv) - 1
+    if n <= 0:
+        print("No configuration file specified\nUsage: python3 metricscollection.py config1.yaml")
+        sys.exit(1)
+    else:
+        file_name = sys.argv[1]
     try:
-        n = len(sys.argv) - 1
-        if n <= 0:
-            print("No configuration file specified\nUsage: python3 metricscollection.py config1.yaml")
-            sys.exit(1)
-        else:
-            file_name = sys.argv[1]
-
         fdir = os.path.abspath(os.path.dirname(__file__))
         configuration = False
         global_endpoint_config = None

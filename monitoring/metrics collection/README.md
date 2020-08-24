@@ -38,7 +38,7 @@ When locally running the script manually or via a cron job, the following files 
 The metrics script will look in the local directory for the configuration.yaml file.  Using the values from this file the script will pull the relevant data from the Avi Controller API and forward the values to the defined metrics endpoints.
 
 ```sh
-$ python3 metricscollection.py
+$ python3 metricscollection.py <<configuration-filename>>
 ```
 
 <br></br>
