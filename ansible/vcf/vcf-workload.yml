@@ -1,0 +1,44 @@
+---
+- hosts: localhost
+  connection: local
+  roles:
+    - avinetworks.avisdk
+  vars_files:
+    - "./vcf-workload-vars.yml"
+
+
+  tasks:
+    - name: Create New Workload Tenant
+      avi_tenant:
+        controller: "{{ avi_controller_ip }}"
+        username: "{{ avi_username }}"
+        password: "{{ avi_password }}"
+        tenant: "{{ tenant | default('admin',true) }}"
+        config_settings:
+          se_in_provider_context: false
+          tenant_access_to_provider_se: true
+          tenant_vrf: false
+        local: true
+        name: "{{ workload_name }}"
+  
+    - name: Create New Cloud for Workload
+      avi_cloud:
+        controller: "{{ avi_controller_ip }}"
+        username: "{{ avi_username }}"
+        password: "{{ avi_password }}"
+        tenant: "{{ workload_name }}"
+        name: "{{ workload_name }}-cloud"
+        vtype: CLOUD_NONE
+        prefer_static_routes: true
+        enable_vip_static_routes: true        
+      register: cloud_results
+  
+  
+    - name: Create Service Engine Group for Workload Cloud
+      avi_serviceenginegroup:
+        controller: "{{ avi_controller_ip }}"
+        username: "{{ avi_username }}"
+        password: "{{ avi_password }}"
+        tenant: "{{ workload_name }}"
+        cloud_ref: "/api/cloud?name={{ workload_name }}-cloud"
+        name: "{{ workload_name }}-segroup"

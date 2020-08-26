@@ -1,0 +1,644 @@
+---
+- hosts: localhost
+  connection: local
+  roles:
+    - avinetworks.avisdk
+  vars_files:
+    - "./vcf-ctl-vars.yml"
+
+  tasks:
+
+    - name: Create temp SSH Key directory
+      file:
+       path: ./avikey
+       state: directory
+  
+    -  stat:
+         path: ./avikey/avi_id_ssh_rsa
+       register: stat_result
+
+
+    - name: Generate SSH Key
+      openssh_keypair:
+        path: ./avikey/avi_id_ssh_rsa
+        size: 4096
+      when: stat_result.stat.exists == False 
+
+
+    - set_fact:
+        pub_key: "{{ lookup('file', './avikey/avi_id_ssh_rsa.pub') }}"
+
+
+    #- debug:
+    #    msg: "{{ pub_key }}"
+
+    - block:
+
+      - set_fact:
+          node1_mgmt_ip: 'not defined in vars'
+          node2_mgmt_ip: 'not defined in vars'
+          node3_mgmt_ip: 'not defined in vars'
+
+
+      - name: Resolve node1 fqdn
+        set_fact:
+          node1_mgmt_ip: "{{ lookup('dig', node1_fqdn, '@'+dns_server) }}"
+        when: node1_fqdn is defined and node1_fqdn != None
+
+
+      - name: Resolve node2 fqdn
+        set_fact:
+          node2_mgmt_ip: "{{ lookup('dig', node2_fqdn, '@'+dns_server) }}"    
+        when: node2_fqdn is defined and node2_fqdn != None      
+
+          
+      - name: Resolve node3 fqdn
+        set_fact:
+          node3_mgmt_ip: "{{ lookup('dig', node3_fqdn, '@'+dns_server) }}"
+        when: node3_fqdn is defined and node3_fqdn != None
+
+      - block:
+        - debug:
+            msg: 
+              - "Unable to resolve one of the controller names"
+              - "node1 fqdn: {{ node1_mgmt_ip }}"
+              - "node2 fqdn: {{ node2_mgmt_ip }}"
+              - "node3 fqdn: {{ node3_mgmt_ip }}"
+
+        - meta: end_play
+        when: node1_mgmt_ip == 'NXDOMAIN'
+              or 
+              node2_mgmt_ip == 'NXDOMAIN'
+              or
+              node3_mgmt_ip == 'NXDOMAIN'
+          
+
+      when: (node1_fqdn is defined and node1_fqdn != None)
+            or
+            (node2_fqdn is defined and node2_fqdn != None)
+            or
+            (node3_fqdn is defined and node3_fqdn != None)
+
+
+    - name:  deploy Avi Controller 1
+      vmware_deploy_ovf:
+        hostname: '{{ vcenter_hostname }}'
+        username: '{{ vcenter_username }}'
+        password: '{{ vcenter_password }}'
+        folder: "{{ folder }}"
+        datacenter: "{{ datacenter }}"
+        cluster: "{{ cluster }}"
+        datastore: "{{ datastore }}"
+        name: avicontroller1
+        validate_certs: False
+        networks: 
+          Management: "{{ management_network_pg }}"
+        properties: 
+          avi.mgmt-ip.CONTROLLER: "{{ node1_mgmt_ip | default(omit) }}"
+          avi.mgmt-mask.CONTROLLER: "{{ node1_mgmt_mask | default(omit) }}"
+          avi.default-gw.CONTROLLER: "{{ node1_mgmt_gw | default(omit) }}"          
+          avi.sysadmin-public-key.CONTROLLER: '{{ pub_key }}'
+        power_on: no       
+        ova: "{{ ova_path }}"
+      register: ctl1_status
+
+    
+
+    - set_fact:
+        ctl1vm_uuid: "{{ ctl1_status.instance.hw_product_uuid }}"
+      when:  "ctl1_status is defined and 'instance' in ctl1_status"
+
+
+    - name: Modify Controller 1 Hardware
+      vmware_guest:
+        hostname: '{{ vcenter_hostname }}'
+        username: '{{ vcenter_username }}'        
+        password: '{{ vcenter_password }}'
+        validate_certs: False
+        uuid: "{{ ctl1vm_uuid }}"
+        hardware:
+          memory_mb: "{{ ctl_memory_mb | default(24576,true) }}"
+          num_cpus: "{{ ctl_num_cpus | default(8,true) }}"
+        disk:
+        - size_gb: "{{ ctl_disk_size_gb | default(128,true) }}"
+        state: present
+      delegate_to: "localhost" 
+
+
+    - name:  deploy Avi Controller 2
+      vmware_deploy_ovf:
+        hostname: '{{ vcenter_hostname }}'
+        username: '{{ vcenter_username }}'
+        password: '{{ vcenter_password }}'
+        folder: "{{ folder }}"
+        datacenter: "{{ datacenter }}"
+        cluster: "{{ cluster }}"
+        datastore: "{{ datastore }}"
+        name: avicontroller2
+        validate_certs: False
+        networks: 
+          Management: "{{ management_network_pg }}"
+        properties: 
+          avi.mgmt-ip.CONTROLLER: "{{ node2_mgmt_ip | default(omit) }}"
+          avi.mgmt-mask.CONTROLLER: "{{ node2_mgmt_mask | default(omit) }}"
+          avi.default-gw.CONTROLLER: "{{ node2_mgmt_gw | default(omit) }}"
+        power_on: no        
+        ova: "{{ ova_path }}"
+      register: ctl2_status
+      when: three_node_cluster|default(false)|bool == true
+
+    - set_fact:
+        ctl2vm_uuid: "{{ ctl2_status.instance.hw_product_uuid }}"
+      when:  "ctl2_status is defined and 'instance' in ctl2_status"
+
+
+    - name: Modify Controller 2 Hardware
+      vmware_guest:
+        hostname: '{{ vcenter_hostname }}'
+        username: '{{ vcenter_username }}'        
+        password: '{{ vcenter_password }}'
+        validate_certs: False
+        uuid: "{{ ctl2vm_uuid }}"
+        hardware:
+          memory_mb: "{{ ctl_memory_mb | default(24576,true) }}"
+          num_cpus: "{{ ctl_num_cpus | default(8,true) }}"
+        disk:
+        - size_gb: "{{ ctl_disk_size_gb | default(128,true) }}"
+        state: present
+      delegate_to: "localhost" 
+      when: "ctl2vm_uuid is defined"
+
+
+    - name: Power On Controller 2
+      vmware_guest:
+        hostname: '{{ vcenter_hostname }}'
+        username: '{{ vcenter_username }}'
+        password: '{{ vcenter_password }}'
+        validate_certs: False
+        uuid: "{{ ctl2vm_uuid }}"
+        wait_for_ip_address: yes
+        state: poweredon
+      delegate_to: "localhost"
+      register: ctl2_info
+      when: "ctl2vm_uuid is defined"
+
+    - set_fact:
+        ctl2_mgmt_ip: "{{ ctl2_info.instance.ipv4 }}"
+      when:  "ctl2_info is defined and 'instance' in ctl2_info"
+
+
+    - name: Rename Controller 2
+      vmware_guest:
+        hostname: '{{ vcenter_hostname }}'
+        username: '{{ vcenter_username }}'
+        password: '{{ vcenter_password }}'
+        validate_certs: False
+        name: "{{ node2_fqdn.split('.')[0]  | default('avicontroller-'+ctl2_mgmt_ip ,true) }}"
+        uuid: "{{ ctl2vm_uuid }}"
+        state: present
+      delegate_to: "localhost"
+      when: "ctl2vm_uuid is defined"
+
+
+    - name:  deploy Avi Controller 3
+      vmware_deploy_ovf:
+        hostname: '{{ vcenter_hostname }}'
+        username: '{{ vcenter_username }}'
+        password: '{{ vcenter_password }}'
+        folder: "{{ folder }}"
+        datacenter: "{{ datacenter }}"
+        cluster: "{{ cluster }}"
+        datastore: "{{ datastore }}"
+        name: avicontroller3
+        validate_certs: False
+        networks: 
+          Management: "{{ management_network_pg }}"
+        properties: 
+          avi.mgmt-ip.CONTROLLER: "{{ node3_mgmt_ip | default(omit) }}"
+          avi.mgmt-mask.CONTROLLER: "{{ node3_mgmt_mask | default(omit) }}"
+          avi.default-gw.CONTROLLER: "{{ node3_mgmt_gw | default(omit) }}"
+        power_on: no        
+        ova: "{{ ova_path }}"
+      register: ctl3_status
+      when: three_node_cluster|default(false)|bool == true
+    
+
+    - set_fact:
+        ctl3vm_uuid: "{{ ctl3_status.instance.hw_product_uuid }}"
+      when:  "ctl3_status is defined and 'instance' in ctl3_status"
+
+
+
+    - name: Modify Controller 3 Hardware
+      vmware_guest:
+        hostname: '{{ vcenter_hostname }}'
+        username: '{{ vcenter_username }}'        
+        password: '{{ vcenter_password }}'
+        validate_certs: False
+        uuid: "{{ ctl3vm_uuid }}"
+        hardware:
+          memory_mb: "{{ ctl_memory_mb | default(24576,true) }}"
+          num_cpus: "{{ ctl_num_cpus | default(8,true) }}"
+        disk:
+        - size_gb: "{{ ctl_disk_size_gb | default(128,true) }}"
+        state: present
+      delegate_to: "localhost" 
+      when: "ctl3vm_uuid is defined"
+
+
+
+
+    - name: Power On Controller 3
+      vmware_guest:
+        hostname: '{{ vcenter_hostname }}'
+        username: '{{ vcenter_username }}'
+        password: '{{ vcenter_password }}'
+        validate_certs: False
+        uuid: "{{ ctl3vm_uuid }}"
+        wait_for_ip_address: yes
+        state: poweredon
+      delegate_to: "localhost"
+      register: ctl3_info
+      when: "ctl3vm_uuid is defined"
+
+
+    - set_fact:
+        ctl3_mgmt_ip: "{{ ctl3_info.instance.ipv4 }}"
+      when:  "ctl3_info is defined and 'instance' in ctl3_info"
+
+
+    - name: Rename Controller 3
+      vmware_guest:
+        hostname: '{{ vcenter_hostname }}'
+        username: '{{ vcenter_username }}'
+        password: '{{ vcenter_password }}'
+        validate_certs: False
+        name: "{{ node3_fqdn.split('.')[0] | default('avicontroller-'+ctl3_mgmt_ip ,true) }}"
+        uuid: "{{ ctl3vm_uuid }}"
+        state: present
+      delegate_to: "localhost"
+      when: "ctl3vm_uuid is defined"
+
+
+
+    - name: Power On Controller 1
+      vmware_guest:
+        hostname: '{{ vcenter_hostname }}'
+        username: '{{ vcenter_username }}'
+        password: '{{ vcenter_password }}'
+        validate_certs: False
+        uuid: "{{ ctl1vm_uuid }}"
+        wait_for_ip_address: yes
+        state: poweredon
+      delegate_to: "localhost"
+      register: ctl1_info
+
+
+    - set_fact:
+        ctl1_mgmt_ip: "{{ ctl1_info.instance.ipv4 }}"
+      when:  "ctl1_info is defined and 'instance' in ctl1_info"
+
+
+    - name: Rename Controller 1
+      vmware_guest:
+        hostname: '{{ vcenter_hostname }}'
+        username: '{{ vcenter_username }}'
+        password: '{{ vcenter_password }}'
+        validate_certs: False
+        name: "{{ node1_fqdn.split('.')[0] | default('avicontroller-'+ctl1_mgmt_ip ,true) }}"
+        uuid: "{{ ctl1vm_uuid }}"
+        state: present
+      delegate_to: "localhost"
+
+
+
+    - name: Create Anti-Affinity DRS Rule for Cluster Nodes
+      vmware_vm_vm_drs_rule:
+        hostname: '{{ vcenter_hostname }}'
+        username: '{{ vcenter_username }}'
+        password: '{{ vcenter_password }}'
+        validate_certs: False
+        cluster_name: "{{ cluster }}"
+        enabled: True
+        vms:
+            - "{{ node1_fqdn | default('avicontroller-'+ctl1_mgmt_ip ,true) }}"
+            - "{{ node2_fqdn | default('avicontroller-'+ctl2_mgmt_ip ,true) }}"
+            - "{{ node3_fqdn | default('avicontroller-'+ctl3_mgmt_ip ,true) }}"
+        drs_rule_name: avi-cluster-antiaffinity-rule-001
+        mandatory: True
+        affinity_rule: False
+      delegate_to: localhost   
+      when: three_node_cluster|default(false)|bool == true
+
+
+
+
+    - name: Wait for Avi Controller services to be ready
+      wait_for:
+        port: 443
+        host: "{{ ctl1_mgmt_ip }}"
+        connect_timeout: 3
+        delay: 5
+        timeout: 600
+        
+        
+    - name: Wait for Avi Controller API
+      uri: url="https://{{ ctl1_mgmt_ip }}/" return_content=yes validate_certs=False
+      register: srvc_results
+      until: srvc_results.status == 200
+      retries: 20
+      delay: 5
+      ignore_errors: yes
+
+
+    - name: Wait for Avi Controller API
+      uri:
+        url: "https://{{ ctl1_mgmt_ip }}/login"
+        method: POST
+        status_code: 401
+        validate_certs: no
+        return_content: yes
+      register: tmp_results
+      until: tmp_results.status == 401
+      retries: 20
+      delay: 5
+      ignore_errors: yes
+
+
+    - name: Wait for the portal to become active
+      uri:
+        url: "https://{{ ctl1_mgmt_ip }}/api/initial-data"
+        validate_certs: no
+        status_code: 200
+      register: ver_results
+      until: ver_results.status == 200
+      retries: 300
+      delay: 10
+  
+    - debug:
+       msg:  "{{ ver_results }}"
+
+    - set_fact:
+        ctl_version: "{{ ver_results.json.version.Version.split('(')[0] }}"
+
+    - block: 
+
+      - set_fact:
+           command_list:
+              - "ssh -o 'StrictHostKeyChecking no' -i ./avikey/avi_id_ssh_rsa admin@{{ ctl1_mgmt_ip }} cat /etc/ssh/ssh_host_dsa_key.pub >>~/.ssh/known_hosts"
+              - "ssh -o 'StrictHostKeyChecking no' -i ./avikey/avi_id_ssh_rsa admin@{{ ctl1_mgmt_ip }} sudo /opt/avi/scripts/initialize_admin_user.py --password {{ avi_admin_password }}" 
+
+
+      - name: Set controller admin password
+        shell: "{{ item }}"
+        with_items: "{{ command_list }}"
+
+      when: ctl_version > "18.2.0"
+
+
+
+    - name: Clean up temporary ssh key
+      file:
+        state: absent
+        path: ./avikey
+
+    
+
+    - avi_api_session:
+        controller: "{{ ctl1_mgmt_ip }}"
+        username: "admin"
+        password: "{{ avi_admin_password }}"
+        tenant: "{{ tenant | default('admin',true) }}"
+        http_method: get
+        path: tenant
+        params:
+          name: "admin"
+      register: api_results
+      until: api_results|selectattr("results.obj.count", "defined")
+      retries: 20
+      delay: 30
+      ignore_errors: yes
+
+
+
+    - name:  Pull controller systemconfiguration
+      avi_api_session:
+        controller: "{{ ctl1_mgmt_ip }}"
+        username: admin
+        password: "{{ avi_admin_password }}"
+        api_version: "{{ ctl_version }}"
+        tenant: "{{ tenant | default('admin',true) }}"
+        http_method: get
+        path: systemconfiguration
+      ignore_errors: True
+      register: api_results
+
+
+    - name: Modify welcome_workflow_complete
+      avi_systemconfiguration:
+        avi_api_update_method: patch
+        avi_api_patch_op: replace
+        controller: "{{ ctl1_mgmt_ip }}"
+        username: admin
+        password: "{{ avi_admin_password }}"
+        tenant: "{{ tenant | default('admin') }}"
+        api_version: "{{ ctl_version }}"
+        welcome_workflow_complete: True
+      when: '"obj" in api_results and api_results.obj.welcome_workflow_complete == false'
+
+
+    - name: Add DNS Server Configuration to Controller
+      avi_systemconfiguration:
+        avi_api_update_method: patch
+        avi_api_patch_op: replace
+        controller: "{{ ctl1_mgmt_ip }}"
+        username: admin
+        password: "{{ avi_admin_password }}"
+        tenant: "{{ tenant | default('admin') }}"
+        api_version: "{{ ctl_version }}"
+        dns_configuration:
+          server_list:
+            - addr: "{{ dns_server }}"
+              type: V4
+      when: dns_server is defined and dns_server != None
+
+
+    - set_fact:
+        ntp_fqdn: DNS
+      when: ntp_server is defined and ntp_server | ipaddr  == False
+
+
+
+    - name: Add NTP Server Configuration to Controller
+      avi_systemconfiguration:
+        avi_api_update_method: patch
+        avi_api_patch_op: replace
+        controller: "{{ ctl1_mgmt_ip }}"
+        username: admin
+        password: "{{ avi_admin_password }}"
+        tenant: "{{ tenant | default('admin') }}"
+        api_version: "{{ ctl_version }}"
+        ntp_configuration:
+          ntp_servers:
+            - server: 
+                addr: "{{ ntp_server }}"
+                type: "{{ ntp_fqdn | default('V4',true) }}" 
+      when: ntp_server is defined and ntp_server != None      
+
+
+
+    - block:
+      - set_fact:
+          n1_type: DNS
+        when: node1_fqdn is defined and node1_fqdn != None
+      
+      - set_fact:
+          n2_type: DNS
+        when: node2_fqdn is defined and node2_fqdn != None
+
+      - set_fact:
+          n3_type: DNS
+        when: node3_fqdn is defined and node3_fqdn != None
+
+      - name: Create 3 Node cluster without cluster VIP
+        avi_cluster:
+          controller: "{{ ctl1_mgmt_ip }}"
+          username: "admin"
+          password: "{{ avi_admin_password }}"
+          tenant: "admin"
+          name: "cluster-0-1"
+          nodes:
+              - ip:
+                  type: "{{ n1_type | default('V4',true) }}" 
+                  addr: "{{ node1_fqdn | default(ctl1_mgmt_ip,true) }}"
+                name: "avicontroller-{{ ctl1_mgmt_ip }}"
+              - ip:
+                  type: "{{ n2_type | default('V4',true) }}" 
+                  addr: "{{ node2_fqdn | default(ctl2_mgmt_ip,true) }}"
+                name: "avicontroller-{{ ctl2_mgmt_ip }}"
+              - ip:
+                  type: "{{ n3_type | default('V4',true) }}" 
+                  addr: "{{ node3_fqdn | default(ctl3_mgmt_ip,true) }}"  
+                name: "avicontroller-{{ ctl3_mgmt_ip }}"        
+        register: cluster_results
+        when: (cluster_vip is not defined) or (cluster_vip|length == 0)
+        
+
+
+      - name: Create 3 Node cluster with cluster VIP
+        avi_cluster:
+          controller: "{{ ctl1_mgmt_ip }}"
+          username: "admin"
+          password: "{{ avi_admin_password }}"
+          tenant: "admin"
+          name: "cluster-0-1"
+          virtual_ip:
+            type: "V4"
+            addr: "{{ cluster_vip }}"
+          nodes:
+            - ip:
+                type: "{{ n1_type | default('V4',true) }}" 
+                addr: "{{ node1_fqdn | default(ctl1_mgmt_ip,true) }}"
+              name: "avicontroller-{{ ctl1_mgmt_ip }}"
+            - ip:
+                type: "{{ n2_type | default('V4',true) }}"
+                addr: "{{ node2_fqdn | default(ctl2_mgmt_ip,true) }}"
+              name: "avicontroller-{{ ctl2_mgmt_ip }}"
+            - ip:
+                type: "{{ n3_type | default('V4',true) }}" 
+                addr: "{{ node3_fqdn | default(ctl3_mgmt_ip,true) }}"  
+              name: "avicontroller-{{ ctl3_mgmt_ip }}"       
+        register: cluster_results
+        when: (cluster_vip is defined) and (cluster_vip|length != 0)
+
+  
+      - debug:
+          msg: "{{ cluster_results }}"  
+
+      - pause: seconds=300
+  
+    
+      - name: Wait for Avi Controller services to be ready
+        wait_for:
+          port: 443
+          host: "{{ ctl1_mgmt_ip }}"
+          connect_timeout: 3
+          delay: 5
+          timeout: 600
+          
+          
+      - name: Wait for Avi Controller API
+        uri: url="https://{{ ctl1_mgmt_ip }}/" return_content=yes validate_certs=False
+        register: srvc_results
+        until: srvc_results.status == 200
+        retries: 20
+        delay: 5
+        ignore_errors: yes
+  
+  
+      - name: Wait for Avi Controller API
+        uri:
+          url: "https://{{ ctl1_mgmt_ip }}/login"
+          method: POST
+          status_code: 401
+          validate_certs: no
+          return_content: yes
+        register: tmp_results
+        until: tmp_results.status == 401
+        retries: 20
+        delay: 5
+        ignore_errors: yes
+
+
+      - avi_api_session:
+          controller: "{{ ctl1_mgmt_ip }}"
+          username: "admin"
+          password: "{{ avi_admin_password }}"
+          tenant: "{{ tenant | default('admin',true) }}"
+          http_method: get
+          path: tenant
+          params:
+            name: "admin"
+        register: api_results
+        until: api_results|selectattr("results.obj.count", "defined")
+        retries: 20
+        delay: 30
+        ignore_errors: yes
+
+      
+      when: three_node_cluster|default(false)|bool == true
+
+
+
+    - name: Upload Avi License to server
+      avi_api_session:
+        controller: "{{ ctl1_mgmt_ip }}"
+        username: admin
+        password: "{{ avi_admin_password }}"
+        api_version: "{{ ctl_version }}"
+        tenant: "{{ tenant | default('admin',true) }}"
+        http_method: put
+        path: license
+        data:
+          license_text: "{{ lookup('file', license_file) }}"
+      when: license_file is defined and license_file != None
+
+
+    - name:  Avi SE generate SE OVA image 
+      avi_api_session:
+        controller: "{{ ctl1_mgmt_ip }}"
+        username: "admin"
+        password: "{{ avi_admin_password }}"
+        http_method: post
+        path: 'fileservice/seova'
+        timeout: 600
+        data:
+          file_format: ova
+      delegate_to: localhost
+      register: ova_creation
+
+
+    #- debug:
+    #    msg: "{{ ova_creation }}"
+      
+

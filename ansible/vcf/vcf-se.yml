@@ -1,0 +1,526 @@
+---
+- hosts: localhost
+  connection: local
+  roles:
+    - avinetworks.avisdk
+  vars_files:
+    - "./vcf-se-vars.yml"
+
+
+  tasks:
+
+    - add_host:
+        hostname: avicontroller
+        ansible_host: "{{ avi_controller_ip }}"
+        ansible_port: 22
+        ansible_user: "{{ avi_username }}"
+        ansible_ssh_pass: "{{ avi_password }}"
+        ansible_ssh_extra_args: '-o StrictHostKeyChecking=no'
+
+
+    - block: 
+      - name: Retrieve Avi Version Info
+        avi_api_session:
+          controller: "{{ avi_controller_ip }}"
+          username: "{{ avi_username }}"
+          password: "{{ avi_password }}"
+          tenant: "{{ workload_domain | default('admin',true) }}"
+          http_method: get
+          path: cluster/runtime
+          params:
+        register: cluster_results
+        delegate_to: "localhost"
+  
+      - set_fact:
+          se_master_ctl_version: "{{ cluster_results.obj.node_info.version.split('(')[0] }}"
+  
+  
+      - name: Avi SE | Image deploy | Set SE image path for controller version < 18.2.6
+        set_fact:
+          se_image_path: "/opt/avi/se_ova"
+        when: se_master_ctl_version < "18.2.6"
+        
+  
+  
+      - block:
+
+          - name: Get controller tag
+            avi_api_session:
+              controller: "{{ avi_controller_ip }}"
+              username: "{{ avi_username }}"
+              password: "{{ avi_password }}"
+              api_version: "{{ se_master_ctl_version }}"
+              tenant: admin
+              http_method: get
+              path: "initial-data"
+            register: data_res
+            delegate_to: "localhost"
+  
+          - name: Set SE image path for controller version >= 18.2.6
+            set_fact:
+              se_image_path: "/host/pkgs/{{ data_res.obj.version.Tag }}"
+  
+        when: se_master_ctl_version >= "18.2.6"
+
+      when: 'ova_path is not defined or ova_path == None'
+    
+  
+
+- hosts: avicontroller
+  vars_files:
+    - "./vcf-se-vars.yml"
+
+
+    
+  tasks:
+        
+    - block:
+
+      - set_fact:
+          se_image_path: "{{ hostvars['localhost']['se_image_path'] }}"
+          ctl_version: "{{ hostvars['localhost']['se_master_ctl_version'] }}"
+
+      - name: Verify ova exists on controller
+        stat:
+          path: "{{ se_image_path }}/se.ova"
+        register: se_ova_status
+
+           
+      - name:  Generate SE image if not exist on controller
+        avi_api_session:
+          controller: "{{ avi_controller_ip }}"
+          username: "{{ avi_username }}"
+          password: "{{ avi_password }}"
+          http_method: post
+          path: 'fileservice/seova'
+          timeout: 600
+          data:
+            file_format: ova
+        delegate_to: localhost
+        when: not se_ova_status.stat.exists
+
+      - name: Download SE image
+        fetch:
+          src: "{{ se_image_path }}/se.ova"
+          dest: "./se-{{ avi_controller_ip }}-{{ ctl_version }}.ova"
+          flat: yes
+          validate_checksum: False
+
+      - set_fact:
+          ova_path: "./se-{{ avi_controller_ip }}-{{ ctl_version }}.ova"
+          
+
+      when: 'ova_path is not defined or ova_path == None'
+
+
+
+- hosts: localhost
+  connection: local
+  roles:
+    - avinetworks.avisdk
+  vars_files:
+    - "./vcf-se-vars.yml"
+  
+  tasks:
+    - set_fact:
+        tenant: "{{ workload_domain }}"
+        cloud: "{{ workload_domain }}-cloud"
+        se_group: "{{ workload_domain }}-segroup"
+
+    - name: Retrieve Avi Cluster Info
+      avi_api_session:
+        controller: "{{ avi_controller_ip }}"
+        username: "{{ avi_username }}"
+        password: "{{ avi_password }}"
+        tenant: "{{ tenant | default('admin',true) }}"
+        http_method: get
+        path: cluster
+        params:
+      register: cluster_results
+      delegate_to: "localhost"
+
+
+    - name: Set Cluster UUID variable
+      set_fact:
+        cluster_uuid: "{{ cluster_results.obj.uuid }}"
+
+
+    - name: Set Cluster IP variable as VIP
+      set_fact:
+        cluster_ip: "{{ cluster_results.obj.virtual_ip.addr }}"
+      when:  '"virtual_ip" in cluster_results.obj'
+
+    
+    - name: Set Cluster IP variable as Node IP
+      set_fact:
+        cluster_ip: "{{ cluster_results.obj.nodes[0].ip.addr }}"
+      when:  '"virtual_ip" not in cluster_results.obj'
+
+    - set_fact:
+        ova_path: "{{ hostvars['avicontroller']['ova_path'] }}"
+      when: 'ova_path is not defined or ova_path == None'
+
+    - name:  Retrieve Avi Cloud Information
+      avi_api_session:
+        controller: "{{ avi_controller_ip }}"
+        username: "{{ avi_username }}"
+        password: "{{ avi_password }}"
+        tenant: "{{ tenant | default('admin',true) }}"
+        http_method: get
+        path: cloud
+        params:
+          name: "{{ cloud }}"
+      register: cloud_results
+      delegate_to: "localhost"
+
+
+    - name:  Set Cloud UUID variable
+      set_fact:
+        cloud_uuid: "{{ cloud_results.obj.results[0].uuid }}"
+      when: cloud_results.obj.count == 1
+
+
+    - name: Generate Auth Token for SE
+      avi_api_session:
+        controller: "{{ avi_controller_ip }}"
+        username: "{{ avi_username }}"
+        password: "{{ avi_password }}"
+        tenant: "{{ tenant | default('admin',true) }}"
+        http_method: get
+        path: securetoken-generate
+        params:
+          cloud_uuid: "{{ cloud_uuid }}"
+      register: token_results
+      when: cloud_uuid is defined
+      delegate_to: "localhost"
+
+
+    - name: Define auth token variable
+      set_fact: 
+        auth_token: "{{ token_results.obj.auth_token }}"
+      when: token_results is defined
+
+    
+    - debug:
+        msg:  "{{ auth_token }}"
+    
+    - debug:
+         msg:  "{{ cluster_uuid }}"
+
+    - debug:
+         msg:  "{{ cluster_ip }}"
+
+    - set_fact:
+         se_dns: "SERVERS:{{ dns_server }}"
+      when: dns_server is defined and dns_server != None
+
+    - debug:
+        msg: "{{ se_dns }}"
+
+
+    - name:  deploy Avi serviceengine
+      vmware_deploy_ovf:
+        hostname: '{{ vcenter_hostname }}'
+        username: '{{ vcenter_username }}'
+        password: '{{ vcenter_password }}'
+        folder: "{{ folder | default(omit,true) }}"
+        datacenter: "{{ datacenter }}"
+        cluster: "{{ cluster }}"
+        datastore: "{{ datastore }}"
+        name: avise
+        validate_certs: False
+        networks: 
+          Management: "{{ management_network_pg | default(data_nic_parking_pg,true) }}"
+          Data Network 1: "{{ data_network1.se_int_pg | default(data_nic_parking_pg,true) }}"
+          Data Network 2: "{{ data_network2.se_int_pg | default(data_nic_parking_pg,true) }}"
+          Data Network 3: "{{ data_network3.se_int_pg | default(data_nic_parking_pg,true) }}"
+          Data Network 4: "{{ data_network4.se_int_pg | default(data_nic_parking_pg,true) }}"
+          Data Network 5: "{{ data_network5.se_int_pg | default(data_nic_parking_pg,true) }}"
+          Data Network 6: "{{ data_network6.se_int_pg | default(data_nic_parking_pg,true) }}"
+          Data Network 7: "{{ data_network7.se_int_pg | default(data_nic_parking_pg,true) }}"
+          Data Network 8: "{{ data_network8.se_int_pg | default(data_nic_parking_pg,true) }}"
+          Data Network 9: "{{ data_network9.se_int_pg | default(data_nic_parking_pg,true) }}"
+        properties: 
+          AVICNTRL: '{{ cluster_ip }}'
+          AVICNTRL_AUTHTOKEN: '{{ auth_token }}'
+          AVICNTRL_CLUSTERUUID: '{{ cluster_uuid }}'
+          avi.mgmt-ip.SE: "{{ se_mgmt_ip | default(omit) }}"
+          avi.mgmt-mask.SE: "{{ se_mgmt_mask | default(omit) }}"
+          avi.default-gw.SE: "{{ se_mgmt_gw| default(omit) }}"
+          avi.DNS.SE: "{{ se_dns | default(omit) }}"
+        power_on: no
+        ova: "{{ ova_path }}"
+      register: se_status
+      delegate_to: "localhost"
+
+
+    - set_fact:
+        sevm_uuid: "{{ se_status.instance.hw_product_uuid }}"
+      when:  "se_status is defined and 'instance' in se_status"
+
+
+    #- debug:
+    #    msg: "{{ sevm_uuid }}"
+
+
+
+    - name: Modify SE Hardware
+      vmware_guest:
+        hostname: '{{ vcenter_hostname }}'
+        username: '{{ vcenter_username }}'        
+        password: '{{ vcenter_password }}'
+        validate_certs: False
+        uuid: "{{ sevm_uuid }}"
+        hardware:
+          memory_mb: "{{ se_memory_mb | default(4096,true) }}"
+          memory_reservation_lock: "{{ se_memory_reserve_lock | default(False,true) }}"
+          num_cpus: "{{ se_num_cpus | default(2,true) }}"
+          cpu_reservation: "{{ se_cpu_reserve_mhz | default(omit,true) }}"
+        disk:
+        - size_gb: "{{ se_disk_size_gb | default(20,true) }}"
+        state: present
+      delegate_to: "localhost"        
+
+
+
+    - name: Power On SE
+      vmware_guest:
+        hostname: '{{ vcenter_hostname }}'
+        username: '{{ vcenter_username }}'
+        password: '{{ vcenter_password }}'
+        validate_certs: False
+        uuid: "{{ sevm_uuid }}"
+        wait_for_ip_address: yes
+        state: poweredon
+      delegate_to: "localhost"
+      register: vm_info
+
+    #- debug:
+    #    msg: "{{ vm_info }}"
+
+
+    - set_fact:
+        se_mgmt_ip: "{{ vm_info.instance.ipv4 }}"
+      when:  "vm_info is defined and 'instance' in vm_info"
+
+
+    #- debug:
+    #    msg:  "{{ se_mgmt_ip }}"
+
+
+    - name: Rename SE
+      vmware_guest:
+        hostname: '{{ vcenter_hostname }}'
+        username: '{{ vcenter_username }}'
+        password: '{{ vcenter_password }}'
+        validate_certs: False
+        name: avise-{{ cloud }}-{{ se_mgmt_ip }}
+        uuid: "{{ sevm_uuid }}"
+        state: present
+      delegate_to: "localhost"
+
+
+    - name: Wait for SE to be seen by Controller
+      avi_api_session:
+        controller: "{{ avi_controller_ip }}"
+        username: "{{ avi_username }}"
+        password: "{{ avi_password }}"
+        tenant: "{{ tenant | default('admin',true) }}"
+        http_method: get
+        path: serviceengine
+        params:
+          name: "{{ se_mgmt_ip }}"
+      register: api_results
+      until: api_results.obj.count == 1
+      retries: 20
+      delay: 30
+      delegate_to: "localhost"
+
+
+
+    - name: Wait for SE to connect to Controller
+      avi_api_session:
+        controller: "{{ avi_controller_ip }}"
+        username: "{{ avi_username }}"
+        password: "{{ avi_password }}"
+        tenant: "{{ tenant | default('admin',true) }}"
+        http_method: get
+        path: serviceengine
+        params:
+          name: "{{ se_mgmt_ip }}"
+      register: api_results
+      until: api_results.obj.results[0].se_connected == true
+      retries: 20
+      delay: 30
+      delegate_to: "localhost"
+
+
+    #- debug:
+    #    msg: "{{ api_results }}"
+
+    - set_fact:
+        vm_mac_addresses: {}
+        se_mac_addresses: {}
+        mac_mapping: {}
+
+    - set_fact:
+        se_mac_addresses: "{{ se_mac_addresses | combine( { item.mac_address: item.linux_name } ) }}"
+      with_items: "{{ api_results.obj.results[0].data_vnics }}"
+
+
+
+    - set_fact:
+        vm_mac_addresses: "{{ vm_mac_addresses | combine( { item.value.macaddress: item.key.replace('hw_eth','data_network')} ) }}"
+      when: "'hw_eth' in item.key and 'nsx.LogicalSwitch' in item.value.summary and item.value.ipaddresses == []"
+      with_dict: "{{ vm_info.instance }}"
+
+    #- debug:
+    #    msg:  
+    #    - "{{ vm_mac_addresses }}"
+    #    - "{{ se_mac_addresses }}"
+
+
+    - name: Map SE eth interfaces to VM interfaces by comparing mac addresses
+      set_fact:
+        mac_mapping: "{{ mac_mapping | combine( { se_mac_addresses[item.key]: item.value } ) }}"
+      with_dict: "{{ vm_mac_addresses }}"
+
+
+
+  
+    - set_fact:
+        se_vnics: "{{ api_results.obj.results[0].data_vnics }}"
+        vnic_list: []
+
+
+
+
+    - name: Prepare config - Configure Static IPs for SE interfaces
+      set_fact:
+          vnic_list: "{{ vnic_list + [ item|combine({'vnic_networks':[{'ip':{'mask': vars[mac_mapping[item.linux_name]]['se_int_mask'],'ip_addr': {'type': 'V4', 'addr': vars[mac_mapping[item.linux_name]]['se_int_ip']}},'ctlr_alloc': False,'mode': 'STATIC'}]})] }}"
+      with_items: "{{ se_vnics }}"  
+      when: "item.linux_name in mac_mapping
+            and
+            vars[mac_mapping[item.linux_name]]['se_int_pg'] is defined
+            and
+            vars[mac_mapping[item.linux_name]]['se_int_pg'] != None
+            and 
+            vars[mac_mapping[item.linux_name]]['se_int_ip'] is defined
+            and
+            vars[mac_mapping[item.linux_name]]['se_int_ip'] != None
+            and 
+            vars[mac_mapping[item.linux_name]]['se_int_mask'] is defined
+            and
+            vars[mac_mapping[item.linux_name]]['se_int_mask'] != None"
+
+
+    #- debug:
+    #     msg: "{{ vnic_list }}"
+
+    - name: Prepare config - Enable DHCP on SE interfaces
+      set_fact:
+         vnic_list: "{{ vnic_list + [ item|combine({'dhcp_enabled': True}) ] }}"
+      vars:
+          new_item: "{ 'dhcp_enabled': 'true' }"
+      with_items: "{{ se_vnics }}"  
+      when: "item.linux_name in mac_mapping
+            and
+            vars[mac_mapping[item.linux_name]]['se_int_pg'] is defined
+            and
+            vars[mac_mapping[item.linux_name]]['se_int_pg'] != None
+            and
+            (vars[mac_mapping[item.linux_name]]['se_int_ip'] is undefined
+            or 
+            vars[mac_mapping[item.linux_name]]['se_int_ip']==None)"
+
+
+    - set_fact:
+         vnic_list: "{{ vnic_list + [ item ] }}"
+      with_items: "{{ se_vnics }}"
+      when: item.linux_name not in mac_mapping 
+
+
+
+    
+    - name: Retrieve SE Group info
+      avi_api_session:
+        controller: "{{ avi_controller_ip }}"
+        username: "{{ avi_username }}"
+        password: "{{ avi_password }}"
+        tenant: "{{ tenant | default('admin',true) }}"
+        http_method: get
+        path: serviceenginegroup
+        params:
+          name: "{{ se_group | default(workload_domain+'-segroup',true) }}"
+          cloud_ref.name: "{{ cloud }}"
+      register: seg_results
+      delegate_to: "localhost"
+
+
+    #- debug:
+    #    msg: "{{ seg_results }}"
+
+    - set_fact:
+        seg_uuid: "{{ seg_results.obj.results[0].uuid }}"
+      when: seg_results.obj.count == 1
+
+    
+    #- debug:
+    #     msg: "{{ seg_uuid }}"
+
+
+
+    - name: Apply Interface configurations on Service Engine and modify SE Group
+      avi_serviceengine:
+        avi_api_update_method: patch
+        avi_api_patch_op: replace
+        controller: "{{ avi_controller_ip }}"
+        username: "{{ avi_username }}"
+        password: "{{ avi_password }}"
+        tenant: "{{ tenant | default('admin',true) }}"
+        name: "{{ se_mgmt_ip }}"
+        data_vnics: "{{ vnic_list }}"
+        se_group_ref: "/api/serviceenginegroup/{{ seg_uuid }}"
+      delegate_to: "localhost"
+        
+
+
+    - name: Retrieve Anti-Affinity DRS Rules for Cluster Nodes
+      vmware_drs_rule_info:
+        hostname: '{{ vcenter_hostname }}'
+        username: '{{ vcenter_username }}'
+        password: '{{ vcenter_password }}'
+        validate_certs: False
+        cluster_name: "{{ cluster }}"
+      delegate_to: localhost  
+      register: cluster_drs_info
+
+
+    - set_fact:
+       drs_info: "{{ cluster_drs_info.drs_rule_info[cluster] }}"
+
+    - set_fact:
+       se_vms: 
+        - avise-{{ cloud }}-{{ se_mgmt_ip }}
+
+
+    - set_fact:
+       se_vms: "{{ se_vms|default([]) + item.rule_vms }}"
+      with_items: "{{ drs_info }}"
+      when: item.rule_name == "avise-"+cloud+"-"+se_group+"-antiaffinity-rule"
+
+
+
+    - name: Create Anti-Affinity DRS Rule for Cluster Nodes
+      vmware_vm_vm_drs_rule:
+        hostname: '{{ vcenter_hostname }}'
+        username: '{{ vcenter_username }}'
+        password: '{{ vcenter_password }}'
+        validate_certs: False
+        cluster_name: "{{ cluster }}"
+        enabled: True
+        vms: "{{ se_vms }}"
+        drs_rule_name: "avise-{{ cloud }}-{{ se_group }}-antiaffinity-rule"
+        mandatory: True
+        affinity_rule: False
+      delegate_to: localhost   
