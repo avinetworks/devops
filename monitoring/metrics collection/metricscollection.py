@@ -838,7 +838,7 @@ class avi_metrics():
             #------               
             for t in self.tenants:
                 if self.vs_metrics == True or self.vs_runtime == True:
-                    vs_inv = self.avi_request('virtualservice?fields=cloud_ref,tenant_ref,se_group_ref&page_size=200&include_name=true&'+vs_runtime,t['name'])
+                    vs_inv = self.avi_request('virtualservice?fields=cloud_ref,tenant_ref,se_group_ref&page_size=200&include_name=true'+vs_runtime,t['name'])
                     if vs_inv.status_code == 403:
                         print(str(datetime.now())+' =====> ERROR: virtualservice_inventory: %s' %vs_inv.text)
                     else:
