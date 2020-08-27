@@ -2007,6 +2007,21 @@ class avi_metrics():
             exception_text = traceback.format_exc()
             print(str(datetime.now())+' '+self.avi_cluster_ip+': '+exception_text)
 
+    # -----------------------------------
+    # ----- GET Events pushed to Endpoints
+
+    def controller_events(self):
+        from datetime import datetime
+        import pytz
+        current_datetime = datetime.now().astimezone(pytz.utc).strftime('%Y-%m-%dT%H:%M:%S.%f')[:-3] + 'Z'
+
+        event_url = "/api/analytics/logs?type=2&" \
+                    "filter=eq(event_id,USER_LOGIN)&" \
+                    "end={0}&"   \
+                    "duration=300&" \
+                    "step=3&" \
+                    "groupby=report_timestamp&" \
+                    "timeout=3&".format(current_datetime)
 
 # -----------------------------------
 # -----------------------------------
