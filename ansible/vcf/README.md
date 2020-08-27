@@ -1,4 +1,4 @@
-# [Avi Reference Architecture for VCF 3.9.1](https://draft.aviplayground.com/docs/18.2/avi-reference-architecture-for-vcf/avi-reference-architecture-for-vcf-3.9.1/) Ansible playbooks
+# [Avi Reference Architecture for VCF 3.9.1](https://avinetworks.com/docs/18.2/avi-reference-architecture-for-vcf/avi-reference-architecture-for-vcf-3.9.1/) Ansible playbooks
 
 The Avi VCF ansible playbooks provide the ability for day 0 provisioning as well as day 1 expansion tasks.  The provided playbooks provided allow for the user to deploy a 3-node Controller Cluster, create Avi tenancy objects for user defined VCF compute workload domains and deploy Avi service engines within the compute workload domains.
 
