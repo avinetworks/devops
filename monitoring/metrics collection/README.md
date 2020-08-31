@@ -1744,6 +1744,7 @@ controllers:
      controller_stats_config:
          controller_metrics: True
          controller_runtime: True
+         controller_events: True
          controller_metrics_list:
             - controller_stats.avg_cpu_usage
             - controller_stats.avg_disk_usage
@@ -1811,6 +1812,24 @@ controllers:
 - License expiration
 - Controller software version
 
+### Controller Events
+- CONTROLLER_CPU_HIGH
+- CONTROLLER_DISK_HIGH
+- CONTROLLER_LEADER_FAILOVER
+- CONTROLLER_MEM_HIGH
+- CONTROLLER_NODE_DB_REPLICATION_FAILED
+- CONTROLLER_NODE_LEFT
+- CONTROLLER_NODE_SHUTDOWN
+- CONTROLLER_SERVICE_FAILURE
+- CONTROLLER_SERVICE_CRITICAL_FAILURE
+- CONTROLLER_WARM_REBOOT
+- CONTROLLER_NODE_JOINED
+- CONTROLLER_NODE_STARTED
+- GS_DOWN
+- GS_GROUP_DOWN
+- GS_MEMBER_DOWN
+- METRICS_DB_DISK_FULL
+- SE_DISK_HIGH
 
 
 ### Service Engine Metrics:

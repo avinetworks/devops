@@ -17,7 +17,6 @@ import yaml
 import json
 import urllib3
 import requests
-from packaging import version
 
 version = 'v2019-12-20'
 
@@ -29,8 +28,8 @@ version = 'v2019-12-20'
 #  REQUIREMENTS:                                                                        #
 #    1. python 3.6+                                                                     #
 #    2. python3 requests                                                                #
-#    2. python3 yaml                                                                    #
-#                                                                                       #
+#    3. python3 yaml                                                                    #
+#    3. python3 pytz                                                                    #
 #                                                                                       #
 #                                                                                       #
 #                                                                                       #
@@ -740,6 +739,7 @@ class avi_metrics():
                                       'CONTROLLER_MEM_HIGH',
                                       'CONTROLLER_NODE_DB_REPLICATION_FAILED',
                                       'CONTROLLER_NODE_LEFT',
+                                      'CONTROLLER_NODE_SHUTDOWN',
                                       'CONTROLLER_SERVICE_FAILURE',
                                       'CONTROLLER_SERVICE_CRITICAL_FAILURE',
                                       'CONTROLLER_WARM_REBOOT',
@@ -748,7 +748,6 @@ class avi_metrics():
                                       'GS_DOWN',
                                       'GS_GROUP_DOWN',
                                       'GS_MEMBER_DOWN',
-                                      'GSLB_SITE_OPER_STATUS',
                                       'METRICS_DB_DISK_FULL',
                                       'SE_DISK_HIGH']
 
@@ -2040,6 +2039,7 @@ class avi_metrics():
         try:
             from datetime import datetime
             import pytz
+            from packaging import version
 
             temp_start_time = time.time()
             endpoint_payload_list = []
@@ -2058,7 +2058,7 @@ class avi_metrics():
                     event_list = [item for item in event_list if item not in not_supported]
 
             for event_ptr in event_list:
-                event_url = "/api/analytics/logs?type=2&" \
+                event_url = "analytics/logs?type=2&" \
                             "filter=eq(event_id,{0})&" \
                             "end={1}&"   \
                             "duration=300&" \
@@ -2068,21 +2068,20 @@ class avi_metrics():
                 resp = self.avi_request(event_url, 'admin').json()
 
                 # Send the event list to the Endpoint
-                if resp["count"] > 0:
-                    temp_payload = self.payload_template.copy()
-                    temp_payload['timestamp'] = int(time.time())
-                    temp_payload['metric_type'] = "controller_events"
-                    temp_payload['metric_name'] = event_ptr
-                    temp_payload['metric_value'] = resp["count"]
-                    temp_payload['name_space'] = 'avi||'+self.avi_cluster_name + '||controller_events||%s' % event_ptr
+                temp_payload = self.payload_template.copy()
+                temp_payload['timestamp'] = int(time.time())
+                temp_payload['metric_type'] = "controller_events"
+                temp_payload['metric_name'] = "controller_events." + event_ptr.lower()
+                temp_payload['metric_value'] = resp["count"]
+                temp_payload['name_space'] = 'avi||'+self.avi_cluster_name + '||controller_events||%s' % event_ptr
 
-                    # Capture the current value for Mem/CPU/Disk events
-                    if (event_ptr in not_supported) or (event_ptr == "SE_DISK_HIGH"):
-                        data = sorted(
-                            list(map(lambda x: x["event_details"]["metric_threshold_up_details"]["current_value"], resp["results"])))
-                        temp_payload['values'] = "|".join(str(item) for item in data)
+                # Capture the current value for Mem/CPU/Disk events
+                if ((event_ptr in not_supported) or (event_ptr == "SE_DISK_HIGH")) and (resp["count"] > 0):
+                    data = sorted(
+                        list(map(lambda x: x["event_details"]["metric_threshold_up_details"]["current_value"], resp["results"])))
+                    temp_payload['values'] = "|".join(str(item) for item in data)
 
-                    endpoint_payload_list.append(temp_payload)
+                endpoint_payload_list.append(temp_payload)
 
             if len(endpoint_payload_list) > 0:
                 send_metriclist_to_endpoint(self.endpoint_list, endpoint_payload_list)
