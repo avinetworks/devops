@@ -2043,6 +2043,7 @@ class avi_metrics():
 
             temp_start_time = time.time()
             endpoint_payload_list = []
+            # Events supported in 18.2.5+ onwards
             not_supported = ['CONTROLLER_CPU_HIGH', 'CONTROLLER_DISK_HIGH', 'CONTROLLER_MEM_HIGH']
             event_list = self.controller_event_list
             current_datetime = datetime.now().astimezone(pytz.utc).strftime('%Y-%m-%dT%H:%M:%S.%f')[:-3] + 'Z'
@@ -2054,7 +2055,6 @@ class avi_metrics():
                 controller_version = json.loads(controller_version.content)[0]
                 controller_version = controller_version["version"].split("(")[0]
                 if version.parse(controller_version) < version.parse("18.2.5"):
-
                     event_list = [item for item in event_list if item not in not_supported]
 
             for event_ptr in event_list:
