@@ -1,3 +1,17 @@
+'''
+* Copyright 2019-2020 VMware, Inc.
+* All Rights Reserved.
+* Licensed under the Apache License, Version 2.0 (the "License");
+* you may not use this file except in compliance with the License.
+* You may obtain a copy of the License at
+*   http://www.apache.org/licenses/LICENSE-2.0
+* Unless required by applicable law or agreed to in writing, software
+* distributed under the License is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+* See the License for the specific language governing permissions and
+* limitations under the License.
+'''
+
 import os
 import argparse
 import subprocess
@@ -170,25 +184,14 @@ def editDeploymentFile(backupPodName, pvcName, pvMount, namespace):
         traceback.print_exc(file=sys.stdout)
         raise exception("FAILED: : Exception occured") 
 
-def getLogsFromPod(namespace, helmchart, since, podType):
-    logging.info("Persistent Volume for pod is not defined\nReading logs directly from the pod")
-    folderName = getLogFolderName(helmchart, podType)
-    makeDir(folderName)
-    kubectl_logs = "kubectl logs %s -n %s --since %s > %s/%s.log" %(findPodName(namespace,helmchart, podType), namespace, since, folderName, podType) 
+def getLogsFromPod(namespace, since, podType, folderName, podName):
+    kubectl_logs = "kubectl logs %s -n %s --since %s > %s/%s.log" %(podName, namespace, since, folderName, podType) 
     logging.info("%s" %kubectl_logs)
     try:
         output = subprocess.check_output("%s" %kubectl_logs , shell=True)
     except subprocess.CalledProcessError:
         traceback.print_exc(file=sys.stdout)
         logging.error(display_colored_text('31m',"ERROR: ") +"No PVC used and hence cannot create backup pod to fetch logs, skipping logs collection and proceeding with code")
-    finally:
-        if podType=="amko":
-            getCRD(namespace, folderName)
-        elif podType=="ako":
-            getConfigmap(namespace, folderName)
-        zipDir(folderName)
-        print("\nSuccess, Logs zipped into %s.zip\n" %folderName)
-        return
 
 def findPVCName(helmResult, namespace, helmchart, since, podType):
     start = helmResult.find("persistentVolumeClaim") + len("persistentVolumeClaim:")
@@ -200,7 +203,17 @@ def findPVCName(helmResult, namespace, helmchart, since, podType):
         logging.info("PVC name is %s" %pvcName)
         return pvcName
     else:
-        getLogsFromPod(namespace, helmchart, since, podType)
+        logging.info("Persistent Volume for pod is not defined\nReading logs directly from the pod")
+        folderName = getLogFolderName(helmchart, podType)
+        makeDir(folderName)
+        podName = findPodName(namespace, helmchart, podType)
+        getLogsFromPod(namespace, since, podType, folderName, podName)
+        if podType=="amko":
+            getCRD(namespace, folderName)
+        elif podType=="ako":
+            getConfigmap(namespace, folderName)
+        zipDir(folderName)
+        print("\nSuccess, Logs zipped into %s.zip\n" %folderName)
         return "done"
 
 def findPVMount(helmResult):
@@ -281,8 +294,9 @@ def zipLogFile(helmchart, namespace, since, podType):
 
     #Check if the pod is up and running
     if (re.findall("Status: *Running", statusOfPod) and (re.findall("Restart Count: *0", statusOfPod))):
-        makeDir(folderName)
+        makeDir(folderName) 
         copyLogsFromPVC(namespace, podName, pvMount, logFileName, folderName, pvcName, podType)
+        getLogsFromPod(namespace, since, "LogsFromConsole", folderName, podName)
         if podType=="amko":
             getCRD(namespace, folderName)
         elif podType=="ako":
