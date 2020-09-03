@@ -55,8 +55,8 @@
         name: vsvip-{{ app_name }}-Default-Cloud
         avi_credentials: '{{ avi_credentials }}' 
         api_context: '{{avi_api_context | default(omit)}}'
-        tenant_ref: /api/tenant/?name={{ tenant }}
-        cloud_ref: /api/cloud/?name=Default-Cloud
+        tenant_ref: '/api/tenant/?name=admin'
+        cloud_ref: '/api/cloud/?name=Default-Cloud'
         state: "{{ state }}"
         vip:
         - vip_id: '1'
@@ -78,4 +78,4 @@
         services:
           - port: 80
         pool_ref: '/api/pool?name=app1-pool'
-        vsvip_ref: /api/vsvip/?name=vsvip-{{ app1_vip }}-Default-Cloud
+        vsvip_ref: /api/vsvip/?name=vsvip-{{ app_name }}-Default-Cloud

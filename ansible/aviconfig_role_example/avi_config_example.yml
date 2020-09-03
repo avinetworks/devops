@@ -4,13 +4,6 @@
 ---
 - hosts: localhost
   connection: local
-  vars:
-    api_version: 17.1.2
-    avi_credentials:
-      controller: 10.10.24.202
-      username: admin
-      password: password$%
-      api_version: 17.1.2
   roles:
     - role: avinetworks.avisdk
   tasks:

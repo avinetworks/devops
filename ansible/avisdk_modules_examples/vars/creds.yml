@@ -7,6 +7,8 @@ avi_credentials:
   password: "{{ avi_password }}"
   api_version: 18.2.2
 
+state: "present"
+
 # all apps use the same backend servers
 app1_vip: 10.90.64.200
 app2_vip: 10.90.64.201

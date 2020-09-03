@@ -4,8 +4,8 @@
     avi_credentials:
       controller: 10.10.25.42
       username: admin
-      password: avi123
-      api_version: 18.1.2
+      password: password
+      api_version: 20.1.2
   connection: local
   roles:
     - role: avinetworks.avisdk
@@ -25,14 +25,17 @@
           - ip:
                addr: 10.90.64.13
                type: 'V4'
-    - vsvip:
-      - name: vsvip-vs-simple-pool-Default-Cloud
+    - avi_vsvip:
+        name: vsvip-vs-simple-pool-Default-Cloud
+        avi_credentials: "{{avi_credentials}}"
+        state: "{{state | default('present')}}"
         vip:
         - enabled: true
           ip_address:
             addr: 10.90.64.244
             type: V4
           vip_id: '1'
+
     - avi_virtualservice:
         avi_credentials: "{{avi_credentials}}"
         state: "{{state | default('present')}}"
