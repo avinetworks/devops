@@ -1,0 +1,8 @@
+{
+  "IsEncrypted": false,
+  "Values": {
+    "AzureWebJobsStorage": "DefaultEndpointsProtocol=https;AccountName=storageaccountrahul8989;AccountKey=/91jAKREJuAqXwMiJr8wpUzByHK64iu0uMi4dxiKE1bJVy8/vay/9EQrm+jOnpoZTg+N4AkuTez7zmXgh6lREQ==;EndpointSuffix=core.windows.net",
+    "FUNCTIONS_WORKER_RUNTIME": "python",
+    "AzureWebJobs.PowerOffVMs.Disabled": "true"
+  }
+}
