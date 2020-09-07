@@ -20,9 +20,9 @@ def main(mytimer: func.TimerRequest) -> None:
     compute_client = ComputeManagementClient(credentials, "0eebbbed-14c0-462e-99e0-dfec1d42e0c9")
 
     def poweroff_vm(logging):
-        for vm in compute_client.virtual_machines.list('rahulr-resource-group'):
+        for vm in compute_client.virtual_machines.list_all():
             logging.info("Deallocating VM %s"%vm.name)
-            compute_client.virtual_machines.deallocate('rahulr-resource-group',vm.name)
+            compute_client.virtual_machines.deallocate(str(vm.id.split('/')[-5]),vm.name)
     poweroff_vm(logging)
 
 
