@@ -1,0 +1,26 @@
+avi_config:
+  avi_cloud_discovery_wait: 120
+  cloud:
+     - vtype: "{{ cloud_type }}"
+       api_version: "{{ api_version }}"
+       state: "{{ state }}"
+       dhcp_enabled: "{{ dhcp }}"
+       nsxt_configuration:
+           nsxt_url: "{{ nsxt_url }}"
+           transport_zone: "{{ transportZone }}"
+           site_id: default
+           enforcementpoint_id: default
+           domain_id: default
+           management_segment:
+             tier1_lr_id: "{{ management_tier_id }}"
+             segment_id: "{{ management_segment_id }}"
+           tier1_segment_config:
+             segment_config_mode: TIER1_SEGMENT_MANUAL
+             manual:
+               tier1_lrs:
+               - tier1_lr_id: "{{ data_tier_id }}"
+                 segment_id: "{{ data_segment_id }}"
+           automate_dfw_rules: false
+           nsxt_credentials_ref: "/api/cloudconnectoruser/?name={{nsxt.name}}"
+       name: "{{ cloud_name }}"
+       obj_name_prefix: "{{ cloud_prefix }}"
