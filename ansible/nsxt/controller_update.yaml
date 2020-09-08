@@ -94,3 +94,30 @@
         become: yes
         delegate_to: "{{ controller.hostname }}"
         when: route_out.stdout == "No"
+
+      - name: Patch to enable basic auth
+        avi_api_session:
+          controller: "{{ controller.hostname | default(omit) }}"
+          username: "{{ controller.username | default(omit) }}"
+          password: "{{ controller.password | default(omit) }}"
+          http_method: put
+          path: "systemconfiguration"
+          api_version: 20.1.1
+          data:
+             portal_configuration:
+                   allow_basic_authentication: true
+      - set_fact:
+           cloud_uuid: "{{ lookup('avi', avi_credentials=avi_credentials, obj_name='nsxtcloud', obj_type='cloud').uuid }}"
+      
+      - name: Checking Cloud Status
+        uri:
+          url: "https://{{ controller.hostname }}/api/cloud/{{cloud_uuid}}/status"
+          url_username: "{{ controller.username | default(omit) }}"
+          url_password: "{{ controller.password | default(omit) }}"
+          method: GET
+          force_basic_auth: yes
+          validate_certs: no
+        register: status
+        retries: 100
+        delay: 10
+        until: status.json.state == "CLOUD_STATE_PLACEMENT_READY"
