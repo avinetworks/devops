@@ -1,0 +1,67 @@
+---
+- name: Update user password using avi_credentials
+  avi_useraccount:
+     controller: "{{controller.hostname | default(omit) }}"
+     username: "{{controller.username | default(omit) }}"
+     password: "{{controller.password | default(omit) }}"
+     old_password: "{{controller.old_password | default(omit) }}"
+     api_version: "{{api_version | default(omit) }}"
+     force_change: false
+
+- name: Create Nsxt user
+  avi_api_session:
+    controller: "{{ controller.hostname | default(omit) }}"
+    username: "{{ controller.username | default(omit) }}"
+    password: "{{ controller.password | default(omit) }}"
+    http_method: post
+    path: "cloudconnectoruser"
+    api_version: "{{ api_version | default(omit) }}"
+    data:
+      nsxt_credentials:
+            username: "{{ nsxt.username | default(omit) }}"
+            password: "{{ nsxt.password | default(omit) }}"
+      name: "{{ nsxt.name | default(omit) }}"
+
+- name: Create Cloud VCUSER user
+  avi_api_session:
+    controller: "{{ controller.hostname | default(omit) }}"
+    username: "{{ controller.username | default(omit) }}"
+    password: "{{ controller.password | default(omit) }}"
+    http_method: post
+    path: "cloudconnectoruser"
+    api_version: "{{api_version | default(omit) }}"
+    data:
+      vcenter_credentials:
+             username: "{{vcenter.username | default(omit) }}"
+             password: "{{vcenter.password | default(omit) }}"
+      name: "{{vcenter.name | default(omit) }}"
+
+- name: Check existing Policy_API_Endpoint
+  uri:
+    url: "https://{{policy_api_endpoint}}/policy/api/v1/infra/sites/default/enforcement-points/alb-endpoint"
+    url_username: "{{ nsxt.username | default(omit) }}"
+    url_password: "{{ nsxt.password | default(omit) }}"
+    method: GET
+    force_basic_auth: yes
+    validate_certs: no
+    body_format: json
+    body: "{{ lookup('template', 'enforcement_point.json.j2')}}"
+  register: policy_api
+  ignore_errors: yes
+
+- debug:
+        msg: "{{policy_api.status}}"
+
+- name: Create Policy_API_Endpoint
+  uri:
+    url: "https://{{policy_api_endpoint}}/policy/api/v1/infra/sites/default/enforcement-points/alb-endpoint"
+    url_username: "{{ nsxt.username | default(omit) }}"
+    url_password: "{{ nsxt.password | default(omit) }}"
+    method: "{{item}}"
+    force_basic_auth: yes
+    validate_certs: no
+    body_format: json
+    body: "{{ lookup('template', 'enforcement_point.json.j2')}}"
+  with_items:
+          - "{{nsxt.method}}"
+  when: policy_api.status == 404 or nsxt.force_update == 1
