@@ -899,7 +899,7 @@ class avi_metrics():
                                 se_inv['results'].append(s)
                         if se_inv['count'] > 0:
                             for s in se_inv['results']:
-                                if referred_by != '':
+                                if se_referred_by != '':
                                     self.se_uuid_list.append(s['uuid'])
                                 se_dict[s['uuid']] = {}
                                 se_dict[s['uuid']]['name'] = s['name']
@@ -930,7 +930,7 @@ class avi_metrics():
                                 pool_inv['results'].append(p)   
                         if pool_inv['count'] > 0:
                             for p in pool_inv['results']:
-                                if referred_by != '':
+                                if pool_referred_by != '':
                                     self.pool_uuid_list.append(p['uuid'])
                                 pool_dict[p['uuid']] = {}
                                 pool_dict[p['uuid']]['name'] = p['config']['name']
