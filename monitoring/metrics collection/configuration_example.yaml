@@ -14,6 +14,10 @@ controllers:
          virtualservice_metrics: True
          virtualservice_realtime: False
          virtualservice_runtime: False
+         virtualservice_names:
+            - AutoScaleout-VS
+            - Avi-DemoAvi-VS
+            - WAF_Demo_VS
          virtualservice_metrics_list:
             - l4_client.avg_bandwidth
             - l4_client.avg_rx_pkts
