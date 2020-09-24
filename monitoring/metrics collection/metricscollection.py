@@ -297,9 +297,7 @@ def send_value_splunk_hec_metric(endpoint_info, splunk_payload):
             "host": "",
             "fields": {
                 "service": "avi",
-                "environment": "",
                 "_value": "",
-                "location": "",
                 "metric_name": ""
             }
         }
@@ -311,8 +309,6 @@ def send_value_splunk_hec_metric(endpoint_info, splunk_payload):
             payload = splunk_payload_template.copy()
             payload['host'] = temp_entry['avicontroller']
             payload['time'] = temp_entry['timestamp']
-            payload['fields']['environment'] = temp_entry['environment']
-            payload['fields']['location'] = temp_entry['location']
             payload['fields']['_value'] = temp_entry['metric_value']
             payload['fields']['metric_name'] = temp_entry['metric_name']
             for k in keys_to_remove:
