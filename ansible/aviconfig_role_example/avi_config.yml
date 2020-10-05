@@ -1,7 +1,6 @@
 avi_config:
   pool:
     - name: app1-pool
-      #state: absent
       lb_algorithm: LB_ALGORITHM_ROUND_ROBIN
       servers:
         - ip:
@@ -22,7 +21,5 @@ avi_config:
       services:
         - port: 80
       pool_ref: '/api/pool?name=app1-pool'
-      #pool_ref:
-      #  state: absent
       vsvip_ref: /api/vsvip/?name=vsvip-app1-Default-Cloud
 

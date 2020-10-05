@@ -173,7 +173,7 @@
         name: app-pool-1
         tenant_ref: "/api/tenant/?name=Test-Tenant"
         cloud_ref: "/api/cloud/?name=Test-Cloud"
-        vrf_ref: "/api/vrfcontext?name=sample_vrfcontext"
+        vrf_ref: "/api/vrfcontext/?name=sample_vrfcontext"
         lb_algorithm: LB_ALGORITHM_ROUND_ROBIN
         health_monitor_refs:
           - "/api/healthmonitor?name=app-hm-http"
@@ -195,7 +195,7 @@
         name: app-pool-2
         tenant_ref: "/api/tenant/?name=Test-Tenant"
         cloud_ref: "/api/cloud/?name=Test-Cloud"
-        vrf_ref: "/api/vrfcontext?name=sample_vrfcontext"
+        vrf_ref: "/api/vrfcontext/?name=sample_vrfcontext"
         lb_algorithm: LB_ALGORITHM_ROUND_ROBIN
         health_monitor_refs:
           - "/api/healthmonitor?name=app-hm-http"
@@ -217,7 +217,7 @@
         name: "app-pool-3"
         tenant_ref: "/api/tenant/?name=Test-Tenant"
         cloud_ref: "/api/cloud/?name=Test-Cloud"
-        vrf_ref: "/api/vrfcontext?name=sample_vrfcontext"
+        vrf_ref: "/api/vrfcontext/?name=sample_vrfcontext"
         lb_algorithm: LB_ALGORITHM_ROUND_ROBIN
         health_monitor_refs:
           - "/api/healthmonitor?name=app-hm-https"
@@ -239,7 +239,7 @@
         name: "app-pool-4"
         tenant_ref: "/api/tenant/?name=Test-tenant"
         cloud_ref: "/api/cloud/?name=Test-Cloud"
-        vrf_ref: "/api/vrfcontext?name=sample_vrfcontext"
+        vrf_ref: "/api/vrfcontext/?name=sample_vrfcontext"
         lb_algorithm: LB_ALGORITHM_ROUND_ROBIN
         health_monitor_refs:
           - "/api/healthmonitor?name=app-hm-https"
@@ -336,8 +336,9 @@
         name: vsvip-{{ app_name_1 }}-Default-Cloud
         avi_credentials: '{{ avi_credentials }}' 
         api_context: '{{avi_api_context | default(omit)}}'
-        tenant_ref: /api/tenant/?name={{ tenant }}
-        cloud_ref: /api/cloud/?name=Default-Cloud
+        tenant: "Test-Tenant"
+        tenant_ref: '/api/tenant/?name=Test-Tenant'
+        cloud_ref: "/api/cloud/?name=Test-Cloud"
         state: "{{ state }}"
         vip:
         - vip_id: '1'
@@ -369,7 +370,7 @@
         tenant_ref: "/api/tenant/?name=Test-Tenant"
         cloud_ref: "/api/cloud/?name=Test-Cloud"
         se_group_ref: '/api/serviceenginegroup?name=sample_serviceenginegroup'
-        vrf_context_ref: "/api/vrfcontext?name=sample_vrfcontext"
+        vrf_context_ref: "/api/vrfcontext/?name=sample_vrfcontext"
         http_policies:
           - http_policy_set_ref: /api/httppolicyset?name=app-policy-set
         vsvip_ref: /api/vsvip/?name=vsvip-{{ app_name_1 }}-Default-Cloud
@@ -379,8 +380,9 @@
         name: vsvip-{{ app_name_2 }}-Default-Cloud
         avi_credentials: '{{ avi_credentials }}' 
         api_context: '{{avi_api_context | default(omit)}}'
-        tenant_ref: /api/tenant/?name={{ tenant }}
-        cloud_ref: /api/cloud/?name=Default-Cloud
+        tenant: "Test-Tenant"
+        tenant_ref: '/api/tenant/?name=Test-Tenant'
+        cloud_ref: "/api/cloud/?name=Test-Cloud"
         state: "{{ state }}"
         vip:
         - vip_id: '1'
@@ -407,10 +409,10 @@
         services:
           - port: 444
             enable_ssl: true
-        pool_group_ref: '/api/poolgroup?name=test-poolgroup-1'
-        ssl_profile_ref: '/api/sslprofile?name=System-Standard'
+        pool_group_ref: '/api/poolgroup/?name=test-poolgroup-1'
+        ssl_profile_ref: '/api/sslprofile/?name=System-Standard'
         tenant_ref: "/api/tenant/?name=Test-Tenant"
         cloud_ref: "/api/cloud/?name=Test-Cloud"
-        se_group_ref: '/api/serviceenginegroup?name=sample_serviceenginegroup'
-        vrf_context_ref: "/api/vrfcontext?name=sample_vrfcontext"
+        se_group_ref: '/api/serviceenginegroup/?name=sample_serviceenginegroup'
+        vrf_context_ref: "/api/vrfcontext/?name=sample_vrfcontext"
         vsvip_ref: /api/vsvip/?name=vsvip-{{ app_name_2 }}-Default-Cloud

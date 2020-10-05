@@ -29,16 +29,19 @@
                 - ip:
                      addr: "{{ pool_server2 }}"
                      type: 'V4'
-          virtualservice:
-            - name: "{{app_name}}"
-              services:
-                - port: 80
-              pool_ref: "/api/pool?name={{app_name}}-pool"
+          vsvip:
+            - name: "{{app_name}}-vsvip"
               vip:
                 - ip_address:
                     addr: "{{ complex_app_vip }}"
                     type: 'V4'
                   vip_id: '1'
+          virtualservice:
+            - name: "{{app_name}}"
+              services:
+                - port: 80
+              pool_ref: "/api/pool?name={{app_name}}-pool"
+              vsvip_ref: "/api/vsvip/?name={{app_name}}-vsvip"
 
     - name: Avi Application | Setup complex_app
       import_role:

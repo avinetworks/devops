@@ -24,5 +24,5 @@ avi_config:
       services:
         - port: 80
       pool_ref: '/api/pool?name=app1-pool'
-      vsvip_ref: /api/vsvip/?name=vsvip-app1-Default-Cloud
+      vsvip_ref: /api/vsvip/?name=vsvip-app2-Default-Cloud
 
