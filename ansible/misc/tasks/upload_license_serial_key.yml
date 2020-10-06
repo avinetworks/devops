@@ -1,0 +1,9 @@
+---
+- name: Upload Avi License to server
+  avi_api_session:
+    avi_credentials: "{{ avi_credentials }}"
+    api_version: 17.2.13
+    http_method: put
+    path: license
+    data:
+      serial_key: "{{ serial_key }}"
