@@ -36,12 +36,12 @@
         dhcp_enabled: true
         license_type: "LIC_CORES"
         vcenter_configuration:
-          username: "root"
-          datacenter: "10GTest"
-          management_network: "/api/vimgrnwruntime?name=Mgmt_Arista_3"
+          username: "{{ vcenter_username }}"
+          datacenter: "{{ datacenter }}"
+          management_network: "/api/vimgrnwruntime/?name={{ network }}"
           privilege: "WRITE_ACCESS"
-          vcenter_url: "10.10.2.10"
-          password: vmware
+          vcenter_url: "{{ vcenter_host }}"
+          password: "{{ vcenter_password }}"
 
     # Task to create Tenant on the controller.
     # Here is the link to get more details of parametrs of this task.
@@ -315,7 +315,7 @@
             switching_action:
               action: HTTP_SWITCHING_SELECT_POOL
               status_code: HTTP_LOCAL_RESPONSE_STATUS_CODE_200
-              pool_ref: "/api/pool?name=app-pool-1"
+              pool_ref: "/api/pool/?name=app-pool-1"
           - index: 2
             enable: true
             name: "test-test2"
@@ -333,12 +333,13 @@
 
     - name: "Avi Example | Create VS VIP | {{ app_name_1 }}"
       avi_vsvip:
-        name: vsvip-{{ app_name_1 }}-Default-Cloud
+        name: vsvip-{{ app_name_1 }}
         avi_credentials: '{{ avi_credentials }}' 
         api_context: '{{avi_api_context | default(omit)}}'
         tenant: "Test-Tenant"
         tenant_ref: '/api/tenant/?name=Test-Tenant'
         cloud_ref: "/api/cloud/?name=Test-Cloud"
+        vrf_context_ref: "/api/vrfcontext/?name=sample_vrfcontext"
         state: "{{ state }}"
         vip:
         - vip_id: '1'
@@ -365,24 +366,25 @@
         services:
           - port: 443
             enable_ssl: true
-        pool_group_ref: '/api/poolgroup?name=app-poolgroup'
-        ssl_profile_ref: '/api/sslprofile?name=System-Standard'
+        pool_group_ref: '/api/poolgroup/?name=app-poolgroup'
+        ssl_profile_ref: '/api/sslprofile/?name=System-Standard'
         tenant_ref: "/api/tenant/?name=Test-Tenant"
         cloud_ref: "/api/cloud/?name=Test-Cloud"
-        se_group_ref: '/api/serviceenginegroup?name=sample_serviceenginegroup'
+        se_group_ref: '/api/serviceenginegroup/?name=sample_serviceenginegroup'
         vrf_context_ref: "/api/vrfcontext/?name=sample_vrfcontext"
         http_policies:
           - http_policy_set_ref: /api/httppolicyset?name=app-policy-set
-        vsvip_ref: /api/vsvip/?name=vsvip-{{ app_name_1 }}-Default-Cloud
+        vsvip_ref: /api/vsvip/?name=vsvip-{{ app_name_1 }}
 
     - name: "Avi Example | Create VS VIP | {{ app_name_2 }}"
       avi_vsvip:
-        name: vsvip-{{ app_name_2 }}-Default-Cloud
+        name: vsvip-{{ app_name_2 }}
         avi_credentials: '{{ avi_credentials }}' 
         api_context: '{{avi_api_context | default(omit)}}'
         tenant: "Test-Tenant"
         tenant_ref: '/api/tenant/?name=Test-Tenant'
         cloud_ref: "/api/cloud/?name=Test-Cloud"
+        vrf_context_ref: "/api/vrfcontext/?name=sample_vrfcontext"
         state: "{{ state }}"
         vip:
         - vip_id: '1'
@@ -415,4 +417,4 @@
         cloud_ref: "/api/cloud/?name=Test-Cloud"
         se_group_ref: '/api/serviceenginegroup/?name=sample_serviceenginegroup'
         vrf_context_ref: "/api/vrfcontext/?name=sample_vrfcontext"
-        vsvip_ref: /api/vsvip/?name=vsvip-{{ app_name_2 }}-Default-Cloud
+        vsvip_ref: /api/vsvip/?name=vsvip-{{ app_name_2 }}

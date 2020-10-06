@@ -7,6 +7,13 @@ avi_credentials:
   password: "{{ avi_password }}"
   api_version: 18.2.2
 
+#vcenter configuration
+vcenter_username: "aviuser1"
+datacenter: "wdc-02-vc20"
+network: "vxw-dvs-34-virtualwire-3-sid-2200002-wdc-02-vc20-avi-mgmt"
+vcenter_host: "10.79.22.40"
+vcenter_password: password
+
 state: "present"
 
 # all apps use the same backend servers
