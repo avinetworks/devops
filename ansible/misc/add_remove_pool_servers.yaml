@@ -4,7 +4,7 @@
 # This playbook takes a list of comma separated pool servers
 # and adds or remove them and enable disables them to existing Pool
 # Usage:
-#   ansible-playbook  -M network/avi --extra-vars "username=admin password=password controller=10.10.25.42 pool=p1 pool_servers_ip=10.10.10.10,20.20.20.20 patch_op=add enabled=true"
+#   ansible-playbook main.yaml --extra-vars "username=admin password=password controller=10.206.114.133 pool_name=Test-Pool pool_servers=10.10.10.10,20.20.20.20 patch_op=add enabled=true"
 #
 
 ---
@@ -28,6 +28,7 @@
         servers_list: "{{ servers_list|default([]) + [{'ip': {'addr': item, 'type': 'V4'}, 'enabled': enabled | bool}] }}"
       with_items: "{{ pool_servers.split(',') }}"
       # each server_list item has ansible fact as server
+    # - debug: var=servers_list
     - avi_api_session:
         # get pool information
         avi_credentials: "{{ avi_credentials }}"
@@ -38,12 +39,12 @@
       register: pool_results
     - name: get_pool_path
       set_fact:
-        pool_path: pool/{{ pool_results.obj.results[0].uuid }}
+        pool_path: "pool/{{ pool_results.obj.results[0].uuid }}"
     - name: get patch data
       set_fact:
         patch_data: "{
-          patch_op: {
-            servers: servers_list
+          \"{{ patch_op }}\": {
+            \"servers\": {{ servers_list }}
             }
           }"
     - debug:
