@@ -1,0 +1,109 @@
+= For deployment of the Avi Controller using Avi's SDK
+
+Steps:
+
+* Install docker with yum install
+* Download Avi's Controller from Avi Portal.
+* Download the SDK from Avi's Docker Hub.
+* Download the run.sh file
+
+----
+curl -O https://raw.githubusercontent.com/avinetworks/avitools/master/run.sh
+----
+
+Run the script
+
+From a Linux Box this maps workspace into /opt/docker
+
+----
+chmod +x run.sh
+./run.sh -v 18.2.7 -c bash -d /opt/docker -b
+docker exec -it avitools bash
+----
+
+NOTE: In CentOS, or RHEL if you have SELinux enabled you may need to set it to permissions mode or track down the /var/log/audit/audit.log id to exclude it from creating issue within the container.
+
+== Setup your environment
+
+Steps: +
+
+----
+** cp -R home datacenter1
+----
+
+----
+** rm datacenter1/group_vars/all/vault.yml
+----
+----
+** create a new ansible-vault file
+----
+
+----
+cd datacenter1/group_vars/all
+ansible-vault create vault.yml
+----
+
+Once you enter your password you need to add the following variables:
+
+----
+vmware_pass: 'Password1'
+avi_password: 'Password2'
+oldpassword: 'this password is on avi portal'
+----
+
+Once that is completed you need to adjust the variables for your env.
+
+----
+vi datacenter1/group_vars/all/vars
+----
+
+== Run the playbook
+
+cd  into the folder where the *deploy.yml* is
+
+----
+ansible-playbook -i inventory/datacenter1/hosts deploy.yml --ask-vault-pass
+----
+
+Once completed you will see something like this:
+
+----
+    Thursday 06 February 2020  19:39:03 +0000 (0:00:01.836)       0:01:18.582 *****
+    ===============================================================================
+    pause ------------------------------------------------------------------ 60.04s
+    avinetworks.aviconfig --------------------------------------------------- 6.97s
+    uri --------------------------------------------------------------------- 3.40s
+    avi_useraccount --------------------------------------------------------- 3.06s
+    avi_systemconfiguration ------------------------------------------------- 1.84s
+    deploy_controller ------------------------------------------------------- 1.83s
+    avinetworks.avisdk ------------------------------------------------------ 0.80s
+    avinetworks.avicontroller_vmware ---------------------------------------- 0.41s
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    total ------------------------------------------------------------------ 78.34s
+    Thursday 06 February 2020  19:39:03 +0000 (0:00:01.836)       0:01:18.580 *****
+    ===============================================================================
+    Wait to all services be ready ------------------------------------------------------------------------------------------------------------------------------------------------------------- 60.04s
+    Set admin password ------------------------------------------------------------------------------------------------------------------------------------------------------------------------- 3.06s
+    Check Cluster Status ----------------------------------------------------------------------------------------------------------------------------------------------------------------------- 2.17s
+    Basic Controller Config -------------------------------------------------------------------------------------------------------------------------------------------------------------------- 1.84s
+    Deploy Avi Controllers --------------------------------------------------------------------------------------------------------------------------------------------------------------------- 1.83s
+    Wait for Controller be ready --------------------------------------------------------------------------------------------------------------------------------------------------------------- 1.23s
+    avinetworks.aviconfig : Build Avi module includes ------------------------------------------------------------------------------------------------------------------------------------------ 1.17s
+    avinetworks.aviconfig : Avi Config | Create no access cloud -------------------------------------------------------------------------------------------------------------------------------- 0.42s
+    avinetworks.aviconfig : Avi Config | Fetch cloud status ------------------------------------------------------------------------------------------------------------------------------------ 0.42s
+    avinetworks.aviconfig : Avi Config | Load Avi controller creds ----------------------------------------------------------------------------------------------------------------------------- 0.41s
+    avinetworks.aviconfig : Avi Config | Load configuration file ------------------------------------------------------------------------------------------------------------------------------- 0.41s
+    avinetworks.aviconfig : Avi Config | Check tenant exists ----------------------------------------------------------------------------------------------------------------------------------- 0.41s
+    avinetworks.aviconfig : Avi Config | Setting Avi role config to parameter avi_config ------------------------------------------------------------------------------------------------------- 0.41s
+    avinetworks.avicontroller_vmware : Check ansible version ----------------------------------------------------------------------------------------------------------------------------------- 0.41s
+    avinetworks.aviconfig : Avi Config | Set Avi Config variable from file contents ------------------------------------------------------------------------------------------------------------ 0.40s
+    avinetworks.aviconfig : Avi Network | Create or Update Network ----------------------------------------------------------------------------------------------------------------------------- 0.40s
+    avinetworks.aviconfig : Update Systemconfiguration DNS VS reference ------------------------------------------------------------------------------------------------------------------------ 0.40s
+    avinetworks.aviconfig : Include Avi Resource Create or Update Tasks ------------------------------------------------------------------------------------------------------------------------ 0.40s
+    avinetworks.aviconfig : Check ansible version ---------------------------------------------------------------------------------------------------------------------------------------------- 0.40s
+    avinetworks.aviconfig : Avi Config | Create Tenant ----------------------------------------------------------------------------------------------------------------------------------------- 0.40s
+    Playbook run took 0 days, 0 hours, 1 minutes, 18 seconds
+    root@avitools:/opt/avi/ansi-controller-deployment#
+----
+
+NOTE: This is an output of a controller that I just deployed using the script.  Depending on your network and VMware / vSphere for the speed. I have seen it from  few minutes up to 15 minutes. 

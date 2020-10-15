@@ -1,0 +1,144 @@
+---
+- hosts: localhost
+  connection: local
+  roles:
+    - role: avinetworks.avicontroller_vmware
+    - role: avinetworks.avisdk
+    - role: avinetworks.aviconfig
+  gather_facts: false
+  tasks:
+    - name: Deploy Avi Controllers
+      deploy_controller:
+        state: present
+        ovftool_path: '{{ ovftool_path }}'
+        vcenter_host: '{{ vcenter.vcenter_url }}'
+        vcenter_user: '{{ vcenter.username }}'
+        vcenter_password: '{{ vcenter.password }}'
+        con_datacenter: '{{ datacenter }}'
+        con_cluster: '{{ cluster }}'
+        con_datastore: '{{ datastore | default(omit) }}'
+        con_disk_mode: '{{ disk_mode | default(omit) }}'
+        con_mgmt_network: '{{ mgmt_network }}'
+        con_ova_path: '{{ ova_path }}'
+        con_power_on: '{{ power_on }}'
+        con_vcenter_folder: '{{ vcenter_folder }}'
+        con_disk_size: '{{ disk_size | default(omit) }}'
+        con_vm_name: '{{ item.name }}'
+        con_mgmt_ip: '{{ item.mgmt_ip }}'
+        con_mgmt_mask: '{{ item.mgmt_mask}}'
+        con_default_gw: '{{ item.default_gw }}'
+      no_log: true
+      with_items:
+        - "{{ controller1 }}"
+      # - "{{ controller2 }}"
+      # - "{{ controller3 }}"
+      tags:
+        - avicontrollers
+    - name: Wait for Controller be ready
+      uri:
+        validate_certs: false
+        url: "http://{{ controller1[0].mgmt_ip }}/"
+        method: GET
+        status_code: 200,302,301,503
+      register: statusCode_output
+      until: statusCode_output.status == 200
+      retries: 120
+      delay: 60
+      tags:
+        - waitctl
+    - name: Check Cluster Status
+      uri:
+        validate_certs: false
+        url: "https://{{ controller1[0].mgmt_ip }}/api/cluster/runtime"
+        method: GET
+        status_code: 200,302,301,503
+      register: cluster_status
+      until: cluster_status.json.cluster_state.progress == 100
+      retries: 120
+      delay: 60
+      tags:
+        - checking_ctl
+    - name: Wait to all services be ready
+      pause:
+        echo: false
+        seconds: 60
+    - name: Set admin password
+      avi_useraccount:
+        avi_credentials: '{{ avi_credentials }}'
+        old_password: '{{ old_password }}'
+        api_version: '{{ avi_credentials.api_version }}'
+      tags:
+        - passwordavi
+    - name: Basic Controller Config
+      avi_systemconfiguration:
+        controller: '{{ controller1[0].mgmt_ip }}'
+        username: '{{ username }}'
+        password: '{{ password }}'
+        api_version: '{{ api_version }}'
+        email_configuration:
+          smtp_type: SMTP_LOCAL_HOST
+          from_email: '{{ avi_email }}'
+        global_tenant_config:
+          se_in_provider_context: true
+          tenant_access_to_provider_se: true
+          tenant_vrf: false
+        dns_configuration:
+          search_domain: '{{ search_domains }}'
+          server_list:
+            - type: V4
+              addr: '{{ dns_server01 }}'
+            - type: V4
+              addr: '{{ dns_server02 }}'
+        portal_configuration:
+          use_uuid_from_input: false
+          redirect_to_https: true
+          disable_remote_cli_shell: false
+          enable_clickjacking_protection: true
+          enable_http: true
+          enable_https: true
+          password_strength_check: true
+          allow_basic_authentication: false
+          disable_swagger: false
+        ntp_configuration:
+          ntp_servers:
+            - server:
+                type: DNS
+                addr: "{{ ntp_server01 }}"
+            - server:
+                type: DNS
+                addr: "{{ ntp_server02 }}"
+        default_license_tier: ENTERPRISE_18
+        welcome_workflow_complete: true
+        linux_configuration:
+          motd: "{{ motd_welcome }}"
+          banner: "{{ banner_txt }}"
+      tags:
+        - controllerconfig
+    - name: Setup VMware CC
+      avi_cloud:
+        controller: '{{ controller1[0].mgmt_ip }}'
+        username: '{{ username }}'
+        password: '{{ password }}'
+        api_version: '{{ api_version }}'
+        name: "VMware"
+        vtype: CLOUD_VCENTER
+        dhcp_enabled: false
+        prefer_static_routes: false
+        license_type: "LIC_CORES"
+        tenant_ref: /api/tenant/?name=admin
+        license_tier: ENTERPRISE_18
+        # se_group_template_ref: Default-Group
+        vcenter_configuration:
+          username: "{{ vcenter.username }}"
+          password: "{{ vcenter.password }}"
+          datacenter: "{{ vcenter.datacenter }}"
+          privilege: "WRITE_ACCESS"
+          vcenter_url: "{{ vcenter.vcenter_url }}"
+          management_network: "/api/vimgrnwruntime?name={{ vcenter.network_mgmt }}"
+          management_ip_subnet:
+            ip_addr:
+              addr: 192.168.100.0
+              type: V4
+            mask: 24
+      tags:
+        - vcenter

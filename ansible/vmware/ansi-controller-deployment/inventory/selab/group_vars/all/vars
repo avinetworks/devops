@@ -1,0 +1,99 @@
+---
+# ovftool is part of the SDK
+ovftool_path: /usr/lib/vmware-ovftool
+
+# downloaded OVA location
+ova_path: './software/controller-18.2.7-9129.ova'
+
+# Datacenter to use
+datacenter: 'Sales'
+
+# Cluster Name
+cluster: Sales-01
+
+# Network for the Avi Mgmt
+mgmt_network: 'pg-mgmt'
+
+# Turn on the VM after the push
+power_on: true
+
+# Folder where to push the Avi Controller
+vcenter_folder: CSAA
+
+# Number of CPU Min 8
+number_of_cpus: 8
+
+# RAM for the Avi Controller min 24
+memory: 24
+
+# Which  inventory info do I use
+mycloud: selab
+
+# Old password of Avi Controller this is in the Avi Portal
+old_password: '{{ oldpassword }}'
+
+# the email you want to use for the Avi
+avi_email: remo@avinetworks.com
+
+# Default admin tenant in Avi
+username: admin
+
+
+password: '{{ avi_password }}'
+
+# API version
+api_version: 18.2.7
+
+# Domain to search for the Avi Controller
+search_domains: remo.local
+
+#Portal UI Display Banner and MOTD
+banner_txt: "Ciao Ciao!! - Test Msg"
+motd_welcome:
+
+
+# DNS servers
+dns_server01: 1.1.1.1
+dns_server02: 4.2.2.2
+
+# NTP servers
+ntp_server01: time.apple.com
+ntp_server02: 0.us.pool.ntp.org
+
+# Controllers
+controller1:
+   - name: Avi_Controller1
+     mgmt_ip:  10.56.0.125
+     mgmt_mask: 255.255.0.0
+     default_gw: 10.56.0.1
+     password: '{{ avi_password }}'
+     ctl: yes
+controller2:
+   - name: Avi_Controller2
+     mgmt_ip: 10.56.0.127
+     mgmt_mask: 255.255.0.0
+     default_gw: 10.56.0.1
+     password: '{{ avi_password }}'
+     ctl: no
+controller3:
+   - name: Avi_Controller3
+     mgmt_ip: 192.168.38.73
+     mgmt_mask: 255.255.255.0
+     default_gw: 192.168.38.1
+     password: '{{ avi_password }}'
+     ctl: no
+
+# vsphere
+vcenter:
+  vcenter_url: 10.10.2.8
+  username: 'root'
+  password: '{{ vmware_pass }}'
+  datacenter: '{{ datacenter }}'
+  network_mgmt: 'pg-mgmt'
+
+# Avi info used in the script
+avi_credentials:
+  controller: '{{ controller1[0].mgmt_ip }}'
+  username: '{{ username }}'
+  password: '{{ avi_password }}'
+  api_version:  '{{ api_version }}'
