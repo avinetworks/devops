@@ -1,0 +1,43 @@
+#-------------------VMC vCenter-----------------------------
+#---- VMC vcenter required information
+vcenter_hostname: 
+vcenter_username: 
+vcenter_password: 
+
+#---- VMC vCenter optional information
+datacenter:
+cluster:
+datastore:
+folder:
+
+
+
+#-------------------Avi Controller Cluster-----------------------------
+#---- Avi Controller required information
+ova_path: 
+management_network_pg: 
+avi_admin_password: 
+
+#---- Avi Controller optional information
+ctl_memory_mb: 
+ctl_num_cpus: 
+ctl_disk_size_gb: 
+    
+cluster_vip:
+three_node_cluster: no
+
+
+
+#---- Avi Controller mgmt IP optional information
+#---- If blank, DHCP is used
+node1_mgmt_ip:
+node1_mgmt_mask:
+node1_mgmt_gw:
+
+node2_mgmt_ip:
+node2_mgmt_mask:
+node2_mgmt_gw:
+
+node3_mgmt_ip:
+node3_mgmt_mask:
+node3_mgmt_gw:
