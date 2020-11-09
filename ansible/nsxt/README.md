@@ -35,10 +35,11 @@
         -c controller_ip
         -p controller_password
         -v vcenter_ip
+        -a apiVersion
     
      e.g,
         export PYTHONPATH=${PWD}:$PYTHONPATH 
-        ./create.sh -n nsxt_url_ip -r router_mgmt_ip -c controller_ip -p controller_password -v vcenter_ip
+        ./create.sh -n nsxt_url_ip -r router_mgmt_ip -c controller_ip -p controller_password -v vcenter_ip -a apiVersion
 ```
 
 ### Known Issue.
