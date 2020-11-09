@@ -102,7 +102,7 @@
           password: "{{ controller.password | default(omit) }}"
           http_method: put
           path: "systemconfiguration"
-          api_version: 20.1.1
+          api_version: "{{api_version | default(omit) }}"
           data:
              portal_configuration:
                    allow_basic_authentication: true
