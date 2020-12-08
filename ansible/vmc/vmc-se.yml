@@ -362,7 +362,7 @@
 
     - set_fact:
         vm_mac_addresses: "{{ vm_mac_addresses | combine( { item.value.macaddress: item.key.replace('hw_eth','data_network')} ) }}"
-      when: "'hw_eth' in item.key and 'nsx.LogicalSwitch' in item.value.summary and item.value.ipaddresses == []"
+      when: "'hw_eth' in item.key and 'nsx.LogicalSwitch' in item.value.summary and (item.value.ipaddresses == [] or item.value.ipaddresses == None)"
       with_dict: "{{ vm_info.instance }}"
 
     #- debug:

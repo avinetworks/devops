@@ -8,7 +8,7 @@
 
   tasks:
 
-    - name: Create temp SSH Key directory
+    - name: "Avi install: SSH setup"
       file:
        path: ./avikey
        state: directory
@@ -18,7 +18,7 @@
        register: stat_result
 
 
-    - name: Generate SSH Key
+    - name: "Avi install: Generate SSH Key"
       openssh_keypair:
         path: ./avikey/avi_id_ssh_rsa
         size: 4096
@@ -33,7 +33,8 @@
     #    msg: "{{ pub_key }}"
 
 
-    - name:  deploy Avi Controller 1
+
+    - name:  "Avi Controller: Deploy Node 1"
       vmware_deploy_ovf:
         hostname: '{{ vcenter_hostname }}'
         username: '{{ vcenter_username }}'
@@ -67,7 +68,11 @@
       when:  "ctl1_status is defined and 'hw_product_uuid' in ctl1_status"
 
 
-    - name: Modify Controller 1 Hardware
+    - set_fact:
+        controller_vm_uuids: "{{ controller_vm_uuids|default([]) + [ctl1vm_uuid] }}"
+
+
+    - name: "Avi Controller: Modify Node 1 VM"
       vmware_guest:
         hostname: '{{ vcenter_hostname }}'
         username: '{{ vcenter_username }}'        
@@ -83,182 +88,198 @@
       delegate_to: "localhost" 
 
 
-    - name:  deploy Avi Controller 2
-      vmware_deploy_ovf:
-        hostname: '{{ vcenter_hostname }}'
-        username: '{{ vcenter_username }}'
-        password: '{{ vcenter_password }}'
-        folder: "{{ folder | default('SDDC-Datacenter/vm',true) }}"
-        datacenter: "{{ datacenter | default('SDDC-Datacenter',true) }}"
-        cluster: "{{ cluster | default('Cluster-1',true) }}"
-        datastore: "{{ datastore | default('WorkloadDatastore',true) }}"
-        name: avicontroller2
-        validate_certs: False
-        networks: 
-          Management: "{{ management_network_pg | default('VM Network',true) }}"
-        properties: 
-          avi.mgmt-ip.CONTROLLER: "{{ node2_mgmt_ip | default(omit) }}"
-          avi.mgmt-mask.CONTROLLER: "{{ node2_mgmt_mask | default(omit) }}"
-          avi.default-gw.CONTROLLER: "{{ node2_gw| default(omit) }}"
-        power_on: no        
-        ova: "{{ ova_path }}"
-      register: ctl2_status
+    - block:
+
+      - name:  "Avi Controller: Deploy Node 2"
+        vmware_deploy_ovf:
+          hostname: '{{ vcenter_hostname }}'
+          username: '{{ vcenter_username }}'
+          password: '{{ vcenter_password }}'
+          folder: "{{ folder | default('SDDC-Datacenter/vm',true) }}"
+          datacenter: "{{ datacenter | default('SDDC-Datacenter',true) }}"
+          cluster: "{{ cluster | default('Cluster-1',true) }}"
+          datastore: "{{ datastore | default('WorkloadDatastore',true) }}"
+          name: avicontroller2
+          validate_certs: False
+          networks: 
+            Management: "{{ management_network_pg | default('VM Network',true) }}"
+          properties: 
+            avi.mgmt-ip.CONTROLLER: "{{ node2_mgmt_ip | default(omit) }}"
+            avi.mgmt-mask.CONTROLLER: "{{ node2_mgmt_mask | default(omit) }}"
+            avi.default-gw.CONTROLLER: "{{ node2_gw| default(omit) }}"
+          power_on: no        
+          ova: "{{ ova_path }}"
+        register: ctl2_status
+        when: three_node_cluster|default(false)|bool == true
+  
+      - set_fact:
+          ctl2vm_uuid: "{{ ctl2_status.instance.hw_product_uuid }}"
+        when:  "ctl2_status is defined and 'instance' in ctl2_status"
+  
+      
+      - set_fact:
+          ctl2vm_uuid: "{{ ctl2_status.hw_product_uuid }}"
+        when:  "ctl2_status is defined and 'hw_product_uuid' in ctl2_status"
+  
+  
+      - set_fact:
+          controller_vm_uuids: "{{ controller_vm_uuids|default([]) + [ctl2vm_uuid] }}"
+        when:  "ctl2_status is defined and 'hw_product_uuid' in ctl2_status"
+  
+  
+      - name: "Avi Controller: Modify Node 2 VM"
+        vmware_guest:
+          hostname: '{{ vcenter_hostname }}'
+          username: '{{ vcenter_username }}'        
+          password: '{{ vcenter_password }}'
+          validate_certs: False
+          uuid: "{{ ctl2vm_uuid }}"
+          hardware:
+            memory_mb: "{{ se_memory_mb | default(24576,true) }}"
+            num_cpus: "{{ se_num_cpus | default(8,true) }}"
+          disk:
+          - size_gb: "{{ se_disk_size_gb | default(128,true) }}"
+          state: present
+        delegate_to: "localhost" 
+        when: "ctl2vm_uuid is defined"
+  
+  
+      - name: "Avi Controller: Power On Node 2"
+        vmware_guest:
+          hostname: '{{ vcenter_hostname }}'
+          username: '{{ vcenter_username }}'
+          password: '{{ vcenter_password }}'
+          validate_certs: False
+          uuid: "{{ ctl2vm_uuid }}"
+          wait_for_ip_address: yes
+          state: poweredon
+        delegate_to: "localhost"
+        register: ctl2_info
+        when: "ctl2vm_uuid is defined"
+  
+      - set_fact:
+          ctl2_mgmt_ip: "{{ ctl2_info.instance.ipv4 }}"
+        when:  "ctl2_info is defined and 'instance' in ctl2_info"
+  
+  
+      - set_fact:
+          ctl2_mgmt_ip: "{{ ctl2_info.ipv4 }}"
+        when:  "ctl2_info is defined and 'ipv4' in ctl2_info"
+  
+  
+      - name: "Avi Controller: Rename Node 2 VM"
+        vmware_guest:
+          hostname: '{{ vcenter_hostname }}'
+          username: '{{ vcenter_username }}'
+          password: '{{ vcenter_password }}'
+          validate_certs: False
+          name: avicontroller-{{ ctl2_mgmt_ip }}
+          uuid: "{{ ctl2vm_uuid }}"
+          state: present
+        delegate_to: "localhost"
+        when: "ctl2vm_uuid is defined"
+  
+  
+      - name:  "Avi Controller: Deploy Node 3"
+        vmware_deploy_ovf:
+          hostname: '{{ vcenter_hostname }}'
+          username: '{{ vcenter_username }}'
+          password: '{{ vcenter_password }}'
+          folder: "{{ folder | default('SDDC-Datacenter/vm',true) }}"
+          datacenter: "{{ datacenter | default('SDDC-Datacenter',true) }}"
+          cluster: "{{ cluster | default('Cluster-1',true) }}"
+          datastore: "{{ datastore | default('WorkloadDatastore',true) }}"
+          name: avicontroller3
+          validate_certs: False
+          networks: 
+            Management: "{{ management_network_pg | default('VM Network',true) }}"
+          properties: 
+            avi.mgmt-ip.CONTROLLER: "{{ node3_mgmt_ip | default(omit) }}"
+            avi.mgmt-mask.CONTROLLER: "{{ node3_mgmt_mask | default(omit) }}"
+            avi.default-gw.CONTROLLER: "{{ node3_gw| default(omit) }}"
+          power_on: no        
+          ova: "{{ ova_path }}"
+        register: ctl3_status
+        when: three_node_cluster|default(false)|bool == true
+      
+  
+      - set_fact:
+          ctl3vm_uuid: "{{ ctl3_status.instance.hw_product_uuid }}"
+        when:  "ctl3_status is defined and 'instance' in ctl3_status"
+  
+  
+      - set_fact:
+          ctl3vm_uuid: "{{ ctl3_status.hw_product_uuid }}"
+        when:  "ctl3_status is defined and 'hw_product_uuid' in ctl3_status"
+  
+  
+  
+      - set_fact:
+          controller_vm_uuids: "{{ controller_vm_uuids|default([]) + [ctl3vm_uuid] }}"
+        when:  "ctl3_status is defined and 'hw_product_uuid' in ctl3_status"
+  
+  
+  
+      - name: "Avi Controller: Modify Node 3 VM"
+        vmware_guest:
+          hostname: '{{ vcenter_hostname }}'
+          username: '{{ vcenter_username }}'        
+          password: '{{ vcenter_password }}'
+          validate_certs: False
+          uuid: "{{ ctl3vm_uuid }}"
+          hardware:
+            memory_mb: "{{ se_memory_mb | default(24576,true) }}"
+            num_cpus: "{{ se_num_cpus | default(8,true) }}"
+          disk:
+          - size_gb: "{{ se_disk_size_gb | default(128,true) }}"
+          state: present
+        delegate_to: "localhost" 
+        when: "ctl3vm_uuid is defined"
+  
+  
+  
+  
+      - name: "Avi Controller: Power On Node 3"
+        vmware_guest:
+          hostname: '{{ vcenter_hostname }}'
+          username: '{{ vcenter_username }}'
+          password: '{{ vcenter_password }}'
+          validate_certs: False
+          uuid: "{{ ctl3vm_uuid }}"
+          wait_for_ip_address: yes
+          state: poweredon
+        delegate_to: "localhost"
+        register: ctl3_info
+        when: "ctl3vm_uuid is defined"
+  
+  
+      - set_fact:
+          ctl3_mgmt_ip: "{{ ctl3_info.instance.ipv4 }}"
+        when:  "ctl3_info is defined and 'instance' in ctl3_info"
+  
+  
+      - set_fact:
+          ctl3_mgmt_ip: "{{ ctl3_info.ipv4 }}"
+        when:  "ctl3_info is defined and 'ipv4' in ctl3_info"
+  
+  
+      - name: "Avi Controller: Rename Node 3 VM"
+        vmware_guest:
+          hostname: '{{ vcenter_hostname }}'
+          username: '{{ vcenter_username }}'
+          password: '{{ vcenter_password }}'
+          validate_certs: False
+          name: avicontroller-{{ ctl3_mgmt_ip }}
+          uuid: "{{ ctl3vm_uuid }}"
+          state: present
+        delegate_to: "localhost"
+        when: "ctl3vm_uuid is defined"
+
       when: three_node_cluster|default(false)|bool == true
 
-    - set_fact:
-        ctl2vm_uuid: "{{ ctl2_status.instance.hw_product_uuid }}"
-      when:  "ctl2_status is defined and 'instance' in ctl2_status"
-
-    
-    - set_fact:
-        ctl2vm_uuid: "{{ ctl2_status.hw_product_uuid }}"
-      when:  "ctl2_status is defined and 'hw_product_uuid' in ctl2_status"
 
 
-    - name: Modify Controller 2 Hardware
-      vmware_guest:
-        hostname: '{{ vcenter_hostname }}'
-        username: '{{ vcenter_username }}'        
-        password: '{{ vcenter_password }}'
-        validate_certs: False
-        uuid: "{{ ctl2vm_uuid }}"
-        hardware:
-          memory_mb: "{{ se_memory_mb | default(24576,true) }}"
-          num_cpus: "{{ se_num_cpus | default(8,true) }}"
-        disk:
-        - size_gb: "{{ se_disk_size_gb | default(128,true) }}"
-        state: present
-      delegate_to: "localhost" 
-      when: "ctl2vm_uuid is defined"
-
-
-    - name: Power On Controller 2
-      vmware_guest:
-        hostname: '{{ vcenter_hostname }}'
-        username: '{{ vcenter_username }}'
-        password: '{{ vcenter_password }}'
-        validate_certs: False
-        uuid: "{{ ctl2vm_uuid }}"
-        wait_for_ip_address: yes
-        state: poweredon
-      delegate_to: "localhost"
-      register: ctl2_info
-      when: "ctl2vm_uuid is defined"
-
-    - set_fact:
-        ctl2_mgmt_ip: "{{ ctl2_info.instance.ipv4 }}"
-      when:  "ctl2_info is defined and 'instance' in ctl2_info"
-
-
-    - set_fact:
-        ctl2_mgmt_ip: "{{ ctl2_info.ipv4 }}"
-      when:  "ctl2_info is defined and 'ipv4' in ctl2_info"
-
-
-    - name: Rename Controller 2
-      vmware_guest:
-        hostname: '{{ vcenter_hostname }}'
-        username: '{{ vcenter_username }}'
-        password: '{{ vcenter_password }}'
-        validate_certs: False
-        name: avicontroller-{{ ctl2_mgmt_ip }}
-        uuid: "{{ ctl2vm_uuid }}"
-        state: present
-      delegate_to: "localhost"
-      when: "ctl2vm_uuid is defined"
-
-
-    - name:  deploy Avi Controller 3
-      vmware_deploy_ovf:
-        hostname: '{{ vcenter_hostname }}'
-        username: '{{ vcenter_username }}'
-        password: '{{ vcenter_password }}'
-        folder: "{{ folder | default('SDDC-Datacenter/vm',true) }}"
-        datacenter: "{{ datacenter | default('SDDC-Datacenter',true) }}"
-        cluster: "{{ cluster | default('Cluster-1',true) }}"
-        datastore: "{{ datastore | default('WorkloadDatastore',true) }}"
-        name: avicontroller3
-        validate_certs: False
-        networks: 
-          Management: "{{ management_network_pg | default('VM Network',true) }}"
-        properties: 
-          avi.mgmt-ip.CONTROLLER: "{{ node3_mgmt_ip | default(omit) }}"
-          avi.mgmt-mask.CONTROLLER: "{{ node3_mgmt_mask | default(omit) }}"
-          avi.default-gw.CONTROLLER: "{{ node3_gw| default(omit) }}"
-        power_on: no        
-        ova: "{{ ova_path }}"
-      register: ctl3_status
-      when: three_node_cluster|default(false)|bool == true
-    
-
-    - set_fact:
-        ctl3vm_uuid: "{{ ctl3_status.instance.hw_product_uuid }}"
-      when:  "ctl3_status is defined and 'instance' in ctl3_status"
-
-
-    - set_fact:
-        ctl3vm_uuid: "{{ ctl3_status.hw_product_uuid }}"
-      when:  "ctl3_status is defined and 'hw_product_uuid' in ctl3_status"
-
-
-    - name: Modify Controller 3 Hardware
-      vmware_guest:
-        hostname: '{{ vcenter_hostname }}'
-        username: '{{ vcenter_username }}'        
-        password: '{{ vcenter_password }}'
-        validate_certs: False
-        uuid: "{{ ctl3vm_uuid }}"
-        hardware:
-          memory_mb: "{{ se_memory_mb | default(24576,true) }}"
-          num_cpus: "{{ se_num_cpus | default(8,true) }}"
-        disk:
-        - size_gb: "{{ se_disk_size_gb | default(128,true) }}"
-        state: present
-      delegate_to: "localhost" 
-      when: "ctl3vm_uuid is defined"
-
-
-
-
-    - name: Power On Controller 3
-      vmware_guest:
-        hostname: '{{ vcenter_hostname }}'
-        username: '{{ vcenter_username }}'
-        password: '{{ vcenter_password }}'
-        validate_certs: False
-        uuid: "{{ ctl3vm_uuid }}"
-        wait_for_ip_address: yes
-        state: poweredon
-      delegate_to: "localhost"
-      register: ctl3_info
-      when: "ctl3vm_uuid is defined"
-
-
-    - set_fact:
-        ctl3_mgmt_ip: "{{ ctl3_info.instance.ipv4 }}"
-      when:  "ctl3_info is defined and 'instance' in ctl3_info"
-
-
-    - set_fact:
-        ctl3_mgmt_ip: "{{ ctl3_info.ipv4 }}"
-      when:  "ctl3_info is defined and 'ipv4' in ctl3_info"
-
-
-    - name: Rename Controller 3
-      vmware_guest:
-        hostname: '{{ vcenter_hostname }}'
-        username: '{{ vcenter_username }}'
-        password: '{{ vcenter_password }}'
-        validate_certs: False
-        name: avicontroller-{{ ctl3_mgmt_ip }}
-        uuid: "{{ ctl3vm_uuid }}"
-        state: present
-      delegate_to: "localhost"
-      when: "ctl3vm_uuid is defined"
-
-
-
-    - name: Power On Controller 1
+    - name: "Avi Controller: Power On Node 1"
       vmware_guest:
         hostname: '{{ vcenter_hostname }}'
         username: '{{ vcenter_username }}'
@@ -280,7 +301,7 @@
       when:  "ctl1_info is defined and 'ipv4' in ctl1_info"
 
 
-    - name: Rename Controller 1
+    - name: "Avi Controller: Rename Node 1 VM"
       vmware_guest:
         hostname: '{{ vcenter_hostname }}'
         username: '{{ vcenter_username }}'
