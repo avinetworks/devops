@@ -16,6 +16,7 @@ avi_role_config_log_mode: False
 dhcp: true
 se_mgmt_network: 192.168.50.0/24 
 router_mgmt_ip: "{{router_mgmt_ip}}"
+dns_server_ip: 10.184.7.5
 
 ######################################## Controller Vars ##############################
 avi_credentials:

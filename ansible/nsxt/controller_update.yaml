@@ -106,6 +106,10 @@
           data:
              portal_configuration:
                    allow_basic_authentication: true
+             dns_configuration:
+                   server_list:
+                       - addr: "{{ dns_server_ip }}"
+                         type: V4
       - set_fact:
            cloud_uuid: "{{ lookup('avi', avi_credentials=avi_credentials, obj_name='nsxtcloud', obj_type='cloud').uuid }}"
       
