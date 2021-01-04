@@ -373,7 +373,7 @@
       - name: Set controller admin password
         shell: "{{ item }}"
         with_items: "{{ command_list }}"
-
+        ignore_errors: yes
       when: ctl_version > "18.2.0"
 
 
