@@ -391,6 +391,7 @@ def send_value_wavefront(endpoint_info, payload):
             tag_list = (' '.join(tag_list))
             metric = '%s %f source=%s %s' %(metric_name, metric_value, m['avicontroller'], tag_list)
             message_list.append(metric)
+        message_list.append('\n')
         message = '\n'.join(message_list)
         if wf_proxy == False:    
             headers = ({'Authorization': 'Bearer '+wf_key, 'content-type': 'application/x-www-form-urlencoded'})
@@ -404,7 +405,7 @@ def send_value_wavefront(endpoint_info, payload):
                 socket.setdefaulttimeout(10)
                 sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
                 sock.connect((wf_instance, wf_proxy_port))       
-                sock.send(message.encode())
+                sock.sendall(message.encode())
                 sock.close()
                 #print(str(datetime.now())+' ======> Metrics sent to wavefront')
             except:
