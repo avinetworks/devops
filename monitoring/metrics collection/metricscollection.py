@@ -384,12 +384,13 @@ def send_value_wavefront(endpoint_info, payload):
             tag_list = []
             metric_name = m['metric_name']
             metric_value = m['metric_value']
+            timestamp = m['timestamp']
             for r in keys_to_remove:
                 m.pop(r, None)
             for k,v in m.items():
                 tag_list.append(k+'="'+v+'"')
             tag_list = (' '.join(tag_list))
-            metric = '%s %f source=%s %s' %(metric_name, metric_value, m['avicontroller'], tag_list)
+            metric = '%s %f %d source=%s %s' %(metric_name, metric_value, timestamp, m['avicontroller'], tag_list)
             message_list.append(metric)
         message_list.append('\n')
         message = '\n'.join(message_list)
@@ -736,6 +737,8 @@ class avi_metrics():
             'l7_server.pct_response_errors',
             'l7_server.avg_frustrated_responses',
             'l7_server.avg_total_requests',
+            'l7_server.avg_resp_4xx',
+            'l7_server.avg_resp_5xx', 
             'healthscore.health_score_value'
             ]
 
