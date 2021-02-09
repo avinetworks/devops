@@ -1,7 +1,7 @@
 #!/opt/local/bin/python3
 
 
-version = 'v2020-09-24'
+version = 'v2021-02-09'
 
 
 
@@ -370,6 +370,13 @@ def send_value_wavefront(endpoint_info, payload):
     try:
         keys_to_remove = ['name_space','timestamp','metric_name','metric_value']
         message_list = []
+        if endpoint_info.get('metric_prefix') == None:
+            metric_prefix = ''
+        else:
+            metric_prefix = endpoint_info['metric_prefix']
+            if len(metric_prefix) > 0:
+                if metric_prefix[-1] !='.':
+                    metric_prefix = metric_prefix+'.'
         if endpoint_info.get('api_key') != None:
             wf_key = endpoint_info['api_key']
             wf_proxy = False
@@ -382,7 +389,7 @@ def send_value_wavefront(endpoint_info, payload):
         wf_instance = endpoint_info['instance']
         for m in payload:
             tag_list = []
-            metric_name = m['metric_name']
+            metric_name = metric_prefix+m['metric_name']
             metric_value = m['metric_value']
             timestamp = m['timestamp']
             for r in keys_to_remove:
@@ -2003,17 +2010,20 @@ class avi_metrics():
                                     temp_payload['metric_type'] = 'pool_member_metrics'
                                     temp_payload['metric_name'] = metric_name
                                     temp_payload['metric_value'] = d['data'][0]['value']
+                                    vs_list = []
                                     if 'entity_ref' in d['header']:
                                         vs_name = d['header']['entity_ref'].rsplit('#',1)[1]
-                                        temp_payload['vs_name'] = vs_name
-                                        temp_payload['name_space'] = 'avi||%s||virtualservice||%s||pool||%s||%s||%s' %(self.avi_cluster_name,vs_name, pool_name, server_object,metric_name)
+                                        vs_list.append(vs_name)
+                                        #temp_payload['vs_name'] = vs_name
+                                        #temp_payload['name_space'] = 'avi||%s||virtualservice||%s||pool||%s||%s||%s' %(self.avi_cluster_name,vs_name, pool_name, server_object,metric_name)
                                         #endpoint_payload_list.append(temp_payload)
                                     else:
                                         for v in self.pool_dict[d['header']['pool_ref'].rsplit('#',1)[0].split('api/pool/')[1]]['results']['virtualservices']:
                                             vs_name = v.rsplit('#',1)[1]
                                             #temp_payload1 = temp_payload.copy()
-                                            temp_payload['vs_name'] = vs_name
-                                            temp_payload['name_space'] = 'avi||%s||virtualservice||%s||pool||%s||%s||%s' %(self.avi_cluster_name,vs_name, pool_name, server_object,metric_name)
+                                            #temp_payload['vs_name'] = vs_name
+                                            #temp_payload['name_space'] = 'avi||%s||virtualservice||%s||pool||%s||%s||%s' %(self.avi_cluster_name,vs_name, pool_name, server_object,metric_name)
+                                            vs_list.append(vs_name)
                                     if self.pool_realtime == True:
                                         if 'series' in realtime_stats:
                                             if p in realtime_stats['series']['collItemRequest:AllServers']:
@@ -2021,7 +2031,12 @@ class avi_metrics():
                                                     if n['header']['name'] == d['header']['name']:
                                                         if 'data' in n:
                                                             temp_payload['metric_value'] = n['data'][0]['value']
-                                    endpoint_payload_list.append(temp_payload)
+                                    #----- accomodate for pool being used by multiple vs
+                                    for v in vs_list:
+                                        temp_payload1 = temp_payload.copy()
+                                        temp_payload1['vs_name'] = v
+                                        temp_payload1['name_space'] = 'avi||%s||virtualservice||%s||pool||%s||%s||%s' %(self.avi_cluster_name,v, pool_name, server_object, metric_name)
+                                        endpoint_payload_list.append(temp_payload1)
             if len(endpoint_payload_list) > 0:
                 send_metriclist_to_endpoint(self.endpoint_list, endpoint_payload_list)
             temp_total_time = str(time.time()-temp_start_time)
@@ -2239,7 +2254,8 @@ if 'EN_DOCKER' in os.environ:
             print(str(datetime.now())+' Error with Provided Configuration YAML')
             exception_text = traceback.format_exc()
             print(str(datetime.now())+' : '+exception_text)
-            sys.exit(1)        
+            sys.exit(1)    
+        time.sleep(60 - datetime.now().second)    
         while True:
             loop_start_time = time.time()
             avi_controller_list = configuration['controllers']

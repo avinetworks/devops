@@ -1492,6 +1492,21 @@ required</span></td>
 
 <tr>
 <td>
+<b>metric_prefix</b>
+<div style="font-size: small">
+<span style="color: purple">string</span>                  
+</div>
+</td>
+</div>
+<td>
+</td>
+<td>
+<div>If desired, prefix to apply to metric names</div>
+</td>
+</tr>
+
+<tr>
+<td>
 <b>api_key</b>
 <div style="font-size: small">
 <span style="color: purple">string</span>                  
@@ -1708,6 +1723,7 @@ controllers:
        - type: wavefront
          enable: True
          instance: xxxxxxxx.wavefront.com
+         metric_prefix: ""
          #_comment:  If using direct ingestion specify an api_key, if no key then wavefront proxy will be used
          api_key: 12a345bc-de6f-789a-0bcd-ef1234a5bcd6
          #_comment:  If using proxy specify the listening port, if not defined defaults to 2878
