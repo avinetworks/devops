@@ -366,7 +366,7 @@
 
       - set_fact:
            command_list:
-              - "ssh -o 'StrictHostKeyChecking no' -i ./avikey/avi_id_ssh_rsa admin@{{ ctl1_mgmt_ip }} cat /etc/ssh/ssh_host_dsa_key.pub >>~/.ssh/known_hosts"
+              - "ssh -o 'StrictHostKeyChecking no' -i ./avikey/avi_id_ssh_rsa admin@{{ ctl1_mgmt_ip }} cat /etc/ssh/ssh_host_ecdsa_key.pub >>~/.ssh/known_hosts"
               - "ssh -i ./avikey/avi_id_ssh_rsa admin@{{ ctl1_mgmt_ip }} sudo /opt/avi/scripts/initialize_admin_user.py --password {{ avi_admin_password }}" 
 
 
