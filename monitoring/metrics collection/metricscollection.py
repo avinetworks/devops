@@ -248,6 +248,58 @@ def send_value_influxdb(endpoint_info, influx_payload):
 
 
 
+
+
+#----- Send value to influxdb_v2
+def send_value_influxdb_v2(endpoint_info, influx_payload):
+    try:
+        tag_to_ignore = ['metric_name', 'timestamp', 'metric_value','name_space']
+        if endpoint_info.get('metric_prefix') == None:
+            metric_prefix = ''
+        else:
+            metric_prefix = endpoint_info['metric_prefix']
+        message_list = []
+        auth_enabled = False
+        if 'auth-enabled' in endpoint_info:
+            if str(endpoint_info['auth-enabled']).lower() == 'true':
+                auth_enabled = True
+        for entry in influx_payload:
+            tag_list=[]
+            for k in entry:
+                if k not in tag_to_ignore:
+                    tag_list.append((k+'='+entry[k]).replace(' ', '\\'))
+            tag_list = ','.join(tag_list)
+            temp_payload='%s%s,%s value=%f' %(metric_prefix, entry['metric_name'],tag_list,entry['metric_value'])
+            message_list.append(temp_payload)
+            if sys.getsizeof(message_list) > 4915:
+                message = '\n'.join(message_list) + '\n'
+                headers = ({'content-type': 'octet-stream','Authorization': 'Token %s' %endpoint_info['token']})
+                if auth_enabled == True:
+                    resp = requests.post('%s://%s:%s/api/v2/write?org=%s&bucket=%s&precision=s' %(endpoint_info['protocol'],endpoint_info['server'],endpoint_info['server_port'],endpoint_info['org'],endpoint_info['bucket']),verify=False,headers = headers, data=message, timeout=15, auth=(endpoint_info['username'],endpoint_info['password']))
+                    message_list = []
+                else:
+                    resp = requests.post('%s://%s:%s/api/v2/write?org=%s&bucket=%s&precision=s' %(endpoint_info['protocol'],endpoint_info['server'],endpoint_info['server_port'],endpoint_info['org'],endpoint_info['bucket']),verify=False,headers = headers, data=message, timeout=15)
+                    message_list = []
+                if resp.status_code == 401:
+                    print(str(datetime.now())+' '+endpoint_info['server']+': UNAUTHORIZED')
+                elif resp.status_code == 403:
+                    print(str(datetime.now())+' '+endpoint_info['server']+': FORBIDDEN')
+        message = '\n'.join(message_list) + '\n'
+        headers = ({'content-type': 'octet-stream','Authorization': 'Token %s' %endpoint_info['token']})
+        if str(endpoint_info['auth-enabled']).lower() == 'true':
+            resp = requests.post('%s://%s:%s/api/v2/write?org=%s&bucket=%s&precision=s' %(endpoint_info['protocol'],endpoint_info['server'],endpoint_info['server_port'],endpoint_info['org'],endpoint_info['bucket']),verify=False,headers = headers, data=message, timeout=15, auth=(endpoint_info['username'],endpoint_info['password']))
+        else:
+            resp = requests.post('%s://%s:%s/api/v2/write?org=%s&bucket=%s&precision=s' %(endpoint_info['protocol'],endpoint_info['server'],endpoint_info['server_port'],endpoint_info['org'],endpoint_info['bucket']),verify=False,headers = headers, data=message, timeout=15)
+        if resp.status_code == 401:
+            print(str(datetime.now())+' '+endpoint_info['server']+': UNAUTHORIZED')
+        elif resp.status_code == 403:
+            print(str(datetime.now())+' '+endpoint_info['server']+': FORBIDDEN')
+    except:
+        exception_text = traceback.format_exc()
+        print(exception_text)
+
+
+
 #----- Send value to logstash
 def send_value_logstash(endpoint_info, payload):
     try:
@@ -450,6 +502,8 @@ def send_metriclist_to_endpoint(endpoint_list, payload):
                     send_value_datadog(endpoint_info, payload)
                 elif endpoint_info['type'] == 'influxdb':
                     send_value_influxdb(endpoint_info, payload)
+                elif endpoint_info['type'] == 'influxdb_v2':
+                    send_value_influxdb_v2(endpoint_info, payload)
                 elif endpoint_info['type'] == 'logstash':
                     send_value_logstash(endpoint_info, payload)
                 elif endpoint_info['type'] == 'elasticsearch':
@@ -473,6 +527,7 @@ def determine_endpoint_type(configuration):
         'splunk',
         'datadog',
         'influxdb',
+        'influxdb_v2',
         'logstash',
         'elasticsearch',
         'wavefront'

@@ -1,7 +1,7 @@
 # Avi Metrics Collection
 
 The Avi Metrics Collection script was built with the intent to pull metrics from one or more Avi controllers and send these values to a centralized time series database.
-The script supports a number of different endpoints; current support includes AppDynamics, Datadog, Elasticsearch, Graphite, InfluxDB, Logstash, Splunk, and Wavefront.
+The script supports a number of different endpoints; current support includes AppDynamics, Datadog, Elasticsearch, Graphite, InfluxDB, InfluxDB_v2, Logstash, Splunk, and Wavefront.
 
 
 This repository includes that necessary files to deploy a centralized metrics collection script
@@ -1178,6 +1178,218 @@ required</span></td>
 </tbody>
 </table>
 
+
+- - -
+<br></br>
+## Influxdb_v2
+<table class="documentation-table" cellpadding="0" border="0">
+    <tbody><tr>
+        <th>Parameter</th>
+        <th>Choices/<font color="blue">Defaults</font></th>
+        <th width="100%">Comments</th>
+<tr>
+</td>
+
+<tr>
+<td>
+<b>type</b><br><div style="font-size: small"><span style="color: red">
+required</span>
+<div style="font-size: small">
+</div>
+</td>
+<td><b>influxdb_v2</b><br><div style="font-size: small"><span style="color: red">
+required</span></td>
+</div>
+</td>
+</div>
+</td>
+
+<td>
+<div>Parameters for sending metrics to influxdb_v2</div>
+</td>
+</tr>
+
+
+<tr>
+<td>
+<b>enable</b>
+<div style="font-size: small">
+<span style="color: purple">boolean</span>  
+/ <span style="color: red">required</span>                   
+</div>
+</td>
+
+</div>
+<td><li>True</li></b>
+    <li>False</li>
+</td>
+<td>
+<div>Enable sending metrics to influxdb_v2</div>
+</td>
+</tr>
+
+<tr>
+<td>
+<b>server</b>
+<div style="font-size: small">
+<span style="color: purple">string</span>  
+/ <span style="color: red">required</span>                   
+</div>
+</td>
+</div>
+<td>
+</td>
+<td>
+<div>IP or FQDN for sending data to influxdb_v2</div>
+</td>
+</tr>
+
+<tr>
+
+<td colspan="1">
+<b>server_port</b>
+<div style="font-size: small">
+<span style="color: purple">integer</span>  
+/ <span style="color: red">required</span>                   
+</div>
+</td>
+</div>
+<td>
+</td>
+<td>
+<div>Listening port for influxdb_v2 </div>
+</td>
+</tr>
+
+<tr>
+<td>
+<b>protocol</b>
+<div style="font-size: small">
+<span style="color: purple">string</span>  
+/ <span style="color: red">required</span>                   
+</div>
+</td>
+</div>
+<td><li>HTTP</li></b>
+    <li>HTTPS</li>
+</td>
+<td>
+<div>Protocol used for Influxdb_v2; HTTP / HTTPS </div>
+</td>
+</tr>
+
+<tr>
+<td>
+<b>org</b>
+<div style="font-size: small">
+<span style="color: purple">string</span>  
+/ <span style="color: red">required</span>                   
+</div>
+</td>
+</div>
+<td>
+</td>
+<td>
+<div>Influxdb_v2 Org used for Avi metrics</div>
+</td>
+</tr>
+
+<tr>
+<td>
+<b>bucket</b>
+<div style="font-size: small">
+<span style="color: purple">string</span>  
+/ <span style="color: red">required</span>                   
+</div>
+</td>
+</div>
+<td>
+</td>
+<td>
+<div>Influxdb_v2 Bucket used for Avi metrics</div>
+</td>
+</tr>
+
+<tr>
+<td>
+<b>token</b>
+<div style="font-size: small">
+<span style="color: purple">string</span>  
+/ <span style="color: red">required</span>                   
+</div>
+</td>
+</div>
+<td>
+</td>
+<td>
+<div>Influxdb_v2 Token used for sending Avi metrics</div>
+</td>
+</tr>
+
+<tr>
+<td>
+<b>metric_prefix</b>
+<div style="font-size: small">
+<span style="color: purple">string</span>                  
+</div>
+</td>
+</div>
+<td>
+</td>
+<td>
+<div>If desired, prefix to apply to metric names</div>
+</td>
+</tr>
+
+<tr>
+<td>
+<b>auth-enabled</b>
+<div style="font-size: small">
+<span style="color: purple">boolean</span>                 
+</div>
+</td>
+</div>
+<td><li>True</li></b>
+    <strong><li>False&nbsp;←</li></strong>
+</td>
+<td>
+<div>Define if Influxdb_v2 is setup for authentication</div>
+</td>
+</tr>
+
+<tr>
+<td>
+<b>username</b>
+<div style="font-size: small">
+<span style="color: purple">string</span>                 
+</div>
+</td>
+</div>
+<td>
+</td>
+<td>
+<div>If auth-enabled is True, username used for authentication to influxdb_v2</div>
+</td>
+</tr>
+
+<tr>
+<td>
+<b>password</b>
+<div style="font-size: small">
+<span style="color: purple">string</span>                 
+</div>
+</td>
+</div>
+<td>
+</td>
+<td>
+<div>If auth-enabled is True, password provided for authentication to influxdb_v2</div>
+</td>
+</tr>
+
+</tbody>
+</table>
+
 - - -
 <br></br>
 ## Logstash
@@ -1650,6 +1862,35 @@ controllers:
          server_port: 8086
          protocol: https
          db: avi
+         metric_prefix: ""
+         auth-enabled: False
+         username: admin
+         password: password
+```
+
+
+
+## influxdb_v2
+
+Define the values for sending metrics to InfluxDB_v2 via HTTP API.  The script will send values using the InfluxDB_v2's Line Protocol format.
+
+EXAMPLE:
+
+```sh
+controllers:
+   - avi_cluster_name: demo_controller
+     avi_controller: 169.254.0.1
+     avi_user: admin
+     avi_pass: password
+     metrics_endpoint_config:
+       - type: influxdb_v2
+         enable: True
+         server: 169.254.0.1
+         server_port: 8086
+         protocol: https
+         org: avi
+         bucket: avi
+         token: YOURAUTHTOKEN
          metric_prefix: ""
          auth-enabled: False
          username: admin
