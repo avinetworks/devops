@@ -44,13 +44,8 @@ $ python3 metricscollection.py
 <br></br>
 
 # Run as a container
+A prebuilt contained has been uploaded for public use.
 
-
-### <strong>Build the container</strong>
-Using the included dockerfile
-```sh
-$ docker build -t metricscollection .
-```
 ### <strong>Start the container</strong>
 To start the container it is required to specify the configuration via the <strong>EN_CONFIGURATION</strong> environment variable.  
 
