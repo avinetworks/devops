@@ -57,7 +57,7 @@ To start the container it is required to specify the configuration via the <stro
 Here is an example for using the contents of a local configuration.yaml as the value for EN_CONFIGURATION when creating the local container.  Once the container has been created and started the local configuration.yaml file is no longer needed for successful operation.  It is recommended to keep it though to rebuild new container images in case configuration modifications need to made.
 
 ```sh
-$ docker run -d --name metricscollection --restart always --log-opt max-size=1m -e "EN_CONFIGURATION=$(<configuration.yaml)"  metricscollection
+$ docker run -d --name metricscollection --restart always --log-opt max-size=1m -e "EN_CONFIGURATION=$(<configuration.yaml)"  avinetworks/metrics-collection:latest
 ```
 
 <br></br>
