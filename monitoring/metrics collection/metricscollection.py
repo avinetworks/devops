@@ -1,7 +1,7 @@
 #!/opt/local/bin/python3
 
 
-version = 'v2020-09-24'
+version = 'v2021-02-09'
 
 
 
@@ -248,6 +248,58 @@ def send_value_influxdb(endpoint_info, influx_payload):
 
 
 
+
+
+#----- Send value to influxdb_v2
+def send_value_influxdb_v2(endpoint_info, influx_payload):
+    try:
+        tag_to_ignore = ['metric_name', 'timestamp', 'metric_value','name_space']
+        if endpoint_info.get('metric_prefix') == None:
+            metric_prefix = ''
+        else:
+            metric_prefix = endpoint_info['metric_prefix']
+        message_list = []
+        auth_enabled = False
+        if 'auth-enabled' in endpoint_info:
+            if str(endpoint_info['auth-enabled']).lower() == 'true':
+                auth_enabled = True
+        for entry in influx_payload:
+            tag_list=[]
+            for k in entry:
+                if k not in tag_to_ignore:
+                    tag_list.append((k+'='+entry[k]).replace(' ', '\\'))
+            tag_list = ','.join(tag_list)
+            temp_payload='%s%s,%s value=%f' %(metric_prefix, entry['metric_name'],tag_list,entry['metric_value'])
+            message_list.append(temp_payload)
+            if sys.getsizeof(message_list) > 4915:
+                message = '\n'.join(message_list) + '\n'
+                headers = ({'content-type': 'octet-stream','Authorization': 'Token %s' %endpoint_info['token']})
+                if auth_enabled == True:
+                    resp = requests.post('%s://%s:%s/api/v2/write?org=%s&bucket=%s&precision=s' %(endpoint_info['protocol'],endpoint_info['server'],endpoint_info['server_port'],endpoint_info['org'],endpoint_info['bucket']),verify=False,headers = headers, data=message, timeout=15, auth=(endpoint_info['username'],endpoint_info['password']))
+                    message_list = []
+                else:
+                    resp = requests.post('%s://%s:%s/api/v2/write?org=%s&bucket=%s&precision=s' %(endpoint_info['protocol'],endpoint_info['server'],endpoint_info['server_port'],endpoint_info['org'],endpoint_info['bucket']),verify=False,headers = headers, data=message, timeout=15)
+                    message_list = []
+                if resp.status_code == 401:
+                    print(str(datetime.now())+' '+endpoint_info['server']+': UNAUTHORIZED')
+                elif resp.status_code == 403:
+                    print(str(datetime.now())+' '+endpoint_info['server']+': FORBIDDEN')
+        message = '\n'.join(message_list) + '\n'
+        headers = ({'content-type': 'octet-stream','Authorization': 'Token %s' %endpoint_info['token']})
+        if str(endpoint_info['auth-enabled']).lower() == 'true':
+            resp = requests.post('%s://%s:%s/api/v2/write?org=%s&bucket=%s&precision=s' %(endpoint_info['protocol'],endpoint_info['server'],endpoint_info['server_port'],endpoint_info['org'],endpoint_info['bucket']),verify=False,headers = headers, data=message, timeout=15, auth=(endpoint_info['username'],endpoint_info['password']))
+        else:
+            resp = requests.post('%s://%s:%s/api/v2/write?org=%s&bucket=%s&precision=s' %(endpoint_info['protocol'],endpoint_info['server'],endpoint_info['server_port'],endpoint_info['org'],endpoint_info['bucket']),verify=False,headers = headers, data=message, timeout=15)
+        if resp.status_code == 401:
+            print(str(datetime.now())+' '+endpoint_info['server']+': UNAUTHORIZED')
+        elif resp.status_code == 403:
+            print(str(datetime.now())+' '+endpoint_info['server']+': FORBIDDEN')
+    except:
+        exception_text = traceback.format_exc()
+        print(exception_text)
+
+
+
 #----- Send value to logstash
 def send_value_logstash(endpoint_info, payload):
     try:
@@ -370,6 +422,13 @@ def send_value_wavefront(endpoint_info, payload):
     try:
         keys_to_remove = ['name_space','timestamp','metric_name','metric_value']
         message_list = []
+        if endpoint_info.get('metric_prefix') == None:
+            metric_prefix = ''
+        else:
+            metric_prefix = endpoint_info['metric_prefix']
+            if len(metric_prefix) > 0:
+                if metric_prefix[-1] !='.':
+                    metric_prefix = metric_prefix+'.'
         if endpoint_info.get('api_key') != None:
             wf_key = endpoint_info['api_key']
             wf_proxy = False
@@ -382,7 +441,7 @@ def send_value_wavefront(endpoint_info, payload):
         wf_instance = endpoint_info['instance']
         for m in payload:
             tag_list = []
-            metric_name = m['metric_name']
+            metric_name = metric_prefix+m['metric_name']
             metric_value = m['metric_value']
             timestamp = m['timestamp']
             for r in keys_to_remove:
@@ -443,6 +502,8 @@ def send_metriclist_to_endpoint(endpoint_list, payload):
                     send_value_datadog(endpoint_info, payload)
                 elif endpoint_info['type'] == 'influxdb':
                     send_value_influxdb(endpoint_info, payload)
+                elif endpoint_info['type'] == 'influxdb_v2':
+                    send_value_influxdb_v2(endpoint_info, payload)
                 elif endpoint_info['type'] == 'logstash':
                     send_value_logstash(endpoint_info, payload)
                 elif endpoint_info['type'] == 'elasticsearch':
@@ -466,6 +527,7 @@ def determine_endpoint_type(configuration):
         'splunk',
         'datadog',
         'influxdb',
+        'influxdb_v2',
         'logstash',
         'elasticsearch',
         'wavefront'
@@ -2003,17 +2065,20 @@ class avi_metrics():
                                     temp_payload['metric_type'] = 'pool_member_metrics'
                                     temp_payload['metric_name'] = metric_name
                                     temp_payload['metric_value'] = d['data'][0]['value']
+                                    vs_list = []
                                     if 'entity_ref' in d['header']:
                                         vs_name = d['header']['entity_ref'].rsplit('#',1)[1]
-                                        temp_payload['vs_name'] = vs_name
-                                        temp_payload['name_space'] = 'avi||%s||virtualservice||%s||pool||%s||%s||%s' %(self.avi_cluster_name,vs_name, pool_name, server_object,metric_name)
+                                        vs_list.append(vs_name)
+                                        #temp_payload['vs_name'] = vs_name
+                                        #temp_payload['name_space'] = 'avi||%s||virtualservice||%s||pool||%s||%s||%s' %(self.avi_cluster_name,vs_name, pool_name, server_object,metric_name)
                                         #endpoint_payload_list.append(temp_payload)
                                     else:
                                         for v in self.pool_dict[d['header']['pool_ref'].rsplit('#',1)[0].split('api/pool/')[1]]['results']['virtualservices']:
                                             vs_name = v.rsplit('#',1)[1]
                                             #temp_payload1 = temp_payload.copy()
-                                            temp_payload['vs_name'] = vs_name
-                                            temp_payload['name_space'] = 'avi||%s||virtualservice||%s||pool||%s||%s||%s' %(self.avi_cluster_name,vs_name, pool_name, server_object,metric_name)
+                                            #temp_payload['vs_name'] = vs_name
+                                            #temp_payload['name_space'] = 'avi||%s||virtualservice||%s||pool||%s||%s||%s' %(self.avi_cluster_name,vs_name, pool_name, server_object,metric_name)
+                                            vs_list.append(vs_name)
                                     if self.pool_realtime == True:
                                         if 'series' in realtime_stats:
                                             if p in realtime_stats['series']['collItemRequest:AllServers']:
@@ -2021,7 +2086,12 @@ class avi_metrics():
                                                     if n['header']['name'] == d['header']['name']:
                                                         if 'data' in n:
                                                             temp_payload['metric_value'] = n['data'][0]['value']
-                                    endpoint_payload_list.append(temp_payload)
+                                    #----- accomodate for pool being used by multiple vs
+                                    for v in vs_list:
+                                        temp_payload1 = temp_payload.copy()
+                                        temp_payload1['vs_name'] = v
+                                        temp_payload1['name_space'] = 'avi||%s||virtualservice||%s||pool||%s||%s||%s' %(self.avi_cluster_name,v, pool_name, server_object, metric_name)
+                                        endpoint_payload_list.append(temp_payload1)
             if len(endpoint_payload_list) > 0:
                 send_metriclist_to_endpoint(self.endpoint_list, endpoint_payload_list)
             temp_total_time = str(time.time()-temp_start_time)
@@ -2239,7 +2309,8 @@ if 'EN_DOCKER' in os.environ:
             print(str(datetime.now())+' Error with Provided Configuration YAML')
             exception_text = traceback.format_exc()
             print(str(datetime.now())+' : '+exception_text)
-            sys.exit(1)        
+            sys.exit(1)    
+        time.sleep(60 - datetime.now().second)    
         while True:
             loop_start_time = time.time()
             avi_controller_list = configuration['controllers']

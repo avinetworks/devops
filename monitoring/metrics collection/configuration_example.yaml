@@ -165,6 +165,24 @@ controllers:
 #
 #
 #
+##----------influxdb_v2------------
+#  - type: influxdb_v2
+#    enable: False
+#    server: 169.254.0.1
+#    server_port: 8086
+#    protocol: https
+#    org: avi
+#    bucket: avi
+#    token: YOURAUTHTOKEN
+#    #_comment":"Change metric_prefix only if you need to define a prefix",
+#    metric_prefix: ""
+#    #_comment":"If using auth on influxdb_v2 set auth-enabled to true and modify the credential values",
+#    auth-enabled: False
+#    username: admin
+#    password: password
+#
+#
+#
 ##----------logstash------------
 #  - type: logstash
 #    enable: False
