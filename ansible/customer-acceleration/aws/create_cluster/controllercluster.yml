@@ -1,0 +1,111 @@
+- hosts: localhost
+  connection: local
+  gather_facts: no
+  vars_files:
+     variables.yml
+  tasks:
+  - amazon.aws.ec2:
+      group: "{{ EC2_SECURITY_GROUP }}"
+      instance_type: "{{ EC2_INSTANCE_TYPE }}"
+      image: "{{ EC2_IMAGE_ID }}"
+      monitoring: "{{ EC2_MONITOR }}"
+      key_name: "{{ EC2_KEY_NAME }}"
+      vpc_subnet_id: "{{ EC2_SUBNET_ID }}"
+      region: "{{ EC2_REGION }}"
+      assign_public_ip: "{{ EC2_ASSIGN_PUBLIC_IP }}"
+      instance_tags: 
+        Name: "{{ EC2_PREFIX }} "
+      wait: yes
+      instance_profile_name: "{{ EC2_IAM_INSTANCE_PROFILE | default(omit) }}"
+      count_tag:
+        Name: "{{ EC2_PREFIX }}"
+      exact_count: 3
+      volumes:
+      - device_name: /dev/sda1
+        volume_size: "{{ EC2_ROOT_VOLUME_SIZE }}"
+        delete_on_termination: true
+        termination_protection: yes
+    register: controller_configuration 
+    name: Provision AviControllers
+  - set_fact:
+      CONTROLLER_CLUSTER_IP: "{{ controller_configuration.instances[0].public_ip }}"
+  - name: Add the newly created EC2 instance(s) host group
+    lineinfile: 
+      dest: variables.yml
+      insertafter: "# IP for Avi Controller MGMT" 
+      line: "{{ 'CONTROLLER_CLUSTER_IP: '+ CONTROLLER_CLUSTER_IP }}"
+      state: present
+  - name: Verify All controllers are online
+    uri:
+      validate_certs: false
+      url: "https://{{ item.public_ip }}/api/initial-data"
+      method: GET
+      status_code: 200
+    register: result
+    until: result.status == 200
+    retries: 600
+    delay: 10
+    with_items: "{{ controller_configuration.instances }}"
+  - name: Change admin default password
+    avi_useraccount:
+      controller: "{{ CONTROLLER_CLUSTER_IP }}"
+      username: "{{ AVI_CREDENTIALS.username }}"
+      password: "{{ AVI_CREDENTIALS.password }}"
+      api_version: "{{ AVI_CREDENTIALS.api_version }}"
+      old_password: "{{ OLD_PASSWORD }}"
+    ignore_errors: yes
+  - set_fact:
+      dns_list: "{{ dns_list | default([]) + [{'type': 'V4', 'addr': dserver }] }}"
+    loop: "{{ DNS_SERVERS }}"
+    loop_control:
+      loop_var: dserver
+    name: "Prepare DNS Server List"
+  - set_fact:
+      ntp_list: "{{ ntp_list | default([]) + [{'server': {'type': NTP_TYPE, 'addr': nserver }}] }}"
+    loop: "{{ NTP_SERVERS }}"
+    loop_control:
+      loop_var: nserver
+    name: "Prepare NTP Server List"
+  - name: Initial Controller System Configuration
+    avi_systemconfiguration:
+      controller: "{{ CONTROLLER_CLUSTER_IP }}"
+      username: "{{ AVI_CREDENTIALS.username }}"
+      password: "{{ AVI_CREDENTIALS.password }}"
+      api_version: "{{ AVI_CREDENTIALS.api_version }}"
+      welcome_workflow_complete: true
+      dns_configuration:
+        server_list: "{{ dns_list }}"
+      ntp_configuration:
+        ntp_servers: "{{ ntp_list }}"
+  - name: Set Backup Passphrase
+    avi_backupconfiguration:
+      controller: "{{ CONTROLLER_CLUSTER_IP }}"
+      username: "{{ AVI_CREDENTIALS.username }}"
+      password: "{{ AVI_CREDENTIALS.password }}"
+      api_version: "{{ AVI_CREDENTIALS.api_version }}"
+      name: Backup-Configuration
+      backup_passphrase: "{{ BACKUP_PASSPHRASE }}"
+      upload_to_remote_host: false
+  - name: Cloud Cluster Setup
+    avi_cluster:
+      controller: "{{ CONTROLLER_CLUSTER_IP }}"
+      username: "{{ AVI_CREDENTIALS.username }}"
+      password: "{{ AVI_CREDENTIALS.password }}"
+      api_version: "{{ AVI_CREDENTIALS.api_version }}"
+      nodes:
+          - name: "{{ controller_configuration.instances[0].private_ip }}" 
+            ip:
+              type: V4
+              addr: "{{ controller_configuration.instances[0].private_ip }}"
+          - name: "{{ controller_configuration.instances[1].private_ip  }}"
+            ip:
+              type: V4
+              addr: "{{ controller_configuration.instances[1].private_ip  }}"
+          - name: "{{ controller_configuration.instances[2].private_ip }}"
+            ip:
+              type: V4
+              addr: "{{ controller_configuration.instances[2].private_ip }}"
+      name: cluster01
+      tenant_uuid: "admin"
+  - debug:
+      msg: "The controller cluster deployment completed. Please wait between 5 to 10 minutes for cluster to come fully available."
