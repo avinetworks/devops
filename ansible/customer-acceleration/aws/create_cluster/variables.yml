@@ -23,6 +23,10 @@ AVI_CREDENTIALS:
 # Required Variables / Controller Deployments
 # Description: This are the main variables required for controller deployments.
 # --------------------------------------------------------------------
+# Controller Name
+CONTROLLER_NAME_1: "nsxalb-01"
+CONTROLLER_NAME_2: "nsxalb-02"
+CONTROLLER_NAME_3: "nsxalb-03"
 
 # Controller Default Password
 OLD_PASSWORD: "58NFaGDJm(PJH0G"

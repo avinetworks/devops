@@ -3,6 +3,11 @@
   gather_facts: no
   vars_files:
      variables.yml
+  vars:
+    controller_configuration:
+      - vm_name: "{{ CONTROLLER_NAME_1 }}"
+      - vm_name: "{{ CONTROLLER_NAME_2 }}"     
+      - vm_name: "{{ CONTROLLER_NAME_3 }}"
   tasks:
   - name: "Create EC2 Instance"
     ec2:
@@ -15,20 +20,21 @@
       region: "{{ EC2_REGION }}"
       assign_public_ip: "{{ EC2_ASSIGN_PUBLIC_IP }}"
       instance_tags: 
-        Name: "{{ EC2_PREFIX }} "
+        Name: "{{ item.vm_name }}"
       wait: yes
       instance_profile_name: "{{ EC2_IAM_INSTANCE_PROFILE | default(omit) }}"
       count_tag:
-        Name: "{{ EC2_PREFIX }}"
-      exact_count: 3
+        Name: "{{ item.vm_name }}"
+      exact_count: 1
       volumes:
       - device_name: /dev/sda1
         volume_size: "{{ EC2_ROOT_VOLUME_SIZE }}"
         delete_on_termination: true
         termination_protection: yes
-    register: controller_configuration 
+    with_items: "{{ controller_configuration }}"
+    register: controller_fact
   - set_fact:
-      CONTROLLER_CLUSTER_IP: "{{ controller_configuration.instances[0].public_ip }}"
+      CONTROLLER_CLUSTER_IP: "{{ controller_fact.results[0].tagged_instances[0].public_ip }}"
   - name: Add the newly created EC2 instance(s) host group
     lineinfile: 
       dest: variables.yml
@@ -38,14 +44,14 @@
   - name: Verify All controllers are online
     uri:
       validate_certs: false
-      url: "https://{{ item.public_ip }}/api/initial-data"
+      url: "https://{{ item.tagged_instances[0].public_ip }}/api/initial-data"
       method: GET
       status_code: 200
     register: result
     until: result.status == 200
     retries: 600
     delay: 10
-    with_items: "{{ controller_configuration.instances }}"
+    with_items: "{{ controller_fact.results }}"
   - name: Change admin default password
     avi_useraccount:
       controller: "{{ CONTROLLER_CLUSTER_IP }}"
@@ -93,18 +99,18 @@
       password: "{{ AVI_CREDENTIALS.password }}"
       api_version: "{{ AVI_CREDENTIALS.api_version }}"
       nodes:
-          - name: "{{ controller_configuration.instances[0].private_ip }}" 
+          - name: "{{ controller_fact.results[0].tagged_instances[0].private_ip }}" 
             ip:
               type: V4
-              addr: "{{ controller_configuration.instances[0].private_ip }}"
-          - name: "{{ controller_configuration.instances[1].private_ip  }}"
+              addr: "{{ controller_fact.results[0].tagged_instances[0].private_ip }}"
+          - name: "{{ controller_fact.results[1].tagged_instances[0].private_ip  }}"
             ip:
               type: V4
-              addr: "{{ controller_configuration.instances[1].private_ip  }}"
-          - name: "{{ controller_configuration.instances[2].private_ip }}"
+              addr: "{{ controller_fact.results[1].tagged_instances[0].private_ip  }}"
+          - name: "{{ controller_fact.results[2].tagged_instances[0].private_ip }}"
             ip:
               type: V4
-              addr: "{{ controller_configuration.instances[2].private_ip }}"
+              addr: "{{ controller_fact.results[2].tagged_instances[0].private_ip }}"
       name: cluster01
       tenant_uuid: "admin"
   - name: Verify Cluster Completed
