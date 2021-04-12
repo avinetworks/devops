@@ -4,7 +4,8 @@
   vars_files:
      variables.yml
   tasks:
-  - amazon.aws.ec2:
+  - name: "Create EC2 Instance"
+    ec2:
       group: "{{ EC2_SECURITY_GROUP }}"
       instance_type: "{{ EC2_INSTANCE_TYPE }}"
       image: "{{ EC2_IMAGE_ID }}"
@@ -26,7 +27,6 @@
         delete_on_termination: true
         termination_protection: yes
     register: controller_configuration 
-    name: Provision AviControllers
   - set_fact:
       CONTROLLER_CLUSTER_IP: "{{ controller_configuration.instances[0].public_ip }}"
   - name: Add the newly created EC2 instance(s) host group
@@ -107,5 +107,17 @@
               addr: "{{ controller_configuration.instances[2].private_ip }}"
       name: cluster01
       tenant_uuid: "admin"
+  - name: Verify Cluster Completed
+    uri:
+      validate_certs: False
+      url: "{{ 'https://' + CONTROLLER_CLUSTER_IP + '/api/cluster/status'}}"
+      method: GET
+      return_content: yes
+      status_code: 200
+      body_format: json
+    register: result
+    until: result.status == 200 and result.json.cluster_state.state == "CLUSTER_UP_HA_ACTIVE"
+    retries: 600
+    delay: 10
   - debug:
-      msg: "The controller cluster deployment completed. Please wait between 5 to 10 minutes for cluster to come fully available."
+        msg: "The controller cluster deployment completed."

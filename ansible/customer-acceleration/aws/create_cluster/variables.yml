@@ -11,12 +11,12 @@
 # Management Variables
 # Description: This are variables used for any type of ansible deployment.
 # --------------------------------------------------------------------
-# IP for Avi Controller MGMT
 
+# Controller Credentials
 AVI_CREDENTIALS:
   controller: "{{ CONTROLLER_CLUSTER_IP }}" # This can be either cluster ip or the ip of the leader controller.
   username: "admin"
-  password: "VMware1!"
+  password: "<password>"
   api_version: "20.1.4"
 
 # --------------------------------------------------------------------
@@ -25,12 +25,13 @@ AVI_CREDENTIALS:
 # --------------------------------------------------------------------
 
 # Controller Default Password
-OLD_PASSWORD: "xxxxxx" # Default Password found on DownloadPortal
+OLD_PASSWORD: "58NFaGDJm(PJH0G"
 
 # Controller Configuration Details
 DNS_SERVERS: [ 	8.8.8.8 ]
 NTP_SERVERS: [ '0.us.pool.ntp.org', '1.us.pool.ntp.org', '3.us.pool.ntp.org' ]
-NTP_TYPE: "DNS"  #If servers are hostname use type "DNS", if IP use type "V4" 
+NTP_TYPE: "DNS"  #If servers are hostname use type "DNS", if IP use type "V4"
+ADMIN_EMAIL: test_user@internal.lab   
 BACKUP_PASSPHRASE: "1234567890"
 
 # --------------------------------------------------------------------
@@ -39,14 +40,14 @@ BACKUP_PASSPHRASE: "1234567890"
 # --------------------------------------------------------------------
 
 # AWS Variables
-EC2_SECURITY_GROUP: avi-external-sg
+EC2_SECURITY_GROUP: ag_avi_sec_group
 EC2_INSTANCE_TYPE: c4.4xlarge
-EC2_IMAGE_ID: ami-08ecc90c68f430fc2  #Oregon MarketPlace AMI for 20.1.4
+EC2_IMAGE_ID: ami-0822ac66b62a893cc
 EC2_MONITOR: no
-EC2_SUBNET_ID: subnet-0783e7ec4afe90968
-EC2_REGION: us-west-2
+EC2_SUBNET_ID: subnet-06d88a4c
+EC2_REGION: us-east-1
 EC2_ROOT_VOLUME_SIZE: 256
-EC2_PREFIX: nsxalb-ctrl
-EC2_KEY_NAME: example-key
+EC2_PREFIX: avictrl
+EC2_KEY_NAME: <key_pair_name>
 EC2_IAM_INSTANCE_PROFILE: "AviController-Refined-Role"
 EC2_ASSIGN_PUBLIC_IP: yes
