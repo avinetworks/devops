@@ -3,6 +3,8 @@
 # Management Variables
 # Description: This are variables used for any type of ansible deployment.
 # --------------------------------------------------------------------
+# Cluster IP for Avi Controller
+CONTROLLER_CLUSTER_IP: 100.64.19.40
 
 # Controller Credentials
 AVI_CREDENTIALS:
@@ -24,11 +26,8 @@ CONTROLLER_NAME_2: "nsxalb-02"
 CONTROLLER_IP_3: 100.64.19.43
 CONTROLLER_NAME_3: "nsxalb-03"
 
-# Cluster IP for Avi Controller
-CONTROLLER_CLUSTER_IP: 100.64.19.40
-
 # Controller Default Password
-OLD_PASSWORD: "58NFaGDJm(PJH0G"
+OLD_PASSWORD: "<controller default password>" #Found on download image page
 
 # Controller Configuration Details
 DNS_SERVERS: [ 	10.206.8.130, 10.206.8.131]
@@ -42,45 +41,20 @@ BACKUP_PASSPHRASE: "1234567890"
 # Description: You only have to apply variables on the installation type you desire.
 # --------------------------------------------------------------------
 
-# --- Vmware Hypervisor Only---
-
 # Controller Management Network Setup
-CON_MGMT_PORTGROUP: "<management pool group>"
+CON_MGMT_PORTGROUP: "<management portgroup>"
 CON_MGMT_MASK: 255.255.255.0
 CON_DEFAULT_GW: 100.64.19.2
 
 # Vmware vCenter Credentials and Other Parameters
-VCENTER_HOST: "wdc-06-vc10.oc.vmware.com"
+VCENTER_HOST: "<vcenter fqdn/ip>"
 VCENTER_USER: "<vcenter username>"
 VCENTER_PASSWORD: "<vcenter password>"
-DATACENTER: "wdc-06-vc10"
-VMWARE_CLUSTER_NAME: "wdc-06-vc10c01"
-VMWARE_DATASTORE: "wdc-06-vc10c01-vsan"
-CON_FOLDER: <folder location>
+DATACENTER: "<datacenter name>"
+VMWARE_CLUSTER_NAME: "<cluster name>"
+VMWARE_DATASTORE: "<datastore name>"
+CON_FOLDER: "<folder name>"
 OVFTOOL_PATH: "/usr/bin" # DownloadLink: https://code.vmware.com/web/tool/4.4.0/ovf
 
 # Controller OVA Image Location
 OVA_PATH: "<OVA Path>"
-
-# --------------------------------------------------------------------
-# Enviroment Variables / Vmware Cloud Setup
-# Description: You only have to apply variables on the cloud configuration type you desire.
-# --------------------------------------------------------------------
-
-# Cloud Setup
-cloud_name: VMware_Cloud
-vcenter_host: vcs01.internal.lab
-vcenter_user: user01
-vcenter_password: "secret-password"
-datacenter: vcs-dc01
-
-# Service Engine Group Properties
-se_mgmt_portgroup: "dvpg-avi-mgmt"
-se_mgmt_network: 10.10.20.0
-se_mgmt_mask: 22
-se_mgmt_start_range: 10.10.20.10
-se_mgmt_end_range: 10.10.20.15
-se_default_gateway: 10.10.20.1
-
-# Service Engine Group Properties
-SEG_NAME: VMware_Cloud_Group
