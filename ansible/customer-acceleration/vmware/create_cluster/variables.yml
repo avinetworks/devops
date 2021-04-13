@@ -1,0 +1,60 @@
+---
+# --------------------------------------------------------------------
+# Management Variables
+# Description: This are variables used for any type of ansible deployment.
+# --------------------------------------------------------------------
+# Cluster IP for Avi Controller
+CONTROLLER_CLUSTER_IP: 100.64.19.40
+
+# Controller Credentials
+AVI_CREDENTIALS:
+  controller: "{{ CONTROLLER_CLUSTER_IP }}" # This can be either cluster ip or the ip of the leader controller.
+  username: "admin"
+  password: "<password>"
+  api_version: "20.1.4"
+
+# --------------------------------------------------------------------
+# Required Variables / Controller Deployments
+# Description: This are the main variables required for controller deployments.
+# --------------------------------------------------------------------
+
+# Controller Name and IP Addresses
+CONTROLLER_IP_1: 100.64.19.41
+CONTROLLER_NAME_1: "nsxalb-01"
+CONTROLLER_IP_2: 100.64.19.42
+CONTROLLER_NAME_2: "nsxalb-02"
+CONTROLLER_IP_3: 100.64.19.43
+CONTROLLER_NAME_3: "nsxalb-03"
+
+# Controller Default Password
+OLD_PASSWORD: "<controller default password>" #Found on download image page
+
+# Controller Configuration Details
+DNS_SERVERS: [ 	10.206.8.130, 10.206.8.131]
+NTP_SERVERS: [ '0.us.pool.ntp.org', '1.us.pool.ntp.org', '3.us.pool.ntp.org' ]
+NTP_TYPE: "DNS"  #If servers are hostname use type "DNS", if IP use type "V4"
+ADMIN_EMAIL: test_user@internal.lab   
+BACKUP_PASSPHRASE: "1234567890"
+
+# --------------------------------------------------------------------
+# Enviroment Variables / Controller Deployments
+# Description: You only have to apply variables on the installation type you desire.
+# --------------------------------------------------------------------
+
+# Controller Management Network Setup
+CON_MGMT_PORTGROUP: "<management portgroup>"
+CON_MGMT_MASK: 255.255.255.0
+CON_DEFAULT_GW: 100.64.19.2
+
+# Vmware vCenter Credentials and Other Parameters
+VCENTER_HOST: "<vcenter fqdn/ip>"
+VCENTER_USER: "<vcenter username>"
+VCENTER_PASSWORD: "<vcenter password>"
+DATACENTER: "<datacenter name>"
+VMWARE_CLUSTER_NAME: "<cluster name>"
+VMWARE_DATASTORE: "<datastore name>"
+CON_FOLDER: "<folder name>"
+OVFTOOL_PATH: "/usr/bin" # DownloadLink: https://code.vmware.com/web/tool/4.4.0/ovf
+
+# Controller OVA Image Location
+OVA_PATH: "<OVA Path>"

@@ -1,0 +1,57 @@
+# --------------------------------------------------------------------
+# Prepare your Environment:
+# pip install boto
+# Edit ~/.aws/credentials and add lines below:
+# [default]
+# aws_access_key_id = YOUR_ACCESS_KEY
+# aws_secret_access_key = YOUR_SECRET_KEY
+# --------------------------------------------------------------------
+
+# --------------------------------------------------------------------
+# Management Variables
+# Description: This are variables used for any type of ansible deployment.
+# --------------------------------------------------------------------
+
+# Controller Credentials
+AVI_CREDENTIALS:
+  controller: "{{ CONTROLLER_CLUSTER_IP }}" # This can be either cluster ip or the ip of the leader controller.
+  username: "admin"
+  password: "<password>"
+  api_version: "20.1.4"
+
+# --------------------------------------------------------------------
+# Required Variables / Controller Deployments
+# Description: This are the main variables required for controller deployments.
+# --------------------------------------------------------------------
+# Controller Name
+CONTROLLER_NAME_1: "nsxalb-01"
+CONTROLLER_NAME_2: "nsxalb-02"
+CONTROLLER_NAME_3: "nsxalb-03"
+
+# Controller Default Password
+OLD_PASSWORD: "<controller default password>" #Found on download image page
+
+# Controller Configuration Details
+DNS_SERVERS: [ 	8.8.8.8 ]
+NTP_SERVERS: [ '0.us.pool.ntp.org', '1.us.pool.ntp.org', '3.us.pool.ntp.org' ]
+NTP_TYPE: "DNS"  #If servers are hostname use type "DNS", if IP use type "V4"
+ADMIN_EMAIL: test_user@internal.lab   
+BACKUP_PASSPHRASE: "1234567890"
+
+# --------------------------------------------------------------------
+# Enviroment Variables / Controller Deployments
+# Description: You only have to apply variables on the installation type you desire.
+# --------------------------------------------------------------------
+
+# AWS Variables
+EC2_SECURITY_GROUP: ag_avi_sec_group
+EC2_INSTANCE_TYPE: c4.4xlarge
+EC2_IMAGE_ID: ami-0822ac66b62a893cc
+EC2_MONITOR: no
+EC2_SUBNET_ID: subnet-06d88a4c
+EC2_REGION: us-east-1
+EC2_ROOT_VOLUME_SIZE: 256
+EC2_PREFIX: avictrl
+EC2_KEY_NAME: <key_pair_name>
+EC2_IAM_INSTANCE_PROFILE: "AviController-Refined-Role"
+EC2_ASSIGN_PUBLIC_IP: yes

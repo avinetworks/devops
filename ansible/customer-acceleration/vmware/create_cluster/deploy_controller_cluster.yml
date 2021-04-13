@@ -1,0 +1,125 @@
+- hosts: localhost
+  connection: local
+  roles:
+    - { role: avinetworks.avicontroller_vmware }
+    - { role: avinetworks.avisdk }
+  vars_files:
+     variables.yml
+  vars:
+    controller_configuration:
+      - mgmt_ip: "{{ CONTROLLER_IP_1 }}"
+        vm_name: "{{ CONTROLLER_NAME_1 }}"
+      - mgmt_ip: "{{ CONTROLLER_IP_2 }}"
+        vm_name: "{{ CONTROLLER_NAME_2 }}"
+      - mgmt_ip: "{{ CONTROLLER_IP_3 }}"
+        vm_name: "{{ CONTROLLER_NAME_3 }}"
+  tasks:
+  - include_vars: variables.yml
+  - name: Deploy Avi Controller
+    with_items: "{{ controller_configuration }}"
+    deploy_controller:
+      ovftool_path: "{{ OVFTOOL_PATH }}"
+      vcenter_host: "{{ VCENTER_HOST }}"
+      vcenter_user: "{{ VCENTER_USER }}"
+      vcenter_password: "{{ VCENTER_PASSWORD }}"
+      con_datacenter: "{{ DATACENTER }}"
+      con_cluster: "{{ VMWARE_CLUSTER_NAME }}"
+      con_ova_path: "{{ OVA_PATH }}"
+      con_vm_name: "{{ item.vm_name }}"
+      con_disk_size: "{{ CON_DISK_SIZE | default(omit) }}"
+      con_vcenter_folder: "{{ CON_FOLDER }}"
+      con_datastore: "{{ VMWARE_DATASTORE }}"
+      con_mgmt_network: "{{ CON_MGMT_PORTGROUP }}"
+      con_power_on: true
+      con_mgmt_ip: "{{ item.mgmt_ip }}"
+      con_mgmt_mask: "{{ CON_MGMT_MASK }}"
+      con_default_gw: "{{ CON_DEFAULT_GW }}"
+  - name: Check Cluster Status
+    uri:
+      validate_certs: false
+      url: "https://{{ item.mgmt_ip }}/api/initial-data"
+      method: GET
+      status_code: 200
+    register: result
+    until: result.status == 200
+    retries: 600
+    delay: 10
+    with_items: "{{ controller_configuration }}"
+  - name: Change admin default password
+    avi_useraccount:
+      controller: "{{ CONTROLLER_IP_1 }}"
+      username: "{{ AVI_CREDENTIALS.username }}"
+      password: "{{ AVI_CREDENTIALS.password }}"
+      api_version: "{{ AVI_CREDENTIALS.api_version }}"
+      old_password: "{{ OLD_PASSWORD }}"
+      email: "{{ ADMIN_EMAIL }}"
+  - set_fact:
+      dns_list: "{{ dns_list | default([]) + [{'type': 'V4', 'addr': dserver }] }}"
+    loop: "{{ DNS_SERVERS }}"
+    loop_control:
+      loop_var: dserver
+    name: "Prepare DNS Server List"
+  - set_fact:
+      ntp_list: "{{ ntp_list | default([]) + [{'server': {'type': NTP_TYPE, 'addr': nserver }}] }}"
+    loop: "{{ NTP_SERVERS }}"
+    loop_control:
+      loop_var: nserver
+    name: "Prepare NTP Server List"
+  - name: Initial Controller System Configuration
+    avi_systemconfiguration:
+      controller: "{{ CONTROLLER_IP_1 }}"
+      username: "{{ AVI_CREDENTIALS.username }}"
+      password: "{{ AVI_CREDENTIALS.password }}"
+      api_version: "{{ AVI_CREDENTIALS.api_version }}"
+      welcome_workflow_complete: true
+      dns_configuration:
+        server_list: "{{ dns_list }}"
+      ntp_configuration:
+        ntp_servers: "{{ ntp_list }}"
+  - name: Set Backup Passphrase
+    avi_backupconfiguration:
+      controller: "{{ CONTROLLER_IP_1 }}"
+      username: "{{ AVI_CREDENTIALS.username }}"
+      password: "{{ AVI_CREDENTIALS.password }}"
+      api_version: "{{ AVI_CREDENTIALS.api_version }}"
+      name: Backup-Configuration
+      backup_passphrase: "{{ BACKUP_PASSPHRASE }}"
+      upload_to_remote_host: false
+  - name: Cloud Cluster Configuration
+    avi_cluster:
+      controller: "{{ CONTROLLER_IP_1 }}"
+      username: "{{ AVI_CREDENTIALS.username }}"
+      password: "{{ AVI_CREDENTIALS.password }}"
+      api_version: "{{ AVI_CREDENTIALS.api_version }}"
+      virtual_ip:
+        type: V4
+        addr: "{{ CONTROLLER_CLUSTER_IP }}"
+      nodes:
+          - name: "{{ CONTROLLER_NAME_1 }}" 
+            ip:
+              type: V4
+              addr: "{{ CONTROLLER_IP_1 }}"
+          - name: "{{ CONTROLLER_NAME_2 }}"
+            ip:
+              type: V4
+              addr: "{{ CONTROLLER_IP_2 }}"
+          - name: "{{ CONTROLLER_NAME_3 }}"
+            ip:
+              type: V4
+              addr: "{{ CONTROLLER_IP_3 }}"
+      name: cluster01
+      tenant_uuid: "admin"
+  - name: Verify Cluster Completed
+    uri:
+      validate_certs: False
+      url: "{{ 'https://' + CONTROLLER_CLUSTER_IP + '/api/cluster/status'}}"
+      method: GET
+      return_content: yes
+      status_code: 200
+      body_format: json
+    register: result
+    until: result.status == 200 and result.json.cluster_state.state == "CLUSTER_UP_HA_ACTIVE"
+    retries: 600
+    delay: 10
+  - debug:
+        msg: "The controller cluster deployment completed."
