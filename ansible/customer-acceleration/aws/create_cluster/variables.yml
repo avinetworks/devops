@@ -29,7 +29,7 @@ CONTROLLER_NAME_2: "nsxalb-02"
 CONTROLLER_NAME_3: "nsxalb-03"
 
 # Controller Default Password
-OLD_PASSWORD: "58NFaGDJm(PJH0G"
+OLD_PASSWORD: "<controller default password>" #Found on download image page
 
 # Controller Configuration Details
 DNS_SERVERS: [ 	8.8.8.8 ]
