@@ -1,6 +1,6 @@
-# VMware - Create NSX ALB Controller Cluster
+# VMWare - Create NSX ALB Controller Cluster
 
-The playbook will create controller cluster with VIP within Vcenter.
+The playbook will create controller cluster with VIP within VCenter.
 
 ## Pre-Requisites to interact with Vmware
 
