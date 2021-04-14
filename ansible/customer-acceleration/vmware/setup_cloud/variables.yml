@@ -1,0 +1,52 @@
+---
+# --------------------------------------------------------------------
+# Management Variables
+# Description: This are variables used for any type of ansible deployment.
+# --------------------------------------------------------------------
+
+# Controller Credentials
+AVI_CREDENTIALS:
+  controller: "{{ CONTROLLER_CLUSTER_IP }}" # This can be either cluster ip or the ip of the leader controller.
+  username: "admin"
+  password: "< controller password >"
+  api_version: "20.1.4"
+
+# --------------------------------------------------------------------
+# Required Variables / Controller Deployments
+# Description: This are the main variables required for VMWare Cloud configuration.
+# --------------------------------------------------------------------
+
+# Cluster IP for Avi Controller
+CONTROLLER_CLUSTER_IP: <controller ip address> # If is a cluster write down the cluster IP address.
+
+# --------------------------------------------------------------------
+# Enviroment Variables / VMWare Cloud Setup
+# Description: You only have to apply variables on the cloud configuration type you desire.
+# --------------------------------------------------------------------
+
+# --- Vmware Hypervisor Only---
+
+# Cloud Setup
+CC_CLOUDNAME: VMware_Cloud
+CC_VCENTERHOST: "wdc-06-vc10.oc.vmware.com"
+CC_VCENTERUSER: <vcenter user>
+CC_VCENTERPASSWORD: "vcenter password"
+CC_VCENTERDATACENTER: "wdc-06-vc10"
+
+# Service Engine Network Properties
+SE_MGMT_PORTGRP: "<vcenter managerment port group>"
+SE_MGMT_NETWORK: 100.64.19.0
+SE_MGMT_MASK: 24
+SE_MGMT_STARTRANGE: 100.64.19.100
+SE_MGMT_ENDRANGE: 100.64.19.110
+SE_MGMT_GW: 100.64.19.2
+
+# Service Engine Group Properties
+SEG:
+  name: "VMware_Cloud_Group"
+  tenant: "admin"
+  folder: "<vcenter folder>" # Set the location where you will like SE to be created within VCenter.
+  se_prefix: "<se name prefix>"
+  se_vcpu: 4
+  se_memory: 8192
+  se_disk: 30
