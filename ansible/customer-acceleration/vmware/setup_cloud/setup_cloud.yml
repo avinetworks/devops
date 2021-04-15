@@ -63,22 +63,22 @@
     - name: Configure SE Group
       avi_serviceenginegroup:
         avi_credentials: "{{ AVI_CREDENTIALS }}"
-        tenant_ref: "{{ '/api/tenant?name=' + SEG.tenant }}"
-        name: "{{ SEG.name }}"
+        tenant_ref: "{{ '/api/tenant?name=' + SEG_TENANT }}"
+        name: "{{ SEG_NAME }}"
         cloud_ref: "{{'/api/cloud?name='+ CC_CLOUDNAME }}"
-        se_name_prefix: "{{ SEG.se_prefix }}"
-        vcpus_per_se: "{{ SEG.se_vcpu }}"
+        se_name_prefix: "{{ SEG_PREFIX }}"
+        vcpus_per_se: "{{ SEG_VCPU }}"
         ha_mode: "{{ ha_mode | default('HA_MODE_SHARED') }}"
         mem_reserve: true
-        memory_per_se: "{{ SEG.se_memory }}"
-        disk_per_se: "{{ SEG.se_disk }}"
-        min_se: "{{ SEG.min_se | default(1) }}"
-        max_se: "{{ SEG.max_se | default(10) }}"
-        buffer_se: "{{ SEG.buffer | default(1) }}"
-        min_scaleout_per_vs: "{{ SEG.min_scaleout_per_vs | default(1) }}"
-        max_scaleout_per_vs: "{{ SEG.max_scaleout_per_vs | default(4) }}"
+        memory_per_se: "{{ SEG_MEMORY }}"
+        disk_per_se: "{{ SEG_DISK }}"
+        min_se: "{{ SEG_MINSE | default(1) }}"
+        max_se: "{{ SEG_MAXSE | default(10) }}"
+        buffer_se: "{{ SEG_BUFFER | default(1) }}"
+        min_scaleout_per_vs: "{{ SEG_MIN_SCALEIN | default(1) }}"
+        max_scaleout_per_vs: "{{ SEG_MIN_SCALEOUT | default(4) }}"
         dedicated_dispatcher_core: "{{ dispatcher | default(omit) }}"
-        vcenter_folder: "{{ SEG.folder }}"
+        vcenter_folder: "{{ SEG_FOLDER }}"
       register: seg
     - name: Cloud Connector Update Configuration
       avi_cloud:
