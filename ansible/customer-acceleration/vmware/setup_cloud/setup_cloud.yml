@@ -1,0 +1,99 @@
+---
+- hosts: localhost
+  connection: local
+  roles:
+    - role: avinetworks.avisdk
+  vars_files:
+    variables.yml
+  tasks:
+    - name: Cloud Connector Configuration
+      avi_cloud:
+        name: "{{ CC_CLOUDNAME }}"
+        avi_credentials: "{{ AVI_CREDENTIALS }}"
+        vtype: CLOUD_VCENTER
+        dhcp_enabled: false
+        license_type: "LIC_CORES"
+        vcenter_configuration:
+          username: "{{ CC_VCENTERUSER }}"
+          password: "{{ CC_VCENTERPASSWORD }}"
+          datacenter: "{{ CC_VCENTERDATACENTER }}"
+          management_network: "{{ '/api/vimgrnwruntime/?name=' + SE_MGMT_PORTGRP }}"
+          privilege: "WRITE_ACCESS"
+          vcenter_url: "{{ CC_VCENTERHOST }}"
+    - pause:
+        minutes: 1
+      name: Cloud Preparing Integration
+    - name: Configure SE Management Network
+      avi_network:
+        name: "{{ SE_MGMT_PORTGRP }}"
+        avi_credentials: "{{ AVI_CREDENTIALS }}"
+        cloud_ref: "{{'/api/cloud?name='+ CC_CLOUDNAME }}"
+        dhcp_enabled: false
+        exclude_discovered_subnets: false
+        configured_subnets:
+          - prefix:
+              mask: '{{ SE_MGMT_MASK }}'
+              ip_addr:
+                type: V4
+                addr: '{{ SE_MGMT_NETWORK }}'
+            static_ip_ranges:
+              - range:
+                  begin:
+                    type: V4
+                    addr: '{{ SE_MGMT_STARTRANGE }}'
+                  end:
+                    type: V4
+                    addr: '{{ SE_MGMT_ENDRANGE }}'
+                type: STATIC_IPS_FOR_VIP_AND_SE
+    - name: Configure SE Default Gateway
+      avi_vrfcontext:
+        avi_credentials: "{{ AVI_CREDENTIALS }}"
+        cloud_ref: "{{'/api/cloud?name='+ CC_CLOUDNAME }}"
+        name: "management"
+        static_routes:
+        - route_id: "1"
+          prefix:
+            mask: 0
+            ip_addr: 
+              type: "V4"
+              addr: "0.0.0.0"
+          next_hop:
+            type: "V4"
+            addr: "{{ SE_MGMT_GW }}"
+    - name: Configure SE Group
+      avi_serviceenginegroup:
+        avi_credentials: "{{ AVI_CREDENTIALS }}"
+        tenant_ref: "{{ '/api/tenant?name=' + SEG_TENANT }}"
+        name: "{{ SEG_NAME }}"
+        cloud_ref: "{{'/api/cloud?name='+ CC_CLOUDNAME }}"
+        se_name_prefix: "{{ SEG_PREFIX }}"
+        vcpus_per_se: "{{ SEG_VCPU }}"
+        ha_mode: "{{ ha_mode | default('HA_MODE_SHARED') }}"
+        mem_reserve: true
+        memory_per_se: "{{ SEG_MEMORY }}"
+        disk_per_se: "{{ SEG_DISK }}"
+        min_se: "{{ SEG_MINSE | default(1) }}"
+        max_se: "{{ SEG_MAXSE | default(10) }}"
+        buffer_se: "{{ SEG_BUFFER | default(1) }}"
+        min_scaleout_per_vs: "{{ SEG_MIN_SCALEIN | default(1) }}"
+        max_scaleout_per_vs: "{{ SEG_MIN_SCALEOUT | default(4) }}"
+        dedicated_dispatcher_core: "{{ dispatcher | default(omit) }}"
+        vcenter_folder: "{{ SEG_FOLDER }}"
+      register: seg
+    - name: Cloud Connector Update Configuration
+      avi_cloud:
+        name: "{{ CC_CLOUDNAME }}"
+        avi_credentials: "{{ AVI_CREDENTIALS }}"
+        vtype: CLOUD_VCENTER
+        dhcp_enabled: false
+        license_type: "LIC_CORES"
+        vcenter_configuration:
+          username: "{{ CC_VCENTERUSER }}"
+          password: "{{ CC_VCENTERPASSWORD }}"
+          datacenter: "{{ CC_VCENTERDATACENTER }}"
+          management_network: "{{ '/api/vimgrnwruntime/?name=' + SE_MGMT_PORTGRP }}"
+          privilege: "WRITE_ACCESS"
+          vcenter_url: "{{ CC_VCENTERHOST }}"
+        se_group_template_ref: seg.uuid
+    - debug:
+        msg: "The VMWare Cloud configuration completed."

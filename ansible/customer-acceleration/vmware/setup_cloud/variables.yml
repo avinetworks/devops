@@ -1,0 +1,56 @@
+---
+# --------------------------------------------------------------------
+# Management Variables
+# Description: This are variables used for any type of ansible deployment.
+# --------------------------------------------------------------------
+
+# Controller Credentials
+AVI_CREDENTIALS:
+  controller: "{{ CONTROLLER_CLUSTER_IP }}" # This can be either cluster ip or the ip of the leader controller.
+  username: "admin"
+  password: "Avi12345!"
+  api_version: "20.1.4"
+
+# --------------------------------------------------------------------
+# Required Variables / Controller Deployments
+# Description: This are the main variables required for controller deployments.
+# --------------------------------------------------------------------
+
+# Cluster IP for Avi Controller
+CONTROLLER_CLUSTER_IP: 100.64.19.40
+
+# --------------------------------------------------------------------
+# Enviroment Variables / Vmware Cloud Setup
+# Description: You only have to apply variables on the cloud configuration type you desire.
+# --------------------------------------------------------------------
+
+# --- Vmware Hypervisor Only---
+
+# Cloud Setup
+CC_CLOUDNAME: VMware_Cloud
+CC_VCENTERHOST: "wdc-06-vc10.oc.vmware.com"
+CC_VCENTERUSER: "aviuser1"
+CC_VCENTERPASSWORD: "AviUser1234!."
+CC_VCENTERDATACENTER: "wdc-06-vc10"
+
+# Service Engine Network Properties
+SE_MGMT_PORTGRP: "vxw-dvs-34-virtualwire-15-sid-6100014-wdc-06-vc10-avi-dev011"
+SE_MGMT_NETWORK: 100.64.19.0
+SE_MGMT_MASK: 24
+SE_MGMT_STARTRANGE: 100.64.19.100
+SE_MGMT_ENDRANGE: 100.64.19.110
+SE_MGMT_GW: 100.64.19.2
+
+# Service Engine Group Properties
+SEG_NAME: "VMware_Cloud_Group"
+SEG_TENANT: "admin"
+SEG_FOLDER: "Antonio"
+SEG_VCPU: 4
+SEG_MEMORY: 8192
+SEG_DISK: 30
+SEG_PREFIX: "ang"
+#SEG_MINSE: 1
+#SEG_MAXSE: 20
+#SEG_BUFFER: 1
+#SEG_MIN_SCALEIN: 1
+#SEG_MIN_SCALEOUT: 4
