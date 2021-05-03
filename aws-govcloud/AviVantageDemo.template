@@ -1,0 +1,825 @@
+{
+  "AWSTemplateFormatVersion" : "2010-09-09",
+
+  "Description" : "Deploys Single Avi Controller with proper IAM Role, creates VS and adds pool members",
+
+  "Parameters" : {
+    "KeyName": {
+      "Description" : "Name of an existing EC2 KeyPair to enable SSH access to the instance",
+      "Type": "AWS::EC2::KeyPair::KeyName",
+      "ConstraintDescription" : "must be the name of an existing EC2 KeyPair."
+    },
+
+    "InstanceType" : {
+      "Description" : "Avi Controller instance type",
+      "Type" : "String",
+      "Default" : "m4.xlarge",
+      "AllowedValues" : [ "m4.xlarge", "m4.2xlarge", "m4.4xlarge", "m4.10xlarge", "m3.xlarge", "m3.2xlarge", "c4.large", "c4.xlarge", "c4.2xlarge", "c4.4xlarge", "c4.8xlarge", "c3.large", "c3.xlarge", "c3.2xlarge", "c3.4xlarge", "r3.large", "r3.xlarge", "r3.2xlarge", "r3.4xlarge", "r3.8xlarge", "i2.xlarge", "i2.2xlarge", "i2.4xlarge", "i2.8xlarge", "d2.xlarge", "d2.2xlarge", "d2.4xlarge", "d2.8xlarge", "g2.2xlarge", "g2.8xlarge", "hi1.4xlarge", "hs1.8xlarge" ],
+      "ConstraintDescription" : "must be a valid EC2 instance type."
+    },
+    "SSHLocation" : {
+      "Description" : "The IP address range that can be used to SSH to the EC2 instances",
+      "Type": "String",
+      "MinLength": "9",
+      "MaxLength": "18",
+      "Default": "0.0.0.0/0",
+      "AllowedPattern": "(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})/(\\d{1,2})",
+      "ConstraintDescription": "must be a valid IP CIDR range of the form x.x.x.x/x."
+    },
+    "AviVantageVersion" : {
+      "Description" : "The version of Avi Vantage",
+      "Type": "String",
+      "Default": "16.2.2",
+      "AllowedValues" : [ "16.2.2"],
+      "ConstraintDescription": "must be a valid Avi Vantage version"
+    },
+    "AZId" : {
+      "Type" : "AWS::EC2::AvailabilityZone::Name",
+      "Description" : "Availability Zone for the deployment"
+    }
+  },
+  "Mappings" : {
+    "AviAMI" : {
+      "us-west-2-priv": { "1622": "ami-0ef4256e" },
+      "us-east-1": { "1622": "ami-0191e516"},
+      "us-west-1": { "1622": "ami-01703c61"},
+      "us-west-2": { "1622": "ami-a301d1c3"},
+      "eu-west-1": { "1622": "ami-b55824c6"},
+      "eu-central-1": { "1622": "ami-6459aa0b"},
+      "ap-northeast-1": { "1622": "ami-a19c48c0"},
+      "ap-northeast-2": { "1622": "ami-eb12c785"},
+      "ap-southeast-1": { "1622": "ami-0778a364"},
+      "ap-southeast-2": { "1622": "ami-485c6d2b"},
+      "ap-south-1": { "1622": "ami-bb9aefd4"},
+      "sa-east-1": { "1622": "ami-cb9303a7"}
+    },
+    "VersionMap": {
+      "16.2.2": {
+        "version": "1622"
+      }
+    },
+    "Parameters":{
+      "PrivateSubnetRange":{
+        "default":"10.0.0.0/22"
+      },
+      "PublicSubnetRange":{
+        "default":"10.0.4.0/22"
+      },
+      "VPCSubnetRange":{
+        "default":"10.0.0.0/16"
+      }
+    }
+  },
+  "Resources" : {
+    "EC2Instance" : {
+      "Type" : "AWS::EC2::Instance",
+      "Properties" : {
+        "InstanceType" : { "Ref" : "InstanceType" },
+        "KeyName" : { "Ref" : "KeyName" },
+        "IamInstanceProfile": { "Ref" : "AviControllerInstanceProfile" },
+        "ImageId" : { "Fn::FindInMap" : [ "AviAMI", { "Ref" : "AWS::Region" }, { "Fn::FindInMap" : [ "VersionMap", {"Ref": "AviVantageVersion"}, "version"]}] },
+        "Tags" : [
+            {
+              "Key" : "Name",
+              "Value" : "AviController"
+            }
+        ],
+        "NetworkInterfaces" : [
+          {
+            "GroupSet": [ { "Ref" : "InstanceSecurityGroup" } ],
+            "AssociatePublicIpAddress":"true",
+            "SubnetId":{
+                "Ref":"PublicSubnet"
+            },
+            "DeviceIndex":"0",
+            "DeleteOnTermination":"true"
+          }
+        ],
+        "UserData": {
+          "Fn::Base64": {
+            "Fn::Join": [
+              "",
+              [
+                "{\n",
+                "  \"SystemConfiguration\":[\n",
+                "    {\n",
+                "      \"url\":\"/api/systemconfiguration\",\n",
+                "      \"uuid\":\"default\",\n",
+                "      \"email_configuration\":{\n",
+                "        \"from_email\":\"admin@avicontroller.net\",\n",
+                "        \"mail_server_port\":25,\n",
+                "        \"smtp_type\":\"SMTP_NONE\",\n",
+                "        \"mail_server_name\":\"localhost\"\n",
+                "      },\n",
+                "      \"global_tenant_config\":{\n",
+                "        \"se_in_provider_context\":true,\n",
+                "        \"tenant_access_to_provider_se\":true,\n",
+                "        \"tenant_vrf\":false\n",
+                "      },\n",
+                "      \"dns_configuration\":{\n",
+                "        \"search_domain\":\"\",\n",
+                "        \"server_list\":[\n",
+                "          {\n",
+                "            \"type\":\"V4\",\n",
+                "            \"addr\":\"8.8.8.8\"\n",
+                "          }\n",
+                "        ]\n",
+                "      },\n",
+                "      \"tech_support_uploader_configuration\":{\n",
+                "        \"auto_upload\":false\n",
+                "      },\n",
+                "      \"docker_mode\":false,\n",
+                "      \"portal_configuration\":{\n",
+                "        \"redirect_to_https\":true,\n",
+                "        \"enable_https\":true,\n",
+                "        \"enable_http\":true\n",
+                "      },\n",
+                "      \"ntp_configuration\":{\n",
+                "        \"ntp_server_list\":[\n",
+                "          {\n",
+                "            \"type\":\"DNS\",\n",
+                "            \"addr\":\"0.us.pool.ntp.org\"\n",
+                "          }\n",
+                "        ]\n",
+                "      }\n",
+                "    }\n",
+                "  ],\n",
+                "  \"META\":{\n",
+                "    \"upgrade_mode\":true,\n",
+                "    \"version\":{\n",
+                "      \"Version\":\"",
+                { "Ref" : "AviVantageVersion"},
+                "\"\n",
+                "    }\n",
+                "  },\n",
+                "  \"InitialConfiguration\":[\n",
+                "    {\n",
+                "      \"user_initial_setup\":false\n",
+                "    }\n",
+                "  ],\n",
+                "  \"Tenant\":[\n",
+                "    {\n",
+                "      \"uuid\":\"admin\",\n",
+                "      \"name\":\"admin\"\n",
+                "    }\n",
+                "  ],\n",
+                "  \"Cloud\":[\n",
+                "    {\n",
+                "      \"name\":\"Default-Cloud\",\n",
+                "      \"tenant_ref\":\"admin\",\n",
+                "      \"vtype\":\"CLOUD_AWS\",\n",
+                "      \"enable_vip_static_routes\":false,\n",
+                "      \"prefer_static_routes\":false,\n",
+                "      \"aws_configuration\":{\n",
+                "        \"use_iam_roles\":true,\n",
+                "        \"route53_integration\":false,\n",
+                "        \"region\":\"us-west-2\",\n",
+                "        \"free_elasticips\":true,\n",
+                "        \"zones\":[\n",
+                "          {\n",
+                "            \"mgmt_network_name\":\"demo_server_sub\",\n",
+                "            \"availability_zone\":\"",
+                { "Ref" : "AZId"},
+                "\"\n",
+                "          }\n",
+                "        ],\n",
+                "        \"vpc_id\":\"",
+                { "Ref" : "DemoVPC"},
+                "\"\n",
+                "      },\n",
+                "      \"license_type\":\"LIC_CORES\",\n",
+                "      \"mtu\":1500,\n",
+                "      \"apic_mode\":false,\n",
+                "      \"dhcp_enabled\":true\n",
+                "    }\n",
+                "  ],\n",
+                "  \"VirtualService\":[\n",
+                "    {\n",
+                "      \"name\":\"VS_HTTPS\",\n",
+                "      \"enabled\":true,\n",
+                "      \"network_profile_ref\":\"admin:System-TCP-Proxy\",\n",
+                "      \"analytics_profile_ref\":\"admin:System-Analytics-Profile\",\n",
+                "      \"tenant_ref\":\"admin\",\n",
+                "      \"cloud_ref\":\"admin:Default-Cloud\",\n",
+                "      \"availability_zone\":\"",
+                { "Ref" : "AZId"},
+                "\",\n",
+                "      \"avi_allocated_vip\":true,\n",
+                "      \"cloud_type\":\"CLOUD_AWS\",\n",
+                "      \"avi_allocated_fip\":false,\n",
+                "      \"ssl_profile_ref\":\"admin:System-Standard\",\n",
+                "      \"pool_ref\":\"admin:HTTPS-pool:Default-Cloud\",\n",
+                "      \"type\":\"VS_TYPE_NORMAL\",\n",
+                "      \"ssl_key_and_certificate_refs\":[\n",
+                "        \"admin:System-Default-Cert-EC\"\n",
+                "      ],\n",
+                "      \"subnet_uuid\":\"",
+                { "Ref" : "PublicSubnet"},
+                "\",\n",
+                "      \"use_bridge_ip_as_vip\":false,\n",
+                "      \"application_profile_ref\":\"admin:System-Secure-HTTP\",\n",
+                "      \"auto_allocate_floating_ip\":false,\n",
+                "      \"services\":[\n",
+                "        {\n",
+                "          \"enable_ssl\":false,\n",
+                "          \"port\":80\n",
+                "        },\n",
+                "        {\n",
+                "          \"enable_ssl\":true,\n",
+                "          \"port\":443\n",
+                "        }\n",
+                "      ],\n",
+                "      \"ip_address\":{\n",
+                "        \"type\":\"V4\",\n",
+                "        \"addr\":\"10.144.129.74\"\n",
+                "      },\n",
+                "      \"east_west_placement\":false,\n",
+                "      \"enable_autogw\":true,\n",
+                "      \"auto_allocate_ip\":true,\n",
+                "      \"remove_listening_port_on_vs_down\":false,\n",
+                "      \"analytics_policy\":{\n",
+                "        \"client_insights\":\"ACTIVE\",\n",
+                "        \"metrics_realtime_update\":{\n",
+                "          \"duration\":0,\n",
+                "          \"enabled\":true\n",
+                "        },\n",
+                "        \"full_client_logs\":{\n",
+                "          \"duration\":0,\n",
+                "          \"enabled\":true\n",
+                "        }\n",
+                "      }\n",
+                "    },\n",
+                "    {\n",
+                "      \"name\":\"VS_HTTP\",\n",
+                "      \"enabled\":true,\n",
+                "      \"network_profile_ref\":\"admin:System-TCP-Proxy\",\n",
+                "      \"se_group_ref\":\"admin:Default-Group:Default-Cloud\",\n",
+                "      \"analytics_profile_ref\":\"admin:System-Analytics-Profile\",\n",
+                "      \"tenant_ref\":\"admin\",\n",
+                "      \"cloud_ref\":\"admin:Default-Cloud\",\n",
+                "      \"availability_zone\":\"",
+                { "Ref" : "AZId"},
+                "\",\n",
+                "      \"avi_allocated_vip\":true,\n",
+                "      \"cloud_type\":\"CLOUD_AWS\",\n",
+                "      \"avi_allocated_fip\":false,\n",
+                "      \"ip_address\":{\n",
+                "        \"type\":\"V4\",\n",
+                "        \"addr\":\"10.144.128.145\"\n",
+                "      },\n",
+                "      \"type\":\"VS_TYPE_NORMAL\",\n",
+                "      \"subnet_uuid\":\"",
+                { "Ref" : "PublicSubnet"},
+                "\",\n",
+                "      \"application_profile_ref\":\"admin:System-HTTP\",\n",
+                "      \"auto_allocate_floating_ip\":false,\n",
+                "      \"services\":[\n",
+                "        {\n",
+                "          \"enable_ssl\":false,\n",
+                "          \"port\":80\n",
+                "        }\n",
+                "      ],\n",
+                "      \"pool_ref\":\"admin:HTTP-pool:Default-Cloud\",\n",
+                "      \"east_west_placement\":false,\n",
+                "      \"enable_autogw\":true,\n",
+                "      \"auto_allocate_ip\":true,\n",
+                "      \"remove_listening_port_on_vs_down\":false,\n",
+                "      \"analytics_policy\":{\n",
+                "        \"client_insights\":\"ACTIVE\",\n",
+                "        \"metrics_realtime_update\":{\n",
+                "          \"duration\":0,\n",
+                "          \"enabled\":true\n",
+                "        },\n",
+                "        \"full_client_logs\":{\n",
+                "          \"duration\":0,\n",
+                "          \"enabled\":true\n",
+                "        }\n",
+                "      }\n",
+                "    }\n",
+                "  ],\n",
+                "  \"Pool\":[\n",
+                "    {\n",
+                "      \"name\":\"HTTP-pool\",\n",
+                "      \"enabled\":true,\n",
+                "      \"tenant_ref\":\"admin\",\n",
+                "      \"cloud_ref\":\"admin:Default-Cloud\",\n",
+                "      \"lb_algorithm\":\"LB_ALGORITHM_ROUND_ROBIN\",\n",
+                "      \"servers\":[\n",
+                "        {\n",
+                "          \"ip\":{\n",
+                "            \"type\":\"V4\",\n",
+                "            \"addr\":\"10.144.12.76\"\n",
+                "          }\n",
+                "        },\n",
+                "        {\n",
+                "          \"ip\":{\n",
+                "            \"type\":\"V4\",\n",
+                "            \"addr\":\"10.144.12.75\"\n",
+                "          }\n",
+                "        }\n",
+                "      ],\n",
+                "      \"default_server_port\":80,\n",
+                "      \"health_monitor_refs\":[\n",
+                "        \"admin:System-HTTP\"\n",
+                "      ]\n",
+                "    },\n",
+                "    {\n",
+                "      \"name\":\"HTTPS-pool\",\n",
+                "      \"enabled\":true,\n",
+                "      \"tenant_ref\":\"admin\",\n",
+                "      \"cloud_ref\":\"admin:Default-Cloud\",\n",
+                "      \"lb_algorithm\":\"LB_ALGORITHM_LEAST_CONNECTIONS\",\n",
+                "      \"servers\":[\n",
+                "        {\n",
+                "          \"ip\":{\n",
+                "            \"type\":\"V4\",\n",
+                "            \"addr\":\"10.144.12.76\"\n",
+                "          }\n",
+                "        },\n",
+                "        {\n",
+                "          \"ip\":{\n",
+                "            \"type\":\"V4\",\n",
+                "            \"addr\":\"10.144.12.75\"\n",
+                "          }\n",
+                "        }\n",
+                "      ],\n",
+                "      \"default_server_port\":80,\n",
+                "      \"health_monitor_refs\":[\n",
+                "        \"admin:System-HTTP\"\n",
+                "      ]\n",
+                "    }\n",
+                "  ]\n",
+                "}\n",
+              ]
+            ]
+          }
+        }
+      },
+    },
+    "AviControllerRole":{
+      "Type":"AWS::IAM::Role",
+      "Properties":{
+        "Path":"/",
+        "AssumeRolePolicyDocument":{
+          "Version":"2012-10-17",
+          "Statement":[
+            {
+              "Effect":"Allow",
+              "Action":[
+                "sts:AssumeRole"
+              ],
+              "Principal":{
+                "Service":[
+                  "ec2.amazonaws.com"
+                ]
+              }
+            }
+          ]
+        }
+      },
+    },
+    "AviControllerEC2Policy": {
+      "Type": "AWS::IAM::Policy",
+      "Properties": {
+        "PolicyName": "AviControllerEC2Policy",
+        "PolicyDocument": {
+          "Statement": [
+            {
+              "Sid": "Stmt1450393199000",
+              "Effect": "Allow",
+              "Action": [
+                "ec2:AllocateAddress",
+                "ec2:AssignPrivateIpAddresses",
+                "ec2:AssociateAddress",
+                "ec2:AttachNetworkInterface",
+                "ec2:AttachVolume",
+                "ec2:AuthorizeSecurityGroupEgress",
+                "ec2:AuthorizeSecurityGroupIngress",
+                "ec2:CancelConversionTask",
+                "ec2:CancelImportTask",
+                "ec2:CreateNetworkInterface",
+                "ec2:CreateSecurityGroup",
+                "ec2:CreateSnapshot",
+                "ec2:CreateTags",
+                "ec2:CreateVolume",
+                "ec2:DeleteNetworkInterface",
+                "ec2:DeleteSecurityGroup",
+                "ec2:DeleteSnapshot",
+                "ec2:DeleteTags",
+                "ec2:DeleteVolume",
+                "ec2:DeregisterImage",
+                "ec2:DescribeAddresses",
+                "ec2:DescribeAvailabilityZones",
+                "ec2:DescribeConversionTasks",
+                "ec2:DescribeImageAttribute",
+                "ec2:DescribeImages",
+                "ec2:DescribeImportSnapshotTasks",
+                "ec2:DescribeInstanceAttribute",
+                "ec2:DescribeInstanceStatus",
+                "ec2:DescribeInstances",
+                "ec2:DescribeInternetGateways",
+                "ec2:DescribeNetworkAcls",
+                "ec2:DescribeNetworkInterfaceAttribute",
+                "ec2:DescribeNetworkInterfaces",
+                "ec2:DescribeRegions",
+                "ec2:DescribeRouteTables",
+                "ec2:DescribeSecurityGroups",
+                "ec2:DescribeSnapshotAttribute",
+                "ec2:DescribeSnapshots",
+                "ec2:DescribeSubnets",
+                "ec2:DescribeTags",
+                "ec2:DescribeVolumeAttribute",
+                "ec2:DescribeVolumeStatus",
+                "ec2:DescribeVolumes",
+                "ec2:DescribeVpcAttribute",
+                "ec2:DescribeVpcs",
+                "ec2:DetachNetworkInterface",
+                "ec2:DetachVolume",
+                "ec2:DisassociateAddress",
+                "ec2:GetConsoleOutput",
+                "ec2:ImportSnapshot",
+                "ec2:ImportVolume",
+                "ec2:ModifyImageAttribute",
+                "ec2:ModifyInstanceAttribute",
+                "ec2:ModifyNetworkInterfaceAttribute",
+                "ec2:ModifySnapshotAttribute",
+                "ec2:ModifyVolumeAttribute",
+                "ec2:RebootInstances",
+                "ec2:RegisterImage",
+                "ec2:ReleaseAddress",
+                "ec2:ResetImageAttribute",
+                "ec2:ResetInstanceAttribute",
+                "ec2:ResetNetworkInterfaceAttribute",
+                "ec2:ResetSnapshotAttribute",
+                "ec2:RevokeSecurityGroupEgress",
+                "ec2:RevokeSecurityGroupIngress",
+                "ec2:RunInstances",
+                "ec2:StartInstances",
+                "ec2:StopInstances",
+                "ec2:TerminateInstances",
+                "ec2:UnassignPrivateIpAddresses"
+              ],
+              "Resource": "*"
+            }
+          ]
+        },
+        "Roles": [
+          {
+            "Ref": "AviControllerRole"
+          }
+        ]
+      }
+    },
+    "AviControllerS3Policy": {
+      "Type": "AWS::IAM::Policy",
+      "Properties": {
+        "PolicyName": "AviControllerS3Policy",
+        "PolicyDocument": {
+          "Statement": [
+            {
+              "Sid": "Stmt1450394113000",
+              "Effect": "Allow",
+              "Action": [
+                "s3:AbortMultipartUpload",
+                "s3:CreateBucket",
+                "s3:DeleteBucket",
+                "s3:DeleteObject",
+                "s3:GetBucketLocation",
+                "s3:GetBucketTagging",
+                "s3:GetObject",
+                "s3:ListAllMyBuckets",
+                "s3:ListBucket",
+                "s3:ListBucketMultipartUploads",
+                "s3:ListMultipartUploadParts",
+                "s3:PutBucketTagging",
+                "s3:PutObject"
+              ],
+              "Resource": [
+                "*"
+              ]
+            }
+          ]
+        },
+        "Roles": [
+          {
+            "Ref": "AviControllerRole"
+          }
+        ]
+      }
+    },
+    "AviControllerInstanceProfile": {
+      "Type": "AWS::IAM::InstanceProfile",
+      "Properties": {
+        "Path": "/",
+        "Roles": [
+          {
+            "Ref": "AviControllerRole"
+          }
+        ]
+      }
+    },
+    "InstanceSecurityGroup" : {
+      "Type" : "AWS::EC2::SecurityGroup",
+      "Properties" : {
+        "GroupDescription" : "Enable SSH access via port 22",
+        "VpcId" : { "Ref" : "DemoVPC"},
+        "SecurityGroupIngress" : [ {
+          "IpProtocol" : "tcp",
+          "FromPort" : "22",
+          "ToPort" : "22",
+          "CidrIp" : "0.0.0.0/0"
+        },
+        {
+          "IpProtocol" : "tcp",
+          "FromPort" : "22",
+          "ToPort" : "22",
+          "CidrIp" : "0.0.0.0/0"
+        }, 
+        {
+          "IpProtocol" : "tcp",
+          "FromPort" : "80",
+          "ToPort" : "80",
+          "CidrIp" : "0.0.0.0/0"
+        }, 
+        {
+          "IpProtocol" : "tcp",
+          "FromPort" : "443",
+          "ToPort" : "443",
+          "CidrIp" : "0.0.0.0/0"
+        }, 
+        {
+          "IpProtocol" : "tcp",
+          "FromPort" : "8443",
+          "ToPort" : "8443",
+          "CidrIp" : "0.0.0.0/0"
+        },
+        {
+          "IpProtocol" : "udp",
+          "FromPort" : "123",
+          "ToPort" : "123",
+          "CidrIp" : "0.0.0.0/0"
+        } ]
+      }
+    },
+    "DemoVPC":{
+      "Properties":{
+        "Tags":[
+          {
+            "Key":"Name",
+            "Value":"AviDemoVPC"
+          }
+        ],
+        "CidrBlock":{
+          "Fn::FindInMap":[
+              "Parameters",
+              "VPCSubnetRange",
+              "default"
+          ]
+        },
+        "EnableDnsHostnames":"true",
+        "EnableDnsSupport":"true"
+      },
+      "Type":"AWS::EC2::VPC"
+    },
+    "PublicSubnet":{
+      "Properties":{
+        "Tags":[
+          {
+            "Key":"Name",
+            "Value":"PublicSubnet"
+          }
+        ],
+        "CidrBlock":{
+          "Fn::FindInMap":[
+            "Parameters",
+            "PublicSubnetRange",
+            "default"
+          ]
+        },
+        "MapPublicIpOnLaunch":"true",
+        "VpcId":{
+          "Ref":"DemoVPC"
+        },
+        "AvailabilityZone":{
+          "Ref":"AZId"
+        }
+      },
+      "Type":"AWS::EC2::Subnet"
+    },
+    "PrivateSubnet":{
+      "Properties":{
+        "Tags":[
+          {
+            "Key":"Name",
+            "Value":"PrivateSubnet"
+          }
+        ],
+        "CidrBlock":{
+          "Fn::FindInMap":[
+            "Parameters",
+            "PrivateSubnetRange",
+            "default"
+          ]
+        },
+        "VpcId":{
+          "Ref":"DemoVPC"
+        },
+        "AvailabilityZone":{
+          "Ref":"AZId"
+        }
+      },
+      "Type":"AWS::EC2::Subnet"
+    },
+    "PublicSubnetRouteTableAssociation":{
+      "Properties":{
+        "SubnetId":{
+          "Ref":"PublicSubnet"
+        },
+        "RouteTableId":{
+          "Ref":"PublicRouteTable"
+        }
+      },
+      "Type":"AWS::EC2::SubnetRouteTableAssociation"
+    },
+    "PublicSubnetNetworkAclAssociation":{
+      "Properties":{
+        "SubnetId":{
+          "Ref":"PublicSubnet"
+        },
+        "NetworkAclId":{
+          "Ref":"PublicNetworkAcl"
+        }
+      },
+      "Type":"AWS::EC2::SubnetNetworkAclAssociation"
+    },
+    "PrivateSubnetRouteTableAssociation":{
+      "Properties":{
+        "SubnetId":{
+          "Ref":"PrivateSubnet"
+        },
+        "RouteTableId":{
+          "Ref":"PrivateRouteTable"
+        }
+      },
+      "Type":"AWS::EC2::SubnetRouteTableAssociation"
+    },
+    "PrivateSubnetNetworkAclAssociation":{
+      "Properties":{
+        "SubnetId":{
+          "Ref":"PrivateSubnet"
+        },
+        "NetworkAclId":{
+          "Ref":"PrivateNetworkAcl"
+        }
+      },
+      "Type":"AWS::EC2::SubnetNetworkAclAssociation"
+    },
+    "PublicRouteTable":{
+      "Properties":{
+        "VpcId":{
+          "Ref":"DemoVPC"
+        }
+      },
+      "Type":"AWS::EC2::RouteTable"
+    },
+    "PrivateRouteTable":{
+      "Properties":{
+        "VpcId":{
+          "Ref":"DemoVPC"
+        }
+      },
+      "Type":"AWS::EC2::RouteTable"
+    },
+    "PublicNetworkAcl":{
+      "Properties":{
+        "VpcId":{
+          "Ref":"DemoVPC"
+        }
+      },
+      "Type":"AWS::EC2::NetworkAcl"
+    },
+    "PrivateNetworkAcl":{
+      "Properties":{
+        "VpcId":{
+          "Ref":"DemoVPC"
+        }
+      },
+      "Type":"AWS::EC2::NetworkAcl"
+    },
+    "PublicRoute":{
+      "Properties":{
+        "RouteTableId":{
+          "Ref":"PublicRouteTable"
+        },
+        "DestinationCidrBlock":"0.0.0.0/0",
+        "GatewayId":{
+          "Ref":"InternetGateway"
+        }
+      },
+      "DependsOn":"GatewayToInternet",
+      "Type":"AWS::EC2::Route"
+    },
+    "InboundNetworkAclEntry":{
+      "Properties":{
+        "CidrBlock":"0.0.0.0/0",
+        "PortRange":{
+          "From":"0",
+          "To":"65535"
+        },
+        "RuleAction":"allow",
+        "RuleNumber":"100",
+        "NetworkAclId":{
+          "Ref":"PublicNetworkAcl"
+        },
+        "Protocol":"-1",
+        "Egress":"false"
+      },
+      "Type":"AWS::EC2::NetworkAclEntry"
+    },
+    "OutboundNetworkAclEntry":{
+      "Properties":{
+        "CidrBlock":"0.0.0.0/0",
+        "PortRange":{
+          "From":"0",
+          "To":"65535"
+        },
+        "RuleAction":"allow",
+        "RuleNumber":"100",
+        "NetworkAclId":{
+          "Ref":"PublicNetworkAcl"
+        },
+        "Protocol":"-1",
+        "Egress":"true"
+      },
+      "Type":"AWS::EC2::NetworkAclEntry"
+    },
+    "PrivateOutboundNetworkAclEntry":{
+      "Properties":{
+        "CidrBlock":"0.0.0.0/0",
+        "PortRange":{
+          "From":"0",
+          "To":"65535"
+        },
+        "RuleAction":"allow",
+        "RuleNumber":"100",
+        "NetworkAclId":{
+          "Ref":"PrivateNetworkAcl"
+        },
+        "Protocol":"-1",
+        "Egress":"true"
+      },
+      "Type":"AWS::EC2::NetworkAclEntry"
+    },
+    "PrivateInboundNetworkAclEntry":{
+      "Properties":{
+        "CidrBlock":"0.0.0.0/0",
+        "PortRange":{
+          "From":"0",
+          "To":"65535"
+        },
+        "RuleAction":"allow",
+        "RuleNumber":"100",
+        "NetworkAclId":{
+          "Ref":"PrivateNetworkAcl"
+        },
+        "Protocol":"-1",
+        "Egress":"false"
+      },
+      "Type":"AWS::EC2::NetworkAclEntry"
+    },
+    "InternetGateway":{
+      "Properties":{
+      },
+      "DependsOn":"DemoVPC",
+      "Type":"AWS::EC2::InternetGateway"
+    },
+    "GatewayToInternet":{
+      "Properties":{
+        "InternetGatewayId":{
+          "Ref":"InternetGateway"
+        },
+        "VpcId":{
+          "Ref":"DemoVPC"
+        }
+      },
+      "DependsOn":"InternetGateway",
+      "Type":"AWS::EC2::VPCGatewayAttachment"
+    },
+
+  },
+
+  "Outputs" : {
+    "InstanceId" : {
+      "Description" : "InstanceId of the newly created EC2 instance",
+      "Value" : { "Ref" : "EC2Instance" }
+    },
+    "AZ" : {
+      "Description" : "Availability Zone of the newly created EC2 instance",
+      "Value" : { "Fn::GetAtt" : [ "EC2Instance", "AvailabilityZone" ] }
+    },
+    "PrivateIp" : {
+      "Description" : "Private IP of Avi Controller",
+      "Value" : { "Fn::GetAtt" : [ "EC2Instance", "PrivateIp" ] }
+    }
+  }
+}
