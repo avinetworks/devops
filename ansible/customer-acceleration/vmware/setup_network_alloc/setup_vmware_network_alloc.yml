@@ -1,0 +1,34 @@
+---
+- hosts: localhost
+  connection: local
+  roles:
+    - role: avinetworks.avisdk
+  vars_files:
+    variables.yml
+  tasks:
+    - name: Configure Network Allocation
+      avi_network:
+        name: "{{ item.portgroup }}"
+        avi_credentials: "{{ AVI_CREDENTIALS }}"
+        cloud_ref: "{{'/api/cloud?name='+ CC_CLOUDNAME }}"
+        dhcp_enabled: '{{ item.dhcp }}'
+        exclude_discovered_subnets: false
+        configured_subnets:
+          - prefix:
+              mask: '{{ item.mask }}'
+              ip_addr:
+                type: V4
+                addr: '{{ item.network }}'
+            static_ip_ranges:
+              - range:
+                  begin:
+                    type: V4
+                    addr: '{{ item.startrange }}'
+                  end:
+                    type: V4
+                    addr: '{{ item.endrange }}'
+                type: STATIC_IPS_FOR_VIP_AND_SE
+      with_items: "{{ NETWORK_LIST }}"
+    - debug:
+        msg: "Network allocation completed successfully."
+
