@@ -1,8 +1,8 @@
 ---
 - hosts: localhost
   connection: local
-  roles:
-    - avinetworks.avisdk
+  collections:
+    - vmware.alb
   vars_files:
     - "./vcf-se-vars.yml"
 
@@ -116,8 +116,8 @@
 
 - hosts: localhost
   connection: local
-  roles:
-    - avinetworks.avisdk
+  collections:
+    - vmware.alb
   vars_files:
     - "./vcf-se-vars.yml"
   

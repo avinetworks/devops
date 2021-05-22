@@ -1,14 +1,15 @@
 - hosts: localhost
   connection: local
+  collections:
+    - vmware.alb
   roles:
-    - { role: avinetworks.avisdk }
     - { role: Azure.azure_modules }
 
   tasks:
 
   - name: Avi Application | Setup App1
     include_role:
-      name: avinetworks.aviconfig
+      name: aviconfig
     vars:
       avi_config_file: "avi_config_role.yml"
       avi_credentials:

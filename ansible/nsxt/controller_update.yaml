@@ -1,8 +1,8 @@
 - hosts: localhost
   vars_files:
        - extra_vars/vars.yaml
-  roles:
-    - role: avinetworks.avisdk
+  collections:
+    - vmware.alb
   tasks:
       - block:
             - name: Create Content Library
@@ -38,7 +38,7 @@
 
             - name: Avi Application | Setup App1
               include_role:
-                name: avinetworks.aviconfig
+                name: aviconfig
               vars:
                 transportZone: "{{ nsxtTransportZones | to_json | from_json | json_query('obj.resource.nsxt_transportzones[?name==`Transport zone overlay type`].id') | first }}"
                 avi_config_file: "extra_vars/cloud_config.yaml"

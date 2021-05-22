@@ -5,6 +5,8 @@
   gather_facts: false
   vars_files:
   - horizon_vars.yml
+  collections:
+    - vmware.alb
   tasks:
   - set_fact:
       uag_pool_servers: "{{ uag_pool_servers | default([]) + [{'type': 'V4', 'addr': uag_servers_member_ip }]}}"
@@ -249,7 +251,7 @@
 
   - name: UAG Loadbalancer Deployment
     import_role:
-      name: avinetworks.aviconfig
+      name: aviconfig
     vars:
       avi_config: "{{ uag_avi_config }}"
     when: uag_avi_config is defined
@@ -346,7 +348,7 @@
 
   - name: CS Loadbalancer Deployment
     import_role:
-      name: avinetworks.aviconfig
+      name: aviconfig
     vars:
       avi_config: "{{ cs_avi_config }}"
     when: cs_avi_config is defined

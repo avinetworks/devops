@@ -17,8 +17,8 @@
       password: "{{ avi_password }}"
     api_version: 17.1.2
     app_name: mega
-  roles:
-    - role: avinetworks.avisdk
+  collections:
+    - vmware.alb
   tasks:
     - name: create self-signed SSL cert
       command: openssl req -new -nodes -x509 -subj "/C=US/ST=CA/L=San Francisco/O=IT/CN={{ app_name }}.com" -days 3650 -keyout ssl_certs/{{ app_name }}.key -out ssl_certs/{{ app_name }}.crt -extensions v3_ca creates=ssl_certs/{{ app_name }}.crt

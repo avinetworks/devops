@@ -12,8 +12,8 @@
     password: password
     tenant: Metrics_Test_Tenant
   connection: local
-  roles:
-    - role: avinetworks.avisdk
+  collections:
+    - vmware.alb
   tasks:
     - avi_pool:
         controller: "{{ controller }}"

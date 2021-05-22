@@ -1,4 +1,4 @@
-# Configure VMware cloud using avinetworks.avisdk role
+# Configure VMware cloud using collection vmware.alb
 ---
 - hosts: localhost
   connection: local
@@ -9,8 +9,8 @@
     password: "{{ lookup('env', 'AVI_PASSWORD') }}"
     api_version: "{{ lookup('env', 'API_VERSION') }}"
 
-  roles:
-    - role: avinetworks.avisdk
+  collections:
+    - vmware.alb
   tasks:
     - block:
       - name: Create cloud

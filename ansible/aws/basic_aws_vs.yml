@@ -6,8 +6,8 @@
     master_ctl_ip: ec2-34-250-111-254.eu-west-1.compute.amazonaws.com
     master_ctl_username: admin
     master_ctl_password: AviNetworks123!
-  roles:
-    - role: avinetworks.avisdk
+  collections:
+    - vmware.alb
   tasks:
     - avi_api_session:
         controller: "{{ master_ctl_ip }}"

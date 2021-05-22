@@ -11,8 +11,8 @@
       password: "{{ password }}"
     APP: bar
     LB_persistence: ""
-  #roles:
-  #  - role: avinetworks.avisdk
+  collections:
+    - vmware.alb
   tasks:
     - name: Set passphrase key_file name
       set_fact: key_file="{{APP}}.key"

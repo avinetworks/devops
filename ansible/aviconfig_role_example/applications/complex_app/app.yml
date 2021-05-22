@@ -6,8 +6,8 @@
   connection: local
   vars:
     app_name: complex_app
-  roles:
-    - role: avinetworks.avisdk
+  collections:
+    - vmware.alb
   tasks:
     - name: Setting up Application
       debug: msg="{{ app_name }}"
@@ -45,6 +45,6 @@
 
     - name: Avi Application | Setup complex_app
       import_role:
-        name: avinetworks.aviconfig
+        name: aviconfig
       vars:
         avi_config: "{{avi_config_var}}"

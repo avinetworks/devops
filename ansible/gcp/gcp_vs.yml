@@ -2,8 +2,8 @@
 hosts: localhost
 vars:
   vip_address: 10.156.12.213
-roles:
-  - role: avinetworks.avisdk
+collections:
+  - vmware.alb
 tasks:
   - gce:
       instance_names: my-instance

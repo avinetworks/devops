@@ -13,8 +13,8 @@
       controller: 10.10.25.42
       username: admin
       password: password
-  roles:
-    - role: avinetworks.avisdk
+  collections:
+    - vmware.alb
   tasks:
     - name: Create or Update Pool
       avi_pool:

@@ -15,7 +15,7 @@ $ pip install pyvmomi avisdk dnspython netaddr
 ### Avisdk Ansible Role
 
 ```
-$ ansible-galaxy install avinetworks.avisdk
+$ ansible-galaxy install collection vmware.alb
 ```
 ### Linux package
 ```

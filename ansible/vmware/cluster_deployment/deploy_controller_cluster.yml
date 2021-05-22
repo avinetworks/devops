@@ -1,8 +1,9 @@
 - hosts: localhost
   connection: local
+  collections:
+    - vmware.alb
   roles:
     - { role: avinetworks.avicontroller_vmware }
-    - { role: avinetworks.avisdk }
   vars:
     controller_configuration:
       - mgmt_ip: "{{ controller_ip_1 }}"

@@ -11,8 +11,8 @@
       password: "{{ avi_password }}"
     api_version: 18.1.1
     tenant: admin
-  roles:
-    - role: avinetworks.avisdk
+  collections:
+    - vmware.alb
   tasks:
 
     - name: Fetch System Waf Policy

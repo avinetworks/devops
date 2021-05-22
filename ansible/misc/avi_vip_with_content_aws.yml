@@ -20,8 +20,8 @@
     cs_rules: []
     cs_items: "{{ cs_items }}"
     fqdns: "{{ fqdns }}"
-  roles:
-  - role: avinetworks.avisdk
+  collections:
+    - vmware.alb
   tasks:
   - name: get cloud data
     avi_api_session:

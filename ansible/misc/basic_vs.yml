@@ -15,8 +15,8 @@
       controller: "{{ avi_controller }}"
       username: "{{ avi_username }}"
       password: "{{ avi_password }}"
-  roles:
-    - role: avinetworks.avisdk
+  collections:
+    - vmware.alb
   tasks:
     - name: Create or Update Pool
       avi_pool:

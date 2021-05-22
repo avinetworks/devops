@@ -6,8 +6,8 @@
       controller: 10.91.12.11
       username: admin
       password: XXXX
-  roles:
-    - role: avinetworks.avisdk
+  collections:
+    - vmware.alb
   tasks:
     - name: update system configuration
       avi_systemconfiguration:

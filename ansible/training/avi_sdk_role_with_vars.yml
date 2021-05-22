@@ -4,8 +4,8 @@
   vars:
     controller: 10.10.25.42
     username: admin
-  roles:
-    - role: avinetworks.avisdk
+  collections:
+    - vmware.alb
   tasks:
     - name: Print Hello
       debug: msg="Hello"

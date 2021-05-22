@@ -11,12 +11,12 @@
       username: admin
       password: password$%
       api_version: 17.1.5
-  roles:
-    - role: avinetworks.avisdk
+  collections:
+    - vmware.alb
   tasks:
     - name: Avi Application | Setup App1
       include_role:
-        name: avinetworks.aviconfig
+        name: aviconfig
       vars:
         avi_config_file: "ansible_avi_config.yml"
         avi_creds_file: "creds.yml"

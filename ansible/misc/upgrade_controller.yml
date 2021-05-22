@@ -2,8 +2,8 @@
 - hosts: localhost
   connection: local
 
-  roles:
-      - role: avinetworks.avisdk
+  collections:
+    - vmware.alb
   tasks:
     - block:
       - name: Upload package on controller

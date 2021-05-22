@@ -2,10 +2,11 @@
 #ansible-playbook initialControllerConfig.yml -e "controller=10.10.29.250"
 - hosts: localhost
   connection: local
+  collections:
+    - vmware.alb
   roles:
     - { role: avinetworks.avicontroller-vmware }
-    - { role: avinetworks.avisdk }
-  
+
   vars:
     # commom vars 
     controller: 10.10.25.42
@@ -251,7 +252,7 @@
 
     - name: Configuring the cloud
       import_role:
-        name: avinetworks.aviconfig
+        name: aviconfig
       vars:
         avi_credentials:
           controller: "{{ controller }}"

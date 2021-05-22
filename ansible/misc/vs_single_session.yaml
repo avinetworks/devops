@@ -11,8 +11,8 @@
     state: absent
     tenant: Metrics_Test_Tenant
   connection: local
-  roles:
-    - role: avinetworks.avisdk
+  collections:
+    - vmware.alb
   tasks:
     - avi_pool:
         avi_credentials: "{{ avi_credentials }}"

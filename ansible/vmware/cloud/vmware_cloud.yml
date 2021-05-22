@@ -1,8 +1,8 @@
 ---
 - hosts: localhost
   connection: local
-  roles:
-    - role: avinetworks.avisdk
+  collections:
+    - vmware.alb
   tasks:
     - name: Cloud Connector Configuration
       avi_cloud:

@@ -4,12 +4,12 @@
 ---
 - hosts: localhost
   connection: local
-  roles:
-    - role: avinetworks.avisdk
+  collections:
+    - vmware.alb
   tasks:
     - name: Avi Application | Setup App1
       include_role:
-        name: avinetworks.aviconfig
+        name: aviconfig
       vars:
         avi_config_file: "avi_config.yml"
         avi_creds_file: "vars/creds.yml"

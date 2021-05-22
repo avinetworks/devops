@@ -16,8 +16,8 @@
       password: "{{ password }}"
     pool_name: "{{ pool_name }}"
     metric_id: l4_server.avg_bandwidth,l4_server.avg_complete_conns
-  roles:
-    - role: avinetworks.avisdk
+  collections:
+    - vmware.alb
   tasks:
     - name: Fetch Pool metrics
       avi_api_session:

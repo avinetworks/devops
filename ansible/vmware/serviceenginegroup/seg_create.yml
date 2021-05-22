@@ -2,8 +2,8 @@
 - connection: local
   hosts: localhost
   gather_facts: false
-  roles:
-    - role: avinetworks.avisdk
+  collections:
+    - vmware.alb
   tasks:
     - name: Configure SEGroup
       avi_serviceenginegroup:

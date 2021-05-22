@@ -4,8 +4,8 @@
     api_version: 17.2.3
     # this will pick up config from the clouds/vmware directory
     cloud_name: aws
-  roles:
-    - role: avinetworks.avisdk
+  collections:
+    - vmware.alb
   tasks:
     - name: Setting up cloud
       debug: msg="{{cloud_name}}"
@@ -14,7 +14,7 @@
         file: "{{ site_dir }}/clouds/{{cloud_name}}/cloud_creds.yml"
     - name: Avi Cloud | Setup Cloud with No Access
       include_role:
-        name: avinetworks.aviconfig
+        name: aviconfig
       vars:
         avi_config_file: "{{ site_dir }}/clouds/{{cloud_name}}/config.yml"
         avi_creds_file: "{{ site_dir }}/vars/creds.yml"

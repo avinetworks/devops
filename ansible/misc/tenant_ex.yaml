@@ -7,8 +7,8 @@
       password: avi123$%
       tenant: CRES
   connection: local
-  roles:
-    - role: avinetworks.avisdk
+  collections:
+    - vmware.alb
   tasks:
     - avi_pool:
         avi_credentials: "{{ avi_credentials }}"

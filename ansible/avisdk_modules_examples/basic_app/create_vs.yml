@@ -12,8 +12,8 @@
   
   vars_files:
     - "{{ site_dir }}/vars/creds.yml"
-  roles:
-    - role: "avinetworks.avisdk"
+  collections:
+    - vmware.alb
   
   tasks:
     - name: Setting up Application

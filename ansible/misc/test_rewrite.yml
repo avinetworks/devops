@@ -8,8 +8,8 @@
       username: admin
       password: AviNetworks123!
       tenant: admin
-  roles:
-    - role: avinetworks.avisdk
+  collections:
+    - vmware.alb
   tasks:
     - name: Create the testpool1 pool
       avi_pool:

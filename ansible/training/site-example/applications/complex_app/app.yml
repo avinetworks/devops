@@ -7,8 +7,8 @@
   vars:
     api_version: 17.1.2
     app_name: complex_app
-  roles:
-    - role: avinetworks.avisdk
+  collections:
+    - vmware.alb
   tasks:
     - name: Setting up Application
       debug: msg="{{ app_name }}"
@@ -43,5 +43,5 @@
 
     - name: Avi Application | Setup complex_app
       include_role:
-        name: avinetworks.aviconfig
+        name: aviconfig
         avi_config: "{{avi_config_var}}"

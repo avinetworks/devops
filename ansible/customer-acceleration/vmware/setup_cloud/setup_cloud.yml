@@ -1,8 +1,8 @@
 ---
 - hosts: localhost
   connection: local
-  roles:
-    - role: avinetworks.avisdk
+  collections:
+    - vmware.alb
   vars_files:
     variables.yml
   tasks:

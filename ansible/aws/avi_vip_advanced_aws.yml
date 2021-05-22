@@ -14,8 +14,8 @@
     # subnet_name: "{{ subnet_name }}"
     cloud_name: "East VES-NP VPC Internal"
     subnet_name: LBSubnet1
-  roles:
-    - role: avinetworks.avisdk
+  collections:
+    - vmware.alb
   tasks:
     - name: get the cloud information from the cloud_name
       avi_api_session:

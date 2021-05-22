@@ -13,8 +13,8 @@
       password: password
     state: absent
     tenant: Metrics_Test_Tenant
-  roles:
-    - role: avinetworks.avisdk
+  collections:
+    - vmware.alb
   tasks:
     - name: Create or Update Custom Tenant
       avi_tenant:

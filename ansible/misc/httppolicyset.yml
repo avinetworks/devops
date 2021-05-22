@@ -8,8 +8,8 @@
       username: "{{ avi_username }}"
       password: "{{ avi_password }}"
       tenant: admin
-  roles:
-    - role: avinetworks.avisdk
+  collections:
+    - vmware.alb
   tasks:
     - name: create pool
       avi_pool:

@@ -5,8 +5,8 @@
 
   vars_files:
      credsL4.yml
-  roles:
-    - avinetworks.avisdk
+  collections:
+    - vmware.alb
 
   tasks:
   - name : Configuring HTTPS Health Monitor for UAG

@@ -8,8 +8,8 @@
     api_version: 17.1.2
     app_name: app4
 
-  roles:
-    - role: avinetworks.avisdk
+  collections:
+    - vmware.alb
 
   tasks:
     - name: Setting up Application
@@ -17,7 +17,7 @@
 
     - name: Avi Application | Setup App4
       include_role:
-        name: avinetworks.aviconfig
+        name: aviconfig
       vars:
         avi_config_file: "{{ site_dir }}/applications/{{app_name}}/config.yml"
         avi_creds_file: "{{ site_dir }}/vars/creds.yml"

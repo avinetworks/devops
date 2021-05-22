@@ -6,8 +6,8 @@
       password: "{{ password }}"
       username: admin
       api_version: 18.1.3
-  roles:
-    - role: avinetworks.avisdk
+  collections:
+    - vmware.alb
   tasks:
     - name: Create Virtual Service
       avi_virtualservice:

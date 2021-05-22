@@ -5,8 +5,8 @@
       controller: ec2-34-250-111-254.eu-west-1.compute.amazonaws.com
       username: admin
       password: "{{ password }}"
-  roles:
-    - role: avinetworks.avisdk
+  collections:
+    - vmware.alb
   tasks:
     - name: Create Read Only ROle
       avi_role:

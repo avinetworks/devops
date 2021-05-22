@@ -20,8 +20,8 @@
     patch_op: "{{ patch_op }}"
     servers: servers
     enabled: "{{ enabled }}"
-  roles:
-    - role: avinetworks.avisdk
+  collections:
+    - vmware.alb
   tasks:
     - name: build server list
       set_fact:

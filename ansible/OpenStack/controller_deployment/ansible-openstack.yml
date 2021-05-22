@@ -5,8 +5,8 @@
   vars_files: 
    - ./var/creds.yml
   
-  roles:
-    - role: avinetworks.avisdk
+  collections:
+    - vmware.alb
   
   tasks:
     - name: "Upload an image from local"

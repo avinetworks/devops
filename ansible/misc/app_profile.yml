@@ -13,8 +13,8 @@
     # state: absent
     tenant: admin
   connection: local
-  roles:
-    - role: avinetworks.avisdk
+  collections:
+    - vmware.alb
   tasks:
       #fidelity-xfwd-http
     - name: 'Create or Update applicationprofile: xfwd-http'

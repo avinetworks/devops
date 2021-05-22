@@ -1,7 +1,7 @@
 - hosts: localhost
   connection: local
-  roles:
-    - role: avinetworks.avisdk
+  collections:
+    - vmware.alb
   vars_files:
     - vars.yml
   tasks:
@@ -27,6 +27,6 @@
               type: DNS
     - name: Avi | Setup cluster and cloud
       include_role:
-        name: avinetworks.aviconfig
+        name: aviconfig
       vars:
         avi_config_file: "avi_config.yml"

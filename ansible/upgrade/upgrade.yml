@@ -3,8 +3,8 @@
   connection: local
   vars_files:
     - "{{ site_dir }}/vars/creds.yml"
-  roles:
-    - role: "avinetworks.avisdk"
+  collections:
+    - vmware.alb
 
   tasks:
     - name: Upgrade Controller to base image | Upgrade controller

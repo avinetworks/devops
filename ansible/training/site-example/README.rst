@@ -9,14 +9,13 @@ This is an example of setting up a full Avi Site with Cloud and applications.
 Installation
 *********
 
-The site example requires avinetworks.avisdk and avinetworks.aviconfig roles.
+The site example requires vmware.alb ansible collection.
 Please install them from Ansible galaxy using following command
 
 .. code-block:: shell
 
   pip install avisdk
-  ansible-galaxy install avinetworks.avisdk
-  ansible-galaxy install avinetworks.aviconfig
+  ansible-galaxy install collection vmware.alb
 
 
 
@@ -77,14 +76,14 @@ Add a new directory for vmware cloud in `clouds <clouds>` directory. The followi
         api_version: 17.1.2
         # this will pick up config from the clouds/vmware directory
         cloud_name: vmware
-      roles:
-        - role: avinetworks.avisdk
+      collections:
+        - vmware.alb
       tasks:
         - name: Setting up cloud
           debug: msg="{{cloud_name}}"
         - name: Avi Cloud | Setup VMWare Cloud with Write Access
           include_role:
-            name: avinetworks.aviconfig
+            name: aviconfig
           vars:
             avi_config_file: "{{ site_dir }}/clouds/{{cloud_name}}/config.yml"
             avi_creds_file: "{{ site_dir }}/vars/creds.yml"
@@ -171,8 +170,8 @@ Basic Application
       api_version: 17.1.2
       app_name: app1
 
-    roles:
-      - role: avinetworks.avisdk
+    collections:
+      - vmware.alb
 
     tasks:
       - name: Setting up Application
@@ -180,7 +179,7 @@ Basic Application
 
       - name: Avi Application | Setup VMWare Cloud with Write Access
         include_role:
-          name: avinetworks.aviconfig
+          name: aviconfig
         vars:
           avi_config_file: "{{ site_dir }}/applications/{{app_name}}/config.yml"
           avi_creds_file: "{{ site_dir }}/vars/creds.yml"
@@ -223,8 +222,8 @@ SSL Application with Content Switching
       api_version: 17.1.2
       app_name: app3
 
-    roles:
-      - role: avinetworks.avisdk
+    collections:
+      - vmware.alb
 
     tasks:
       - name: Setting up Application
@@ -232,7 +231,7 @@ SSL Application with Content Switching
 
       - name: Avi Application | Setup VMWare Cloud with Write Access
         include_role:
-          name: avinetworks.aviconfig
+          name: aviconfig
         vars:
           avi_config_file: "{{ site_dir }}/applications/{{app_name}}/config.yml"
           avi_creds_file: "{{ site_dir }}/vars/creds.yml"

@@ -9,7 +9,7 @@ via Ansible Galaxy as
 
 .. code-block:: shell 
 
-    ansible-galaxy install avinetworks.avisdk 
+    ansible-galaxy install collection vmware.alb
 
 
 ********************
@@ -56,8 +56,8 @@ This shows example of how to include avisdk role in playbook and test that it wo
     ---
     - hosts: localhost
     connection: local
-    roles:
-      - role: avinetworks.avisdk
+    collections:
+      - vmware.alb
     tasks:
       - name: Print Hello
         debug: msg="Hello"
@@ -76,8 +76,8 @@ Example playbook using Avi Controller credentials in an Ansible vault
         - "vars/creds.yml"
       vars:
         tenant: admin
-      roles:
-        - role: avinetworks.avisdk
+      collections:
+        - vmware.alb
 
 -------------
 `Basic Avi Pool Setup <https://github.com/avinetworks/devops/blob/master/ansible/training/basic_pool.yml>`_

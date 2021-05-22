@@ -19,8 +19,8 @@
       password: "{{ password }}"
     pool_name: "{{ pool_name }}"
     pool_servers_ip: "{{ pool_servers }}"
-  roles:
-    - role: avinetworks.avisdk
+  collections:
+    - vmware.alb
   tasks:
     - name: build server list
       set_fact:

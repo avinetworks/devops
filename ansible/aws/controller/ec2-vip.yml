@@ -6,8 +6,8 @@
     controller: 10.10.27.90
     username: admin
     password: AviNetworks123!
-  roles:
-    - roles: avinetworks.avisdk
+  collections:
+    - vmware.alb
   tasks:
     - name: "Create EC2 instance"
       ec2:

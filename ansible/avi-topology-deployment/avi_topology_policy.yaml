@@ -2,7 +2,8 @@
 - name: Avi Topology Policy
   hosts: localhost
   connection: local
-
+  collections:
+    - vmware.alb
   vars_files:
     - "vars/dns_topology_policy_vars.yaml"
     - "vars/gslb_site_vars.yaml"
@@ -11,7 +12,7 @@
   tasks:
     - name: Avi | Topology Policy (ipaddrgroup, dnspolicy, virtualservice)
       include_role:
-        name: avinetworks.aviconfig
+        name: aviconfig
       vars:
         cloud_name: "{{ loop_item.cloud_name | default('Default-Cloud') }}"
         tenant_name: "{{ loop_item.tenant_name | default('admin') }}"

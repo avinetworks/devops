@@ -11,8 +11,8 @@
     controller: "{{ controller }}"
     username: "{{ username }}"
     password: "{{ password }}"
-  #roles:
-  #  - role: avinetworks.avisdk
+  collections:
+    - vmware.alb
   tasks:
     - avi_api_session:
         controller: "{{ controller }}"
@@ -75,7 +75,6 @@
         controller: "{{ controller }}"
         username: "{{ username }}"
         password: "{{ password }}"
-        tenant: "{{ tenant }}"
         name: "{{ policy_set }}"
         tenant: "{{ tenant }}"
         http_request_policy:

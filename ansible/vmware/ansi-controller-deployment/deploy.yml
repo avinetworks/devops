@@ -1,10 +1,11 @@
 ---
 - hosts: localhost
   connection: local
+  collections:
+    - vmware.alb
   roles:
     - role: avinetworks.avicontroller_vmware
-    - role: avinetworks.avisdk
-    - role: avinetworks.aviconfig
+    - role: aviconfig
   gather_facts: false
   tasks:
     - name: Deploy Avi Controllers

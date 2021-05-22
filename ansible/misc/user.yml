@@ -13,8 +13,8 @@
       - username: grastogi
         name: Gaurav Rastogi
         password: test123$%
-  roles:
-    - role: avinetworks.avisdk
+  collections:
+    - vmware.alb
   tasks:
     - name: Check if user exists on Avi
       avi_api_session:

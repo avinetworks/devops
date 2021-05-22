@@ -5,8 +5,8 @@
     controller_ip: "{{ controller_ip }}"
     internal_ip: 10.0.0.7
     password: "{{ password }}"
-  roles:
-    - avinetworks.avisdk
+  collections:
+    - vmware.alb
   tasks:
   - name: Avi Controller | Setup docker
     include_role:
