@@ -65,8 +65,18 @@ resource "ibm_is_security_group_rule" "nsxalb-securechannel" {
         port_max = 8443
     }
 }
-resource "ibm_is_security_group_rule" "nsxalb-ntp" {
+resource "ibm_is_security_group_rule" "nsxalb-securechannel-sshtunnel" {
     depends_on = [ibm_is_security_group_rule.nsxalb-securechannel]
+    group = ibm_is_security_group.avi_controller.id
+    direction = "inbound" 
+    remote = var.firewall_inbound_subnet
+    tcp {
+        port_min = 5098
+        port_max = 5098
+    }
+}
+resource "ibm_is_security_group_rule" "nsxalb-ntp" {
+    depends_on = [ibm_is_security_group_rule.nsxalb-securechannel-sshtunnel]
     group = ibm_is_security_group.avi_controller.id
     direction = "inbound" 
     remote = var.firewall_inbound_subnet
