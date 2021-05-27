@@ -15,9 +15,8 @@ With this template, you can use IBM Cloud Schematics to create an NSX Advanced L
 
 When you apply template, the infrastructure resources that you create incur charges as follows. To clean up the resources, you can [delete your Schematics workspace or your instance](https://cloud.ibm.com/docs/schematics?topic=schematics-manage-lifecycle#destroy-resources). Removing the workspace or the instance cannot be undone. Make sure that you back up any data that you must keep before you start the deletion process.
 
-* **NSX-ALB instance**: One instance will be created, according to the size you choose. The price for your virtual server instances depends on the flavor of the instances, how many you provision, and how long the instances are run. For more information, see [Pricing for Virtual Servers for VPC](https://cloud.ibm.com/docs/infrastructure/vpc-on-classic?topic=vpc-on-classic-pricing-for-vpc#pricing-for-virtual-servers-for-vpc).
-* **NSX-ALB data volume**: One block volume will be created, according to the size you choose, and attached to the NSX-ALB instance.  This volume uses the 3000 IOPS storage profile. ??Where is the pricing for this??
-
+* **NSX-ALB instance**: One instance will be created, according to the size you choose. The price for your virtual server instances depends on the flavor of the instances, how many you provision, and how long the instances are run. For more information, see [IBM VPC pricing guide](https://www.ibm.com/cloud/vpc/pricing).
+* **NSX-ALB data volume**: One block volume will be created, according to the size you choose, and attached to the NSX-ALB instance.  This volume uses the 3000 IOPS storage profile. 
 ## Dependencies
 
 Before you can apply the template in IBM Cloud, complete the following steps.
@@ -29,11 +28,11 @@ Before you can apply the template in IBM Cloud, complete the following steps.
 3.  Install the `ibmcloud terraform` and `ibmcloud is` CLI plug-ins for Schematics and VPC infrastructure. **Tip**: To update your current plug-ins, run `ibmcloud plugin update`.
     *  `ibmcloud plugin install schematics`
     *  `ibmcloud plugin install vpc-infrastructure`
-4.  [Create or use an existing SSH key for VPC virtual servers](https://cloud.ibm.com/docs/vpc-on-classic-vsi?topic=vpc-on-classic-vsi-ssh-keys).
+4.  [Create or use an existing SSH key for VPC virtual servers](https://cloud.ibm.com/docs/vpc?topic=vpc-ssh-keys).
 
 ## Configuring your deployment values
 
-When you select the [`NSX-ALB Controller`template](https://insert.link) from the IBM Cloud catalog, you set up your deployment variables from the **Create** page. When you apply the template, IBM Cloud Schematics provisions the resources according to the values that you specify for these variables.
+When you select the [`NSX-ALB Controller`template](https://github.com/avinetworks/devops/terraform/ibm_catalog) from the IBM Cloud catalog, you set up your deployment variables from the **Create** page. When you apply the template, IBM Cloud Schematics provisions the resources according to the values that you specify for these variables.
 
 ### Required values
 Fill in the following values, based on the steps that you completed before you began.
@@ -42,7 +41,7 @@ Fill in the following values, based on the steps that you completed before you b
 |-------------|-----------|
 |`vpc`|Enter the VPC where you want the instance to be placed. |
 |`subnet`|Enter the subnet where you want the instance to be placed|
-|`ssh-key`|Enter the [public SSH key](https://cloud.ibm.com/docs/vpc-on-classic-vsi?topic=vpc-on-classic-vsi-ssh-keys) that you use to access your VPC virtual servers. |
+|`ssh-key`|Enter the [public SSH key](https://cloud.ibm.com/docs/vpc?topic=vpc-ssh-keys) that you use to access your VPC virtual servers. |
 |`zone`|Enter the zone where the VPC is created.|
 
 ### Optional values
