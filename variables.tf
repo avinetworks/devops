@@ -9,17 +9,16 @@ variable "vpc" {
 }
 variable "zone" {
     description = "The name of the zone the instance will be deployed to"
-    default = "us-south-1"
-    }
+}
 variable "firewall_inbound_subnet" {
     description = "The source subnet to allow for inbound traffic in the controller security group"
     default = "10.0.0.0/8"
-    } 
+} 
 
 variable "firewall_outbound_subnet" {
     description = "The destination subnet to allow in the controller security group for outbound traffic (if controller can't reach internet, install will fail)"
     default = "0.0.0.0/0"
-    } 
+} 
 
 variable "floating_ip" {
     description = "If set to true, a floating IP will be assigned to the instance.  Unnecessary if you have a public gateway assigned to the subnet"
