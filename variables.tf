@@ -1,5 +1,5 @@
 variable "TF_VERSION" {
-  default = "0.13"
+  default = "0.14"
   description = "terraform version required for schematics"
 }
 variable "ssh-key" {
@@ -28,7 +28,7 @@ variable "floating_ip" {
     description = "If set to true, a floating IP will be assigned to the instance.  Unnecessary if you have a public gateway assigned to the subnet"
     default = false
     validation {
-        condition     = contains([true, false], var.floating_ip)
+        condition     = contains(["true", "false"], var.floating_ip)
         error_message = "Argument \"floating_ip\" must be either \"true\" or \"false\"."
     }
 }
@@ -41,16 +41,6 @@ variable "controller_size" {
         error_message = "Argument \"controller_size\" must be either \"small\", \"medium\", or \"large\"."
     }
 }
-variable "instance_type_map" {
-    description = "A map from tshirt size to instance size, don't edit unless you need additional size customization"
-    type = map
-    default = {
-        small  = "bx2-8x32"
-        medium = "cx2-16x32"
-        large  = "cx2-32x64"
-    }
-}
-
 variable "disk_size" {
     description = "The data disk size of the NSX ALB controller"
     type = string

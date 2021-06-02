@@ -123,7 +123,7 @@ resource "ibm_is_instance" "nsxalb_controller" {
 }
 
 resource "ibm_is_floating_ip" "nsx_alb_floatingip" {
-    count = var.floating_ip ? 1 : 0
+    count = var.floating_ip == "true" ? 1 : 0
     name   = "nsxalb-controller-${random_string.random_name_suffix.result}-fip"
     target = ibm_is_instance.nsxalb_controller.primary_network_interface[0].id
 }
