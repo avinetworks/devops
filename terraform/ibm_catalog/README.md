@@ -17,6 +17,11 @@ When you apply template, the infrastructure resources that you create incur char
 
 * **NSX-ALB instance**: One instance will be created, according to the size you choose. The price for your virtual server instances depends on the flavor of the instances, how many you provision, and how long the instances are run. For more information, see [IBM VPC pricing guide](https://www.ibm.com/cloud/vpc/pricing).
 * **NSX-ALB data volume**: One block volume will be created, according to the size you choose, and attached to the NSX-ALB instance.  This volume uses the 3000 IOPS storage profile. 
+
+
+## Note
+The customer is responsible for the security, patching, and maintenance of the OS of this controller instance.  
+
 ## Dependencies
 
 Before you can apply the template in IBM Cloud, complete the following steps.
@@ -67,3 +72,5 @@ Before you apply your template, you can customize the following default variable
 
 ## Outputs
 After you apply the template your VPC resources are successfully provisioned in IBM Cloud, you can review information such as the virtual server IP addresses and VPC identifiers in the Schematics log files, in the `Terraform SHOW` section.
+
+The controller will take around 15 minutes to deploy, once the web interface is available, you can continue with configuring the controller and deploying Service Engines in your environment.
