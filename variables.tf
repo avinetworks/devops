@@ -1,3 +1,7 @@
+variable "TF_VERSION" {
+  default = "0.13"
+  description = "terraform version required for schematics"
+}
 variable "ssh-key" {
     description = "The name of the IBM Cloud SSH Key allowed to administer the controller instance"
 }
