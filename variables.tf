@@ -60,12 +60,16 @@ variable "disk_size" {
         error_message = "Argument \"disk_size\" must be either \"small\", \"medium\", or \"large\"."
     }
 }
-variable "disk_size_map" {
-    description = "A map from tshirt size to disk size, don't edit unless you need additional size customization"
-    type = map
-    default = {
-        small  = "256"
-        medium = "512"
+
+locals {
+    disk_size_map = {
+        small  = "256" 
+        medium = "512" 
         large  = "1024"
+        }
+    instance_type_map = {
+        small  = "bx2-8x32"
+        medium = "cx2-16x32"
+        large  = "cx2-32x64"
     }
 }

@@ -96,14 +96,14 @@ resource "ibm_is_volume" "nsxalb_volume" {
     name     = "nsxalb-controller-${random_string.random_name_suffix.result}-data"
     profile  = "general-purpose"
     zone     = var.zone
-    capacity = var.disk_size_map[var.disk_size]
+    capacity = local.disk_size_map[var.disk_size]
 }
 
 resource "ibm_is_instance" "nsxalb_controller" {
     depends_on = [ibm_is_security_group_rule.nsxalb-outbound]
     name    = "nsxalb-controller-${random_string.random_name_suffix.result}"
     image   = data.ibm_is_image.centos7.id
-    profile = var.instance_type_map[var.controller_size]
+    profile = local.instance_type_map[var.controller_size]
 
     boot_volume {
         name = "nsxalb-controller-${random_string.random_name_suffix.result}-boot"
