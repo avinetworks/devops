@@ -192,9 +192,10 @@ def get_crt(user, password, tenant, api_version, csr, CA=DEFAULT_CA, disable_che
                 print ("VS serving on port 80")
                 break
 
+        # Update vs
         # create HTTP policy
         httppolicy_data = {
-            "name": (domain + "LetsEncryptHTTPpolicy"),
+            "name": (domain + "-LetsEncryptHTTPpolicy"),
             "http_security_policy": {
             "rules": [{
                 "name": "Rule 1",
@@ -209,7 +210,7 @@ def get_crt(user, password, tenant, api_version, csr, CA=DEFAULT_CA, disable_che
                         "match_criteria": "CONTAINS",
                         "match_case": "SENSITIVE",
                         "match_str": [
-                        ".well-known/acme-challenge/{}".format(token)
+                            ".well-known/acme-challenge/{}".format(token)
                         ]
                     }
                 },
@@ -225,6 +226,7 @@ def get_crt(user, password, tenant, api_version, csr, CA=DEFAULT_CA, disable_che
             },
             "is_internal_policy": False
         }
+
         try:
             rsp = _do_request_avi("httppolicyset", "POST", data=httppolicy_data).json()
             httppolicy_uuid = rsp["uuid"]
@@ -232,9 +234,9 @@ def get_crt(user, password, tenant, api_version, csr, CA=DEFAULT_CA, disable_che
 
             patch_data = {"add" : {"http_policies": [{"http_policy_set_ref": "/api/httppolicyset/{}".format(httppolicy_uuid), "index":1000001}]}}
             if not serving_on_port_80:
-                # Add to port to virtualservice
+                # Add port to virtualservice
                 print ("Adding port 80 to VS")
-                service_on_port_80_data = {          
+                service_on_port_80_data = {
                     "enable_http2": False,
                     "enable_ssl": False,
                     "port": 80,
@@ -249,7 +251,7 @@ def get_crt(user, password, tenant, api_version, csr, CA=DEFAULT_CA, disable_che
                 wellknown_url = "http://{0}/.well-known/acme-challenge/{1}".format(domain, token)
                 assert (disable_check or _do_request(wellknown_url)[0] == keyauthorization)
             except (AssertionError, ValueError) as e:
-                raise ValueError("Wrote file to {0}, but couldn't download {1}: {2}".format('wellknown_path', 'wellknown_url', e))
+                raise ValueError("Wrote file, but couldn't download {1}: {2}".format(wellknown_url, e))
 
             print ("Challenge Completed, notifying LetsEncrypt")
             # say the challenge is done
