@@ -8,6 +8,7 @@ Parameters -
     password        - Password of the above user
     tenant          - Avi tenant name
     dryrun          - True/False. If True letsencrypt's staging server will be used.
+    contact         - E-mail address sent to letsencrypt for account creation. Default None.
 
 Useful links -
     Ratelimiting - https://letsencrypt.org/docs/rate-limits/
@@ -98,7 +99,7 @@ def get_crt(user, password, tenant, api_version, csr, CA=DEFAULT_CA, disable_che
         else:
             raise Exception("Unsupported API method")
         if rsp.status_code >= 300:
-            err = error_msg + " url - {}. Method - {}. Response status - {}. Response - ".format(url,method,rsp.status_code,rsp.json())
+            err = error_msg + " url - {}. Method - {}. Response status - {}. Response - {}".format(url, method, rsp.status_code, rsp.json())
             raise Exception(err)
         return rsp
 
@@ -311,6 +312,11 @@ def certificate_request(csr, common_name, kwargs):
 
     with open(csr_temp_file.name, 'w') as f:
         f.write(csr)
+
+
+    if contact != None and "@" in contact:
+        contact = [ "mailto:{}".format(contact) ] # contact must be array as of ACME RFC
+        print ("Contact set to: {}".format(contact))
 
     signed_crt = None
     try:
