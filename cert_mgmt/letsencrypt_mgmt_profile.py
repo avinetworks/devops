@@ -293,7 +293,7 @@ def get_crt(user, password, tenant, api_version, csr, CA=DEFAULT_CA, disable_che
 def certificate_request(csr, common_name, kwargs):
     user = kwargs.get('user', None)
     password = kwargs.get('password', None)
-    tenant = kwargs.get('tenant', '*')
+    tenant = kwargs.get('tenant', None)
     dry_run = kwargs.get('dryrun', '')
     contact = kwargs.get('contact', None)
     api_version = kwargs.get('api_version', '20.1.1')
@@ -313,6 +313,8 @@ def certificate_request(csr, common_name, kwargs):
     with open(csr_temp_file.name, 'w') as f:
         f.write(csr)
 
+    if tenant == None:
+        print ("Using default tenant of specified user. You might want to define a tenant.")
 
     if contact != None and "@" in contact:
         contact = [ "mailto:{}".format(contact) ] # contact must be array as of ACME RFC
