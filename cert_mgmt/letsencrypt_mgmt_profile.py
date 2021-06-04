@@ -202,18 +202,40 @@ def get_crt(user, password, tenant, api_version, csr, CA=DEFAULT_CA, disable_che
         token = re.sub(r"[^A-Za-z0-9_\-]", "_", challenge['token'])
         keyauthorization = "{0}.{1}".format(token, thumbprint)
 
-        # Update vs
+        # Get VSVIPs/VSs, based on FQDN
         rsp = _do_request_avi("vsvip/?search=(fqdn,{})".format(domain), "GET").json()
+        vhMode = False
         if rsp["count"] == 0:
-            raise Exception("Could not find a VSVIP with fqdn = {}".format(domain))
-        vsvip_uuid = rsp["results"][0]["uuid"]
-        rsp = _do_request_avi("virtualservice?search=(vsvip_ref,{})".format(vsvip_uuid), "GET").json()
+            print ("Warning: Could not find a VSVIP with fqdn = {}".format(domain))
+            # As a fallback we search for VirtualHosting entries with that domain
+            vhMode = True
+            search_term = "vh_domain_name,{}".format(domain)
+        else:
+            vsvip_uuid = rsp["results"][0]["uuid"]
+            search_term = "vsvip_ref,{}".format(vsvip_uuid)
+
+        rsp = _do_request_avi("virtualservice/?search=({})".format(search_term), "GET").json()
         if rsp['count'] == 0:
             raise Exception("Could not find a VS with common name = {}".format(domain))
 
         vs_uuid = rsp["results"][0]["uuid"]
         print ("Found vs {} with fqdn {}".format(vs_uuid, domain))
-        # Check if the vs is servering on port 80
+
+        # Let's check if VS is enabled, otherwise challenge can never successfully complete.
+        if not rsp["results"][0]["enabled"]:
+            raise Exception("VS with common name {} is not enabled.".format(domain))
+
+        # Special handling for virtualHosting: if child, get services from parent.
+        if vhMode and rsp["results"][0]["type"] == "VS_TYPE_VH_CHILD":
+            # vh_parent_vs_ref is schema of https://avi.domain.tld/api/virtualservice/virtualservice-UUID, hence picking the last part
+            vs_uuid_parent = rsp["results"][0]["vh_parent_vs_ref"].split("/")[-1]
+            vhRsp = _do_request_avi("virtualservice/?search=(uuid,{})".format(vs_uuid_parent), "GET").json()
+            if vhRsp['count'] == 0:
+                raise Exception("Could not find parent VS {} of child VS UUID = {}".format(vs_uuid_parent, vs_uuid))
+
+            # we just copy it over. more transparent for further logic.
+            rsp["results"][0]["services"] = vhRsp["results"][0]["services"]
+
         # Check if the vs is serving on port 80
         serving_on_port_80 = False
         service_on_port_80_data = None
