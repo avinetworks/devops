@@ -214,6 +214,7 @@ def get_crt(user, password, tenant, api_version, csr, CA=DEFAULT_CA, disable_che
         vs_uuid = rsp["results"][0]["uuid"]
         print ("Found vs {} with fqdn {}".format(vs_uuid, domain))
         # Check if the vs is servering on port 80
+        # Check if the vs is serving on port 80
         serving_on_port_80 = False
         service_on_port_80_data = None
         for service in rsp["results"][0]["services"]:
@@ -232,10 +233,6 @@ def get_crt(user, password, tenant, api_version, csr, CA=DEFAULT_CA, disable_che
                 "index": 1,
                 "enable": True,
                 "match": {
-                    "vs_port": {
-                        "match_criteria": "IS_IN",
-                        "ports": [80]
-                    },
                     "path": {
                         "match_criteria": "CONTAINS",
                         "match_case": "SENSITIVE",
