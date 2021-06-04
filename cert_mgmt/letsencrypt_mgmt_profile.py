@@ -37,7 +37,7 @@ Source/Credits -
     Modified https://github.com/diafygi/acme-tiny/blob/master/acme_tiny.py (MIT license) for Avi Controller
 '''
 
-import os, subprocess, json, base64, binascii, time, hashlib, re
+import os, subprocess, json, base64, binascii, time, hashlib, re, ssl
 from urllib.request import urlopen, Request # Python 3
 from tempfile import NamedTemporaryFile
 
@@ -64,9 +64,15 @@ def get_crt(user, password, tenant, api_version, csr, CA=DEFAULT_CA, disable_che
         return out
 
     # helper function - make request and automatically parse json response
-    def _do_request(url, data=None, err_msg="Error", depth=0):
+    def _do_request(url, data=None, err_msg="Error", depth=0, verify=True):
         try:
-            resp = urlopen(Request(url, data=data, headers={"Content-Type": "application/jose+json", "User-Agent": "acme-tiny"}))
+            ctx = ssl.create_default_context()
+            if not verify:
+                # disable certificate verify
+                ctx.check_hostname = False
+                ctx.verify_mode = ssl.CERT_NONE
+            # open request.
+            resp = urlopen(Request(url, data=data, headers={"Content-Type": "application/jose+json", "User-Agent": "acme-tiny"}), context=ctx)
             resp_data, code, headers = resp.read().decode("utf8"), resp.getcode(), resp.headers
         except IOError as e:
             resp_data = e.read().decode("utf8") if hasattr(e, "read") else str(e)
