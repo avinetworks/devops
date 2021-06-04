@@ -217,7 +217,7 @@ def get_crt(user, password, tenant, api_version, csr, CA=DEFAULT_CA, disable_che
         serving_on_port_80 = False
         service_on_port_80_data = None
         for service in rsp["results"][0]["services"]:
-            if service["port"] == 80:
+            if service["port"] == 80 and not service["enable_ssl"]:
                 serving_on_port_80 = True
                 print ("VS serving on port 80")
                 break
@@ -277,11 +277,14 @@ def get_crt(user, password, tenant, api_version, csr, CA=DEFAULT_CA, disable_che
             print ("Added HTTPPolicy to VS")
 
             # check that the file is in place
-            try:
+            if not disable_check:
                 wellknown_url = "http://{0}/.well-known/acme-challenge/{1}".format(domain, token)
-                assert (disable_check or _do_request(wellknown_url)[0] == keyauthorization)
-            except (AssertionError, ValueError) as e:
-                raise ValueError("Wrote file, but couldn't download {1}: {2}".format(wellknown_url, e))
+                try:
+                    reqToken = _do_request(wellknown_url, verify=False)
+                    if reqToken[0] != keyauthorization:
+                        raise Exception("Token verification failed")
+                except Exception as e:
+                    raise ValueError("Wrote file, but couldn't verify token at {1}. Exception: {2}".format(wellknown_url, str(e)))
 
             print ("Challenge Completed, notifying LetsEncrypt")
             # say the challenge is done
