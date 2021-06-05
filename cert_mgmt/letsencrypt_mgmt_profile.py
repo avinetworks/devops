@@ -303,7 +303,7 @@ def get_crt(user, password, tenant, api_version, csr, CA=DEFAULT_CA, disable_che
                     if reqToken[0] != keyauthorization:
                         raise Exception("Token verification failed")
                 except Exception as e:
-                    raise ValueError("Wrote file, but couldn't verify token at {1}. Exception: {2}".format(wellknown_url, str(e)))
+                    raise ValueError("Wrote file, but couldn't verify token at {0}. Exception: {1}".format(wellknown_url, str(e)))
 
             print ("Challenge Completed, notifying LetsEncrypt")
             # say the challenge is done
