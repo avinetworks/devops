@@ -345,12 +345,20 @@ def certificate_request(csr, common_name, kwargs):
     user = kwargs.get('user', None)
     password = kwargs.get('password', None)
     tenant = kwargs.get('tenant', None)
-    dry_run = kwargs.get('dryrun', False)
+    dry_run = kwargs.get('dryrun', "false")
     contact = kwargs.get('contact', None)
     api_version = kwargs.get('api_version', '20.1.1')
+    disable_check = kwargs.get('disable_check', "false")
 
     if dry_run.lower() == "true":
         dry_run = True
+    else:
+        dry_run = False
+
+    if disable_check.lower() == "true":
+        disable_check = True
+    else:
+        disable_check = False
 
     directory_url = DEFAULT_DIRECTORY_URL
     if dry_run:
