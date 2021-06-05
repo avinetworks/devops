@@ -37,7 +37,7 @@ Source/Credits -
     Modified https://github.com/diafygi/acme-tiny/blob/master/acme_tiny.py (MIT license) for Avi Controller
 '''
 
-import os, subprocess, json, base64, binascii, time, hashlib, re, ssl, sys, datetime
+import os, subprocess, json, base64, binascii, time, hashlib, re, ssl, sys, datetime, time
 from urllib.request import urlopen, Request # Python 3
 from tempfile import NamedTemporaryFile
 
@@ -301,13 +301,22 @@ def get_crt(user, password, tenant, api_version, csr, CA=DEFAULT_CA, disable_che
 
             # check that the file is in place
             if not disable_check:
+                Log.write ("Validating token from AVI controller...")
                 wellknown_url = "http://{0}/.well-known/acme-challenge/{1}".format(domain, token)
                 try:
-                    reqToken = _do_request(wellknown_url, verify=False)
-                    if reqToken[0] != keyauthorization:
-                        raise Exception("Token verification failed")
+                    maxVerifyAttempts = 5 # maximal amount of verification attempts
+                    # retrying logic. Otherwise race-condition can occurr between avi controller pushing config and the token validation request
+                    for verifyAttempt in range(maxVerifyAttempts):
+                        reqToken = _do_request(wellknown_url, verify=False)
+                        if reqToken[0] != keyauthorization:
+                            Log.write ("Internal token validation failed, {0} of {1} attempts. Retrying in 2 seconds.".format((verifyAttempt + 1), maxVerifyAttempts))
+                            if maxVerifyAttempts == (verifyAttempt + 1): # attempts start at 0, therefore +1. If limit reached, raise exception.
+                                raise Exception("All {2} internal token verifications failed. Got '{0}' but expected '{1}'.".format(reqToken[0], keyauthorization, maxVerifyAttempts))
+                            time.sleep(2)
+                        else:
+                            break
                 except Exception as e:
-                    raise ValueError("Wrote file, but couldn't verify token at {0}. Exception: {1}".format(wellknown_url, str(e)))
+                    raise ValueError("Wrote file, but AVI couldn't verify token at {0}. Exception: {1}".format(wellknown_url, str(e)))
 
             Log.write ("Challenge Completed, notifying LetsEncrypt")
             # say the challenge is done
