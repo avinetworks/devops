@@ -317,6 +317,9 @@ def get_crt(user, password, tenant, api_version, csr, CA=DEFAULT_CA, disable_che
                             break
                 except Exception as e:
                     raise ValueError("Wrote file, but AVI couldn't verify token at {0}. Exception: {1}".format(wellknown_url, str(e)))
+            else:
+                Log.write ("Waiting 5 seconds before letting LetsEncrypt validating the challenge as validation disabled. Give controller time to push configs.")
+                time.sleep(5) # wait 5 secs if not validating, due to above mentioned race condition
 
             Log.write ("Challenge Completed, notifying LetsEncrypt")
             # say the challenge is done
@@ -386,7 +389,7 @@ def certificate_request(csr, common_name, kwargs):
         disable_check = True
     else:
         disable_check = False
-    Log.write ("DisableCheck is: {}".format(str(disable_check)))
+    Log.write ("disable_check is: {}".format(str(disable_check)))
 
     directory_url = DEFAULT_DIRECTORY_URL
     if dry_run:
@@ -408,7 +411,7 @@ def certificate_request(csr, common_name, kwargs):
 
     signed_crt = None
     try:
-        signed_crt = get_crt(user, password, tenant, api_version, csr_temp_file.name, directory_url=directory_url, contact=contact)
+        signed_crt = get_crt(user, password, tenant, api_version, csr_temp_file.name, disable_check=disable_check, directory_url=directory_url, contact=contact)
     finally:
         os.remove(csr_temp_file.name)
 
