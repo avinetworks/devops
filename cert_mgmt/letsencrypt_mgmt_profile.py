@@ -292,8 +292,12 @@ def get_crt(user, password, tenant, api_version, csr, CA=DEFAULT_CA, disable_che
                     "port_range_end": 80
                 }
                 patch_data["add"]["services"] = [service_on_port_80_data]
-            _do_request_avi("virtualservice/{}".format(vs_uuid), "PATCH", patch_data)
-            Log.write ("Added HTTPPolicy to VS")
+            if vhMode: # if VH, we set the rule on the parent. Without SNI (so HTTP) it will go to the parent.
+                _do_request_avi("virtualservice/{}".format(vs_uuid_parent), "PATCH", patch_data)
+                Log.write ("Added HTTPPolicy to parent-VS {}".format(vs_uuid_parent))
+            else:
+                _do_request_avi("virtualservice/{}".format(vs_uuid), "PATCH", patch_data)
+                Log.write ("Added HTTPPolicy to VS {}".format(vs_uuid))
 
             # check that the file is in place
             if not disable_check:
@@ -319,8 +323,12 @@ def get_crt(user, password, tenant, api_version, csr, CA=DEFAULT_CA, disable_che
             patch_data = {"delete" : {"http_policies": [{"http_policy_set_ref": "/api/httppolicyset/{}".format(httppolicy_uuid), "index":1000001}]}}
             if not serving_on_port_80:
                 patch_data["delete"]["services"] = [service_on_port_80_data]
-            _do_request_avi("virtualservice/{}".format(vs_uuid), "PATCH", patch_data)
-            Log.write ("Removed HTTPPolicy from VS")
+            if vhMode: # if VH, we set the rule on the parent. Without SNI (so HTTP) it will go to the parent.
+                _do_request_avi("virtualservice/{}".format(vs_uuid_parent), "PATCH", patch_data)
+                Log.write ("Removed HTTPPolicy from parent-VS {}".format(vs_uuid_parent))
+            else:
+                _do_request_avi("virtualservice/{}".format(vs_uuid), "PATCH", patch_data)
+                Log.write ("Removed HTTPPolicy from VS {}".format(vs_uuid))
             _do_request_avi("httppolicyset/{}".format(httppolicy_uuid), "DELETE")
             Log.write ("Deleted HTTPPolicy")
 
