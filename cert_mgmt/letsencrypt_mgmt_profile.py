@@ -24,7 +24,7 @@ Note -
 Parameters -
     user            - Avi user name (Default None)
     password        - Password of the above user (Default None)
-    tenant          - Avi tenant name (default is the user's default tenant)
+    tenant          - Avi tenant name (default is 'admin')
     dryrun          - True/False. If True letsencrypt's staging server will be used. (Default False)
     contact         - E-mail address sent to letsencrypt for account creation. (Default None.)
                       (set this only once until updated, otherwise an update request will be sent every time.)
@@ -133,15 +133,15 @@ def get_crt(user, password, tenant, api_version, csr, CA=DEFAULT_CA, disable_che
         return rsp
 
     if os.path.exists(ACCOUNT_KEY_PATH):
-        Log.write ("Reusing account key.")
+        print ("Reusing account key.")
     else:
-        Log.write ("Account key not found. Generating account key...")
+        print ("Account key not found. Generating account key...")
         out = _cmd(["openssl", "genrsa", "4096"], err_msg="OpenSSL Error")
         with open(ACCOUNT_KEY_PATH, 'w') as f:
             f.write(out.decode("utf-8"))
 
     # parse account key to get public key
-    Log.write ("Parsing account key...")
+    print ("Parsing account key...")
     out = _cmd(["openssl", "rsa", "-in", ACCOUNT_KEY_PATH, "-noout", "-text"], err_msg="OpenSSL Error")
     pub_pattern = r"modulus:[\s]+?00:([a-f0-9\:\s]+?)\npublicExponent: ([0-9]+)"
     pub_hex, pub_exp = re.search(pub_pattern, out.decode('utf8'), re.MULTILINE|re.DOTALL).groups()
@@ -157,7 +157,7 @@ def get_crt(user, password, tenant, api_version, csr, CA=DEFAULT_CA, disable_che
     thumbprint = _b64(hashlib.sha256(accountkey_json.encode('utf8')).digest())
 
     # find domains
-    Log.write ("Parsing CSR...")
+    print ("Parsing CSR...")
     out = _cmd(["openssl", "req", "-in", csr, "-noout", "-text"], err_msg="Error loading {0}".format(csr))
     domains = set([])
     common_name = re.search(r"Subject:.*? CN\s?=\s?([^\s,;/]+)", out.decode('utf8'))
@@ -168,34 +168,34 @@ def get_crt(user, password, tenant, api_version, csr, CA=DEFAULT_CA, disable_che
         for san in subject_alt_names.group(1).split(", "):
             if san.startswith("DNS:"):
                 domains.add(san[4:])
-    Log.write ("Found domains: {0}".format(", ".join(domains)))
+    print ("Found domains: {0}".format(", ".join(domains)))
 
     # get the ACME directory of urls
-    Log.write ("Getting directory...")
+    print ("Getting directory...")
     directory_url = CA + "/directory" if CA != DEFAULT_CA else directory_url # backwards compatibility with deprecated CA kwarg
     directory, _, _ = _do_request(directory_url, err_msg="Error getting directory")
-    Log.write ("Directory found!")
+    print ("Directory found!")
 
     # create account, update contact details (if any), and set the global key identifier
-    Log.write ("Registering account...")
+    print ("Registering account...")
     reg_payload = {"termsOfServiceAgreed": True}
     account, code, acct_headers = _send_signed_request(directory['newAccount'], reg_payload, "Error registering")
-    Log.write ("Registered!" if code == 201 else "Already registered!")
+    print ("Registered!" if code == 201 else "Already registered!")
     if contact is not None:
         account, _, _ = _send_signed_request(acct_headers['Location'], {"contact": contact}, "Error updating contact details")
-        Log.write ("Updated contact details:\n{0}".format("\n".join(account['contact'])))
+        print ("Updated contact details:\n{0}".format("\n".join(account['contact'])))
 
     # create a new order
-    Log.write ("Creating new order...")
+    print ("Creating new order...")
     order_payload = {"identifiers": [{"type": "dns", "value": d} for d in domains]}
     order, _, order_headers = _send_signed_request(directory['newOrder'], order_payload, "Error creating new order")
-    Log.write ("Order created!")
+    print ("Order created!")
 
     # get the authorizations that need to be completed
     for auth_url in order['authorizations']:
         authorization, _, _ = _send_signed_request(auth_url, None, "Error getting challenges")
         domain = authorization['identifier']['value']
-        Log.write ("Verifying {0}...".format(domain))
+        print ("Verifying {0}...".format(domain))
 
         # find the http-01 challenge and write the challenge file
         challenge = [c for c in authorization['challenges'] if c['type'] == "http-01"][0]
@@ -206,7 +206,7 @@ def get_crt(user, password, tenant, api_version, csr, CA=DEFAULT_CA, disable_che
         rsp = _do_request_avi("vsvip/?search=(fqdn,{})".format(domain), "GET").json()
         vhMode = False
         if rsp["count"] == 0:
-            Log.write ("Warning: Could not find a VSVIP with fqdn = {}".format(domain))
+            print ("Warning: Could not find a VSVIP with fqdn = {}".format(domain))
             # As a fallback we search for VirtualHosting entries with that domain
             vhMode = True
             search_term = "vh_domain_name,{}".format(domain)
@@ -219,7 +219,7 @@ def get_crt(user, password, tenant, api_version, csr, CA=DEFAULT_CA, disable_che
             raise Exception("Could not find a VS with common name = {}".format(domain))
 
         vs_uuid = rsp["results"][0]["uuid"]
-        Log.write ("Found vs {} with fqdn {}".format(vs_uuid, domain))
+        print ("Found vs {} with fqdn {}".format(vs_uuid, domain))
 
         # Let's check if VS is enabled, otherwise challenge can never successfully complete.
         if not rsp["results"][0]["enabled"]:
@@ -242,7 +242,7 @@ def get_crt(user, password, tenant, api_version, csr, CA=DEFAULT_CA, disable_che
         for service in rsp["results"][0]["services"]:
             if service["port"] == 80 and not service["enable_ssl"]:
                 serving_on_port_80 = True
-                Log.write ("VS serving on port 80")
+                print ("VS serving on port 80")
                 break
 
         # Update vs
@@ -279,12 +279,12 @@ def get_crt(user, password, tenant, api_version, csr, CA=DEFAULT_CA, disable_che
         try:
             rsp = _do_request_avi("httppolicyset", "POST", data=httppolicy_data).json()
             httppolicy_uuid = rsp["uuid"]
-            Log.write ("Created HTTP policy with uuid {}".format(httppolicy_uuid))
+            print ("Created HTTP policy with uuid {}".format(httppolicy_uuid))
 
             patch_data = {"add" : {"http_policies": [{"http_policy_set_ref": "/api/httppolicyset/{}".format(httppolicy_uuid), "index":1000001}]}}
             if not serving_on_port_80:
                 # Add port to virtualservice
-                Log.write ("Adding port 80 to VS")
+                print ("Adding port 80 to VS")
                 service_on_port_80_data = {
                     "enable_http2": False,
                     "enable_ssl": False,
@@ -294,14 +294,14 @@ def get_crt(user, password, tenant, api_version, csr, CA=DEFAULT_CA, disable_che
                 patch_data["add"]["services"] = [service_on_port_80_data]
             if vhMode: # if VH, we set the rule on the parent. Without SNI (so HTTP) it will go to the parent.
                 _do_request_avi("virtualservice/{}".format(vs_uuid_parent), "PATCH", patch_data)
-                Log.write ("Added HTTPPolicy to parent-VS {}".format(vs_uuid_parent))
+                print ("Added HTTPPolicy to parent-VS {}".format(vs_uuid_parent))
             else:
                 _do_request_avi("virtualservice/{}".format(vs_uuid), "PATCH", patch_data)
-                Log.write ("Added HTTPPolicy to VS {}".format(vs_uuid))
+                print ("Added HTTPPolicy to VS {}".format(vs_uuid))
 
             # check that the file is in place
             if not disable_check:
-                Log.write ("Validating token from AVI controller...")
+                print ("Validating token from AVI controller...")
                 wellknown_url = "http://{0}/.well-known/acme-challenge/{1}".format(domain, token)
                 try:
                     maxVerifyAttempts = 5 # maximal amount of verification attempts
@@ -309,7 +309,7 @@ def get_crt(user, password, tenant, api_version, csr, CA=DEFAULT_CA, disable_che
                     for verifyAttempt in range(maxVerifyAttempts):
                         reqToken = _do_request(wellknown_url, verify=False)
                         if reqToken[0] != keyauthorization:
-                            Log.write ("Internal token validation failed, {0} of {1} attempts. Retrying in 2 seconds.".format((verifyAttempt + 1), maxVerifyAttempts))
+                            print ("Internal token validation failed, {0} of {1} attempts. Retrying in 2 seconds.".format((verifyAttempt + 1), maxVerifyAttempts))
                             if maxVerifyAttempts == (verifyAttempt + 1): # attempts start at 0, therefore +1. If limit reached, raise exception.
                                 raise Exception("All {2} internal token verifications failed. Got '{0}' but expected '{1}'.".format(reqToken[0], keyauthorization, maxVerifyAttempts))
                             time.sleep(2)
@@ -318,36 +318,36 @@ def get_crt(user, password, tenant, api_version, csr, CA=DEFAULT_CA, disable_che
                 except Exception as e:
                     raise ValueError("Wrote file, but AVI couldn't verify token at {0}. Exception: {1}".format(wellknown_url, str(e)))
             else:
-                Log.write ("Waiting 5 seconds before letting LetsEncrypt validating the challenge as validation disabled. Give controller time to push configs.")
+                print ("Waiting 5 seconds before letting LetsEncrypt validating the challenge as validation disabled. Give controller time to push configs.")
                 time.sleep(5) # wait 5 secs if not validating, due to above mentioned race condition
 
-            Log.write ("Challenge Completed, notifying LetsEncrypt")
+            print ("Challenge Completed, notifying LetsEncrypt")
             # say the challenge is done
             _send_signed_request(challenge['url'], {}, "Error submitting challenges: {0}".format(domain))
             authorization = _poll_until_not(auth_url, ["pending"], "Error checking challenge status for {0}".format(domain))
             if authorization['status'] != "valid":
                 raise ValueError("Challenge did not pass for {0}: {1}".format(domain, authorization))
-            Log.write ("Challenge Passed")
+            print ("Challenge Passed")
 
         finally:
-            Log.write ("Cleaning up...")
+            print ("Cleaning up...")
             # Update the vs
             patch_data = {"delete" : {"http_policies": [{"http_policy_set_ref": "/api/httppolicyset/{}".format(httppolicy_uuid), "index":1000001}]}}
             if not serving_on_port_80:
                 patch_data["delete"]["services"] = [service_on_port_80_data]
             if vhMode: # if VH, we set the rule on the parent. Without SNI (so HTTP) it will go to the parent.
                 _do_request_avi("virtualservice/{}".format(vs_uuid_parent), "PATCH", patch_data)
-                Log.write ("Removed HTTPPolicy from parent-VS {}".format(vs_uuid_parent))
+                print ("Removed HTTPPolicy from parent-VS {}".format(vs_uuid_parent))
             else:
                 _do_request_avi("virtualservice/{}".format(vs_uuid), "PATCH", patch_data)
-                Log.write ("Removed HTTPPolicy from VS {}".format(vs_uuid))
+                print ("Removed HTTPPolicy from VS {}".format(vs_uuid))
             _do_request_avi("httppolicyset/{}".format(httppolicy_uuid), "DELETE")
-            Log.write ("Deleted HTTPPolicy")
+            print ("Deleted HTTPPolicy")
 
-        Log.write ("{0} verified!".format(domain))
+        print ("{0} verified!".format(domain))
 
     # finalize the order with the csr
-    Log.write ("Signing certificate...")
+    print ("Signing certificate...")
     csr_der = _cmd(["openssl", "req", "-in", csr, "-outform", "DER"], err_msg="DER Export Error")
     _send_signed_request(order['finalize'], {"csr": _b64(csr_der)}, "Error finalizing order")
 
@@ -358,7 +358,7 @@ def get_crt(user, password, tenant, api_version, csr, CA=DEFAULT_CA, disable_che
 
     # download the certificate
     certificate_pem, _, _ = _send_signed_request(order['certificate'], None, "Certificate download failed")
-    Log.write ("Certificate signed!")
+    print ("Certificate signed!")
 
     return certificate_pem
 
@@ -374,8 +374,7 @@ def certificate_request(csr, common_name, kwargs):
 
     if debug.lower() == "true":
         debug = True
-        Log.setDebug(True)
-        Log.write ("Debug enabled.")
+        print ("Debug enabled.")
     else:
         debug = False
 
@@ -383,18 +382,18 @@ def certificate_request(csr, common_name, kwargs):
         dry_run = True
     else:
         dry_run = False
-    Log.write ("dry_run is: {}".format(str(dry_run)))
+    print ("dry_run is: {}".format(str(dry_run)))
 
     if disable_check.lower() == "true":
         disable_check = True
     else:
         disable_check = False
-    Log.write ("disable_check is: {}".format(str(disable_check)))
+    print ("disable_check is: {}".format(str(disable_check)))
 
     directory_url = DEFAULT_DIRECTORY_URL
     if dry_run:
         directory_url = DEFAULT_STAGING_DIRECTORY_URL
-    Log.write ("directory_url is {}".format(directory_url))
+    print ("directory_url is {}".format(directory_url))
 
     csr_temp_file = NamedTemporaryFile(mode='w',delete=False)
     csr_temp_file.close()
@@ -403,11 +402,11 @@ def certificate_request(csr, common_name, kwargs):
         f.write(csr)
 
     if tenant == None:
-        Log.write ("Using default tenant of specified user. You might want to define a tenant.")
+        print ("Using default tenant. You might want to define a specific tenant.".format(tenant))
 
     if contact != None and "@" in contact:
         contact = [ "mailto:{}".format(contact) ] # contact must be array as of ACME RFC
-        Log.write ("Contact set to: {}".format(contact))
+        print ("Contact set to: {}".format(contact))
 
     signed_crt = None
     try:
@@ -417,25 +416,3 @@ def certificate_request(csr, common_name, kwargs):
 
     print (signed_crt)
     return signed_crt
-
-class Logger:
-    debug = False
-    def __init__(self):
-        self.terminal = sys.stdout
-        self.terminal.flush()
-
-    def write(self, message):
-        message = "[{}] {}\n".format(datetime.datetime.now(), message)
-        self.terminal.write(message)
-        self.terminal.flush()
-        if self.debug:
-            self.log.write(message)
-            self.log.flush()
-
-    def setDebug(self, state):
-        self.debug = state
-        if state == True:
-            self.log = open("/tmp/letsencrypt-{}.log".format(datetime.datetime.now().strftime("%Y%m%d")), "a")
-            self.log.flush()
-
-Log = Logger()
