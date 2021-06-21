@@ -14,7 +14,8 @@ Setup -
     4. Specify a suitable name to identify this certificate in AVI Controller.
        (Like sub.domain.tld RSA or sub.domain2.tld ECDSA)
     5. Change <<Type>> to <<CSR>>
-    6. Set <<Common Name>> to the domain to which the certificate should be issued to.
+    6. Set <<Common Name>> to the domain to which the certificate should be issued to
+       and select the "Certificate Management" as previously created.
     7. Save and wait a few seconds for the certificate to be requested and imported.
 
 Note -
@@ -37,7 +38,7 @@ Source/Credits -
     Modified https://github.com/diafygi/acme-tiny/blob/master/acme_tiny.py (MIT license) for Avi Controller
 '''
 
-import os, subprocess, json, base64, binascii, time, hashlib, re, ssl, sys, datetime, time
+import base64, binascii, datetime, hashlib, os, json, re, ssl, subprocess, sys, time
 from urllib.request import urlopen, Request # Python 3
 from tempfile import NamedTemporaryFile
 
