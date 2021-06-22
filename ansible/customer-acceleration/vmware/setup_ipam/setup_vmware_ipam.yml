@@ -1,0 +1,45 @@
+---
+- hosts: localhost
+  connection: local
+  roles:
+    - role: avinetworks.avisdk
+  vars_files:
+    variables.yml
+  tasks:
+    - name: Create Internal DNS Profile
+      avi_ipamdnsproviderprofile:
+        avi_credentials: "{{ AVI_CREDENTIALS }}"
+        name: "{{ DNS_PROFILE.name }}"
+        tenant_ref: "{{'/api/tenant?name='+ DNS_PROFILE.tenant }}"
+        type: IPAMDNS_TYPE_INTERNAL_DNS
+        internal_profile:
+          dns_service_domain:
+          - domain_name: "{{ DNS_PROFILE.domain }}"
+            num_dns_ip: 1
+            pass_through: true
+            record_ttl: 100
+          ttl: 300
+      register: dns
+    - name: Create Internal IPAM Profile
+      avi_ipamdnsproviderprofile:
+        avi_credentials: "{{ AVI_CREDENTIALS }}"
+        name: "{{ IPAM_PROFILE.name }}"
+        tenant_ref: "{{ '/api/tenant?name='+ IPAM_PROFILE.tenant }}"
+        type: IPAMDNS_TYPE_INTERNAL
+        internal_profile:
+          ttl: 30
+          usable_networks:
+          - nw_ref: "{{ '/api/network/?name='+ IPAM_PROFILE.network }}"
+      register: ipam
+    - name: Update Cloud Config
+      avi_cloud:
+        avi_credentials: "{{ AVI_CREDENTIALS }}"
+        avi_api_update_method: patch
+        avi_api_patch_op: replace
+        name: "{{ CC_CLOUDNAME }}"
+        vtype: CLOUD_VCENTER
+        ipam_provider_ref: "{{ '/api/ipamdnsproviderprofile/' + ipam.obj.uuid }}"
+        dns_provider_ref: "{{ '/api/ipamdnsproviderprofile/' + dns.obj.uuid }}"
+    - debug:
+        msg: "The DNS and IPAM profile added successfully."
+

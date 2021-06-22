@@ -1,0 +1,44 @@
+---
+# --------------------------------------------------------------------
+# Management Variables
+# Description: This are variables used for any type of ansible deployment.
+# --------------------------------------------------------------------
+
+# Controller Credentials
+AVI_CREDENTIALS:
+  controller: "{{ CONTROLLER_CLUSTER_IP }}" # This can be either cluster ip or the ip of the leader controller.
+  username: "admin"
+  password: "< controller password >"
+  api_version: "20.1.4"
+
+# --------------------------------------------------------------------
+# Required Variables / Controller Deployments
+# Description: This are the main variables required for controller deployments.
+# --------------------------------------------------------------------
+
+# Cluster IP for Avi Controller
+CONTROLLER_CLUSTER_IP: 100.64.19.40
+
+# --------------------------------------------------------------------
+# Enviroment Variables / Vmware Cloud Setup
+# Description: You only have to apply variables on the cloud configuration type you desire.
+# --------------------------------------------------------------------
+
+# --- Vmware Hypervisor Only---
+
+# Cloud Setup
+CC_CLOUDNAME: VMware_Cloud
+
+# DNS Profile Settings
+DNS_PROFILE:
+  name: newdnsprofile
+  tenant: "admin"
+  domain: "old2.local" # DNS Domain for Virtual Service Configuration
+
+
+# IPAM Profile Settings
+# Make sure that the network has already been configured with allocated ip ranges for VIP network usage.
+IPAM_PROFILE:
+  name: newipamprofile
+  tenant: "admin"
+  network: "vxw-dvs-34-virtualwire-3-sid-6100002-wdc-06-vc10-avi-mgmt" # Network used for VIP address allocation.
