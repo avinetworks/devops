@@ -107,4 +107,4 @@ This will not clean up any resources created in the environment in support of NS
 
 <!-- Reuse the support information (contact info and availability) that your team provided on the Support tab in Partner Center exactly as is. The following is an example. -->
 
-This product is provided and supported by [Example Corp](https://support.examplecorp.com). If you encounter issues, contact Example Corp support by [chat](https://support.examplecorp.com/chat) or [phone](https://support.examplecorp.com/phone). Example Corp support is available 24 hours a day, 7 days a week, 365 days a year. Example Corp support is provided in English and French. 
+This product is provided and supported by [VMware](https://www.vmware.com/support/services.html). If you encounter issues, consult the NSX-ALB (Avi Networks) [support KB](https://avinetworks.com/docs/latest/support-overview/) for more information on how to contact support.
