@@ -13,7 +13,7 @@ cat << EOF > /root/avicontroller.yml
 ---
 - hosts: localhost
   vars:
-    avi_con_version: 20.1.5-9148-20210415.070829
+    avi_con_version: ${nsxalb_version}
   roles:
   - role: avinetworks.avicontroller
     vars:

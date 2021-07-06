@@ -51,6 +51,13 @@ variable "disk_size" {
     }
 }
 
+variable "nsxalb_version" {
+    description = "the NSX ALB Controller version"
+    type = string
+    #default = "20.1.5-9148-20210415.070829"
+    default = "20.1.6-9132-20210615.024303"
+}
+
 locals {
     disk_size_map = {
         small  = "256" 

@@ -118,7 +118,7 @@ resource "ibm_is_instance" "nsxalb_controller" {
     vpc       = data.ibm_is_vpc.deployment_vpc.id
     zone      = var.zone
     keys      = [data.ibm_is_ssh_key.avi_tf_key.id]
-    user_data = file("build_ansible.sh")
+    user_data = templatefile("build_ansible.sh", { nsxalb_version = var.nsxalb_version })
     volumes = [ibm_is_volume.nsxalb_volume.id]
 }
 

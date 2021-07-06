@@ -1,17 +1,9 @@
 # VMware NSX Advanced Load Balancer Controller
 
-
-
-<!-- Start with a short description that explains what the product is, why a customer would want to install and use it, etc. The following info is used here as an example. Be sure to update it accordingly. -->
-
 Avi Vantage delivers enterprise grade Elastic Load Balancer with SSL offload, web application security and Real-Time application performance monitoring and predictive autoscaling for applications for optimal application sizing.
 
 With this template, you can use IBM Cloud Schematics to create an [NSX Advanced Load Balancer](https://avinetworks.com/why-avi/multi-cloud-load-balancing/) controller built on a Centos 7 host OS. Schematics uses [Terraform](https://www.terraform.io/) as the infrastructure-as-code engine.  
-
 ## Before you begin
-
-<!-- List any prereqs including required permissions, capacity requirements, etc. The following info is used as an example. Update accordingly. -->
-
 
 1.  Make sure that you have the following permissions in IBM Cloud Identity and Access Management:
     * **Manager** service access role for IBM Cloud Schematics
@@ -26,18 +18,11 @@ With this template, you can use IBM Cloud Schematics to create an [NSX Advanced 
 
 ## Installing the software
 
-<!-- Recommendation is to not include the large table of configuration parameters that are listed on the Create page. -->
-
 When you select the [`NSX-ALB Controller` template](https://github.com/avinetworks/devops/terraform/ibm_catalog) from the IBM Cloud catalog, you set up your deployment variables from the **Create** page. When you apply the template, IBM 
 Cloud Schematics provisions the resources according to the values that you specify for these variables.
 ### Production configuration
 * The customer is responsible for the security, patching, and maintenance of the OS of this controller instance.  
 * A 3-node [cluster](https://avinetworks.com/docs/latest/configure-controller-ha-cluster/) is recommended for production deployments, ideally each controller in a different availability zone.  Because of limitations in addressing in IBM cloud, you will not be able to use a floating IP for the cluster.
-
-<!-- Add additional H3 level headings as needed for sections that apply to use on IBM Cloud such as network policy, persistence, cluster topologies, etc.
-### H3
-### H3
--->
 
 ### Sizing
 The Terraform template has variables for sizing based on T-shirt sizing.  These T-shirt sizes map to the following instance and volume sizes:
@@ -72,6 +57,7 @@ Before you apply your template, you can customize the following default variable
 |`floating_ip`|Choose whether to give the controller instance a floating IP for internet access.  This isn't necessary if you're using a public gateway.  Accepts true or false.|`false`|
 |`controller_size`|The size of the controller instance.  Accepts small, medium, and large.|`small`|
 |`disk_size`|The size of the data disk for the controller instance.  Impacts log storage. Accepts small, medium, and large.|`small`|
+|`nsxalb_version`|The version of the controller image to be pulled, needs to match the container tag at https://hub.docker.com/r/avinetworks/controller/tags|`20.1.6-9132-20210615.024303`|
 
 ### Outputs
 After you apply the template your VPC resources are successfully provisioned in IBM Cloud, you can review information such as the virtual server IP addresses and VPC identifiers in the Schematics log files, in the `Terraform SHOW` section.
@@ -80,16 +66,12 @@ The controller will take around 15 minutes to deploy, once the web interface is 
 
 ## Upgrading to a new version
 
-<!-- How can a user upgrade to a new version when it's available? The following info is used as an example. Update accordingly. -->
-
 * Upgrading to a new version of the NSX-ALB controller can be done through the web UI by navigating to Administration/Controller.
 * Upgrading from the CLI/API can also be done, follwing [this guide.](https://avinetworks.com/docs/latest/flexible-upgrades/)
 * The upgrade software can be downloaded from https://portal.avipulse.vmware.com/ if you have a support entitlement.
 
 
 ## Uninstalling the software
-
-<!-- How can a user uninstall this product? The following info is used as an example. Update accordingly. -->
 
 Complete the following steps to uninstall a Terraform-deployed controller from your account. 
 
@@ -104,7 +86,5 @@ This will need to be done for each controller schematic if a cluster was deploye
 This will not clean up any resources created in the environment in support of NSX-ALB, such as Service Engine hosts or custom route tables.  Those must be removed manually.
 
 ## Getting support
-
-<!-- Reuse the support information (contact info and availability) that your team provided on the Support tab in Partner Center exactly as is. The following is an example. -->
 
 This product is provided and supported by [VMware](https://www.vmware.com/support/services.html). If you encounter issues, consult the NSX-ALB (Avi Networks) [support KB](https://avinetworks.com/docs/latest/support-overview/) for more information on how to contact support.
