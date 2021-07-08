@@ -18,6 +18,11 @@ variable "zone" {
 variable "region" {
     description = "IBM cloud region, short name.  example: eu-de"
 }
+
+variable "security_group" {
+    description = "The name of the security group.  If not specified, one will be created"
+    default = null
+}
 variable "firewall_inbound_subnet" {
     description = "The source subnet to allow for inbound traffic in the controller security group"
     default = "10.0.0.0/8"

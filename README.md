@@ -45,6 +45,7 @@ Fill in the following values, based on the steps that you completed before you b
 |`subnet`|Enter the subnet where you want the instance to be placed|
 |`ssh-key`|Enter the [public SSH key](https://cloud.ibm.com/docs/vpc?topic=vpc-ssh-keys) that you use to access your VPC virtual servers. |
 |`zone`|Enter the zone where the VPC is created.|
+|`region`|Enter the short name of the region where the other required objects are created.|
 
 ---
 ### Optional values
@@ -52,6 +53,7 @@ Before you apply your template, you can customize the following default variable
 
 |Variable Name|Description|Default Value|
 |-------------|-----------|-------------|
+|`security_group`|The name of the security group you want to use.  One will be created for you if you don't specify one|`null`|
 |`firewall_inbound_subnet`|The source subnet to allow for inbound access to your controller. |`10.0.0.0/8`|
 |`firewall_outbound_subnet`|The destination subnet to allow for outbound access from your controller.  Internet access is required for deployment.|`0.0.0.0/8`|
 |`floating_ip`|Choose whether to give the controller instance a floating IP for internet access.  This isn't necessary if you're using a public gateway.  Accepts true or false.|`false`|
