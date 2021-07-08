@@ -16,7 +16,7 @@ variable "zone" {
 }
 
 variable "region" {
-    description = "IBM cloud region"
+    description = "IBM cloud region, short name.  example: eu-de"
 }
 variable "firewall_inbound_subnet" {
     description = "The source subnet to allow for inbound traffic in the controller security group"
@@ -30,7 +30,7 @@ variable "firewall_outbound_subnet" {
 
 variable "floating_ip" {
     description = "If set to true, a floating IP will be assigned to the instance.  Unnecessary if you have a public gateway assigned to the subnet"
-    default = false
+    default = "false"
     validation {
         condition     = contains(["true", "false"], var.floating_ip)
         error_message = "Argument \"floating_ip\" must be either \"true\" or \"false\"."
