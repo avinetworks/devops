@@ -14,6 +14,10 @@ variable "vpc" {
 variable "zone" {
     description = "The name of the zone the instance will be deployed to"
 }
+
+variable "region" {
+    description = "IBM cloud region"
+}
 variable "firewall_inbound_subnet" {
     description = "The source subnet to allow for inbound traffic in the controller security group"
     default = "10.0.0.0/8"

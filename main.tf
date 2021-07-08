@@ -131,7 +131,7 @@ resource "ibm_is_floating_ip" "nsx_alb_floatingip" {
 
 
 output "controller_publicip" {
-    value = concat(ibm_is_floating_ip.nsx_alb_floatingip.*.address, list(""))
+    value = [ibm_is_floating_ip.nsx_alb_floatingip.*.address]
 }
 
 output "controller_private_ip" {

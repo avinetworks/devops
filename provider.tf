@@ -6,3 +6,9 @@ terraform {
     }
   }
 }
+
+provider "ibm" {
+  generation       = 2
+  region           = var.region
+  ibmcloud_timeout = 300
+}
