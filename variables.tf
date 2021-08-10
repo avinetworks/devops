@@ -1,5 +1,5 @@
 variable "TF_VERSION" {
-  default = "0.14"
+  default = "1.0"
   description = "terraform version required for schematics"
 }
 variable "ssh-key" {
