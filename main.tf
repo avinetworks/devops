@@ -15,7 +15,7 @@ data "ibm_is_ssh_key" "avi_tf_key" {
 }
 
 data "ibm_is_security_group" "avi_external_sg" {
-    count = var.security_group == null ? 0 : 1
+    count = var.security_group == "none" ? 0 : 1
     name = var.security_group
 }
 resource "random_string" "random_name_suffix" {
@@ -25,14 +25,14 @@ resource "random_string" "random_name_suffix" {
 }
 
 resource "ibm_is_security_group" "avi_controller" {
-    count = var.security_group == null ? 1 : 0
+    count = var.security_group == "none" ? 1 : 0
     name = "nsxalb-controller-${random_string.random_name_suffix.result}-sg"
     vpc  = data.ibm_is_vpc.deployment_vpc.id
 }
 
 resource "ibm_is_security_group_rule" "nsxalb-ssh" {
     depends_on = [ibm_is_security_group.avi_controller]
-    count = var.security_group == null ? 1 : 0
+    count = var.security_group == "none" ? 1 : 0
     group = ibm_is_security_group.avi_controller[0].id
     direction = "inbound" 
     remote = var.firewall_inbound_subnet
@@ -43,7 +43,7 @@ resource "ibm_is_security_group_rule" "nsxalb-ssh" {
 }
 resource "ibm_is_security_group_rule" "nsxalb-http" {
     depends_on = [ibm_is_security_group_rule.nsxalb-ssh]
-    count = var.security_group == null ? 1 : 0
+    count = var.security_group == "none" ? 1 : 0
     group = ibm_is_security_group.avi_controller[0].id
     direction = "inbound" 
     remote = var.firewall_inbound_subnet
@@ -54,7 +54,7 @@ resource "ibm_is_security_group_rule" "nsxalb-http" {
 }
 resource "ibm_is_security_group_rule" "nsxalb-https" {
     depends_on = [ibm_is_security_group_rule.nsxalb-http]
-    count = var.security_group == null ? 1 : 0
+    count = var.security_group == "none" ? 1 : 0
     group = ibm_is_security_group.avi_controller[0].id
     direction = "inbound" 
     remote = var.firewall_inbound_subnet
@@ -66,7 +66,7 @@ resource "ibm_is_security_group_rule" "nsxalb-https" {
 
 resource "ibm_is_security_group_rule" "nsxalb-securechannel" {
     depends_on = [ibm_is_security_group_rule.nsxalb-https]
-    count = var.security_group == null ? 1 : 0
+    count = var.security_group == "none" ? 1 : 0
     group = ibm_is_security_group.avi_controller[0].id
     direction = "inbound" 
     remote = var.firewall_inbound_subnet
@@ -77,7 +77,7 @@ resource "ibm_is_security_group_rule" "nsxalb-securechannel" {
 }
 resource "ibm_is_security_group_rule" "nsxalb-securechannel-sshtunnel" {
     depends_on = [ibm_is_security_group_rule.nsxalb-securechannel]
-    count = var.security_group == null ? 1 : 0
+    count = var.security_group == "none" ? 1 : 0
     group = ibm_is_security_group.avi_controller[0].id
     direction = "inbound" 
     remote = var.firewall_inbound_subnet
@@ -88,7 +88,7 @@ resource "ibm_is_security_group_rule" "nsxalb-securechannel-sshtunnel" {
 }
 resource "ibm_is_security_group_rule" "nsxalb-ntp" {
     depends_on = [ibm_is_security_group_rule.nsxalb-securechannel-sshtunnel]
-    count = var.security_group == null ? 1 : 0
+    count = var.security_group == "none" ? 1 : 0
     group = ibm_is_security_group.avi_controller[0].id
     direction = "inbound" 
     remote = var.firewall_inbound_subnet
@@ -100,7 +100,7 @@ resource "ibm_is_security_group_rule" "nsxalb-ntp" {
 
 resource "ibm_is_security_group_rule" "nsxalb-icmp" {
     depends_on = [ibm_is_security_group_rule.nsxalb-ntp]
-    count = var.security_group == null ? 1 : 0
+    count = var.security_group == "none" ? 1 : 0
     group = ibm_is_security_group.avi_controller[0].id
     direction = "inbound" 
     remote = var.firewall_inbound_subnet
@@ -110,7 +110,7 @@ resource "ibm_is_security_group_rule" "nsxalb-icmp" {
 }
 resource "ibm_is_security_group_rule" "nsxalb-outbound" {
     depends_on = [ibm_is_security_group_rule.nsxalb-icmp]
-    count = var.security_group == null ? 1 : 0
+    count = var.security_group == "none" ? 1 : 0
     group = ibm_is_security_group.avi_controller[0].id
     direction = "outbound" 
     remote = var.firewall_outbound_subnet
@@ -136,7 +136,7 @@ resource "ibm_is_instance" "nsxalb_controller" {
     primary_network_interface {
         name = "nsxalb-controller-${random_string.random_name_suffix.result}-mgmt"
         subnet = data.ibm_is_subnet.deployment_subnet.id
-        security_groups = [ var.security_group == null ? ibm_is_security_group.avi_controller[0].id :  data.ibm_is_security_group.avi_external_sg[0].id]
+        security_groups = [ var.security_group == "none" ? ibm_is_security_group.avi_controller[0].id :  data.ibm_is_security_group.avi_external_sg[0].id]
     }
 
     vpc       = data.ibm_is_vpc.deployment_vpc.id

@@ -20,8 +20,8 @@ variable "region" {
 }
 
 variable "security_group" {
-    description = "The name of the security group.  If not specified, one will be created"
-    default = null
+    description = "The name of the security group.  If 'none' is specified (all lowercase), one will be created"
+    default = "none"
 }
 variable "firewall_inbound_subnet" {
     description = "The source subnet to allow for inbound traffic in the controller security group"
