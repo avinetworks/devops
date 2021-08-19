@@ -323,12 +323,14 @@ def get_crt(user, password, tenant, api_version, csr, CA=DEFAULT_CA, disable_che
                     for verifyAttempt in range(maxVerifyAttempts):
                         reqToken = _do_request(wellknown_url, verify=False)
                         if reqToken[0] != keyauthorization:
-                            print ("Internal token validation failed, {0} of {1} attempts. Retrying in 2 seconds.".format((verifyAttempt + 1), maxVerifyAttempts))
-                            if maxVerifyAttempts == (verifyAttempt + 1): # attempts start at 0, therefore +1. If limit reached, raise exception.
-                                raise Exception("All {2} internal token verifications failed. Got '{0}' but expected '{1}'.".format(reqToken[0], keyauthorization, maxVerifyAttempts))
+                            print ("Internal token validation failed, {0} of {1} attempts. Retrying in 2 seconds."
+                                        .format((verifyAttempt + 1), maxVerifyAttempts))
                             time.sleep(2)
                         else:
                             break
+                    else:
+                        raise Exception("All {2} internal token verifications failed. Got '{0}' but expected '{1}'."
+                                            .format(reqToken[0], keyauthorization, maxVerifyAttempts))
                 except Exception as e:
                     raise ValueError("Wrote file, but Avi couldn't verify token at {0}. Exception: {1}".format(wellknown_url, str(e)))
             else:
