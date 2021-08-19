@@ -19,8 +19,10 @@ Setup -
     7. Save and wait a few seconds for the certificate to be requested and imported.
 
 Note -
-    This script can issue RSA and ECDSA certificates, as specified when
-    creating an application certificate (CSR) via UI.
+    1. This script can issue RSA and ECDSA certificates, as specified when
+       creating an application certificate (CSR) via UI.
+    2. This REQUIRES a L7 Virtual Service (HTTP/S) due to the requirement
+       of HTTP-Policy-Sets.
 
 Parameters -
     user            - Avi user name (Default None)
@@ -217,14 +219,14 @@ def get_crt(user, password, tenant, api_version, csr, CA=DEFAULT_CA, disable_che
 
         rsp = _do_request_avi("virtualservice/?search=({})".format(search_term), "GET").json()
         if rsp['count'] == 0:
-            raise Exception("Could not find a VS with common name = {}".format(domain))
+            raise Exception("Could not find a VS with fqdn = {}".format(domain))
 
         vs_uuid = rsp["results"][0]["uuid"]
-        print ("Found vs {} with fqdn {}".format(vs_uuid, domain))
+        print ("Found VS {} with fqdn {}".format(vs_uuid, domain))
 
         # Let's check if VS is enabled, otherwise challenge can never successfully complete.
         if not rsp["results"][0]["enabled"]:
-            raise Exception("VS with common name {} is not enabled.".format(domain))
+            raise Exception("VS with fqdn {} is not enabled.".format(domain))
 
         # Special handling for virtualHosting: if child, get services from parent.
         if vhMode and rsp["results"][0]["type"] == "VS_TYPE_VH_CHILD":
@@ -251,28 +253,28 @@ def get_crt(user, password, tenant, api_version, csr, CA=DEFAULT_CA, disable_che
         httppolicy_data = {
             "name": (domain + "-LetsEncryptHTTPpolicy"),
             "http_security_policy": {
-            "rules": [{
-                "name": "Rule 1",
-                "index": 1,
-                "enable": True,
-                "match": {
-                    "path": {
-                        "match_criteria": "CONTAINS",
-                        "match_case": "SENSITIVE",
-                        "match_str": [
-                            ".well-known/acme-challenge/{}".format(token)
-                        ]
+                "rules": [{
+                    "name": "Rule 1",
+                    "index": 1,
+                    "enable": True,
+                    "match": {
+                        "path": {
+                            "match_criteria": "CONTAINS",
+                            "match_case": "SENSITIVE",
+                            "match_str": [
+                                ".well-known/acme-challenge/{}".format(token)
+                            ]
+                        }
+                    },
+                    "action": {
+                        "action": "HTTP_SECURITY_ACTION_SEND_RESPONSE",
+                        "status_code": "HTTP_LOCAL_RESPONSE_STATUS_CODE_200",
+                        "file": {
+                            "content_type": "text/plain",
+                            "file_content": keyauthorization
+                        }
                     }
-                },
-                "action": {
-                    "action": "HTTP_SECURITY_ACTION_SEND_RESPONSE",
-                    "status_code": "HTTP_LOCAL_RESPONSE_STATUS_CODE_200",
-                    "file": {
-                        "content_type": "text/plain",
-                        "file_content": keyauthorization
-                    }
-                }
-            }]
+                }]
             },
             "is_internal_policy": False
         }
