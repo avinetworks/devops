@@ -51,7 +51,7 @@ DEFAULT_DIRECTORY_URL = "https://acme-v02.api.letsencrypt.org/directory"
 DEFAULT_STAGING_DIRECTORY_URL = "https://acme-staging-v02.api.letsencrypt.org/directory"
 ACCOUNT_KEY_PATH = "/var/lib/avi/ca/private/letsencrypt.key"
 
-def get_crt(user, password, tenant, api_version, csr, CA=DEFAULT_CA, disable_check=False, directory_url=DEFAULT_DIRECTORY_URL, contact=None):
+def get_crt(user, password, tenant, api_version, csr, CA=DEFAULT_CA, disable_check=False, directory_url=DEFAULT_DIRECTORY_URL, contact=None, debug=False):
     directory, acct_headers, alg, jwk = None, None, None, None # global variables
 
     # helper functions - base64 encode for jose spec
@@ -136,7 +136,8 @@ def get_crt(user, password, tenant, api_version, csr, CA=DEFAULT_CA, disable_che
         return rsp
 
     if os.path.exists(ACCOUNT_KEY_PATH):
-        print ("Reusing account key.")
+        if debug:
+            print ("Reusing account key.")
     else:
         print ("Account key not found. Generating account key...")
         out = _cmd(["openssl", "genrsa", "4096"], err_msg="OpenSSL Error")
@@ -196,6 +197,8 @@ def get_crt(user, password, tenant, api_version, csr, CA=DEFAULT_CA, disable_che
 
     # get the authorizations that need to be completed
     for auth_url in order['authorizations']:
+        if debug:
+            print ("Authorization URL is: {}".format(auth_url))
         authorization, _, _ = _send_signed_request(auth_url, None, "Error getting challenges")
         domain = authorization['identifier']['value']
         print ("Verifying {0}...".format(domain))
@@ -208,6 +211,8 @@ def get_crt(user, password, tenant, api_version, csr, CA=DEFAULT_CA, disable_che
         # Get VSVIPs/VSs, based on FQDN
         rsp = _do_request_avi("vsvip/?search=(fqdn,{})".format(domain), "GET").json()
         vhMode = False
+        if debug:
+            print ("Found {} matching VSVIP FQDNs".format(rsp["count"]))
         if rsp["count"] == 0:
             print ("Warning: Could not find a VSVIP with fqdn = {}".format(domain))
             # As a fallback we search for VirtualHosting entries with that domain
@@ -218,6 +223,8 @@ def get_crt(user, password, tenant, api_version, csr, CA=DEFAULT_CA, disable_che
             search_term = "vsvip_ref,{}".format(vsvip_uuid)
 
         rsp = _do_request_avi("virtualservice/?search=({})".format(search_term), "GET").json()
+        if debug:
+            print ("Found {} matching VSs".format(rsp["count"]))
         if rsp['count'] == 0:
             raise Exception("Could not find a VS with fqdn = {}".format(domain))
 
@@ -233,6 +240,8 @@ def get_crt(user, password, tenant, api_version, csr, CA=DEFAULT_CA, disable_che
             # vh_parent_vs_ref is schema of https://avi.domain.tld/api/virtualservice/virtualservice-UUID, hence picking the last part
             vs_uuid_parent = rsp["results"][0]["vh_parent_vs_ref"].split("/")[-1]
             vhRsp = _do_request_avi("virtualservice/?search=(uuid,{})".format(vs_uuid_parent), "GET").json()
+            if debug:
+                print ("Parent VS of Child-VS is {} and found {} matches".format(vs_uuid_parent, vhRsp['count']))
             if vhRsp['count'] == 0:
                 raise Exception("Could not find parent VS {} of child VS UUID = {}".format(vs_uuid_parent, vs_uuid))
 
@@ -245,7 +254,8 @@ def get_crt(user, password, tenant, api_version, csr, CA=DEFAULT_CA, disable_che
         for service in rsp["results"][0]["services"]:
             if service["port"] == 80 and not service["enable_ssl"]:
                 serving_on_port_80 = True
-                print ("VS serving on port 80")
+                if debug:
+                    print ("VS serving on port 80")
                 break
 
         # Update vs
@@ -295,6 +305,7 @@ def get_crt(user, password, tenant, api_version, csr, CA=DEFAULT_CA, disable_che
                     "port_range_end": 80
                 }
                 patch_data["add"]["services"] = [service_on_port_80_data]
+
             if vhMode: # if VH, we set the rule on the parent. Without SNI (so HTTP) it will go to the parent.
                 _do_request_avi("virtualservice/{}".format(vs_uuid_parent), "PATCH", patch_data)
                 print ("Added HTTPPolicy to parent-VS {}".format(vs_uuid_parent))
@@ -304,7 +315,7 @@ def get_crt(user, password, tenant, api_version, csr, CA=DEFAULT_CA, disable_che
 
             # check that the file is in place
             if not disable_check:
-                print ("Validating token from AVI controller...")
+                print ("Validating token from Avi Controller...")
                 wellknown_url = "http://{0}/.well-known/acme-challenge/{1}".format(domain, token)
                 try:
                     maxVerifyAttempts = 5 # maximal amount of verification attempts
@@ -319,7 +330,7 @@ def get_crt(user, password, tenant, api_version, csr, CA=DEFAULT_CA, disable_che
                         else:
                             break
                 except Exception as e:
-                    raise ValueError("Wrote file, but AVI couldn't verify token at {0}. Exception: {1}".format(wellknown_url, str(e)))
+                    raise ValueError("Wrote file, but Avi couldn't verify token at {0}. Exception: {1}".format(wellknown_url, str(e)))
             else:
                 print ("Waiting 5 seconds before letting LetsEncrypt validating the challenge as validation disabled. Give controller time to push configs.")
                 time.sleep(5) # wait 5 secs if not validating, due to above mentioned race condition
@@ -413,7 +424,9 @@ def certificate_request(csr, common_name, kwargs):
 
     signed_crt = None
     try:
-        signed_crt = get_crt(user, password, tenant, api_version, csr_temp_file.name, disable_check=disable_check, directory_url=directory_url, contact=contact)
+        signed_crt = get_crt(user, password, tenant, api_version, csr_temp_file.name, 
+                                disable_check=disable_check, directory_url=directory_url, 
+                                contact=contact, debug=debug)
     finally:
         os.remove(csr_temp_file.name)
 
