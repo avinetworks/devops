@@ -219,7 +219,7 @@ def get_crt(user, password, tenant, api_version, csr, CA=DEFAULT_CA, disable_che
         keyauthorization = "{0}.{1}".format(token, thumbprint)
 
         # Get VSVIPs/VSs, based on FQDN
-        rsp = _do_request_avi("vsvip/?search=(fqdn,{})".format(domain), "GET").json()
+        rsp = _do_request_avi("vsvip/?fqdn={}".format(domain), "GET").json()
         vhMode = False
         if debug:
             print ("Found {} matching VSVIP FQDNs".format(rsp["count"]))
@@ -227,12 +227,12 @@ def get_crt(user, password, tenant, api_version, csr, CA=DEFAULT_CA, disable_che
             print ("Warning: Could not find a VSVIP with fqdn = {}".format(domain))
             # As a fallback we search for VirtualHosting entries with that domain
             vhMode = True
-            search_term = "vh_domain_name,{}".format(domain)
+            search_term = "vh_domain_name.contains={}".format(domain)
         else:
             vsvip_uuid = rsp["results"][0]["uuid"]
-            search_term = "vsvip_ref,{}".format(vsvip_uuid)
+            search_term = "vsvip_ref={}".format(vsvip_uuid)
 
-        rsp = _do_request_avi("virtualservice/?search=({})".format(search_term), "GET").json()
+        rsp = _do_request_avi("virtualservice/?{}".format(search_term), "GET").json()
         if debug:
             print ("Found {} matching VSs".format(rsp["count"]))
         if rsp['count'] == 0:
@@ -249,7 +249,7 @@ def get_crt(user, password, tenant, api_version, csr, CA=DEFAULT_CA, disable_che
         if vhMode and rsp["results"][0]["type"] == "VS_TYPE_VH_CHILD":
             # vh_parent_vs_ref is schema of https://avi.domain.tld/api/virtualservice/virtualservice-UUID, hence picking the last part
             vs_uuid_parent = rsp["results"][0]["vh_parent_vs_ref"].split("/")[-1]
-            vhRsp = _do_request_avi("virtualservice/?search=(uuid,{})".format(vs_uuid_parent), "GET").json()
+            vhRsp = _do_request_avi("virtualservice/?uuid={}".format(vs_uuid_parent), "GET").json()
             if debug:
                 print ("Parent VS of Child-VS is {} and found {} matches".format(vs_uuid_parent, vhRsp['count']))
             if vhRsp['count'] == 0:
