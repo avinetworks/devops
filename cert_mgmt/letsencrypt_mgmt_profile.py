@@ -1,43 +1,51 @@
 '''
-### letsencrypt_mgmt_profile.py ###
-
-Description -
-    This is a python script used for automatically requesting and renewing certificates
-    from and via Let's Encrypt.
-
-Setup -
-    1. This content needs to be imported in the AVI Controller in the settings menu
-       at <<Templates - Security - Certificate Management>>.
-    2. Create at least following script params: user, password (sensitive).
-    3. Go to <<Templates - Security - SSL/TLS Certificates>>, click on <<Create>>
-       and then <<Application Certificate>>.
-    4. Specify a suitable name to identify this certificate in AVI Controller.
-       (Like sub.domain.tld RSA or sub.domain2.tld ECDSA)
-    5. Change <<Type>> to <<CSR>>
-    6. Set <<Common Name>> to the domain to which the certificate should be issued to
-       and select the "Certificate Management" as previously created.
-    7. Save and wait a few seconds for the certificate to be requested and imported.
-
-Note -
-    1. This script can issue RSA and ECDSA certificates, as specified when
-       creating an application certificate (CSR) via UI.
-    2. This REQUIRES a L7 Virtual Service (HTTP/S) due to the requirement
-       of HTTP-Policy-Sets.
-
-Parameters -
-    user            - Avi user name (Default None)
-    password        - Password of the above user (Default None)
-    tenant          - Avi tenant name (default is 'admin')
-    dryrun          - True/False. If True letsencrypt's staging server will be used. (Default False)
-    contact         - E-mail address sent to letsencrypt for account creation. (Default None.)
-                      (set this only once until updated, otherwise an update request will be sent every time.)
-
-Useful links -
-    Ratelimiting - https://letsencrypt.org/docs/rate-limits/
-
-Source/Credits -
-    https://github.com/avinetworks/devops/blob/master/cert_mgmt/letsencrypt_mgmt_profile.py
-    Modified https://github.com/diafygi/acme-tiny/blob/master/acme_tiny.py (MIT license) for Avi Controller
+### 
+# Name: letsencrypt_mgmt_profile.py
+# Version: 0.9.0
+# License: MIT
+# 
+# Description -
+#     This is a python script used for automatically requesting and renewing certificates
+#     from and via Let's Encrypt.
+# 
+# Setup -
+#     1. This content needs to be imported in the Avi Controller in the settings menu
+#        at <<Templates - Security - Certificate Management>>.
+#     2. Create at least following script params: user, password (sensitive).
+#     3. Go to <<Templates - Security - SSL/TLS Certificates>>, click on <<Create>>
+#        and then <<Application Certificate>>.
+#     4. Specify a suitable name to identify this certificate in Avi Controller.
+#        (Like sub.domain.tld RSA or sub.domain2.tld ECDSA)
+#     5. Change <<Type>> to <<CSR>>
+#     6. Set <<Common Name>> to the domain to which the certificate should be issued to
+#        and select the "Certificate Management" as previously created.
+#     7. Save and wait a few seconds for the certificate to be requested and imported.
+# 
+# Note -
+#     1. This script can issue RSA and ECDSA certificates, as specified when
+#        creating an application certificate (CSR) via UI.
+#     2. This REQUIRES a L7 Virtual Service (HTTP/S) due to the requirement
+#        of HTTP-Policy-Sets.
+# 
+# Parameters -
+#     user        - Avi user name (Default None)
+#     password    - Password of the above user (Default None)
+#     tenant      - Avi tenant name (default is 'admin')
+#     dryrun      - True/False. If True letsencrypt's staging server will be used. (Default False)
+#     contact     - E-mail address sent to letsencrypt for account creation. (Default None.)
+#                   (set this only once until updated, otherwise an update request will be sent every time.)
+# 
+# Useful links -
+#     Ratelimiting - https://letsencrypt.org/docs/rate-limits/
+# 
+# Source -
+#     https://github.com/avinetworks/devops/blob/master/cert_mgmt/letsencrypt_mgmt_profile.py
+# 
+# Authors/Credits -
+#     acme-tiny, modified for Avi Controller <https://github.com/diafygi/acme-tiny>
+#     Nikhil Kumar Yadav <kumaryadavni@vmware.com>
+#     Patrik Kernstock <pkernstock@vmware.com>
+###
 '''
 
 import base64, binascii, datetime, hashlib, os, json, re, ssl, subprocess, sys, time
@@ -45,6 +53,8 @@ from urllib.request import urlopen, Request # Python 3
 from tempfile import NamedTemporaryFile
 
 from avi.sdk.avi_api import ApiSession
+
+VERSION = "0.9.0"
 
 DEFAULT_CA = "https://acme-v02.api.letsencrypt.org" # DEPRECATED! USE DEFAULT_DIRECTORY_URL INSTEAD
 DEFAULT_DIRECTORY_URL = "https://acme-v02.api.letsencrypt.org/directory"
@@ -387,6 +397,8 @@ def certificate_request(csr, common_name, kwargs):
     api_version = kwargs.get('api_version', '20.1.1')
     disable_check = kwargs.get('disable_check', "false")
     debug = kwargs.get('debug', "false")
+
+    print ("Running version {}".format(VERSION))
 
     if debug.lower() == "true":
         debug = True
