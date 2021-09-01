@@ -833,7 +833,7 @@ class avi_metrics():
                 return login
 
 
-    def avi_request(self,avi_api,tenant,api_version='17.2.1'):
+    def avi_request(self,avi_api,tenant,api_version='18.2.6'):
         cookies=dict()
         if 'avi-sessionid' in self.login.cookies.keys():
             cookies['avi-sessionid'] = self.login.cookies['avi-sessionid']
@@ -843,7 +843,7 @@ class avi_metrics():
         return requests.get('https://%s/api/%s' %(self.avi_controller,avi_api), verify=False, headers = headers,cookies=cookies,timeout=50)
 
 
-    def avi_post(self,api_url,tenant,payload,api_version='17.2.1'):
+    def avi_post(self,api_url,tenant,payload,api_version='18.2.6'):
         cookies=dict()
         if 'avi-sessionid' in self.login.cookies.keys():
             cookies['avi-sessionid'] = self.login.cookies['avi-sessionid']
