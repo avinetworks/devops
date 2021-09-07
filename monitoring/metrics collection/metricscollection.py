@@ -833,8 +833,11 @@ class avi_metrics():
                 return login
 
 
-    def avi_request(self,avi_api,tenant,api_version='18.2.6'):
+    def avi_request(self,avi_api,tenant,api_version=None):
         cookies=dict()
+        if api_version == None:
+            major,minor = self.login.json()['version']['Version'].rsplit('.',1)
+            api_version = '%s.%s' %(major,minor)
         if 'avi-sessionid' in self.login.cookies.keys():
             cookies['avi-sessionid'] = self.login.cookies['avi-sessionid']
         else:
@@ -843,8 +846,11 @@ class avi_metrics():
         return requests.get('https://%s/api/%s' %(self.avi_controller,avi_api), verify=False, headers = headers,cookies=cookies,timeout=50)
 
 
-    def avi_post(self,api_url,tenant,payload,api_version='18.2.6'):
+    def avi_post(self,api_url,tenant,payload,api_version=None):
         cookies=dict()
+        if api_version == None:
+            major,minor = self.login.json()['version']['Version'].rsplit('.',1)
+            api_version = '%s.%s' %(major,minor)        
         if 'avi-sessionid' in self.login.cookies.keys():
             cookies['avi-sessionid'] = self.login.cookies['avi-sessionid']
         else:
