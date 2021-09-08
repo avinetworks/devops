@@ -1,0 +1,30 @@
+---
+# --------------------------------------------------------------------
+# Enviroment Variables
+# Description: Avi Infra Components (Pre-requirements)
+# --------------------------------------------------------------------
+
+CLOUD_NAME: Default-Cloud                 # Name of Cloud to use
+TENANT_NAME: admin                        # Name of Tenant to use
+SEG_NAME: Default-Group                   # Name of ServiceEngineGroup
+
+# --------------------------------------------------------------------
+# Horizon Deployment Variables / 
+# Description: This are the variables specific to each type of deployment type.
+
+# Unified Access Gateway Deployment
+# Reference KB: 
+# L4L7 https://avinetworks.com/docs/latest/horizon-307-single-vip/
+# L7N+1 https://avinetworks.com/docs/20.1/horizon-in-n-plus-one-mode-using-307-solution/
+# --------------------------------------------------------------------
+DEPLOYMENT_TYPE: L4L7
+DEPLOYMENT_NAME: EXT_HORIZON    # Prefix used for all Objects Created
+
+# Configuration for Application
+VS_IPADDR: 10.10.10.10
+VS_SSLCERT: testself
+SERVERS_FQDN_IP:
+  - ip: 1.1.1.1
+    fqdn: uag1.vsvip.int
+  - ip: 2.2.2.2
+    fqdn: uag2.vsvip.int

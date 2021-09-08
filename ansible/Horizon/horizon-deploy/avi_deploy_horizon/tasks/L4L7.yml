@@ -1,0 +1,190 @@
+- name: Create L4 VS UAG Pool Member Config Template
+  set_fact:
+    uag_pool_servers_l4l7: "{{ uag_pool_servers_l4l7 | default([]) + [{'port': 8443,'ip': {'addr': pool_member.ip,'type': 'V4'}},{'port': 4172,'ip': {'addr': pool_member.ip,'type': 'V4' }}] }}"
+  with_items: "{{ SERVERS_FQDN_IP }}"
+  loop_control:
+    loop_var: pool_member
+
+- name: Create L7 VS UAG Pool Member Config Template
+  set_fact:
+    uag_pool_servers_l7: "{{ uag_pool_servers_l7 | default([]) + [{'port': 443,'ip': {'addr': pool_member.ip,'type': 'V4'}}] }}"
+  with_items: "{{ SERVERS_FQDN_IP }}"
+  loop_control:
+    loop_var: pool_member
+
+- name: Create L7 httppolicyset Config Template for HostHeader Switching
+  set_fact: 
+    l7_http_request_rules: "{{ l7_http_request_rules | default([]) + [{'name': pool_member.fqdn ~ '-hdr-match', 'index': ansible_loop.index, 'match': { 'host_hdr': { 'match_criteria': 'HDR_BEGINS_WITH', 'match_case': 'INSENSITIVE', 'value': [pool_member.fqdn]}}, 'switching_action': {'action': 'HTTP_SWITCHING_SELECT_POOL', 'status_code': 'HTTP_LOCAL_RESPONSE_STATUS_CODE_200', 'server': {'ip': {'addr': pool_member.ip, 'type': 'V4'},'port': 443}, 'pool_ref': '/api/pool?name=' ~ DEPLOYMENT_NAME ~ '-L7-UAG-Pool'}  }] }}"
+  with_items: "{{ SERVERS_FQDN_IP }}"
+  loop_control:
+    loop_var: pool_member
+    extended: yes
+
+- name: Create DataScript for L4 Port to Pool Mapping
+  set_fact:
+    l4_datascript_code: "{{ lookup('template', '../templates/l4-ds.j2') }}"
+
+# Deployment Type: L4L7
+- name: Deploy/Configure L4L7 UAG Virtual Service Setup
+  set_fact:
+    avi_config:
+   # -- SSL PROFILE (pool member/VS) -- 
+      sslprofile:
+        - name: "{{ DEPLOYMENT_NAME +'-UAG-Pool-SSL_PROFILE' }}"
+          tenant: "{{ TENANT_NAME }}"
+          accepted_versions:
+          - type: SSL_VERSION_TLS1_2
+          cipher_enums:
+          - TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256
+          - TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256
+          - TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
+          - TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384
+          enable_ssl_session_reuse: true
+          ssl_session_timeout: 86400
+          type: SSL_PROFILE_TYPE_APPLICATION
+          ciphersuites: TLS_AES_256_GCM_SHA384:TLS_CHACHA20_POLY1305_SHA256:TLS_AES_128_GCM_SHA256
+          enable_early_data: false
+      # -- VS Datascript --
+      vsdatascriptset:
+        -   name: "{{ DEPLOYMENT_NAME + '-L4-UAG-DATASCRIPT' }}"
+            tenant: "{{ TENANT_NAME }}"
+            datascript:
+            - evt: VS_DATASCRIPT_EVT_L4_REQUEST
+              script: "{{ l4_datascript_code }}"
+            pool_refs: "{{ '/api/pool?name='+ DEPLOYMENT_NAME +'-L4-UAG-Pool' }}"
+
+      # -- HTTPPolicy Set --
+      httppolicyset:
+        -   name: "{{ DEPLOYMENT_NAME +'-L7-UAG-HTTPPOLICYSET' }}"
+            tenant: "{{ TENANT_NAME }}"
+            http_request_policy:
+              rules: "{{ l7_http_request_rules }}"
+
+      # -- Health Monitor --
+      healthmonitor:
+        -   name: "{{ DEPLOYMENT_NAME +'-UAG-HM' }}"
+            monitor_port: 443
+            https_monitor:
+                ssl_attributes:
+                    ssl_profile_ref: "{{ '/api/sslprofile/?name=' + DEPLOYMENT_NAME +'-UAG-Pool-SSL_PROFILE' }}"
+                http_request: GET /favicon.ico HTTP/1.0
+                http_response_code:
+                    - HTTP_2XX
+            receive_timeout: 10
+            tenant: "{{ TENANT_NAME }}"
+            send_interval: 30
+            type: HEALTH_MONITOR_HTTPS
+
+      # -- HTTPS App Profile --
+      applicationprofile:
+        -   name: "{{ DEPLOYMENT_NAME +'-L7-UAG-APPPROFILE' }}"
+            type: APPLICATION_PROFILE_TYPE_HTTP
+            tenant: "{{ TENANT_NAME }}"
+            http_profile:
+              connection_multiplexing_enabled: false
+              xff_enabled: true
+              xff_alternate_name: X-Forwarded-For
+              hsts_enabled: true
+              secure_cookie_enabled: true
+              http_to_https: true
+              server_side_redirect_to_https: false
+              websockets_enabled: true
+              x_forwarded_proto_enabled: false
+              detect_ntlm_app: true
+              httponly_enabled: true
+              enable_chunk_merge: false
+              respond_with_100_continue: false
+
+      # -- Pools --
+      pool:
+        -   name: "{{ DEPLOYMENT_NAME +'-L4-UAG-Pool' }}"
+            tenant: "{{ TENANT_NAME }}"
+            cloud_ref: "{{ '/api/cloud/?name=' + CLOUD_NAME}}"
+            default_server_port: 443
+            health_monitor_refs:
+              - "{{ '/api/healthmonitor/?name=' + DEPLOYMENT_NAME +'-UAG-HM' }}"
+            servers: "{{ uag_pool_servers_l4l7 }}"
+            append_port: "NEVER"
+        -   name: "{{ DEPLOYMENT_NAME +'-L7-UAG-Pool' }}"
+            tenant: "{{ TENANT_NAME }}"
+            cloud_ref: "{{ '/api/cloud/?name=' + CLOUD_NAME}}"
+            ssl_profile_ref: "{{ '/api/sslprofile/?name=' + DEPLOYMENT_NAME +'-UAG-Pool-SSL_PROFILE' }}"
+            default_server_port: 443
+            health_monitor_refs:
+              - "{{ '/api/healthmonitor/?name=' + DEPLOYMENT_NAME +'-UAG-HM' }}"
+            servers: "{{ uag_pool_servers_l7 }}"
+            append_port: "NEVER"
+
+      # -- VIP Object --
+      vsvip:
+        - name: "{{ DEPLOYMENT_NAME +'-UAG-VSVIP' }}"
+          tenant: "{{ TENANT_NAME }}"
+          cloud_ref: "{{ '/api/cloud/?name=' + CLOUD_NAME}}"
+          vip:
+              -   vip_id: 1
+                  avi_allocated_vip: false
+                  enabled: true
+                  auto_allocate_ip_type: V4_ONLY
+                  ip_address:
+                      type: V4
+                      addr: "{{ VS_IPADDR }}"
+
+      # -- Virtual Service --
+      virtualservice:
+        -   name: "{{ DEPLOYMENT_NAME + '-UAG-L7-VS' }}"
+            tenant: "{{ TENANT_NAME }}"
+            cloud_ref: "{{ '/api/cloud/?name=' + CLOUD_NAME}}"
+            se_group_ref: "{{ '/api/serviceenginegroup/?name=' + SEG_NAME }}"
+            ssl_profile_ref: "{{ '/api/sslprofile/?name=' + POOL_SSLPROFILE }}"
+            ssl_key_and_certificate_refs:
+                - "{{ '/api/sslkeyandcertificate/?name=' + VS_SSLCERT }}"
+            http_policies:
+                - http_policy_set_ref: "{{'/api/httppolicyset?name='+ DEPLOYMENT_NAME +'-L7-UAG-HTTPPOLICYSET' }}"
+                  index: 12
+            vsvip_ref: "{{ '/api/vsvip/?name=' + DEPLOYMENT_NAME + '-UAG-VSVIP' }}"
+            application_profile_ref: "{{ '/api/applicationprofile/?name=' + DEPLOYMENT_NAME +'-L7-UAG-APPPROFILE' }}"
+            network_profile_ref: '/api/networkprofile?name={{ VS_TCPPROFILE }}'
+            services:
+                -   enable_ssl: true
+                    port_range_end: 443
+                    port: 443
+                -   enable_ssl: false
+                    port_range_end: 80
+                    port: 80
+            pool_ref: "{{ '/api/pool/?name=' + DEPLOYMENT_NAME +'-L7-UAG-Pool' }}"
+        - 
+            tenant: "{{ TENANT_NAME }}"
+            cloud_ref: "{{ '/api/cloud/?name=' + CLOUD_NAME}}"
+            se_group_ref: "{{ '/api/serviceenginegroup/?name=' + SEG_NAME }}"
+            vsvip_ref: "{{ '/api/vsvip/?name=' + DEPLOYMENT_NAME + '-UAG-VSVIP' }}"
+            application_profile_ref: "{{ '/api/applicationprofile/?name=' + VS_L4_APPPROFILE }}"
+            network_profile_ref: '/api/networkprofile?name={{ VS_TCPPROFILE }}'
+            services:
+                - 
+                    enable_ssl: false
+                    port_range_end: 443
+                    port: 443
+                    override_network_profile_ref: "{{ '/api/networkprofile/?name=' + VS_UDPPROFILE }}"
+                - 
+                    enable_ssl: false
+                    port_range_end: "400{{SERVERS_FQDN_IP|length }}"
+                    port: 4001
+                - 
+                    enable_ssl: false
+                    port_range_end: "400{{SERVERS_FQDN_IP|length }}"
+                    port: 4001
+                    override_network_profile_ref: "{{ '/api/networkprofile/?name=' + VS_UDPPROFILE }}"
+                - 
+                    enable_ssl: false
+                    port_range_end: "500{{SERVERS_FQDN_IP|length }}"
+                    port: 5001
+                - 
+                    enable_ssl: false
+                    port_range_end: "500{{SERVERS_FQDN_IP|length }}"
+                    port: 5001
+                    override_network_profile_ref: "{{ '/api/networkprofile/?name=' + VS_UDPPROFILE }}"
+            pool_ref: "{{ '/api/pool/?name=' + DEPLOYMENT_NAME +'-L4-UAG-Pool' }}"
+            vs_datascripts:
+            - index: 1
+              vs_datascript_set_ref: "{{ '/api/vsdatascriptset?name=' + DEPLOYMENT_NAME + '-L4-UAG-DATASCRIPT' }}"
+            name: "{{ DEPLOYMENT_NAME + '-UAG-L4-VS' }}"

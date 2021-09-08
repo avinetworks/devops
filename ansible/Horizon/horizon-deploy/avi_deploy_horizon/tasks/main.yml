@@ -1,0 +1,19 @@
+---
+# tasks file for avi_deploy_horizon
+- name: avi_deploy_horizon | Load variable file
+  include_vars:
+    file: "{{ vars_file }}"
+  when:
+    - vars_file is defined
+
+- include_tasks: "{{ DEPLOYMENT_TYPE +'.yml' }}"
+  name: "{{ 'avi_deploy_horizon | deploy'  DEPLOYMENT_TYPE }}"
+  
+- name: avi_deploy_horizon | Config Apply
+  import_role:
+    name: aviconfig
+  vars:
+    avi_config: "{{ avi_config }}"
+    avi_credentials: "{{ AVI_CREDENTIALS }}"
+  when: avi_config is defined
+

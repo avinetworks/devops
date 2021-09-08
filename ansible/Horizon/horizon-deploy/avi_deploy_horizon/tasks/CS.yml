@@ -1,0 +1,114 @@
+# Prepare Pool Server List for CSONLY Deployment
+- name: Create L7 VS CS Pool Member Config Template
+  set_fact:
+    pool_servers_cs: "{{ pool_servers_cs | default([]) + [{'port': 443,'ip': {'addr': pool_member.ip,'type': 'V4'}}] }}"
+  loop: "{{ SERVERS_FQDN_IP }}"
+  loop_control:
+    loop_var: pool_member
+# CS Deployment
+- set_fact:
+    avi_config:
+    # -- SSL PROFILE (pool member/VS) -- 
+      sslprofile:
+        - name: "{{ DEPLOYMENT_NAME +'-CS-Pool-SSL_PROFILE' }}"
+          tenant: "{{ TENANT_NAME }}"
+          accepted_versions:
+          - type: SSL_VERSION_TLS1_2
+          cipher_enums:
+          - TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256
+          - TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256
+          - TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
+          - TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384
+          enable_ssl_session_reuse: false
+          ssl_session_timeout: 86400
+          type: SSL_PROFILE_TYPE_APPLICATION
+          enable_early_data: false
+    # -- Create Customer HTTPS App Profile --
+      applicationprofile:
+        -   name: "{{ DEPLOYMENT_NAME +'-CS-APP_PROFILE' }}"
+            type: APPLICATION_PROFILE_TYPE_HTTP
+            tenant: "{{ TENANT_NAME }}"
+            http_profile:
+              connection_multiplexing_enabled: false
+              xff_enabled: false
+              hsts_enabled: true
+              secure_cookie_enabled: true
+              http_to_https: true
+              server_side_redirect_to_https: false
+              websockets_enabled: true
+              x_forwarded_proto_enabled: false
+              detect_ntlm_app: true
+              httponly_enabled: true
+              enable_chunk_merge: false
+              respond_with_100_continue: false
+      # -- Pool Servers --
+      pool:
+        -   name: "{{ DEPLOYMENT_NAME +'-CS-Pool' }}"
+            lb_algorithm: LB_ALGORITHM_CONSISTENT_HASH
+            tenant: "{{ TENANT_NAME }}"
+            lb_algorithm_hash: LB_ALGORITHM_CONSISTENT_HASH_SOURCE_IP_ADDRESS
+            cloud_ref: "{{ '/api/cloud/?name=' + CLOUD_NAME}}"
+            ssl_profile_ref: "{{ '/api/sslprofile/?name=' + DEPLOYMENT_NAME +'-CS-Pool-SSL_PROFILE' }}"
+            default_server_port: 443
+            health_monitor_refs:
+                - "{{ '/api/healthmonitor/?name=' + DEPLOYMENT_NAME +'-CS-HM' }}" 
+            servers: "{{ pool_servers_cs }}"    
+            append_port: "NEVER"
+      # -- VIP Object --
+      vsvip:
+        - name: "{{ DEPLOYMENT_NAME +'-CS-VSVIP' }}"
+          tenant: "{{ TENANT_NAME }}"
+          cloud_ref: "{{ '/api/cloud/?name=' + CLOUD_NAME}}"
+          vip:
+              -   vip_id: 1
+                  auto_allocate_floating_ip: false
+                  avi_allocated_vip: false
+                  enabled: true
+                  auto_allocate_ip_type: V4_ONLY
+                  ip_address:
+                      type: V4
+                      addr: "{{ VS_IPADDR }}"
+      # -- Health Monitor --
+      healthmonitor:
+        -   name: "{{ DEPLOYMENT_NAME +'-CS-HM' }}"
+            monitor_port: 443
+            https_monitor:
+                ssl_attributes:
+                    ssl_profile_ref: "{{ '/api/sslprofile/?name=' + DEPLOYMENT_NAME + '-CS-Pool-SSL_PROFILE' }}"
+                http_request: GET /favicon.ico HTTP/1.0
+                http_response_code:
+                    - HTTP_2XX
+            receive_timeout: 10
+            tenant: "{{ TENANT_NAME }}"
+            send_interval: 30
+            type: HEALTH_MONITOR_HTTPS    
+      # -- Virtual Service --
+      virtualservice:
+        -   name: "{{ DEPLOYMENT_NAME + '-CS-VS' }}"
+            tenant: "{{ TENANT_NAME }}"
+            cloud_ref: "{{ '/api/cloud/?name=' + CLOUD_NAME}}"
+            se_group_ref: "{{ '/api/serviceenginegroup/?name=' + SEG_NAME }}"
+            ssl_profile_ref: "{{ '/api/sslprofile/?name=' + VS_SSLPROFILE }}"
+            ssl_key_and_certificate_refs:
+                - "{{ '/api/sslkeyandcertificate/?name=' + VS_SSLCERT }}"
+            vsvip_ref: "{{ '/api/vsvip/?name=' + DEPLOYMENT_NAME + '-CS-VSVIP' }}"
+            application_profile_ref: "{{ '/api/applicationprofile/?name=' + DEPLOYMENT_NAME + '-CS-APP_PROFILE' }}"
+            network_profile_ref: '/api/networkprofile?name={{ VS_TCPPROFILE }}'
+            services:
+                -   enable_ssl: true
+                    port_range_end: 443
+                    port: 443
+                -   enable_ssl: false
+                    port_range_end: 80
+                    port: 80
+            pool_ref: "{{ '/api/pool/?name=' + DEPLOYMENT_NAME +'-CS-Pool' }}"
+            analytics_policy:
+              udf_log_throttle: 10
+              full_client_logs:
+                duration: 30
+                throttle: 10
+                enabled: true
+            metrics_realtime_update:
+              duration: 30
+              enabled: true
+  name: Build L7 CS Configuration Template

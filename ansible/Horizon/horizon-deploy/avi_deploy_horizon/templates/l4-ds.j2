@@ -1,0 +1,13 @@
+avi_port = avi.vs.port()
+{% for value in SERVERS_FQDN_IP %}
+{% if loop.index == 1 %}
+if avi_port == "400{{ loop.index }}" then
+avi.pool.select("{{ DEPLOYMENT_NAME }}-L4-UAG-Pool", "{{ value.ip }}", 4172)
+{% else %}
+elseif avi_port == "400{{ loop.index }}" then
+avi.pool.select("{{ DEPLOYMENT_NAME }}-L4-UAG-Pool", "{{ value.ip }}", 4172)
+{% endif %}
+elseif avi_port == "500{{ loop.index }}" then
+avi.pool.select("{{ DEPLOYMENT_NAME }}-L4-UAG-Pool", "{{ value.ip }}", 8443)
+{% endfor %}
+end
