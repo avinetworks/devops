@@ -1,0 +1,16 @@
+---
+# vars file for avi_deploy_horizon
+#Default Variables if not provided by user
+VS_SSLPROFILE: System-Standard
+POOL_SSLPROFILE: System-Standard
+HM_SSLPROFILE: System-Standard
+
+VS_TCPPROFILE: System-TCP-Proxy
+VS_UDPPROFILE: System-UDP-Fast-Path-VDI
+VS_L4_APPPROFILE: System-L4-Application
+
+# Toggle for create(present), delete(absent)
+avi_config_state: present
+
+# Added logging for when configuration is applied(False to see logs)
+avi_role_config_log_mode: 'False'

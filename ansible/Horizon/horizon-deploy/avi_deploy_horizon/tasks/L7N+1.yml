@@ -1,0 +1,102 @@
+- name: Create L7 VS UAG Pool Member Config Template
+  set_fact:
+    uag_pool_servers_l7: "{{ uag_pool_servers_l7 | default([]) + [{'port': 443,'ip': {'addr': pool_member.ip,'type': 'V4'}}] }}"
+  with_items: "{{ SERVERS_FQDN_IP }}"
+  loop_control:
+    loop_var: pool_member
+
+# Deployment Type: L7N+1
+- name: Deploy/Configure L7N+1 UAG Virtual Service Setup
+  set_fact:
+    avi_config:
+   # -- SSL PROFILE (pool member/VS) -- 
+      sslprofile:
+        - name: "{{ DEPLOYMENT_NAME +'-UAG-Pool-SSL_PROFILE' }}"
+          tenant: "{{ TENANT_NAME }}"
+          accepted_versions:
+          - type: SSL_VERSION_TLS1_2
+          cipher_enums:
+          - TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256
+          - TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256
+          - TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
+          - TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384
+          enable_ssl_session_reuse: true
+          ssl_session_timeout: 86400
+          type: SSL_PROFILE_TYPE_APPLICATION
+          ciphersuites: TLS_AES_256_GCM_SHA384:TLS_CHACHA20_POLY1305_SHA256:TLS_AES_128_GCM_SHA256
+          enable_early_data: false
+      # -- Health Monitor --
+      healthmonitor:
+        -   name: "{{ DEPLOYMENT_NAME +'-UAG-HM' }}"
+            monitor_port: 443
+            https_monitor:
+                ssl_attributes:
+                    ssl_profile_ref: "{{ '/api/sslprofile/?name=' + DEPLOYMENT_NAME +'-UAG-Pool-SSL_PROFILE' }}"
+                http_request: GET /favicon.ico HTTP/1.0
+                http_response_code:
+                    - HTTP_2XX
+            receive_timeout: 10
+            tenant: "{{ TENANT_NAME }}"
+            send_interval: 30
+            type: HEALTH_MONITOR_HTTPS
+
+      # -- Create Customer HTTPS App Profile --
+      applicationprofile:
+        -   name: "{{ DEPLOYMENT_NAME +'-L7-UAG-APPPROFILE' }}"
+            type: APPLICATION_PROFILE_TYPE_HTTP
+            tenant: "{{ TENANT_NAME }}"
+            http_profile:
+              connection_multiplexing_enabled: false
+              xff_enabled: true
+              xff_alternate_name: X-Forwarded-For
+              hsts_enabled: true
+              hsts_max_age: 365
+              secure_cookie_enabled: true
+              http_to_https: true
+              server_side_redirect_to_https: false
+              x_forwarded_proto_enabled: false
+              detect_ntlm_app: true
+      # -- Pool Servers --
+      pool:
+        -   name: "{{ DEPLOYMENT_NAME +'-L7-UAG-Pool' }}"
+            tenant: "{{ TENANT_NAME }}"
+            cloud_ref: "{{ '/api/cloud/?name=' + CLOUD_NAME}}"
+            ssl_profile_ref: "{{ '/api/sslprofile/?name=' + DEPLOYMENT_NAME +'-UAG-Pool-SSL_PROFILE' }}"
+            default_server_port: 443
+            health_monitor_refs:
+              - "{{ '/api/healthmonitor/?name=' + DEPLOYMENT_NAME +'-UAG-HM' }}"
+            servers: "{{ uag_pool_servers_l7 }}"
+            append_port: "NEVER"
+      # -- VIP Object --
+      vsvip:
+        - name: "{{ DEPLOYMENT_NAME +'-UAG-VSVIP' }}"
+          tenant: "{{ TENANT_NAME }}"
+          cloud_ref: "{{ '/api/cloud/?name=' + CLOUD_NAME}}"
+          vip:
+              -   vip_id: 1
+                  avi_allocated_vip: false
+                  enabled: true
+                  auto_allocate_ip_type: V4_ONLY
+                  ip_address:
+                      type: V4
+                      addr: "{{ VS_IPADDR }}"
+      # -- Virtual Service --
+      virtualservice:
+        -   name: "{{ DEPLOYMENT_NAME + '-UAG-L7-VS' }}"
+            tenant: "{{ TENANT_NAME }}"
+            cloud_ref: "{{ '/api/cloud/?name=' + CLOUD_NAME}}"
+            se_group_ref: "{{ '/api/serviceenginegroup/?name=' + SEG_NAME }}"
+            ssl_profile_ref: "{{ '/api/sslprofile/?name=' + VS_SSLPROFILE }}"
+            ssl_key_and_certificate_refs:
+                - "{{ '/api/sslkeyandcertificate/?name=' + VS_SSLCERT }}"
+            vsvip_ref: "{{ '/api/vsvip/?name=' + DEPLOYMENT_NAME + '-UAG-VSVIP' }}"
+            application_profile_ref: "{{ '/api/applicationprofile/?name=' + DEPLOYMENT_NAME +'-L7-UAG-APPPROFILE' }}"
+            network_profile_ref: '/api/networkprofile?name={{ VS_TCPPROFILE }}'
+            services:
+                -   enable_ssl: true
+                    port_range_end: 443
+                    port: 443
+                -   enable_ssl: false
+                    port_range_end: 80
+                    port: 80
+            pool_ref: "{{ '/api/pool/?name=' + DEPLOYMENT_NAME +'-L7-UAG-Pool' }}"

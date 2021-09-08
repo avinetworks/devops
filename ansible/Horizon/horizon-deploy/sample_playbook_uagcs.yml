@@ -1,0 +1,21 @@
+---
+- hosts: localhost
+  connection: local
+  gather_facts: false
+  vars:
+    AVI_CREDENTIALS:
+      controller: 10.10.10.24 # This can be either cluster ip or the ip of the leader controller.
+      username: "admin"
+      password: "VMware1!"
+      api_version: "20.1.6"
+  tasks:
+  - import_role:
+      name: avi_deploy_horizon
+    vars:
+      vars_file: example_uag_vars.yml
+    name: Build UAG L4L7 VS
+  - import_role:
+      name: avi_deploy_horizon
+    vars:
+      vars_file: example_cs_vars.yml
+    name: Build CS L7 VS

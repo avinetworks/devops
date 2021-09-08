@@ -1,0 +1,27 @@
+---
+# --------------------------------------------------------------------
+# Enviroment Variables
+# Description: Avi Infra Components (Pre-requirements)
+# --------------------------------------------------------------------
+
+CLOUD_NAME: Default-Cloud                 # Name of Cloud to use
+TENANT_NAME: admin                        # Name of Tenant to use
+SEG_NAME: Default-Group                   # Name of ServiceEngineGroup
+
+# --------------------------------------------------------------------
+# Horizon Deployment Variables / 
+# Description: This are the variables specific to each type of deployment type.
+
+# Connection Server Deployment
+# Reference KB: 
+# CS https://avinetworks.com/docs/latest/configure-avi-vantage-for-vmware-horizon/#connection
+# --------------------------------------------------------------------
+DEPLOYMENT_TYPE: CS
+DEPLOYMENT_NAME: INT_HORIZON    # Prefix used for all Objects Created
+
+# Configuration for Application
+VS_IPADDR: 10.10.10.11
+VS_SSLCERT: testself
+SERVERS_FQDN_IP:
+  - ip: 1.1.1.1
+  - ip: 2.2.2.2
