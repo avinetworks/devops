@@ -913,7 +913,7 @@ class avi_metrics():
             #------               
             for t in self.tenants:
                 if self.vs_metrics == True or self.vs_runtime == True:
-                    vs_inv = self.avi_request('virtualservice?fields=cloud_ref,tenant_ref,se_group_ref&page_size=200&include_name=true'+vs_runtime,t['name'])
+                    vs_inv = self.avi_request('virtualservice?fields=cloud_ref,tenant_ref,se_group_ref,markers&page_size=200&include_name=true'+vs_runtime,t['name'])
                     if vs_inv.status_code == 403:
                         print(str(datetime.now())+' =====> ERROR: virtualservice_inventory: %s' %vs_inv.text)
                     else:
@@ -922,7 +922,7 @@ class avi_metrics():
                         page_number = 1
                         while 'next' in resp:
                             page_number += 1
-                            resp = self.avi_request('virtualservice?fields=cloud_ref,tenant_ref,se_group_ref&page_size=200&include_name=true&page='+str(page_number)+vs_runtime,t['name']).json()
+                            resp = self.avi_request('virtualservice?fields=cloud_ref,tenant_ref,se_group_ref,markers&page_size=200&include_name=true&page='+str(page_number)+vs_runtime,t['name']).json()
                             for v in resp['results']:
                                 vs_inv['results'].append(v)
                         if vs_inv['count'] > 0:
@@ -1320,6 +1320,15 @@ class avi_metrics():
                                                  if n['header']['name'] == m['header']['name']:
                                                      if 'data' in n:
                                                          temp_payload['metric_value'] = n['data'][0]['value']
+                                #----- add AKO markers to vs metric data
+                                if 'markers' in self.vs_dict[vs_uuid]['results'].keys():
+                                    for marker in self.vs_dict[vs_uuid]['results']['markers']:
+                                        if marker['key'] == 'clustername':
+                                            temp_payload['k8s_clustername'] = marker['values'][0]
+                                        elif marker['key'] == 'Namespace':
+                                            temp_payload['k8s_namespace'] = marker['values'][0]
+                                        elif marker['key'] == 'ServiceName':
+                                            temp_payload['k8s_servicename'] = marker['values'][0]
                                 endpoint_payload_list.append(temp_payload)
             if len(endpoint_payload_list) > 0:
                 send_metriclist_to_endpoint(self.endpoint_list, endpoint_payload_list)
@@ -1406,6 +1415,15 @@ class avi_metrics():
                                         metric_name = d['header']['name']
                                         temp_payload['metric_name'] = metric_name+'_per_se'
                                         temp_payload['name_space'] = 'avi||'+self.avi_cluster_name+'||serviceengine||%s||virtualservice_stats||%s||%s' %(se_name,vs_name,temp_payload['metric_name'])
+                                        #----- add AKO markers to vs metric data
+                                        if 'markers' in self.vs_dict[entry]['results'].keys():
+                                            for marker in self.vs_dict[entry]['results']['markers']:
+                                                if marker['key'] == 'clustername':
+                                                    temp_payload['k8s_clustername'] = marker['values'][0]
+                                                elif marker['key'] == 'Namespace':
+                                                    temp_payload['k8s_namespace'] = marker['values'][0]
+                                                elif marker['key'] == 'ServiceName':
+                                                    temp_payload['k8s_servicename'] = marker['values'][0]
                                         endpoint_payload_list.append(temp_payload)
                 if len(endpoint_payload_list) > 0:
                     send_metriclist_to_endpoint(self.endpoint_list, endpoint_payload_list)
@@ -1451,6 +1469,15 @@ class avi_metrics():
                 temp_payload['metric_name'] = 'oper_status'
                 temp_payload['metric_value'] = metric_value
                 temp_payload['name_space'] = 'avi||'+self.avi_cluster_name+'||virtualservice||%s||%s' %(vs_name, metric_name)
+                #----- add AKO markers to vs metric data
+                if 'markers' in self.vs_dict[v]['results'].keys():
+                    for marker in self.vs_dict[v]['results']['markers']:
+                        if marker['key'] == 'clustername':
+                            temp_payload['k8s_clustername'] = marker['values'][0]
+                        elif marker['key'] == 'Namespace':
+                            temp_payload['k8s_namespace'] = marker['values'][0]
+                        elif marker['key'] == 'ServiceName':
+                            temp_payload['k8s_servicename'] = marker['values'][0]
                 endpoint_payload_list.append(temp_payload)
             temp_payload = self.payload_template.copy()
             temp_payload['timestamp']=int(time.time())
@@ -1748,6 +1775,15 @@ class avi_metrics():
                             temp_payload['metric_name'] = 'hosting_se'
                             temp_payload['metric_value'] = 1
                             temp_payload['name_space'] = 'avi||'+self.avi_cluster_name+'||virtualservice||%s||serviceengine||%s' %(vs_name, se_name)
+                            #----- add AKO markers to vs metric data
+                            if 'markers' in self.vs_dict[v]['results'].keys():
+                                for marker in self.vs_dict[v]['results']['markers']:
+                                    if marker['key'] == 'clustername':
+                                        temp_payload['k8s_clustername'] = marker['values'][0]
+                                    elif marker['key'] == 'Namespace':
+                                        temp_payload['k8s_namespace'] = marker['values'][0]
+                                    elif marker['key'] == 'ServiceName':
+                                        temp_payload['k8s_servicename'] = marker['values'][0]                            
                             if temp_payload not in discovered:
                                 discovered.append(temp_payload)
                                 endpoint_payload_list.append(temp_payload)
@@ -1789,6 +1825,15 @@ class avi_metrics():
                                     temp_payload['metric_name'] = 'primary_se'
                                     temp_payload['metric_value'] = 1
                                     temp_payload['name_space'] = 'avi||'+self.avi_cluster_name+'||virtualservice||%s||primary_se||%s' %(vs_name,se_name)
+                                    #----- add AKO markers to vs metric data
+                                    if 'markers' in self.vs_dict[v]['results'].keys():
+                                        for marker in self.vs_dict[v]['results']['markers']:
+                                            if marker['key'] == 'clustername':
+                                                temp_payload['k8s_clustername'] = marker['values'][0]
+                                            elif marker['key'] == 'Namespace':
+                                                temp_payload['k8s_namespace'] = marker['values'][0]
+                                            elif marker['key'] == 'ServiceName':
+                                                temp_payload['k8s_servicename'] = marker['values'][0]
                                     endpoint_payload_list.append(temp_payload)
             if len(endpoint_payload_list) > 0:
                 send_metriclist_to_endpoint(self.endpoint_list, endpoint_payload_list)
