@@ -1,7 +1,7 @@
 #!/opt/local/bin/python3
 
 
-version = 'v2021-02-09'
+version = 'v2021-09-23'
 
 
 
@@ -833,6 +833,36 @@ class avi_metrics():
                 return login
 
 
+
+    def return_tenants(self):
+        try:
+            admin_access = False
+            for t in self.login.json()['tenants']:
+                if t['name'] == 'admin':
+                    admin_access = True
+            if admin_access == True:
+                resp = self.avi_request('tenant?page_size=200','admin')
+                if resp.status_code == 200:
+                    tenants_resp = resp.json()
+                    resp = tenants_resp
+                    page_number = 1
+                    while 'next' in resp:
+                        page_number += 1
+                        resp = self.avi_request('tenant?page_size=200&page='+str(page_number),'admin').json()
+                        for r in resp['results']:
+                            tenants_resp['results'].append(r)
+                    return tenants_resp['results']
+                else:
+                    return self.login.json()['tenants']
+            else:
+                return self.login.json()['tenants']
+        except:
+            exception_text = traceback.format_exc()
+            print(str(datetime.now())+' '+self.avi_cluster_ip+': '+exception_text)            
+            return self.login.json()['tenants'] 
+
+
+
     def avi_request(self,avi_api,tenant,api_version=None):
         cookies=dict()
         if api_version == None:
@@ -844,6 +874,7 @@ class avi_metrics():
             cookies['sessionid'] = self.login.cookies['sessionid']
         headers = ({'X-Avi-Tenant': '%s' %tenant, 'content-type': 'application/json', 'X-Avi-Version': '%s' %api_version})
         return requests.get('https://%s/api/%s' %(self.avi_controller,avi_api), verify=False, headers = headers,cookies=cookies,timeout=50)
+
 
 
     def avi_post(self,api_url,tenant,payload,api_version=None):
@@ -2216,7 +2247,6 @@ class avi_metrics():
             start_time = time.time()
             self.login = self.avi_login()
             if self.login.status_code == 200:
-                self.tenants = self.login.json()['tenants']
                 #self.avi_controller = self.controller_to_poll()
                 #-----------------------------------
                 #----- Add Test functions to list for threaded execution
@@ -2264,6 +2294,10 @@ class avi_metrics():
                 #-----------------------------------
                 self.avi_controller = self.avi_cluster_ip
                 print('=====> Chose '+self.avi_controller)
+                #-----------------------------------
+                #self.tenants = self.login.json()['tenants']
+                self.tenants = self.return_tenants()
+                #-----------------------------------
                 self.vs_dict, self.se_dict, self.pool_dict, self.seg_dict = self.gen_inventory_dict()
                 #---- remove metrics that are not available in the current version
                 self.vs_metric_list, self.se_metric_list, self.controller_metric_list, self.pool_server_metric_list = self.remove_version_specific_metrics()
