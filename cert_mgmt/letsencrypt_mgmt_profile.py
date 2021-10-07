@@ -219,7 +219,7 @@ def get_crt(user, password, tenant, api_version, csr, CA=DEFAULT_CA, disable_che
         keyauthorization = "{0}.{1}".format(token, thumbprint)
 
         # Get VSVIPs/VSs, based on FQDN
-        rsp = _do_request_avi("vsvip/?fqdn={}".format(domain), "GET").json()
+        rsp = _do_request_avi("vsvip/?search=(fqdn,{})".format(domain), "GET").json()
         vhMode = False
         if debug:
             print ("Found {} matching VSVIP FQDNs".format(rsp["count"]))
