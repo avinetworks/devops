@@ -2111,7 +2111,8 @@ class avi_metrics():
                         "metric_id": self.pool_server_metric_list
                     }
                     ]}
-            api_url = 'analytics/metrics/collection?pad_missing_data=false&dimension_limit=1000&include_name=true&include_refs=true'
+            dimension_limit = str(len(self.pool_dict)*len(self.pool_server_metric_list))
+            api_url = 'analytics/metrics/collection?pad_missing_data=false&dimension_limit=%s&include_name=true&include_refs=true' %dimension_limit
             resp = self.avi_post(api_url,tenant,payload).json()
             if self.pool_realtime == True:
                 payload = {
@@ -2127,7 +2128,7 @@ class avi_metrics():
                             "metric_id": self.pool_server_metric_list
                         }
                         ]}
-                realtime_stats = self.avi_post('analytics/metrics/collection?pad_missing_data=false&dimension_limit=1000&include_name=true&include_refs=true', tenant, payload).json()
+                realtime_stats = self.avi_post(api_url, tenant, payload).json()
             if 'series' in resp:
                 if len(resp['series']['collItemRequest:AllServers']) != 0:
                     for p in resp['series']['collItemRequest:AllServers']:
