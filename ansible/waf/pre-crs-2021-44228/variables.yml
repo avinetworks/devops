@@ -6,4 +6,4 @@ AVI_CREDENTIALS:
 TENANT: admin
 
 WAF_POLICY_NAME: System-WAF-Policy
-ENFORCEMENT_MODE: detection   #detecton / enforcement
+ENFORCEMENT_MODE: enforcement  #options available: detecton/enforcement
