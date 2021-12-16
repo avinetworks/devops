@@ -1,0 +1,42 @@
+---
+- hosts: localhost
+  connection: local
+  gather_facts: false
+  vars:
+    detection: WAF_MODE_DETECTION_ONLY
+    enforcement: WAF_MODE_ENFORCEMENT
+  vars_files:
+    - "CVE-2021-44228.yml"
+  collections:
+    - vmware.alb
+  tasks:
+  # Collect existing WAFPolicy Configuration
+  - name: Check Existing Pre-CRS Rules
+    avi_api_session:
+      avi_credentials: "{{ AVI_CREDENTIALS }}"
+      api_version: "{{ AVI_CREDENTIALS.api_version }}"
+      http_method: get
+      timeout: 300
+      path: "wafpolicy"
+      params:
+        name: "{{ WAF_POLICY_NAME }}"
+    register: wafpolicyoutput
+    # Increment pre-crs group index
+  - set_fact:
+      new_group_index: "{{ wafpolicyoutput['obj']['results'][0]['pre_crs_groups']|length + 1}}"
+    when: wafpolicyoutput['obj']['results'][0]['pre_crs_groups'] is defined and wafpolicyoutput['obj']['results'][0]['pre_crs_groups']|length>0  #only executes if groups exist currently
+  - name: Apply new PreCRS Group and Rules
+    avi_wafpolicy:
+      avi_credentials: "{{ AVI_CREDENTIALS }}"
+      name: "{{ WAF_POLICY_NAME }}"
+      avi_api_update_method: "patch"
+      tenant: "{{ TENANT }}"
+      avi_api_patch_op: "add"
+      pre_crs_groups: 
+      - name: "LOG4J-CVE-2021-44228"
+        index: "{{ new_group_index | default(0)}}"
+        enabled: true
+        rules: "{{ CVE_2021_44228 }}"
+      waf_profile_ref: "{{ wafpolicyoutput['obj']['results'][0]['waf_profile_ref'] }}"
+    when: wafpolicyoutput['obj']['results'][0]['pre_crs_groups'] is not defined or  # checks if no pre-crs groups are defined
+          wafpolicyoutput['obj']['results'][0]['pre_crs_groups'] | selectattr('index','equalto',new_group_index) | list | count == 0  #Checks that no indexes match one defined in set_fact
