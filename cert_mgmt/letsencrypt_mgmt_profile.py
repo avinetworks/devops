@@ -1,7 +1,7 @@
 '''
 ### 
 # Name: letsencrypt_mgmt_profile.py
-# Version: 0.9.0
+# Version: 0.9.5
 # License: MIT
 # 
 # Description -
@@ -28,12 +28,14 @@
 #        of HTTP-Policy-Sets.
 # 
 # Parameters -
-#     user        - Avi user name (Default None)
-#     password    - Password of the above user (Default None)
-#     tenant      - Avi tenant name (default is 'admin')
-#     dryrun      - True/False. If True letsencrypt's staging server will be used. (Default False)
-#     contact     - E-mail address sent to letsencrypt for account creation. (Default None.)
-#                   (set this only once until updated, otherwise an update request will be sent every time.)
+#     user          - Avi user name (Default: None)
+#     password      - Password of the above user (Default: None)
+#     tenant        - Avi tenant name (Default: is 'admin')
+#     dryrun        - True/False. If True letsencrypt's staging server will be used. (Default: False)
+#     contact       - E-mail address sent to letsencrypt for account creation. (Default: None.)
+#                     (set this only once until updated, otherwise an update request will be sent every time.)
+#     directory_url - Change ACME server, e.g. for using in-house ACME server. (Default: Let's Encrypt Production)
+#     vs_uuid       - Specify UUID of VirtualServer to be used for validation. (Default: False)
 # 
 # Useful links -
 #     Ratelimiting - https://letsencrypt.org/docs/rate-limits/
@@ -54,7 +56,7 @@ from tempfile import NamedTemporaryFile
 
 from avi.sdk.avi_api import ApiSession
 
-VERSION = "0.9.0"
+VERSION = "0.9.5"
 
 DEFAULT_CA = "https://acme-v02.api.letsencrypt.org" # DEPRECATED! USE DEFAULT_DIRECTORY_URL INSTEAD
 DEFAULT_DIRECTORY_URL = "https://acme-v02.api.letsencrypt.org/directory"
