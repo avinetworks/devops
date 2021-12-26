@@ -61,7 +61,8 @@ DEFAULT_DIRECTORY_URL = "https://acme-v02.api.letsencrypt.org/directory"
 DEFAULT_STAGING_DIRECTORY_URL = "https://acme-staging-v02.api.letsencrypt.org/directory"
 ACCOUNT_KEY_PATH = "/var/lib/avi/ca/private/letsencrypt.key"
 
-def get_crt(user, password, tenant, api_version, csr, CA=DEFAULT_CA, disable_check=False, directory_url=DEFAULT_DIRECTORY_URL, contact=None, debug=False):
+def get_crt(user, password, tenant, api_version, csr, CA=DEFAULT_CA, disable_check=False, 
+            use_vs_uuid=None, directory_url=DEFAULT_DIRECTORY_URL, contact=None, debug=False):
     directory, acct_headers, alg, jwk = None, None, None, None # global variables
 
     # helper functions - base64 encode for jose spec
@@ -154,6 +155,14 @@ def get_crt(user, password, tenant, api_version, csr, CA=DEFAULT_CA, disable_che
         with open(ACCOUNT_KEY_PATH, 'w') as f:
             f.write(out.decode("utf-8"))
 
+    # Check if we need to overwrite the VS UUID if it was specified
+    # We request the info here once, instead in the loop for each SAN entry below.
+    if use_vs_uuid != None:
+        search_term = "uuid={}".format(use_vs_uuid)
+        use_vs_uuid = _do_request_avi("virtualservice/?{}".format(search_term), "GET").json()
+        if use_vs_uuid['count'] == 0:
+            raise Exception("Could not find a VS with {}".format(search_term))
+
     # parse account key to get public key
     print ("Parsing account key...")
     out = _cmd(["openssl", "rsa", "-in", ACCOUNT_KEY_PATH, "-noout", "-text"], err_msg="OpenSSL Error")
@@ -219,27 +228,42 @@ def get_crt(user, password, tenant, api_version, csr, CA=DEFAULT_CA, disable_che
         token = re.sub(r"[^A-Za-z0-9_\-]", "_", challenge['token'])
         keyauthorization = "{0}.{1}".format(token, thumbprint)
 
-        # Get VSVIPs/VSs, based on FQDN
-        rsp = _do_request_avi("vsvip/?fqdn={}".format(domain), "GET").json()
+        wellknown_url = "http://{0}/.well-known/acme-challenge/{1}".format(domain, token)
+        if debug:
+            print ("Validation URL is: {}".format(wellknown_url))
+
         vhMode = False
-        if debug:
-            print ("Found {} matching VSVIP FQDNs".format(rsp["count"]))
-        if rsp["count"] == 0:
-            print ("Warning: Could not find a VSVIP with fqdn = {}".format(domain))
-            # As a fallback we search for VirtualHosting entries with that domain
-            vhMode = True
-            search_term = "vh_domain_name.contains={}".format(domain)
+        # Check if we need to overwrite VirtualService UUID to something specific
+        if use_vs_uuid == None:
+
+            # Get VSVIPs/VSs, based on FQDN
+            rsp = _do_request_avi("vsvip/?fqdn={}".format(domain), "GET").json()
+            if debug:
+                print ("Found {} matching VSVIP FQDNs".format(rsp["count"]))
+            if rsp["count"] == 0:
+                print ("Warning: Could not find a VSVIP with fqdn = {}".format(domain))
+                # As a fallback we search for VirtualHosting entries with that domain
+                vhMode = True
+                search_term = "vh_domain_name.contains={}".format(domain)
+            else:
+                vsvip_uuid = rsp["results"][0]["uuid"]
+                search_term = "vsvip_ref={}".format(vsvip_uuid)
+
+            rsp = _do_request_avi("virtualservice/?{}".format(search_term), "GET").json()
+            if debug:
+                print ("Found {} matching VSs".format(rsp["count"]))
+            if rsp['count'] == 0:
+                raise Exception("Could not find a VS with fqdn = {}".format(domain))
+
+            vs_uuid = rsp["results"][0]["uuid"]
+
         else:
-            vsvip_uuid = rsp["results"][0]["uuid"]
-            search_term = "vsvip_ref={}".format(vsvip_uuid)
+            # Overwriting VS UUID to what user specified.
+            # ALL SANs of the CSR must be reachable on the specified VS to succeed.
+            rsp = use_vs_uuid
+            vs_uuid = rsp["results"][0]["uuid"]
+            print ("Note: Overwriting VS UUID to {}".format(vs_uuid))
 
-        rsp = _do_request_avi("virtualservice/?{}".format(search_term), "GET").json()
-        if debug:
-            print ("Found {} matching VSs".format(rsp["count"]))
-        if rsp['count'] == 0:
-            raise Exception("Could not find a VS with fqdn = {}".format(domain))
-
-        vs_uuid = rsp["results"][0]["uuid"]
         print ("Found VS {} with fqdn {}".format(vs_uuid, domain))
 
         # Let's check if VS is enabled, otherwise challenge can never successfully complete.
@@ -345,7 +369,6 @@ def get_crt(user, password, tenant, api_version, csr, CA=DEFAULT_CA, disable_che
             # check that the file is in place
             if not disable_check:
                 print ("Validating token from Avi Controller...")
-                wellknown_url = "http://{0}/.well-known/acme-challenge/{1}".format(domain, token)
                 try:
                     maxVerifyAttempts = 5 # maximal amount of verification attempts
                     # retrying logic. Otherwise race-condition can occurr between avi controller pushing config and the token validation request
@@ -427,6 +450,7 @@ def certificate_request(csr, common_name, kwargs):
     disable_check = kwargs.get('disable_check', "false")
     debug = kwargs.get('debug', "false")
     directory_url = kwargs.get('directory_url', None)
+    vs_uuid = kwargs.get('vs_uuid', None)
 
     print ("Running version {}".format(VERSION))
 
@@ -455,6 +479,9 @@ def certificate_request(csr, common_name, kwargs):
             directory_url = DEFAULT_DIRECTORY_URL
     print ("directory_url is {}".format(directory_url))
 
+    # If vs_uuid is specified but empty, set it to None.
+    if vs_uuid == "":
+        vs_uuid = None
 
     if tenant == None:
         print ("Using default tenant. You might want to define a specific tenant.".format(tenant))
@@ -473,8 +500,8 @@ def certificate_request(csr, common_name, kwargs):
     signed_crt = None
     try:
         signed_crt = get_crt(user, password, tenant, api_version, csr_temp_file.name, 
-                                disable_check=disable_check, directory_url=directory_url, 
-                                contact=contact, debug=debug)
+                                disable_check=disable_check, use_vs_uuid=vs_uuid,
+                                directory_url=directory_url, contact=contact, debug=debug)
     finally:
         os.remove(csr_temp_file.name)
 
