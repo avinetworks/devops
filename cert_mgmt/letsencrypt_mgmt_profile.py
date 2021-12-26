@@ -209,6 +209,7 @@ def get_crt(user, password, tenant, api_version, csr, CA=DEFAULT_CA, disable_che
     for auth_url in order['authorizations']:
         if debug:
             print ("Authorization URL is: {}".format(auth_url))
+
         authorization, _, _ = _send_signed_request(auth_url, None, "Error getting challenges")
         domain = authorization['identifier']['value']
         print ("Verifying {0}...".format(domain))
@@ -425,6 +426,7 @@ def certificate_request(csr, common_name, kwargs):
     api_version = kwargs.get('api_version', '20.1.1')
     disable_check = kwargs.get('disable_check', "false")
     debug = kwargs.get('debug', "false")
+    directory_url = kwargs.get('directory_url', None)
 
     print ("Running version {}".format(VERSION))
 
@@ -446,16 +448,13 @@ def certificate_request(csr, common_name, kwargs):
         disable_check = False
     print ("disable_check is: {}".format(str(disable_check)))
 
-    directory_url = DEFAULT_DIRECTORY_URL
-    if dry_run:
-        directory_url = DEFAULT_STAGING_DIRECTORY_URL
+    if directory_url == None:
+        if dry_run:
+            directory_url = DEFAULT_STAGING_DIRECTORY_URL
+        else:
+            directory_url = DEFAULT_DIRECTORY_URL
     print ("directory_url is {}".format(directory_url))
 
-    csr_temp_file = NamedTemporaryFile(mode='w',delete=False)
-    csr_temp_file.close()
-
-    with open(csr_temp_file.name, 'w') as f:
-        f.write(csr)
 
     if tenant == None:
         print ("Using default tenant. You might want to define a specific tenant.".format(tenant))
@@ -463,6 +462,13 @@ def certificate_request(csr, common_name, kwargs):
     if contact != None and "@" in contact:
         contact = [ "mailto:{}".format(contact) ] # contact must be array as of ACME RFC
         print ("Contact set to: {}".format(contact))
+
+    # Create CSR temp file.
+    csr_temp_file = NamedTemporaryFile(mode='w',delete=False)
+    csr_temp_file.close()
+
+    with open(csr_temp_file.name, 'w') as f:
+        f.write(csr)
 
     signed_crt = None
     try:
