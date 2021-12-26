@@ -268,10 +268,20 @@ def get_crt(user, password, tenant, api_version, csr, CA=DEFAULT_CA, disable_che
                     print ("VS serving on port 80")
                 break
 
-        # Update vs
-        # create HTTP policy
+        # Update VS
+        httpPolicyName = (domain + "-LetsEncryptHTTPpolicy")
+        # Check if HTTP policy exists.
+        # Can happen in rare cases, when e.g. script fails or removal failed for whatever reasons.
+        # To prevent this from failing forever, we clean it up at this stage.
+        hpRsp = _do_request_avi("httppolicyset/?name={}".format(httpPolicyName), "GET").json()
+        if hpRsp['count'] > 0:
+            hp_uuid = hpRsp['results'][0]['uuid']
+            print ("Stranded httpPolicySet {} found. Deleting...".format(hp_uuid))
+            _do_request_avi("httppolicyset/{}".format(hp_uuid), "DELETE")
+
+        # Create HTTP policy
         httppolicy_data = {
-            "name": (domain + "-LetsEncryptHTTPpolicy"),
+            "name": httpPolicyName,
             "http_security_policy": {
                 "rules": [{
                     "name": "Rule 1",
@@ -299,12 +309,20 @@ def get_crt(user, password, tenant, api_version, csr, CA=DEFAULT_CA, disable_che
             "is_internal_policy": False
         }
 
+        httppolicy_uuid = None
         try:
             rsp = _do_request_avi("httppolicyset", "POST", data=httppolicy_data).json()
             httppolicy_uuid = rsp["uuid"]
             print ("Created HTTP policy with uuid {}".format(httppolicy_uuid))
 
-            patch_data = {"add" : {"http_policies": [{"http_policy_set_ref": "/api/httppolicyset/{}".format(httppolicy_uuid), "index":1000001}]}}
+            patch_data = {
+                "add" : {
+                    "http_policies": [{
+                        "http_policy_set_ref": "/api/httppolicyset/{}".format(httppolicy_uuid),
+                        "index": 1000001
+                    }]
+                }
+            }
             if not serving_on_port_80:
                 # Add port to virtualservice
                 print ("Adding port 80 to VS")
@@ -358,17 +376,27 @@ def get_crt(user, password, tenant, api_version, csr, CA=DEFAULT_CA, disable_che
         finally:
             print ("Cleaning up...")
             # Update the vs
-            patch_data = {"delete" : {"http_policies": [{"http_policy_set_ref": "/api/httppolicyset/{}".format(httppolicy_uuid), "index":1000001}]}}
-            if not serving_on_port_80:
-                patch_data["delete"]["services"] = [service_on_port_80_data]
-            if vhMode: # if VH, we set the rule on the parent. Without SNI (so HTTP) it will go to the parent.
-                _do_request_avi("virtualservice/{}".format(vs_uuid_parent), "PATCH", patch_data)
-                print ("Removed HTTPPolicy from parent-VS {}".format(vs_uuid_parent))
+            if httppolicy_uuid == None:
+                print ("Error: Failed removing httpPolicy as UUID not defined.")
             else:
-                _do_request_avi("virtualservice/{}".format(vs_uuid), "PATCH", patch_data)
-                print ("Removed HTTPPolicy from VS {}".format(vs_uuid))
-            _do_request_avi("httppolicyset/{}".format(httppolicy_uuid), "DELETE")
-            print ("Deleted HTTPPolicy")
+                patch_data = {
+                    "delete" : {
+                        "http_policies": [{
+                            "http_policy_set_ref": "/api/httppolicyset/{}".format(httppolicy_uuid),
+                            "index": 1000001
+                        }]
+                    }
+                }
+                if not serving_on_port_80:
+                    patch_data["delete"]["services"] = [service_on_port_80_data]
+                if vhMode: # if VH, we set the rule on the parent. Without SNI (so HTTP) it will go to the parent.
+                    _do_request_avi("virtualservice/{}".format(vs_uuid_parent), "PATCH", patch_data)
+                    print ("Removed HTTPPolicy from parent-VS {}".format(vs_uuid_parent))
+                else:
+                    _do_request_avi("virtualservice/{}".format(vs_uuid), "PATCH", patch_data)
+                    print ("Removed HTTPPolicy from VS {}".format(vs_uuid))
+                _do_request_avi("httppolicyset/{}".format(httppolicy_uuid), "DELETE")
+                print ("Deleted HTTPPolicy")
 
         print ("{0} verified!".format(domain))
 
