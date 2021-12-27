@@ -338,9 +338,10 @@ def get_crt(user, password, tenant, api_version, csr, CA=DEFAULT_CA, disable_che
 
         httppolicy_uuid = None
         try:
+            # Create httpPolicySet
             rsp = _do_request_avi("httppolicyset", "POST", data=httppolicy_data).json()
             httppolicy_uuid = rsp["uuid"]
-            print ("Created HTTP policy with uuid {}".format(httppolicy_uuid))
+            print ("Created httpPolicy with uuid {}".format(httppolicy_uuid))
 
             patch_data = {
                 "add" : {
@@ -361,12 +362,13 @@ def get_crt(user, password, tenant, api_version, csr, CA=DEFAULT_CA, disable_che
                 }
                 patch_data["add"]["services"] = [service_on_port_80_data]
 
+            # Adding httpPolicySet to VS
             if vhMode: # if VH, we set the rule on the parent. Without SNI (so HTTP) it will go to the parent.
                 _do_request_avi("virtualservice/{}".format(vs_uuid_parent), "PATCH", patch_data)
-                print ("Added HTTPPolicy to parent-VS {}".format(vs_uuid_parent))
+                print ("Added httpPolicySet to parent-VS {}".format(vs_uuid_parent))
             else:
                 _do_request_avi("virtualservice/{}".format(vs_uuid), "PATCH", patch_data)
-                print ("Added HTTPPolicy to VS {}".format(vs_uuid))
+                print ("Added httpPolicySet to VS {}".format(vs_uuid))
 
             # check that the file is in place
             if not disable_check:
@@ -391,13 +393,13 @@ def get_crt(user, password, tenant, api_version, csr, CA=DEFAULT_CA, disable_che
                 print ("Waiting 5 seconds before letting LetsEncrypt validating the challenge as validation disabled. Give controller time to push configs.")
                 time.sleep(5) # wait 5 secs if not validating, due to above mentioned race condition
 
-            print ("Challenge Completed, notifying LetsEncrypt")
+            print ("Challenge completed, notifying LetsEncrypt")
             # say the challenge is done
             _send_signed_request(challenge['url'], {}, "Error submitting challenges: {0}".format(domain))
             authorization = _poll_until_not(auth_url, ["pending"], "Error checking challenge status for {0}".format(domain))
             if authorization['status'] != "valid":
                 raise ValueError("Challenge did not pass for {0}: {1}".format(domain, authorization))
-            print ("Challenge Passed")
+            print ("Challenge passed")
 
         finally:
             print ("Cleaning up...")
@@ -415,14 +417,18 @@ def get_crt(user, password, tenant, api_version, csr, CA=DEFAULT_CA, disable_che
                 }
                 if not serving_on_port_80:
                     patch_data["delete"]["services"] = [service_on_port_80_data]
+
+                # Remove httpPolicySet from VS
                 if vhMode: # if VH, we set the rule on the parent. Without SNI (so HTTP) it will go to the parent.
                     _do_request_avi("virtualservice/{}".format(vs_uuid_parent), "PATCH", patch_data)
-                    print ("Removed HTTPPolicy from parent-VS {}".format(vs_uuid_parent))
+                    print ("Removed httpPolicySet from parent-VS {}".format(vs_uuid_parent))
                 else:
                     _do_request_avi("virtualservice/{}".format(vs_uuid), "PATCH", patch_data)
-                    print ("Removed HTTPPolicy from VS {}".format(vs_uuid))
+                    print ("Removed httpPolicySet from VS {}".format(vs_uuid))
+
+                # Remove httpPolicySet
                 _do_request_avi("httppolicyset/{}".format(httppolicy_uuid), "DELETE")
-                print ("Deleted HTTPPolicy")
+                print ("Deleted httpPolicySet")
 
         print ("{0} verified!".format(domain))
 
