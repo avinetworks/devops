@@ -1,7 +1,7 @@
 #!/opt/local/bin/python3
 
 
-version = 'v2021-09-23'
+version = 'v2022-01-20'
 
 
 
@@ -130,6 +130,54 @@ def send_value_datadog(endpoint_info, datadog_payload):
         resp = requests.post('https://%s%s' %(endpoint_info['api_url'],endpoint_info['api_key']), verify=False, headers = headers, data=json.dumps(payload), timeout=15)
         if resp.status_code != 202:
             print(resp)
+    except:
+        exception_text = traceback.format_exc()
+        print(exception_text)
+
+
+
+
+#----- Send value to dynatrace
+def send_value_dynatrace(endpoint_info, dynatrace_payload):
+    try:
+        tag_to_ignore = ['metric_name', 'timestamp', 'metric_value','name_space']
+        #--- set dynatrace endpoint, either saas, managed or activegate
+        if endpoint_info.get('activegate_domain') != None:
+            dynatrace_url = 'https://%s/e/%s/api/v2/metrics/ingest' %(endpoint_info['activegate_domain'], endpoint_info['environment_id'])
+        elif endpoint_info.get('managed_domain') != None:
+            dynatrace_url = 'https://%s/e/%s/api/v2/metrics/ingest' %(endpoint_info['managed_domain'], endpoint_info['environment_id'])
+        else:
+            dynatrace_url = 'https://%s.live.dynatrace.com/api/v2/metrics/ingest' %endpoint_info['environment_id']
+        if endpoint_info.get('metric_prefix') == None:
+            metric_prefix = ''
+        else:
+            metric_prefix = endpoint_info['metric_prefix']
+            if len(metric_prefix) > 0:
+                if metric_prefix[-1] !='.':
+                    metric_prefix = metric_prefix+'.'
+        message_list = []
+        for entry in dynatrace_payload:
+            tag_list=[]
+            for k in entry:
+                if k not in tag_to_ignore:
+                    tag_list.append((k+'='+entry[k]).replace(' ', '\\'))
+            tag_list = ','.join(tag_list)
+            temp_payload='%s%s,%s %f' %(metric_prefix, entry['metric_name'],tag_list,entry['metric_value'])
+            message_list.append(temp_payload)
+            if len(message_list) == 95: #---- dyantrace limits payload to 100 lines
+                message = '\n'.join(message_list) + '\n'
+                headers = ({'Content-Type': 'text/plain','Authorization': 'Api-Token '+endpoint_info['api_token']})
+                resp = requests.post(dynatrace_url,verify=False,headers = headers, data=message, timeout=15)
+                message_list = []
+                if resp.status_code != 202:
+                    print(str(datetime.now())+' Issue Sending metrics to Dynatrace')
+                    print(resp.text)
+        message = '\n'.join(message_list) + '\n'
+        headers = ({'Content-Type': 'text/plain','Authorization': 'Api-Token '+endpoint_info['api_token']})
+        resp = requests.post(dynatrace_url,verify=False,headers = headers, data=message, timeout=15)
+        if resp.status_code != 202:
+            print(str(datetime.now())+' Issue Sending metrics to Dynatrace')
+            print(resp.text)
     except:
         exception_text = traceback.format_exc()
         print(exception_text)
@@ -500,6 +548,8 @@ def send_metriclist_to_endpoint(endpoint_list, payload):
                     send_value_appdynamics_machine(endpoint_info, payload)
                 elif endpoint_info['type'] == 'datadog':
                     send_value_datadog(endpoint_info, payload)
+                elif endpoint_info['type'] == 'dynatrace':
+                    send_value_dynatrace(endpoint_info, payload)                        
                 elif endpoint_info['type'] == 'influxdb':
                     send_value_influxdb(endpoint_info, payload)
                 elif endpoint_info['type'] == 'influxdb_v2':
@@ -526,6 +576,7 @@ def determine_endpoint_type(configuration):
         'appdynamics_machine',
         'splunk',
         'datadog',
+        'dynatrace',
         'influxdb',
         'influxdb_v2',
         'logstash',

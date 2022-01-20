@@ -1,7 +1,7 @@
 # Avi Metrics Collection
 
 The Avi Metrics Collection script was built with the intent to pull metrics from one or more Avi controllers and send these values to a centralized time series database.
-The script supports a number of different endpoints; current support includes AppDynamics, Datadog, Elasticsearch, Graphite, InfluxDB, InfluxDB_v2, Logstash, Splunk, and Wavefront.
+The script supports a number of different endpoints; current support includes AppDynamics, Datadog, Dynatrace, Elasticsearch, Graphite, InfluxDB, InfluxDB_v2, Logstash, Splunk, and Wavefront.
 
 
 This repository includes that necessary files to deploy a centralized metrics collection script
@@ -728,6 +728,122 @@ required</span></td>
 </td>
 <td>
 <div>API key used for authentication to datadog api</div>
+</td>
+</tr>
+
+</tbody>
+</table>
+
+- - -
+<br></br>
+## Dynatrace
+<table class="documentation-table" cellpadding="0" border="0">
+    <tbody><tr>
+        <th>Parameter</th>
+        <th>Choices/<font color="blue">Defaults</font></th>
+        <th width="100%">Comments</th>
+<tr>
+</div>
+</td>
+
+
+<div style="font-size: small">                
+</div>
+</td>
+</div>
+</td>
+<tr>
+<td>
+<b>type</b><br><div style="font-size: small"><span style="color: red">
+required</span>
+<div style="font-size: small">
+</div>
+</td>
+<td><b>dynatrace</b><br><div style="font-size: small"><span style="color: red">
+required</span></td>
+</div>
+</td>
+<td>
+<div>Parameters for sending metrics to dynatrace</div>
+</td>
+</tr>
+<tr>
+<td>
+<b>enable</b>
+<div style="font-size: small">
+<span style="color: purple">boolean</span>  
+/ <span style="color: red">required</span>                   
+</div>
+</td>
+
+</div>
+<td><li>True</li></b>
+    <li>False</li>
+<td>
+<div>Enable sending metrics to dynatrace</div>
+</td>
+</tr>
+
+
+<tr>
+<td>
+<b>api_token</b>
+<div style="font-size: small">
+<span style="color: purple">string</span>  
+/ <span style="color: red">required</span>                   
+</div>
+</td>
+</div>
+<td>
+</td>
+<td>
+<div>API token used for authentication to dynatrace api, requires metrics.ingest permissions </div>
+</td>
+</tr>
+
+<tr>
+<td>
+<b>environment_id</b>
+<div style="font-size: small">
+<span style="color: purple">string</span>  
+/ <span style="color: red">required</span>                   
+</div>
+</td>
+</div>
+<td>
+</td>
+<td>
+<div>The environment ID for you dynatrace instance, used within API url </div>
+</td>
+</tr>
+
+<tr>
+<td>
+<b>managed_domain</b>
+<div style="font-size: small">
+<span style="color: purple">string</span>  
+</div>
+</td>
+</div>
+<td>
+</td>
+<td>
+<div>Only specify if using a managed instance of dynatrace</div>
+</td>
+</tr>
+
+<tr>
+<td>
+<b>activegate_domain</b>
+<div style="font-size: small">
+<span style="color: purple">string</span>  
+</div>
+</td>
+</div>
+<td>
+</td>
+<td>
+<div>Only specify if using activegate</div>
 </td>
 </tr>
 
