@@ -803,6 +803,21 @@ required</span></td>
 
 <tr>
 <td>
+<b>metric_prefix</b>
+<div style="font-size: small">
+<span style="color: purple">string</span>             
+</div>
+</td>
+</div>
+<td>
+</td>
+<td>
+<div>Add a prefix to metrics being sent to dynatrace, optional </div>
+</td>
+</tr>
+
+<tr>
+<td>
 <b>environment_id</b>
 <div style="font-size: small">
 <span style="color: purple">string</span>  
