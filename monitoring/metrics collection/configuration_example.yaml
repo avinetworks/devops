@@ -125,6 +125,19 @@ controllers:
 #
 #
 #
+##----------dynatrace------------
+#  - type: dynatrace
+#    enable: False
+#    api_token: dt0c01.abc123.abcdefjhij1234567890
+#    #_comment":"If desired, specify a prefix for the metrics",
+#    metric_prefix: 
+#    environment_id: mySampleEnv
+#    #_comment: If using managed dynatrace specify the hosted domain, if using activegate specify activegate_domain
+#    managed_domain:
+#    activegate_domain:
+#
+#
+#
 ##----------elasticsearch------------
 #  - type: elasticsearch
 #    enable: False
