@@ -1920,6 +1920,27 @@ controllers:
 ```
 
 
+## dynatrace
+
+Define the environment ID and API token used to send metrics into Dynatrace
+
+EXAMPLE:
+
+```sh
+controllers:
+   - avi_cluster_name: demo_controller
+     avi_controller: 169.254.0.1
+     avi_user: admin
+     avi_pass: password
+     metrics_endpoint_config:
+      - type: dynatrace
+        enable: True
+        metric_prefix: avi
+        api_token: dt0c01.abc123.abcdefjhij1234567890
+        environment_id: mySampleEnv  
+```
+
+
 
 ## elasticsearch
 
