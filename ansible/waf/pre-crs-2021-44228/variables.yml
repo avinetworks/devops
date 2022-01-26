@@ -1,0 +1,9 @@
+AVI_CREDENTIALS:
+  username: "admin"
+  password: "securepassword"
+  controller: "x.x.x.x"
+  api_version: "20.1.6"
+TENANT: admin
+
+WAF_POLICY_NAME: System-WAF-Policy
+ENFORCEMENT_MODE: enforcement  #options available: detecton/enforcement
