@@ -3,7 +3,8 @@
 Setup Avi Configuration for Horizon Applications based off Avi KBs.
 - [L4L7](https://avinetworks.com/docs/latest/horizon-307-single-vip/)<br>
 - [L7N+1](https://avinetworks.com/docs/20.1/horizon-in-n-plus-one-mode-using-307-solution/)<br>
-- [CS](https://avinetworks.com/docs/latest/configure-avi-vantage-for-vmware-horizon/#connection)
+- [CS](https://avinetworks.com/docs/latest/configure-avi-vantage-for-vmware-horizon/#connection)<br>
+- [L4L7Avi](https://avinetworks.com/docs/21.1/deploy-avi-for-load-balancing-uag-servers/)
 
 The playbooks will deploy Avi VirtualService and it's dependencies configuration.  Any ConnectionServer/UAG configuration will have to be done separately.
 
@@ -19,7 +20,8 @@ ansible-galaxy collection install vmware.alb
 The variables control what usecase gets deployed, currently the following usecases are supported:<br>
 [L4L7](https://avinetworks.com/docs/latest/horizon-307-single-vip/)<br>
 [L7N+1](https://avinetworks.com/docs/20.1/horizon-in-n-plus-one-mode-using-307-solution/)<br>
-[CS](https://avinetworks.com/docs/latest/configure-avi-vantage-for-vmware-horizon/#connection)
+[CS](https://avinetworks.com/docs/latest/configure-avi-vantage-for-vmware-horizon/#connection)<br>
+[L4L7Avi](https://avinetworks.com/docs/21.1/deploy-avi-for-load-balancing-uag-servers/)
 
 ```yaml
 DEPLOYMENT_TYPE: <usecase>
@@ -52,6 +54,29 @@ SERVERS_FQDN_IP:
     fqdn: uag1.vsvip.int
   - ip: 2.2.2.2
     fqdn: uag2.vsvip.int
+```
+
+### TECH PREVIEW - Unified Access Gateway for NSX ALB(Avi)v21.1.3+
+For UAG Configuration using L4L7Avi Deployment (307 Redirect from Avi): Tunnel, Blast, and PCoIP protocols are assigned<br>
+ports starting from 5001, 20001, and 30001 by default.<br>
+[Avi KB Reference for L4L7Avi](https://avinetworks.com/docs/21.1/deploy-avi-for-load-balancing-uag-servers/)<br>
+Custom ports can be specified in the following way:
+```yaml
+CLOUD_NAME: VMware-Cloud
+TENANT_NAME: uag-ca01
+SEG_NAME: UAG_SEG
+
+DEPLOYMENT_TYPE: L4L7Avi
+DEPLOYMENT_NAME: EXT_UAG
+
+VS_IPADDR: 10.10.10.10
+VS_SSLCERT: testself
+SERVERS_FQDN_IP:
+  - ip: 1.1.1.1
+  - ip: 2.2.2.2
+TUNNEL_START_PORT: 40001 # Default start port: 5001
+BLAST_START_PORT: 50001  # Default start port: 20001
+PCOIP_START_PORT: 60001  # Default start port: 30001
 ```
 
 ### Connection Server
