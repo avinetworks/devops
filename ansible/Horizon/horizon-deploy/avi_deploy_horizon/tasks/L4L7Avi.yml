@@ -1,0 +1,118 @@
+---
+# tasks file for avi.horizon
+- name: Avi - Gather Controller Version
+  avi_api_version:
+    avi_credentials: "{{ AVI_CREDENTIALS }}"
+  register: avi_controller_version
+- block:
+    - name: Version Check
+      debug:
+          msg: "{{ 'Avi Controller version of ' + avi_controller_version.obj.version + ' Not Supported for this Role. Avi Controller Must be Version 21.1.3+' }}"
+    - meta: end_play
+  when: avi_controller_version.obj.version < "21.1.3"
+
+- name: Avi Pool - Create Pool Template
+  set_fact:
+    uag_pool_servers: "{{ uag_pool_servers | default([]) + [{'port': 443,'ip': {'addr': pool_member.ip,'type': 'V4'}}] }}"
+  with_items: "{{ SERVERS_FQDN_IP }}"
+  loop_control:
+    loop_var: pool_member
+
+- name: Deploy/Configure L7N+1 UAG Virtual Service Setup
+  set_fact:
+    avi_config:
+      # -- Health Monitor --
+      healthmonitor:
+        -   name: "{{ DEPLOYMENT_NAME +'-UAG-HM' }}"
+            monitor_port: 443
+            https_monitor:
+                ssl_attributes:
+                    ssl_profile_ref: "{{ '/api/sslprofile/?name=' + HM_SSLPROFILE }}"
+                http_request: GET /favicon.ico HTTP/1.0
+                http_response_code:
+                    - HTTP_2XX
+            receive_timeout: 10
+            tenant: "{{ TENANT_NAME }}"
+            send_interval: 30
+            type: HEALTH_MONITOR_HTTPS
+      pool:
+        -   name: "{{ DEPLOYMENT_NAME +'-UAG-Pool' }}"
+            tenant: "{{ TENANT_NAME }}"
+            cloud_ref: "{{ '/api/cloud/?name=' + CLOUD_NAME}}"
+            default_server_port: 443
+            lb_algorithm: "{{ LB_ALGORITHM }}"
+            health_monitor_refs:
+              - "{{ '/api/healthmonitor/?name=' + DEPLOYMENT_NAME +'-UAG-HM' }}"
+            servers: "{{ uag_pool_servers }}"
+            append_port: "NEVER"
+            ssl_profile_ref: "{{ '/api/sslprofile/?name=' + POOL_SSLPROFILE }}"
+            sni_enabled: true
+            horizon_profile:
+              blast_port: 8443
+              pcoip_port: 4172
+      vsvip:
+        - name: "{{ DEPLOYMENT_NAME +'-UAG-VSVIP' }}"
+          tenant: "{{ TENANT_NAME }}"
+          cloud_ref: "{{ '/api/cloud/?name=' + CLOUD_NAME}}"
+          vip:
+              -   vip_id: 1
+                  avi_allocated_vip: false
+                  enabled: true
+                  auto_allocate_ip_type: V4_ONLY
+                  ip_address:
+                      type: V4
+                      addr: "{{ VS_IPADDR }}"
+      virtualservice:
+        -   name: "{{ DEPLOYMENT_NAME + '-UAG-VS' }}"
+            tenant: "{{ TENANT_NAME }}"
+            cloud_ref: "{{ '/api/cloud/?name=' + CLOUD_NAME}}"
+            se_group_ref: "{{ '/api/serviceenginegroup/?name=' + SEG_NAME }}"
+            ssl_profile_ref: "{{ '/api/sslprofile/?name=' + VS_SSLPROFILE }}"
+            ssl_key_and_certificate_refs:
+                - "{{ '/api/sslkeyandcertificate/?name=' + VS_SSLCERT }}"
+            vsvip_ref: "{{ '/api/vsvip/?name=' + DEPLOYMENT_NAME + '-UAG-VSVIP' }}"
+            application_profile_ref: "{{ '/api/applicationprofile/?name=' + VS_L7_APP_PROFILE }}"
+            network_profile_ref: '/api/networkprofile?name={{ VS_TCPPROFILE }}'
+            services:
+                - 
+                    enable_ssl: true
+                    port_range_end: 443
+                    port: 443
+                - 
+                    port_range_end: "{{ TUNNEL_START_PORT | default(5001) + SERVERS_FQDN_IP|length - 1 }}"
+                    port: "{{ TUNNEL_START_PORT | default(5001) }}"
+                    horizon_internal_ports: true
+                    enable_ssl: true
+                - 
+                    enable_ssl: false
+                    port_range_end: "{{ TUNNEL_START_PORT | default(5001) + SERVERS_FQDN_IP|length - 1 }}"
+                    port: "{{ TUNNEL_START_PORT | default(5001) }}"
+                    override_application_profile_ref: "{{ '/api/applicationprofile/?name=' + VS_L4_APP_PROFILE}}"
+                    override_network_profile_ref: "{{ '/api/networkprofile/?name=' + VS_UDPPROFILE }}"
+                - 
+                    enable_ssl: false
+                    port_range_end: "{{ BLAST_START_PORT | default(20001) + SERVERS_FQDN_IP|length - 1 }}"
+                    override_application_profile_ref: "{{ '/api/applicationprofile/?name=' + VS_L4_BLAST_PROFILE }}"
+                    port: "{{ BLAST_START_PORT | default(20001) }}"
+                - 
+                    enable_ssl: false
+                    port_range_end: "{{ BLAST_START_PORT | default(20001) + SERVERS_FQDN_IP|length - 1 }}"
+                    port: "{{ BLAST_START_PORT | default(20001) }}"
+                    override_application_profile_ref: "{{ '/api/applicationprofile/?name=' + VS_L4_BLAST_PROFILE }}"
+                    override_network_profile_ref: "{{ '/api/networkprofile/?name=' + VS_UDPPROFILE }}"
+                - 
+                    enable_ssl: false
+                    port_range_end: "{{ PCOIP_START_PORT | default(30001) + SERVERS_FQDN_IP|length - 1 }}"
+                    override_application_profile_ref: "{{ '/api/applicationprofile/?name=' + VS_L4_PCOIP_PROFILE}}"
+                    port: "{{ PCOIP_START_PORT | default(30001) }}"
+                - 
+                    enable_ssl: false
+                    port_range_end: "{{ PCOIP_START_PORT | default(30001) + SERVERS_FQDN_IP|length - 1 }}"
+                    port: "{{ PCOIP_START_PORT | default(30001) }}"
+                    override_application_profile_ref: "{{ '/api/applicationprofile/?name=' + VS_L4_PCOIP_PROFILE}}"
+                    override_network_profile_ref: "{{ '/api/networkprofile/?name=' + VS_UDPPROFILE }}"
+            pool_ref: "{{ '/api/pool/?name=' + DEPLOYMENT_NAME +'-UAG-Pool' }}"
+            vs_datascripts:
+            - index: 1
+              vs_datascript_set_ref: "{{ '/api/vsdatascriptset?name=' + HORIZON_DS }}"
+            pool_ref: "{{ '/api/pool/?name=' + DEPLOYMENT_NAME +'-UAG-Pool' }}"

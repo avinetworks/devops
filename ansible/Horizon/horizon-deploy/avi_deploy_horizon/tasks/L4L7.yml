@@ -157,7 +157,7 @@
             cloud_ref: "{{ '/api/cloud/?name=' + CLOUD_NAME}}"
             se_group_ref: "{{ '/api/serviceenginegroup/?name=' + SEG_NAME }}"
             vsvip_ref: "{{ '/api/vsvip/?name=' + DEPLOYMENT_NAME + '-UAG-VSVIP' }}"
-            application_profile_ref: "{{ '/api/applicationprofile/?name=' + VS_L4_APPPROFILE }}"
+            application_profile_ref: "{{ '/api/applicationprofile/?name=' + VS_L4_APP_PROFILE }}"
             network_profile_ref: '/api/networkprofile?name={{ VS_TCPPROFILE }}'
             services:
                 - 
