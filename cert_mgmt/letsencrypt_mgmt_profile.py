@@ -35,7 +35,7 @@
 #     contact       - E-mail address sent to letsencrypt for account creation. (Default: None.)
 #                     (set this only once until updated, otherwise an update request will be sent every time.)
 #     directory_url - Change ACME server, e.g. for using in-house ACME server. (Default: Let's Encrypt Production)
-#     vs_uuid       - Specify UUID of VirtualServer to be used for validation. (Default: False)
+#     overwrite_vs  - Specify name or UUID of VirtualServer to be used for validation and httpPolicySet. (Default: False)
 # 
 # Useful links -
 #     Ratelimiting - https://letsencrypt.org/docs/rate-limits/
@@ -51,6 +51,7 @@
 '''
 
 import base64, binascii, datetime, hashlib, os, json, re, ssl, subprocess, sys, time
+from urllib.parse import urlparse
 from urllib.request import urlopen, Request # Python 3
 from tempfile import NamedTemporaryFile
 
@@ -64,7 +65,7 @@ DEFAULT_STAGING_DIRECTORY_URL = "https://acme-staging-v02.api.letsencrypt.org/di
 ACCOUNT_KEY_PATH = "/var/lib/avi/ca/private/letsencrypt.key"
 
 def get_crt(user, password, tenant, api_version, csr, CA=DEFAULT_CA, disable_check=False, 
-            use_vs_uuid=None, directory_url=DEFAULT_DIRECTORY_URL, contact=None, debug=False):
+            overwrite_vs=None, directory_url=DEFAULT_DIRECTORY_URL, contact=None, debug=False):
     directory, acct_headers, alg, jwk = None, None, None, None # global variables
 
     # helper functions - base64 encode for jose spec
@@ -159,10 +160,14 @@ def get_crt(user, password, tenant, api_version, csr, CA=DEFAULT_CA, disable_che
 
     # Check if we need to overwrite the VS UUID if it was specified
     # We request the info here once, instead in the loop for each SAN entry below.
-    if use_vs_uuid != None:
-        search_term = "uuid={}".format(use_vs_uuid)
-        use_vs_uuid = _do_request_avi("virtualservice/?{}".format(search_term), "GET").json()
-        if use_vs_uuid['count'] == 0:
+    if overwrite_vs != None:
+        if overwrite_vs.lower().startswith('virtualservice-'):
+            search_term = "uuid={}".format(overwrite_vs.lower())
+        else:
+            search_term = "name={}".format(urlparse.quote(overwrite_vs, safe=''))
+
+        overwrite_vs = _do_request_avi("virtualservice/?{}".format(search_term), "GET").json()
+        if overwrite_vs['count'] == 0:
             raise Exception("Could not find a VS with {}".format(search_term))
 
     # parse account key to get public key
@@ -236,7 +241,7 @@ def get_crt(user, password, tenant, api_version, csr, CA=DEFAULT_CA, disable_che
 
         vhMode = False
         # Check if we need to overwrite VirtualService UUID to something specific
-        if use_vs_uuid == None:
+        if overwrite_vs == None:
 
             # Get VSVIPs/VSs, based on FQDN
             rsp = _do_request_avi("vsvip/?fqdn={}".format(domain), "GET").json()
@@ -262,7 +267,7 @@ def get_crt(user, password, tenant, api_version, csr, CA=DEFAULT_CA, disable_che
         else:
             # Overwriting VS UUID to what user specified.
             # ALL SANs of the CSR must be reachable on the specified VS to succeed.
-            rsp = use_vs_uuid
+            rsp = overwrite_vs
             vs_uuid = rsp["results"][0]["uuid"]
             print ("Note: Overwriting VS UUID to {}".format(vs_uuid))
 
@@ -458,7 +463,7 @@ def certificate_request(csr, common_name, kwargs):
     disable_check = kwargs.get('disable_check', "false")
     debug = kwargs.get('debug', "false")
     directory_url = kwargs.get('directory_url', None)
-    vs_uuid = kwargs.get('vs_uuid', None)
+    overwrite_vs = kwargs.get('overwrite_vs', None)
 
     print ("Running version {}".format(VERSION))
 
@@ -487,9 +492,9 @@ def certificate_request(csr, common_name, kwargs):
             directory_url = DEFAULT_DIRECTORY_URL
     print ("directory_url is {}".format(directory_url))
 
-    # If vs_uuid is specified but empty, set it to None.
-    if vs_uuid == "":
-        vs_uuid = None
+    # If overwrite_vs is specified but empty, set it to None.
+    if overwrite_vs == "":
+        overwrite_vs = None
 
     if tenant == None:
         print ("Using default tenant. You might want to define a specific tenant.".format(tenant))
@@ -508,7 +513,7 @@ def certificate_request(csr, common_name, kwargs):
     signed_crt = None
     try:
         signed_crt = get_crt(user, password, tenant, api_version, csr_temp_file.name, 
-                                disable_check=disable_check, use_vs_uuid=vs_uuid,
+                                disable_check=disable_check, overwrite_vs=overwrite_vs,
                                 directory_url=directory_url, contact=contact, debug=debug)
     finally:
         os.remove(csr_temp_file.name)
