@@ -1,7 +1,7 @@
 '''
 ### 
 # Name: letsencrypt_mgmt_profile.py
-# Version: 0.9.0
+# Version: 0.9.5
 # License: MIT
 # 
 # Description -
@@ -28,12 +28,14 @@
 #        of HTTP-Policy-Sets.
 # 
 # Parameters -
-#     user        - Avi user name (Default None)
-#     password    - Password of the above user (Default None)
-#     tenant      - Avi tenant name (default is 'admin')
-#     dryrun      - True/False. If True letsencrypt's staging server will be used. (Default False)
-#     contact     - E-mail address sent to letsencrypt for account creation. (Default None.)
-#                   (set this only once until updated, otherwise an update request will be sent every time.)
+#     user          - Avi user name (Default: None)
+#     password      - Password of the above user (Default: None)
+#     tenant        - Avi tenant name (Default: is 'admin')
+#     dryrun        - True/False. If True letsencrypt's staging server will be used. (Default: False)
+#     contact       - E-mail address sent to letsencrypt for account creation. (Default: None.)
+#                     (set this only once until updated, otherwise an update request will be sent every time.)
+#     directory_url - Change ACME server, e.g. for using in-house ACME server. (Default: Let's Encrypt Production)
+#     overwrite_vs  - Specify name or UUID of VirtualServer to be used for validation and httpPolicySet. (Default: False)
 # 
 # Useful links -
 #     Ratelimiting - https://letsencrypt.org/docs/rate-limits/
@@ -49,19 +51,21 @@
 '''
 
 import base64, binascii, datetime, hashlib, os, json, re, ssl, subprocess, sys, time
+from urllib.parse import urlparse
 from urllib.request import urlopen, Request # Python 3
 from tempfile import NamedTemporaryFile
 
 from avi.sdk.avi_api import ApiSession
 
-VERSION = "0.9.0"
+VERSION = "0.9.5"
 
 DEFAULT_CA = "https://acme-v02.api.letsencrypt.org" # DEPRECATED! USE DEFAULT_DIRECTORY_URL INSTEAD
 DEFAULT_DIRECTORY_URL = "https://acme-v02.api.letsencrypt.org/directory"
 DEFAULT_STAGING_DIRECTORY_URL = "https://acme-staging-v02.api.letsencrypt.org/directory"
 ACCOUNT_KEY_PATH = "/var/lib/avi/ca/private/letsencrypt.key"
 
-def get_crt(user, password, tenant, api_version, csr, CA=DEFAULT_CA, disable_check=False, directory_url=DEFAULT_DIRECTORY_URL, contact=None, debug=False):
+def get_crt(user, password, tenant, api_version, csr, CA=DEFAULT_CA, disable_check=False, 
+            overwrite_vs=None, directory_url=DEFAULT_DIRECTORY_URL, contact=None, debug=False):
     directory, acct_headers, alg, jwk = None, None, None, None # global variables
 
     # helper functions - base64 encode for jose spec
@@ -154,6 +158,18 @@ def get_crt(user, password, tenant, api_version, csr, CA=DEFAULT_CA, disable_che
         with open(ACCOUNT_KEY_PATH, 'w') as f:
             f.write(out.decode("utf-8"))
 
+    # Check if we need to overwrite the VS UUID if it was specified
+    # We request the info here once, instead in the loop for each SAN entry below.
+    if overwrite_vs != None:
+        if overwrite_vs.lower().startswith('virtualservice-'):
+            search_term = "uuid={}".format(overwrite_vs.lower())
+        else:
+            search_term = "name={}".format(urlparse.quote(overwrite_vs, safe=''))
+
+        overwrite_vs = _do_request_avi("virtualservice/?{}".format(search_term), "GET").json()
+        if overwrite_vs['count'] == 0:
+            raise Exception("Could not find a VS with {}".format(search_term))
+
     # parse account key to get public key
     print ("Parsing account key...")
     out = _cmd(["openssl", "rsa", "-in", ACCOUNT_KEY_PATH, "-noout", "-text"], err_msg="OpenSSL Error")
@@ -209,6 +225,7 @@ def get_crt(user, password, tenant, api_version, csr, CA=DEFAULT_CA, disable_che
     for auth_url in order['authorizations']:
         if debug:
             print ("Authorization URL is: {}".format(auth_url))
+
         authorization, _, _ = _send_signed_request(auth_url, None, "Error getting challenges")
         domain = authorization['identifier']['value']
         print ("Verifying {0}...".format(domain))
@@ -218,27 +235,42 @@ def get_crt(user, password, tenant, api_version, csr, CA=DEFAULT_CA, disable_che
         token = re.sub(r"[^A-Za-z0-9_\-]", "_", challenge['token'])
         keyauthorization = "{0}.{1}".format(token, thumbprint)
 
-        # Get VSVIPs/VSs, based on FQDN
-        rsp = _do_request_avi("vsvip/?fqdn={}".format(domain), "GET").json()
+        wellknown_url = "http://{0}/.well-known/acme-challenge/{1}".format(domain, token)
+        if debug:
+            print ("Validation URL is: {}".format(wellknown_url))
+
         vhMode = False
-        if debug:
-            print ("Found {} matching VSVIP FQDNs".format(rsp["count"]))
-        if rsp["count"] == 0:
-            print ("Warning: Could not find a VSVIP with fqdn = {}".format(domain))
-            # As a fallback we search for VirtualHosting entries with that domain
-            vhMode = True
-            search_term = "vh_domain_name.contains={}".format(domain)
+        # Check if we need to overwrite VirtualService UUID to something specific
+        if overwrite_vs == None:
+
+            # Get VSVIPs/VSs, based on FQDN
+            rsp = _do_request_avi("vsvip/?fqdn={}".format(domain), "GET").json()
+            if debug:
+                print ("Found {} matching VSVIP FQDNs".format(rsp["count"]))
+            if rsp["count"] == 0:
+                print ("Warning: Could not find a VSVIP with fqdn = {}".format(domain))
+                # As a fallback we search for VirtualHosting entries with that domain
+                vhMode = True
+                search_term = "vh_domain_name.contains={}".format(domain)
+            else:
+                vsvip_uuid = rsp["results"][0]["uuid"]
+                search_term = "vsvip_ref={}".format(vsvip_uuid)
+
+            rsp = _do_request_avi("virtualservice/?{}".format(search_term), "GET").json()
+            if debug:
+                print ("Found {} matching VSs".format(rsp["count"]))
+            if rsp['count'] == 0:
+                raise Exception("Could not find a VS with fqdn = {}".format(domain))
+
+            vs_uuid = rsp["results"][0]["uuid"]
+
         else:
-            vsvip_uuid = rsp["results"][0]["uuid"]
-            search_term = "vsvip_ref={}".format(vsvip_uuid)
+            # Overwriting VS UUID to what user specified.
+            # ALL SANs of the CSR must be reachable on the specified VS to succeed.
+            rsp = overwrite_vs
+            vs_uuid = rsp["results"][0]["uuid"]
+            print ("Note: Overwriting VS UUID to {}".format(vs_uuid))
 
-        rsp = _do_request_avi("virtualservice/?{}".format(search_term), "GET").json()
-        if debug:
-            print ("Found {} matching VSs".format(rsp["count"]))
-        if rsp['count'] == 0:
-            raise Exception("Could not find a VS with fqdn = {}".format(domain))
-
-        vs_uuid = rsp["results"][0]["uuid"]
         print ("Found VS {} with fqdn {}".format(vs_uuid, domain))
 
         # Let's check if VS is enabled, otherwise challenge can never successfully complete.
@@ -268,10 +300,20 @@ def get_crt(user, password, tenant, api_version, csr, CA=DEFAULT_CA, disable_che
                     print ("VS serving on port 80")
                 break
 
-        # Update vs
-        # create HTTP policy
+        # Update VS
+        httpPolicyName = (domain + "-LetsEncryptHTTPpolicy")
+        # Check if HTTP policy exists.
+        # Can happen in rare cases, when e.g. script fails or removal failed for whatever reasons.
+        # To prevent this from failing forever, we clean it up at this stage.
+        hpRsp = _do_request_avi("httppolicyset/?name={}".format(httpPolicyName), "GET").json()
+        if hpRsp['count'] > 0:
+            hp_uuid = hpRsp['results'][0]['uuid']
+            print ("Stranded httpPolicySet {} found. Deleting...".format(hp_uuid))
+            _do_request_avi("httppolicyset/{}".format(hp_uuid), "DELETE")
+
+        # Create HTTP policy
         httppolicy_data = {
-            "name": (domain + "-LetsEncryptHTTPpolicy"),
+            "name": httpPolicyName,
             "http_security_policy": {
                 "rules": [{
                     "name": "Rule 1",
@@ -299,12 +341,21 @@ def get_crt(user, password, tenant, api_version, csr, CA=DEFAULT_CA, disable_che
             "is_internal_policy": False
         }
 
+        httppolicy_uuid = None
         try:
+            # Create httpPolicySet
             rsp = _do_request_avi("httppolicyset", "POST", data=httppolicy_data).json()
             httppolicy_uuid = rsp["uuid"]
-            print ("Created HTTP policy with uuid {}".format(httppolicy_uuid))
+            print ("Created httpPolicy with uuid {}".format(httppolicy_uuid))
 
-            patch_data = {"add" : {"http_policies": [{"http_policy_set_ref": "/api/httppolicyset/{}".format(httppolicy_uuid), "index":1000001}]}}
+            patch_data = {
+                "add" : {
+                    "http_policies": [{
+                        "http_policy_set_ref": "/api/httppolicyset/{}".format(httppolicy_uuid),
+                        "index": 1000001
+                    }]
+                }
+            }
             if not serving_on_port_80:
                 # Add port to virtualservice
                 print ("Adding port 80 to VS")
@@ -316,17 +367,17 @@ def get_crt(user, password, tenant, api_version, csr, CA=DEFAULT_CA, disable_che
                 }
                 patch_data["add"]["services"] = [service_on_port_80_data]
 
+            # Adding httpPolicySet to VS
             if vhMode: # if VH, we set the rule on the parent. Without SNI (so HTTP) it will go to the parent.
                 _do_request_avi("virtualservice/{}".format(vs_uuid_parent), "PATCH", patch_data)
-                print ("Added HTTPPolicy to parent-VS {}".format(vs_uuid_parent))
+                print ("Added httpPolicySet to parent-VS {}".format(vs_uuid_parent))
             else:
                 _do_request_avi("virtualservice/{}".format(vs_uuid), "PATCH", patch_data)
-                print ("Added HTTPPolicy to VS {}".format(vs_uuid))
+                print ("Added httpPolicySet to VS {}".format(vs_uuid))
 
             # check that the file is in place
             if not disable_check:
                 print ("Validating token from Avi Controller...")
-                wellknown_url = "http://{0}/.well-known/acme-challenge/{1}".format(domain, token)
                 try:
                     maxVerifyAttempts = 5 # maximal amount of verification attempts
                     # retrying logic. Otherwise race-condition can occurr between avi controller pushing config and the token validation request
@@ -347,28 +398,42 @@ def get_crt(user, password, tenant, api_version, csr, CA=DEFAULT_CA, disable_che
                 print ("Waiting 5 seconds before letting LetsEncrypt validating the challenge as validation disabled. Give controller time to push configs.")
                 time.sleep(5) # wait 5 secs if not validating, due to above mentioned race condition
 
-            print ("Challenge Completed, notifying LetsEncrypt")
+            print ("Challenge completed, notifying LetsEncrypt")
             # say the challenge is done
             _send_signed_request(challenge['url'], {}, "Error submitting challenges: {0}".format(domain))
             authorization = _poll_until_not(auth_url, ["pending"], "Error checking challenge status for {0}".format(domain))
             if authorization['status'] != "valid":
                 raise ValueError("Challenge did not pass for {0}: {1}".format(domain, authorization))
-            print ("Challenge Passed")
+            print ("Challenge passed")
 
         finally:
             print ("Cleaning up...")
             # Update the vs
-            patch_data = {"delete" : {"http_policies": [{"http_policy_set_ref": "/api/httppolicyset/{}".format(httppolicy_uuid), "index":1000001}]}}
-            if not serving_on_port_80:
-                patch_data["delete"]["services"] = [service_on_port_80_data]
-            if vhMode: # if VH, we set the rule on the parent. Without SNI (so HTTP) it will go to the parent.
-                _do_request_avi("virtualservice/{}".format(vs_uuid_parent), "PATCH", patch_data)
-                print ("Removed HTTPPolicy from parent-VS {}".format(vs_uuid_parent))
+            if httppolicy_uuid == None:
+                print ("Error: Failed removing httpPolicy as UUID not defined.")
             else:
-                _do_request_avi("virtualservice/{}".format(vs_uuid), "PATCH", patch_data)
-                print ("Removed HTTPPolicy from VS {}".format(vs_uuid))
-            _do_request_avi("httppolicyset/{}".format(httppolicy_uuid), "DELETE")
-            print ("Deleted HTTPPolicy")
+                patch_data = {
+                    "delete" : {
+                        "http_policies": [{
+                            "http_policy_set_ref": "/api/httppolicyset/{}".format(httppolicy_uuid),
+                            "index": 1000001
+                        }]
+                    }
+                }
+                if not serving_on_port_80:
+                    patch_data["delete"]["services"] = [service_on_port_80_data]
+
+                # Remove httpPolicySet from VS
+                if vhMode: # if VH, we set the rule on the parent. Without SNI (so HTTP) it will go to the parent.
+                    _do_request_avi("virtualservice/{}".format(vs_uuid_parent), "PATCH", patch_data)
+                    print ("Removed httpPolicySet from parent-VS {}".format(vs_uuid_parent))
+                else:
+                    _do_request_avi("virtualservice/{}".format(vs_uuid), "PATCH", patch_data)
+                    print ("Removed httpPolicySet from VS {}".format(vs_uuid))
+
+                # Remove httpPolicySet
+                _do_request_avi("httppolicyset/{}".format(httppolicy_uuid), "DELETE")
+                print ("Deleted httpPolicySet")
 
         print ("{0} verified!".format(domain))
 
@@ -397,6 +462,8 @@ def certificate_request(csr, common_name, kwargs):
     api_version = kwargs.get('api_version', '20.1.1')
     disable_check = kwargs.get('disable_check', "false")
     debug = kwargs.get('debug', "false")
+    directory_url = kwargs.get('directory_url', None)
+    overwrite_vs = kwargs.get('overwrite_vs', None)
 
     print ("Running version {}".format(VERSION))
 
@@ -418,16 +485,16 @@ def certificate_request(csr, common_name, kwargs):
         disable_check = False
     print ("disable_check is: {}".format(str(disable_check)))
 
-    directory_url = DEFAULT_DIRECTORY_URL
-    if dry_run:
-        directory_url = DEFAULT_STAGING_DIRECTORY_URL
+    if directory_url == None:
+        if dry_run:
+            directory_url = DEFAULT_STAGING_DIRECTORY_URL
+        else:
+            directory_url = DEFAULT_DIRECTORY_URL
     print ("directory_url is {}".format(directory_url))
 
-    csr_temp_file = NamedTemporaryFile(mode='w',delete=False)
-    csr_temp_file.close()
-
-    with open(csr_temp_file.name, 'w') as f:
-        f.write(csr)
+    # If overwrite_vs is specified but empty, set it to None.
+    if overwrite_vs == "":
+        overwrite_vs = None
 
     if tenant == None:
         print ("Using default tenant. You might want to define a specific tenant.".format(tenant))
@@ -436,11 +503,18 @@ def certificate_request(csr, common_name, kwargs):
         contact = [ "mailto:{}".format(contact) ] # contact must be array as of ACME RFC
         print ("Contact set to: {}".format(contact))
 
+    # Create CSR temp file.
+    csr_temp_file = NamedTemporaryFile(mode='w',delete=False)
+    csr_temp_file.close()
+
+    with open(csr_temp_file.name, 'w') as f:
+        f.write(csr)
+
     signed_crt = None
     try:
         signed_crt = get_crt(user, password, tenant, api_version, csr_temp_file.name, 
-                                disable_check=disable_check, directory_url=directory_url, 
-                                contact=contact, debug=debug)
+                                disable_check=disable_check, overwrite_vs=overwrite_vs,
+                                directory_url=directory_url, contact=contact, debug=debug)
     finally:
         os.remove(csr_temp_file.name)
 
