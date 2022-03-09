@@ -51,7 +51,7 @@
 ###
 '''
 
-import base64, binascii, datetime, hashlib, os, json, re, ssl, subprocess, sys, time
+import base64, binascii, hashlib, os, json, re, ssl, subprocess, time
 from urllib.parse import urlparse
 from urllib.request import urlopen, Request # Python 3
 from tempfile import NamedTemporaryFile
