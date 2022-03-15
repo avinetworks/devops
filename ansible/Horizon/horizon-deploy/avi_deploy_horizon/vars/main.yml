@@ -7,7 +7,16 @@ HM_SSLPROFILE: System-Standard
 
 VS_TCPPROFILE: System-TCP-Proxy
 VS_UDPPROFILE: System-UDP-Fast-Path-VDI
-VS_L4_APPPROFILE: System-L4-Application
+VS_L4_APP_PROFILE: System-L4-Application
+VS_L4_BLAST_PROFILE: System-L4-Horizon-Blast
+VS_L4_PCOIP_PROFILE: System-L4-Horizon-PCoIP
+VS_L7_APP_PROFILE: System-HTTP-Horizon-UAG
+
+# Datascript
+HORIZON_DS: System-Standard-Horizon-UAG
+
+#POOL ATTRIBUTES
+LB_ALGORITHM: LB_ALGORITHM_ROUND_ROBIN
 
 # Toggle for create(present), delete(absent)
 avi_config_state: present
