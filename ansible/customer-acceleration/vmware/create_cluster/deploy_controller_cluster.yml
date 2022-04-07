@@ -14,7 +14,7 @@
       - mgmt_ip: "{{ CONTROLLER_IP_3 }}"
         vm_name: "{{ CONTROLLER_NAME_3 }}"
   tasks:
-  - include_vars: variables.yml
+  # - include_vars: variables.yml
   - name: Deploy Avi Controller
     with_items: "{{ controller_configuration }}"
     deploy_controller:
@@ -26,6 +26,8 @@
       con_cluster: "{{ VMWARE_CLUSTER_NAME }}"
       con_ova_path: "{{ OVA_PATH }}"
       con_vm_name: "{{ item.vm_name }}"
+      con_number_of_cpus: "{{ CON_NUMBER_OF_CPUS | default(omit) }}"
+      con_memory: "{{ CON_MEMORY | default(omit) }}"
       con_disk_size: "{{ CON_DISK_SIZE | default(omit) }}"
       con_vcenter_folder: "{{ CON_FOLDER }}"
       con_datastore: "{{ VMWARE_DATASTORE }}"
@@ -107,7 +109,7 @@
             ip:
               type: V4
               addr: "{{ CONTROLLER_IP_3 }}"
-      name: cluster01
+      name: "{{ CONTROLLER_CLUSTER_NAME }}"
       tenant_uuid: "admin"
   - name: Verify Cluster Completed
     uri:
