@@ -4,15 +4,15 @@
     - { role: avinetworks.avicontroller_vmware }
     - { role: avinetworks.avisdk }
   vars_files:
-     variables.yml
+    variables.yml
   vars:
     controller_configuration:
       - mgmt_ip: "{{ CONTROLLER_IP_1 }}"
-        vm_name: "{{ CONTROLLER_NAME_1 }}"
+        vm_name: "{{ CONTROLLER_NAME_PREFIX + '-ctl01' }}"
       - mgmt_ip: "{{ CONTROLLER_IP_2 }}"
-        vm_name: "{{ CONTROLLER_NAME_2 }}"
+        vm_name: "{{ CONTROLLER_NAME_PREFIX + '-ctl02' }}"
       - mgmt_ip: "{{ CONTROLLER_IP_3 }}"
-        vm_name: "{{ CONTROLLER_NAME_3 }}"
+        vm_name: "{{ CONTROLLER_NAME_PREFIX + '-ctl03' }}"
   tasks:
   # - include_vars: variables.yml
   - name: Deploy Avi Controller
@@ -26,9 +26,9 @@
       con_cluster: "{{ VMWARE_CLUSTER_NAME }}"
       con_ova_path: "{{ OVA_PATH }}"
       con_vm_name: "{{ item.vm_name }}"
-      con_number_of_cpus: "{{ CON_NUMBER_OF_CPUS | default(omit) }}"
-      con_memory: "{{ CON_MEMORY | default(omit) }}"
-      con_disk_size: "{{ CON_DISK_SIZE | default(omit) }}"
+      con_number_of_cpus: "{{ CON_NUMBER_OF_CPUS | default('8') }}"
+      con_memory: "{{ CON_MEMORY | default('24576') }}"
+      con_disk_size: "{{ CON_DISK_SIZE | default('128') }}"
       con_vcenter_folder: "{{ CON_FOLDER }}"
       con_datastore: "{{ VMWARE_DATASTORE }}"
       con_mgmt_network: "{{ CON_MGMT_PORTGROUP }}"
@@ -87,6 +87,8 @@
       name: Backup-Configuration
       backup_passphrase: "{{ BACKUP_PASSPHRASE }}"
       upload_to_remote_host: false
+  - set_fact:
+      randomid: "{{ lookup('password', '/dev/null chars=ascii_lowercase,digits length=4') }}"
   - name: Cloud Cluster Configuration
     avi_cluster:
       controller: "{{ CONTROLLER_IP_1 }}"
@@ -97,19 +99,19 @@
         type: V4
         addr: "{{ CONTROLLER_CLUSTER_IP }}"
       nodes:
-          - name: "{{ CONTROLLER_NAME_1 }}" 
+          - name: "{{ CONTROLLER_NAME_PREFIX + '-ctl01' }}" 
             ip:
               type: V4
               addr: "{{ CONTROLLER_IP_1 }}"
-          - name: "{{ CONTROLLER_NAME_2 }}"
+          - name: "{{ CONTROLLER_NAME_PREFIX + '-ctl02' }}"
             ip:
               type: V4
               addr: "{{ CONTROLLER_IP_2 }}"
-          - name: "{{ CONTROLLER_NAME_3 }}"
+          - name: "{{ CONTROLLER_NAME_PREFIX + '-ctl03' }}"
             ip:
               type: V4
               addr: "{{ CONTROLLER_IP_3 }}"
-      name: "{{ CONTROLLER_CLUSTER_NAME }}"
+      name: "{{ CONTROLLER_NAME_PREFIX + '-clst-' + randomid }}"
       tenant_uuid: "admin"
   - name: Verify Cluster Completed
     uri:
