@@ -5,7 +5,6 @@
 # --------------------------------------------------------------------
 # Cluster IP for Avi Controller
 CONTROLLER_CLUSTER_IP: 100.64.19.40
-CONTROLLER_CLUSTER_NAME: "hx-nsxalb-clt01" 
 
 # Controller Credentials
 AVI_CREDENTIALS:
@@ -21,17 +20,15 @@ AVI_CREDENTIALS:
 
 # Controller Name and IP Addresses
 CONTROLLER_IP_1: 100.64.19.41
-CONTROLLER_NAME_1: "nsxalb-01"
 CONTROLLER_IP_2: 100.64.19.42
-CONTROLLER_NAME_2: "nsxalb-02"
 CONTROLLER_IP_3: 100.64.19.43
-CONTROLLER_NAME_3: "nsxalb-03"
+CONTROLLER_NAME_PREFIX: "Prefix-for-your-controller-name"
 
 # Controller Size 
 # default ova template uses 8cpus/24GB/128GB
 CON_NUMBER_OF_CPUS: 16
 CON_MEMORY: 32768
-CON_DISK_SIZE: 128
+CON_DISK_SIZE: 256
 
 # Controller Default Password
 OLD_PASSWORD: "<controller default password>" #Found on download image page
