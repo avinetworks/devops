@@ -62,7 +62,7 @@ VERSION = "0.9.5"
 DEFAULT_CA = "https://acme-v02.api.letsencrypt.org" # DEPRECATED! USE DEFAULT_DIRECTORY_URL INSTEAD
 DEFAULT_DIRECTORY_URL = "https://acme-v02.api.letsencrypt.org/directory"
 DEFAULT_STAGING_DIRECTORY_URL = "https://acme-staging-v02.api.letsencrypt.org/directory"
-ACCOUNT_KEY_PATH = "/var/lib/avi/ca/private/letsencrypt.key"
+ACCOUNT_KEY_PATH = "/tmp/letsencrypt.key"
 
 def get_crt(user, password, tenant, api_version, csr, CA=DEFAULT_CA, disable_check=False, 
             overwrite_vs=None, directory_url=DEFAULT_DIRECTORY_URL, contact=None, debug=False):
@@ -128,7 +128,8 @@ def get_crt(user, password, tenant, api_version, csr, CA=DEFAULT_CA, disable_che
             result, _, _ = _send_signed_request(url, None, err_msg)
         return result
 
-    session = ApiSession('localhost', user, password, tenant=tenant, api_version=api_version)
+    LOCALHOST = os.environ["DOCKER_GATEWAY"]
+    session = ApiSession(LOCALHOST, user, password, tenant=tenant, api_version=api_version)
 
     def _do_request_avi(url, method, data=None, error_msg="Error"):
         rsp = None
@@ -464,6 +465,8 @@ def certificate_request(csr, common_name, kwargs):
     debug = kwargs.get('debug', "false")
     directory_url = kwargs.get('directory_url', None)
     overwrite_vs = kwargs.get('overwrite_vs', None)
+    letsencrypt_key = kwargs.get('letsencrypt_key', None)
+
 
     print ("Running version {}".format(VERSION))
 
@@ -502,6 +505,10 @@ def certificate_request(csr, common_name, kwargs):
     if contact != None and "@" in contact:
         contact = [ "mailto:{}".format(contact) ] # contact must be array as of ACME RFC
         print ("Contact set to: {}".format(contact))
+
+    if letsencrypt_key != None:
+        with open(ACCOUNT_KEY_PATH, 'w') as f:
+            f.write(letsencrypt_key.decode("utf-8"))
 
     # Create CSR temp file.
     csr_temp_file = NamedTemporaryFile(mode='w',delete=False)
