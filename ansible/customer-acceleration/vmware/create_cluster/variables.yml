@@ -25,7 +25,7 @@ CONTROLLER_IP_3: 100.64.19.43
 CONTROLLER_NAME_PREFIX: "Prefix-for-your-controller-name"
 
 # Controller Size 
-# default ova template uses 8cpus/24GB/128GB
+# CPU/Memory/Disk for controller; if not defined, they're 8cpus/24GB/128GB by default
 CON_NUMBER_OF_CPUS: 16
 CON_MEMORY: 32768
 CON_DISK_SIZE: 256
