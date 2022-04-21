@@ -1,13 +1,13 @@
 '''
-### 
+###
 # Name: letsencrypt_mgmt_profile.py
-# Version: 0.9.5
+# Version: 0.9.6
 # License: MIT
-# 
+#
 # Description -
 #     This is a python script used for automatically requesting and renewing certificates
 #     from and via Let's Encrypt.
-# 
+#
 # Setup -
 #     1. This content needs to be imported in the Avi Controller in the settings menu
 #        at <<Templates - Security - Certificate Management>>.
@@ -20,29 +20,30 @@
 #     6. Set <<Common Name>> to the domain to which the certificate should be issued to
 #        and select the "Certificate Management" as previously created.
 #     7. Save and wait a few seconds for the certificate to be requested and imported.
-# 
+#
 # Note -
 #     1. This script can issue RSA and ECDSA certificates, as specified when
 #        creating an application certificate (CSR) via UI.
 #     2. This REQUIRES a L7 Virtual Service (HTTP/S) due to the requirement
 #        of HTTP-Policy-Sets.
-# 
+#
 # Parameters -
-#     user          - Avi user name (Default: None)
-#     password      - Password of the above user (Default: None)
-#     tenant        - Avi tenant name (Default: is 'admin')
-#     dryrun        - True/False. If True letsencrypt's staging server will be used. (Default: False)
-#     contact       - E-mail address sent to letsencrypt for account creation. (Default: None.)
-#                     (set this only once until updated, otherwise an update request will be sent every time.)
-#     directory_url - Change ACME server, e.g. for using in-house ACME server. (Default: Let's Encrypt Production)
-#     overwrite_vs  - Specify name or UUID of VirtualServer to be used for validation and httpPolicySet. (Default: False)
-# 
+#     user            - Avi user name (Default: None)
+#     password        - Password of the above user (Default: None)
+#     tenant          - Avi tenant name (Default: is 'admin')
+#     dryrun          - True/False. If True letsencrypt's staging server will be used. (Default: False)
+#     contact         - E-mail address sent to letsencrypt for account creation. (Default: None.)
+#                       (set this only once until updated, otherwise an update request will be sent every time.)
+#     directory_url   - Change ACME server, e.g. for using in-house ACME server. (Default: Let's Encrypt Production)
+#     overwrite_vs    - Specify name or UUID of VirtualServer to be used for validation and httpPolicySet. (Default: False)
+#     letsencrypt_key - Lets Encrypt Account Key (Default: None)
+#
 # Useful links -
 #     Ratelimiting - https://letsencrypt.org/docs/rate-limits/
-# 
+#
 # Source -
 #     https://github.com/avinetworks/devops/blob/master/cert_mgmt/letsencrypt_mgmt_profile.py
-# 
+#
 # Authors/Credits -
 #     acme-tiny, modified for Avi Controller <https://github.com/diafygi/acme-tiny>
 #     Nikhil Kumar Yadav <kumaryadavni@vmware.com>
@@ -57,14 +58,14 @@ from tempfile import NamedTemporaryFile
 
 from avi.sdk.avi_api import ApiSession
 
-VERSION = "0.9.5"
+VERSION = "0.9.6"
 
 DEFAULT_CA = "https://acme-v02.api.letsencrypt.org" # DEPRECATED! USE DEFAULT_DIRECTORY_URL INSTEAD
 DEFAULT_DIRECTORY_URL = "https://acme-v02.api.letsencrypt.org/directory"
 DEFAULT_STAGING_DIRECTORY_URL = "https://acme-staging-v02.api.letsencrypt.org/directory"
-ACCOUNT_KEY_PATH = "/var/lib/avi/ca/private/letsencrypt.key"
+ACCOUNT_KEY_PATH = "/tmp/letsencrypt.key"
 
-def get_crt(user, password, tenant, api_version, csr, CA=DEFAULT_CA, disable_check=False, 
+def get_crt(user, password, tenant, api_version, csr, CA=DEFAULT_CA, disable_check=False,
             overwrite_vs=None, directory_url=DEFAULT_DIRECTORY_URL, contact=None, debug=False):
     directory, acct_headers, alg, jwk = None, None, None, None # global variables
 
@@ -128,7 +129,7 @@ def get_crt(user, password, tenant, api_version, csr, CA=DEFAULT_CA, disable_che
             result, _, _ = _send_signed_request(url, None, err_msg)
         return result
 
-    session = ApiSession('localhost', user, password, tenant=tenant, api_version=api_version)
+    session = ApiSession(os.environ.get("DOCKER_GATEWAY", 'localhost'), user, password, tenant=tenant, api_version=api_version)
 
     def _do_request_avi(url, method, data=None, error_msg="Error"):
         rsp = None
@@ -244,7 +245,7 @@ def get_crt(user, password, tenant, api_version, csr, CA=DEFAULT_CA, disable_che
         if overwrite_vs == None:
 
             # Get VSVIPs/VSs, based on FQDN
-            rsp = _do_request_avi("vsvip/?fqdn={}".format(domain), "GET").json()
+            rsp = _do_request_avi("vsvip/?search=(fqdn,{})".format(domain), "GET").json()
             if debug:
                 print ("Found {} matching VSVIP FQDNs".format(rsp["count"]))
             if rsp["count"] == 0:
@@ -464,6 +465,8 @@ def certificate_request(csr, common_name, kwargs):
     debug = kwargs.get('debug', "false")
     directory_url = kwargs.get('directory_url', None)
     overwrite_vs = kwargs.get('overwrite_vs', None)
+    letsencrypt_key = kwargs.get('letsencrypt_key', None)
+
 
     print ("Running version {}".format(VERSION))
 
@@ -503,6 +506,10 @@ def certificate_request(csr, common_name, kwargs):
         contact = [ "mailto:{}".format(contact) ] # contact must be array as of ACME RFC
         print ("Contact set to: {}".format(contact))
 
+    if letsencrypt_key != None:
+        with open(ACCOUNT_KEY_PATH, 'w') as f:
+            f.write(letsencrypt_key.decode("utf-8"))
+
     # Create CSR temp file.
     csr_temp_file = NamedTemporaryFile(mode='w',delete=False)
     csr_temp_file.close()
@@ -512,7 +519,7 @@ def certificate_request(csr, common_name, kwargs):
 
     signed_crt = None
     try:
-        signed_crt = get_crt(user, password, tenant, api_version, csr_temp_file.name, 
+        signed_crt = get_crt(user, password, tenant, api_version, csr_temp_file.name,
                                 disable_check=disable_check, overwrite_vs=overwrite_vs,
                                 directory_url=directory_url, contact=contact, debug=debug)
     finally:
