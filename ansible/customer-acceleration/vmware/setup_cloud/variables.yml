@@ -35,6 +35,7 @@ CC_VCENTERDATACENTER: "wdc-06-vc10"
 
 # Service Engine Network Properties
 SE_MGMT_PORTGRP: "vxw-dvs-34-virtualwire-15-sid-6100014-wdc-06-vc10-avi-dev011"
+SE_MGMT_NETWORK_DHCP_ENABLED: false
 SE_MGMT_NETWORK: 100.64.19.0
 SE_MGMT_MASK: 24
 SE_MGMT_STARTRANGE: 100.64.19.100
