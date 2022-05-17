@@ -21,7 +21,7 @@
           privilege: "WRITE_ACCESS"
           vcenter_url: "{{ CC_VCENTERHOST }}"
     - pause:
-        minutes: 1
+        minutes: 2
       name: Cloud Preparing Integration
     - name: Configure SE Management Network
       avi_network:
@@ -45,6 +45,16 @@
                     type: V4
                     addr: '{{ SE_MGMT_ENDRANGE }}'
                 type: STATIC_IPS_FOR_VIP_AND_SE
+      when: 
+        - not SE_MGMT_NETWORK_DHCP_ENABLED
+      avi_network:
+        name: "{{ SE_MGMT_PORTGRP }}"
+        avi_credentials: "{{ AVI_CREDENTIALS }}"
+        cloud_ref: "{{'/api/cloud?name='+ CC_CLOUDNAME }}"
+        dhcp_enabled: true
+        exclude_discovered_subnets: false
+      when: 
+        - SE_MGMT_NETWORK_DHCP_ENABLED
     - name: Configure SE Default Gateway
       avi_vrfcontext:
         avi_credentials: "{{ AVI_CREDENTIALS }}"
@@ -80,6 +90,8 @@
         dedicated_dispatcher_core: "{{ dispatcher | default(omit) }}"
         vcenter_folder: "{{ SEG_FOLDER }}"
       register: seg
+    - debug:
+        var: seg
     - name: Cloud Connector Update Configuration
       avi_cloud:
         name: "{{ CC_CLOUDNAME }}"
@@ -94,6 +106,6 @@
           management_network: "{{ '/api/vimgrnwruntime/?name=' + SE_MGMT_PORTGRP }}"
           privilege: "WRITE_ACCESS"
           vcenter_url: "{{ CC_VCENTERHOST }}"
-        se_group_template_ref: seg.uuid
+        se_group_template_ref: "{{ seg.obj.uuid }}"
     - debug:
         msg: "The VMWare Cloud configuration completed."
