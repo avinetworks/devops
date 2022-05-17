@@ -15,7 +15,6 @@
         internal_profile:
           dns_service_domain:
           - domain_name: "{{ DNS_PROFILE.domain }}"
-            num_dns_ip: 1
             pass_through: true
             record_ttl: 100
           ttl: 300
