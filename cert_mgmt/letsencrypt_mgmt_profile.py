@@ -133,7 +133,7 @@ def get_crt(user, password, tenant, api_version, csr, CA=DEFAULT_CA, disable_che
 
     apiHost = os.environ.get('DOCKER_GATEWAY', 'localhost')
     if debug:
-        print ("API Host is '{}'".format(apiHost))
+        print ("DEBUG: API Host is '{}'".format(apiHost))
     session = ApiSession(apiHost, user, password, tenant=tenant, api_version=api_version)
 
     def _do_request_avi(url, method, data=None, error_msg="Error"):
@@ -159,7 +159,7 @@ def get_crt(user, password, tenant, api_version, csr, CA=DEFAULT_CA, disable_che
 
     if os.path.exists(ACCOUNT_KEY_PATH):
         if debug:
-            print ("Reusing account key.")
+            print ("DEBUG: Reusing account key.")
     else:
         print ("Account key not found. Generating account key...")
         out = _cmd(["openssl", "genrsa", "4096"], err_msg="OpenSSL Error")
@@ -170,7 +170,7 @@ def get_crt(user, password, tenant, api_version, csr, CA=DEFAULT_CA, disable_che
     # We request the info here once, instead in the loop for each SAN entry below.
     if overwrite_vs != None:
         if debug:
-            print ("overwrite_vs is set to '{}'".format(overwrite_vs))
+            print ("DEBUG: overwrite_vs is set to '{}'".format(overwrite_vs))
         if overwrite_vs.lower().startswith('virtualservice-'):
             search_term = "uuid={}".format(overwrite_vs.lower())
         else:
@@ -234,7 +234,7 @@ def get_crt(user, password, tenant, api_version, csr, CA=DEFAULT_CA, disable_che
     # get the authorizations that need to be completed
     for auth_url in order['authorizations']:
         if debug:
-            print ("Authorization URL is: {}".format(auth_url))
+            print ("DEBUG: Authorization URL is: {}".format(auth_url))
 
         authorization, _, _ = _send_signed_request(auth_url, None, "Error getting challenges")
         domain = authorization['identifier']['value']
@@ -247,7 +247,7 @@ def get_crt(user, password, tenant, api_version, csr, CA=DEFAULT_CA, disable_che
 
         wellknown_url = "http://{0}/.well-known/acme-challenge/{1}".format(domain, token)
         if debug:
-            print ("Validation URL is: {}".format(wellknown_url))
+            print ("DEBUG: Validation URL is: {}".format(wellknown_url))
 
         vhMode = False
         # Check if we need to overwrite VirtualService UUID to something specific
@@ -256,7 +256,7 @@ def get_crt(user, password, tenant, api_version, csr, CA=DEFAULT_CA, disable_che
             # Get VSVIPs/VSs, based on FQDN
             rsp = _do_request_avi("vsvip/?search=(fqdn,{})".format(domain), "GET").json()
             if debug:
-                print ("Found {} matching VSVIP FQDNs".format(rsp["count"]))
+                print ("DEBUG: Found {} matching VSVIP FQDNs".format(rsp["count"]))
             if rsp["count"] == 0:
                 print ("Warning: Could not find a VSVIP with fqdn = {}".format(domain))
                 # As a fallback we search for VirtualHosting entries with that domain
@@ -268,7 +268,7 @@ def get_crt(user, password, tenant, api_version, csr, CA=DEFAULT_CA, disable_che
 
             rsp = _do_request_avi("virtualservice/?{}".format(search_term), "GET").json()
             if debug:
-                print ("Found {} matching VSs".format(rsp["count"]))
+                print ("DEBUG: Found {} matching VSs".format(rsp["count"]))
             if rsp['count'] == 0:
                 raise Exception("Could not find a VS with fqdn = {}".format(domain))
 
@@ -293,7 +293,7 @@ def get_crt(user, password, tenant, api_version, csr, CA=DEFAULT_CA, disable_che
             vs_uuid_parent = rsp["results"][0]["vh_parent_vs_ref"].split("/")[-1]
             vhRsp = _do_request_avi("virtualservice/?uuid={}".format(vs_uuid_parent), "GET").json()
             if debug:
-                print ("Parent VS of Child-VS is {} and found {} matches".format(vs_uuid_parent, vhRsp['count']))
+                print ("DEBUG: Parent VS of Child-VS is {} and found {} matches".format(vs_uuid_parent, vhRsp['count']))
             if vhRsp['count'] == 0:
                 raise Exception("Could not find parent VS {} of child VS UUID = {}".format(vs_uuid_parent, vs_uuid))
 
@@ -307,7 +307,7 @@ def get_crt(user, password, tenant, api_version, csr, CA=DEFAULT_CA, disable_che
             if service["port"] == 80 and not service["enable_ssl"]:
                 serving_on_port_80 = True
                 if debug:
-                    print ("VS serving on port 80")
+                    print ("DEBUG: VS serving on port 80")
                 break
 
         # Update VS
