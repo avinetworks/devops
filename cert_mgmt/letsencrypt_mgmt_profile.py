@@ -1,7 +1,7 @@
 '''
 ###
 # Name: letsencrypt_mgmt_profile.py
-# Version: 0.9.6
+# Version: 0.9.7
 # License: MIT
 #
 # Description -
@@ -60,7 +60,7 @@ from tempfile import NamedTemporaryFile
 
 from avi.sdk.avi_api import ApiSession
 
-VERSION = "0.9.6"
+VERSION = "0.9.7"
 
 DEFAULT_CA = "https://acme-v02.api.letsencrypt.org" # DEPRECATED! USE DEFAULT_DIRECTORY_URL INSTEAD
 DEFAULT_DIRECTORY_URL = "https://acme-v02.api.letsencrypt.org/directory"
