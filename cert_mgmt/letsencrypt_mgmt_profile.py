@@ -508,7 +508,7 @@ def certificate_request(csr, common_name, kwargs):
 
     if letsencrypt_key != None:
         with open(ACCOUNT_KEY_PATH, 'w') as f:
-            f.write(letsencrypt_key.decode("utf-8"))
+            f.write(letsencrypt_key)
 
     # Create CSR temp file.
     csr_temp_file = NamedTemporaryFile(mode='w',delete=False)
