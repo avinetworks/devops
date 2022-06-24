@@ -162,14 +162,16 @@ def get_crt(user, password, tenant, api_version, csr, CA=DEFAULT_CA, disable_che
     # Check if we need to overwrite the VS UUID if it was specified
     # We request the info here once, instead in the loop for each SAN entry below.
     if overwrite_vs != None:
+        if debug:
+            print ("overwrite_vs is set to '{}'".format(overwrite_vs))
         if overwrite_vs.lower().startswith('virtualservice-'):
             search_term = "uuid={}".format(overwrite_vs.lower())
         else:
-            search_term = "name={}".format(urlparse.quote(overwrite_vs, safe=''))
+            search_term = "name={}".format(urllib.parse.quote(overwrite_vs, safe=''))
 
         overwrite_vs = _do_request_avi("virtualservice/?{}".format(search_term), "GET").json()
         if overwrite_vs['count'] == 0:
-            raise Exception("Could not find a VS with {}".format(search_term))
+            raise Exception("Could not find a VS with search {}".format(search_term))
 
     # parse account key to get public key
     print ("Parsing account key...")
