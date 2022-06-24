@@ -31,11 +31,14 @@
 #     user            - Avi user name (Default: None)
 #     password        - Password of the above user (Default: None)
 #     tenant          - Avi tenant name (Default: is 'admin')
-#     dryrun          - True/False. If True letsencrypt's staging server will be used. (Default: False)
+#     dryrun          - True/False. If True Let's Encrypt's staging server will be used. (Default: False)
+#                       Main purpose is not to get ratelimited by LetsEncrypt during testing.
 #     contact         - E-mail address sent to letsencrypt for account creation. (Default: None.)
 #                       (set this only once until updated, otherwise an update request will be sent every time.)
 #     directory_url   - Change ACME server, e.g. for using in-house ACME server. (Default: Let's Encrypt Production)
-#     overwrite_vs    - Specify name or UUID of VirtualServer to be used for validation and httpPolicySet. (Default: False)
+#     overwrite_vs    - Specify name or UUID of VirtualServer to be used for validation and httpPolicySet. (Default: Not set)
+#                       Useful for scenarios where VS cannot be identified by FQDN/hostname, e.g. when it's only listening on IP.
+#                       Important Note: Export+Import of Avi configuration CAUSES the UUID to change!
 #     letsencrypt_key - Lets Encrypt Account Key (Default: None)
 #
 # Useful links -
@@ -51,9 +54,8 @@
 ###
 '''
 
-import base64, binascii, hashlib, os, json, re, ssl, subprocess, time
-from urllib.parse import urlparse
-from urllib.request import urlopen, Request # Python 3
+import base64, binascii, hashlib, os, json, re, ssl, subprocess, time, urllib.parse
+from urllib.request import urlopen, Request
 from tempfile import NamedTemporaryFile
 
 from avi.sdk.avi_api import ApiSession
@@ -129,16 +131,21 @@ def get_crt(user, password, tenant, api_version, csr, CA=DEFAULT_CA, disable_che
             result, _, _ = _send_signed_request(url, None, err_msg)
         return result
 
-    session = ApiSession(os.environ.get("DOCKER_GATEWAY", 'localhost'), user, password, tenant=tenant, api_version=api_version)
+    apiHost = os.environ.get('DOCKER_GATEWAY', 'localhost')
+    if debug:
+        print ("API Host is '{}'".format(apiHost))
+    session = ApiSession(apiHost, user, password, tenant=tenant, api_version=api_version)
 
     def _do_request_avi(url, method, data=None, error_msg="Error"):
+        if debug:
+            print ("DEBUG: API request to url '{}'".format(url))
         rsp = None
         if method == "GET":
             rsp = session.get(url)
         elif method == "POST":
             rsp = session.post(url, data=data)
         elif method == "PATCH":
-            rsp = session.patch(url, data)
+            rsp = session.patch(url, data=data)
         elif method == "PUT":
             rsp = session.put(url, data=data)
         elif method == "DELETE":
@@ -468,7 +475,6 @@ def certificate_request(csr, common_name, kwargs):
     directory_url = kwargs.get('directory_url', None)
     overwrite_vs = kwargs.get('overwrite_vs', None)
     letsencrypt_key = kwargs.get('letsencrypt_key', None)
-
 
     print ("Running version {}".format(VERSION))
 
