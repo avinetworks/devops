@@ -1,7 +1,7 @@
 '''
 ###
 # Name: letsencrypt_mgmt_profile.py
-# Version: 0.9.6
+# Version: 0.9.7
 # License: MIT
 #
 # Description -
@@ -31,11 +31,14 @@
 #     user            - Avi user name (Default: None)
 #     password        - Password of the above user (Default: None)
 #     tenant          - Avi tenant name (Default: is 'admin')
-#     dryrun          - True/False. If True letsencrypt's staging server will be used. (Default: False)
+#     dryrun          - True/False. If True Let's Encrypt's staging server will be used. (Default: False)
+#                       Main purpose is not to get ratelimited by LetsEncrypt during testing.
 #     contact         - E-mail address sent to letsencrypt for account creation. (Default: None.)
 #                       (set this only once until updated, otherwise an update request will be sent every time.)
 #     directory_url   - Change ACME server, e.g. for using in-house ACME server. (Default: Let's Encrypt Production)
-#     overwrite_vs    - Specify name or UUID of VirtualServer to be used for validation and httpPolicySet. (Default: False)
+#     overwrite_vs    - Specify name or UUID of VirtualServer to be used for validation and httpPolicySet. (Default: Not set)
+#                       Useful for scenarios where VS cannot be identified by FQDN/hostname, e.g. when it's only listening on IP.
+#                       Important Note: Export+Import of Avi configuration CAUSES the UUID to change!
 #     letsencrypt_key - Lets Encrypt Account Key (Default: None)
 #
 # Useful links -
@@ -51,14 +54,13 @@
 ###
 '''
 
-import base64, binascii, datetime, hashlib, os, json, re, ssl, subprocess, sys, time
-from urllib.parse import urlparse
-from urllib.request import urlopen, Request # Python 3
+import base64, binascii, hashlib, os, json, re, ssl, subprocess, time, urllib.parse
+from urllib.request import urlopen, Request
 from tempfile import NamedTemporaryFile
 
 from avi.sdk.avi_api import ApiSession
 
-VERSION = "0.9.6"
+VERSION = "0.9.7"
 
 DEFAULT_CA = "https://acme-v02.api.letsencrypt.org" # DEPRECATED! USE DEFAULT_DIRECTORY_URL INSTEAD
 DEFAULT_DIRECTORY_URL = "https://acme-v02.api.letsencrypt.org/directory"
@@ -129,16 +131,21 @@ def get_crt(user, password, tenant, api_version, csr, CA=DEFAULT_CA, disable_che
             result, _, _ = _send_signed_request(url, None, err_msg)
         return result
 
-    session = ApiSession(os.environ.get("DOCKER_GATEWAY", 'localhost'), user, password, tenant=tenant, api_version=api_version)
+    apiHost = os.environ.get('DOCKER_GATEWAY', 'localhost')
+    if debug:
+        print ("DEBUG: API Host is '{}'".format(apiHost))
+    session = ApiSession(apiHost, user, password, tenant=tenant, api_version=api_version)
 
     def _do_request_avi(url, method, data=None, error_msg="Error"):
+        if debug:
+            print ("DEBUG: API request to url '{}'".format(url))
         rsp = None
         if method == "GET":
             rsp = session.get(url)
         elif method == "POST":
             rsp = session.post(url, data=data)
         elif method == "PATCH":
-            rsp = session.patch(url, data)
+            rsp = session.patch(url, data=data)
         elif method == "PUT":
             rsp = session.put(url, data=data)
         elif method == "DELETE":
@@ -152,7 +159,7 @@ def get_crt(user, password, tenant, api_version, csr, CA=DEFAULT_CA, disable_che
 
     if os.path.exists(ACCOUNT_KEY_PATH):
         if debug:
-            print ("Reusing account key.")
+            print ("DEBUG: Reusing account key.")
     else:
         print ("Account key not found. Generating account key...")
         out = _cmd(["openssl", "genrsa", "4096"], err_msg="OpenSSL Error")
@@ -162,14 +169,16 @@ def get_crt(user, password, tenant, api_version, csr, CA=DEFAULT_CA, disable_che
     # Check if we need to overwrite the VS UUID if it was specified
     # We request the info here once, instead in the loop for each SAN entry below.
     if overwrite_vs != None:
+        if debug:
+            print ("DEBUG: overwrite_vs is set to '{}'".format(overwrite_vs))
         if overwrite_vs.lower().startswith('virtualservice-'):
             search_term = "uuid={}".format(overwrite_vs.lower())
         else:
-            search_term = "name={}".format(urlparse.quote(overwrite_vs, safe=''))
+            search_term = "name={}".format(urllib.parse.quote(overwrite_vs, safe=''))
 
         overwrite_vs = _do_request_avi("virtualservice/?{}".format(search_term), "GET").json()
         if overwrite_vs['count'] == 0:
-            raise Exception("Could not find a VS with {}".format(search_term))
+            raise Exception("Could not find a VS with search {}".format(search_term))
 
     # parse account key to get public key
     print ("Parsing account key...")
@@ -225,7 +234,7 @@ def get_crt(user, password, tenant, api_version, csr, CA=DEFAULT_CA, disable_che
     # get the authorizations that need to be completed
     for auth_url in order['authorizations']:
         if debug:
-            print ("Authorization URL is: {}".format(auth_url))
+            print ("DEBUG: Authorization URL is: {}".format(auth_url))
 
         authorization, _, _ = _send_signed_request(auth_url, None, "Error getting challenges")
         domain = authorization['identifier']['value']
@@ -238,7 +247,7 @@ def get_crt(user, password, tenant, api_version, csr, CA=DEFAULT_CA, disable_che
 
         wellknown_url = "http://{0}/.well-known/acme-challenge/{1}".format(domain, token)
         if debug:
-            print ("Validation URL is: {}".format(wellknown_url))
+            print ("DEBUG: Validation URL is: {}".format(wellknown_url))
 
         vhMode = False
         # Check if we need to overwrite VirtualService UUID to something specific
@@ -247,7 +256,7 @@ def get_crt(user, password, tenant, api_version, csr, CA=DEFAULT_CA, disable_che
             # Get VSVIPs/VSs, based on FQDN
             rsp = _do_request_avi("vsvip/?search=(fqdn,{})".format(domain), "GET").json()
             if debug:
-                print ("Found {} matching VSVIP FQDNs".format(rsp["count"]))
+                print ("DEBUG: Found {} matching VSVIP FQDNs".format(rsp["count"]))
             if rsp["count"] == 0:
                 print ("Warning: Could not find a VSVIP with fqdn = {}".format(domain))
                 # As a fallback we search for VirtualHosting entries with that domain
@@ -259,7 +268,7 @@ def get_crt(user, password, tenant, api_version, csr, CA=DEFAULT_CA, disable_che
 
             rsp = _do_request_avi("virtualservice/?{}".format(search_term), "GET").json()
             if debug:
-                print ("Found {} matching VSs".format(rsp["count"]))
+                print ("DEBUG: Found {} matching VSs".format(rsp["count"]))
             if rsp['count'] == 0:
                 raise Exception("Could not find a VS with fqdn = {}".format(domain))
 
@@ -284,7 +293,7 @@ def get_crt(user, password, tenant, api_version, csr, CA=DEFAULT_CA, disable_che
             vs_uuid_parent = rsp["results"][0]["vh_parent_vs_ref"].split("/")[-1]
             vhRsp = _do_request_avi("virtualservice/?uuid={}".format(vs_uuid_parent), "GET").json()
             if debug:
-                print ("Parent VS of Child-VS is {} and found {} matches".format(vs_uuid_parent, vhRsp['count']))
+                print ("DEBUG: Parent VS of Child-VS is {} and found {} matches".format(vs_uuid_parent, vhRsp['count']))
             if vhRsp['count'] == 0:
                 raise Exception("Could not find parent VS {} of child VS UUID = {}".format(vs_uuid_parent, vs_uuid))
 
@@ -298,7 +307,7 @@ def get_crt(user, password, tenant, api_version, csr, CA=DEFAULT_CA, disable_che
             if service["port"] == 80 and not service["enable_ssl"]:
                 serving_on_port_80 = True
                 if debug:
-                    print ("VS serving on port 80")
+                    print ("DEBUG: VS serving on port 80")
                 break
 
         # Update VS
@@ -467,7 +476,6 @@ def certificate_request(csr, common_name, kwargs):
     overwrite_vs = kwargs.get('overwrite_vs', None)
     letsencrypt_key = kwargs.get('letsencrypt_key', None)
 
-
     print ("Running version {}".format(VERSION))
 
     if debug.lower() == "true":
@@ -508,7 +516,7 @@ def certificate_request(csr, common_name, kwargs):
 
     if letsencrypt_key != None:
         with open(ACCOUNT_KEY_PATH, 'w') as f:
-            f.write(letsencrypt_key.decode("utf-8"))
+            f.write(letsencrypt_key)
 
     # Create CSR temp file.
     csr_temp_file = NamedTemporaryFile(mode='w',delete=False)
