@@ -157,12 +157,12 @@ def get_crt(user, password, tenant, api_version, csr, CA=DEFAULT_CA, disable_che
         return rsp
 
     def add_dns_text_record(token, txt_record_name):
-        client = boto3.client('route53', aws_access_key_id='AKIASA3QGVYLFG2XQXOZ',
-                              aws_secret_access_key='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')
+        client = boto3.client('route53', aws_access_key_id='XXX',
+                              aws_secret_access_key='XXX')
 
         try:
             response = client.change_resource_record_sets(
-                HostedZoneId='Z27J1N39Q90Q0E',
+                HostedZoneId='XXX',
                 ChangeBatch={
                     'Comment': 'Adding dns txt record',
                     'Changes': [
@@ -181,11 +181,11 @@ def get_crt(user, password, tenant, api_version, csr, CA=DEFAULT_CA, disable_che
             print("Error adding dns txt record to vs {}",e)
 
     def remove_dns_text_record(token, txt_record_name):
-        client = boto3.client('route53', aws_access_key_id='AKIASA3QGVYLFG2XQXOZ',
-                              aws_secret_access_key='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')
+        client = boto3.client('route53', aws_access_key_id='XXX',
+                              aws_secret_access_key='XXX')
         try:
             response = client.change_resource_record_sets(
-                HostedZoneId='Z27J1N39Q90Q0E',
+                HostedZoneId='XXX',
                 ChangeBatch={
                     'Comment': 'Deleting dns txt record',
                     'Changes': [
