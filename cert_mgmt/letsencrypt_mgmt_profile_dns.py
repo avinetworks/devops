@@ -55,6 +55,7 @@
 import base64, binascii, hashlib, os, json, re, ssl, subprocess, time, urllib.parse
 from urllib.request import urlopen, Request
 from tempfile import NamedTemporaryFile
+import boto3
 
 from avi.sdk.avi_api import ApiSession
 
@@ -155,6 +156,53 @@ def get_crt(user, password, tenant, api_version, csr, CA=DEFAULT_CA, disable_che
             raise Exception(err)
         return rsp
 
+    def add_dns_text_record(token, txt_record_name):
+        client = boto3.client('route53', aws_access_key_id='AKIASA3QGVYLFG2XQXOZ',
+                              aws_secret_access_key='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')
+
+        try:
+            response = client.change_resource_record_sets(
+                HostedZoneId='Z27J1N39Q90Q0E',
+                ChangeBatch={
+                    'Comment': 'Adding dns txt record',
+                    'Changes': [
+                        {
+                            'Action': 'UPSERT',
+                            'ResourceRecordSet': {
+                                'Name': txt_record_name,
+                                'Type': 'TXT',
+                                'TTL': 123,
+                                'ResourceRecords': [{"Value": "\"{}\"".format(token)}]
+                            }
+                        }]
+                })
+            print("Added dns text record")
+        except Exception as e:
+            print("Error adding dns txt record to vs {}",e)
+
+    def remove_dns_text_record(token, txt_record_name):
+        client = boto3.client('route53', aws_access_key_id='AKIASA3QGVYLFG2XQXOZ',
+                              aws_secret_access_key='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')
+        try:
+            response = client.change_resource_record_sets(
+                HostedZoneId='Z27J1N39Q90Q0E',
+                ChangeBatch={
+                    'Comment': 'Deleting dns txt record',
+                    'Changes': [
+                        {
+                            'Action': 'DELETE',
+                            'ResourceRecordSet': {
+                                'Name': txt_record_name,
+                                'Type': 'TXT',
+                                'TTL': 123,
+                                'ResourceRecords': [{"Value": "\"{}\"".format(token)}]
+                            }
+                        }]
+                })
+            print("Deleted dns text record")
+        except Exception as e:
+            print("Error deleting dns txt record from vs {}",e)
+
     if os.path.exists(ACCOUNT_KEY_PATH):
         if debug:
             print ("DEBUG: Reusing account key.")
@@ -238,14 +286,15 @@ def get_crt(user, password, tenant, api_version, csr, CA=DEFAULT_CA, disable_che
         domain = authorization['identifier']['value']
         print ("Verifying {0}...".format(domain))
 
-        # find the http-01 challenge and write the challenge file
-        challenge = [c for c in authorization['challenges'] if c['type'] == "http-01"][0]
+        challenge = [print(c) for c in authorization['challenges']]
+        # find the dns-01 challenge and write the challenge file
+        challenge = [c for c in authorization['challenges'] if c['type'] == "dns-01"][0]
         token = re.sub(r"[^A-Za-z0-9_\-]", "_", challenge['token'])
         keyauthorization = "{0}.{1}".format(token, thumbprint)
 
-        wellknown_url = "http://{0}/.well-known/acme-challenge/{1}".format(domain, token)
+        txt_record_name = "_acme-challenge.{0}".format(domain)
         if debug:
-            print ("DEBUG: Validation URL is: {}".format(wellknown_url))
+            print ("DEBUG: Validation Record is : {}".format(txt_record_name))
 
         vhMode = False
         # Check if we need to overwrite VirtualService UUID to something specific
@@ -268,9 +317,10 @@ def get_crt(user, password, tenant, api_version, csr, CA=DEFAULT_CA, disable_che
             if debug:
                 print ("DEBUG: Found {} matching VSs".format(rsp["count"]))
             if rsp['count'] == 0:
-                raise Exception("Could not find a VS with fqdn = {}".format(domain))
+                # raise Exception("Could not find a VS with fqdn = {}".format(domain))
+                pass
 
-            vs_uuid = rsp["results"][0]["uuid"]
+            # vs_uuid = rsp["results"][0]["uuid"]
 
         else:
             # Overwriting VS UUID to what user specified.
@@ -279,132 +329,27 @@ def get_crt(user, password, tenant, api_version, csr, CA=DEFAULT_CA, disable_che
             vs_uuid = rsp["results"][0]["uuid"]
             print ("Note: Overwriting VS UUID to {}".format(vs_uuid))
 
-        print ("Found VS {} with fqdn {}".format(vs_uuid, domain))
+        # print ("Found VS {} with fqdn {}".format(vs_uuid, domain))
 
-        # Let's check if VS is enabled, otherwise challenge can never successfully complete.
-        if not rsp["results"][0]["enabled"]:
-            raise Exception("VS with fqdn {} is not enabled.".format(domain))
+        # # Let's check if VS is enabled, otherwise challenge can never successfully complete.
+        # if not rsp["results"][0]["enabled"]:
+        #     raise Exception("VS with fqdn {} is not enabled.".format(domain))
+        #
+        # # Special handling for virtualHosting: if child, get services from parent.
+        # if vhMode and rsp["results"][0]["type"] == "VS_TYPE_VH_CHILD":
+        #     # vh_parent_vs_ref is schema of https://avi.domain.tld/api/virtualservice/virtualservice-UUID, hence picking the last part
+        #     vs_uuid_parent = rsp["results"][0]["vh_parent_vs_ref"].split("/")[-1]
+        #     vhRsp = _do_request_avi("virtualservice/?uuid={}".format(vs_uuid_parent), "GET").json()
+        #     if debug:
+        #         print ("DEBUG: Parent VS of Child-VS is {} and found {} matches".format(vs_uuid_parent, vhRsp['count']))
+        #     if vhRsp['count'] == 0:
+        #         raise Exception("Could not find parent VS {} of child VS UUID = {}".format(vs_uuid_parent, vs_uuid))
+        #
+        #     # we just copy it over. more transparent for further logic.
+        #     rsp["results"][0]["services"] = vhRsp["results"][0]["services"]
 
-        # Special handling for virtualHosting: if child, get services from parent.
-        if vhMode and rsp["results"][0]["type"] == "VS_TYPE_VH_CHILD":
-            # vh_parent_vs_ref is schema of https://avi.domain.tld/api/virtualservice/virtualservice-UUID, hence picking the last part
-            vs_uuid_parent = rsp["results"][0]["vh_parent_vs_ref"].split("/")[-1]
-            vhRsp = _do_request_avi("virtualservice/?uuid={}".format(vs_uuid_parent), "GET").json()
-            if debug:
-                print ("DEBUG: Parent VS of Child-VS is {} and found {} matches".format(vs_uuid_parent, vhRsp['count']))
-            if vhRsp['count'] == 0:
-                raise Exception("Could not find parent VS {} of child VS UUID = {}".format(vs_uuid_parent, vs_uuid))
-
-            # we just copy it over. more transparent for further logic.
-            rsp["results"][0]["services"] = vhRsp["results"][0]["services"]
-
-        # Check if the vs is serving on port 80
-        serving_on_port_80 = False
-        service_on_port_80_data = None
-        for service in rsp["results"][0]["services"]:
-            if service["port"] == 80 and not service["enable_ssl"]:
-                serving_on_port_80 = True
-                if debug:
-                    print ("DEBUG: VS serving on port 80")
-                break
-
-        # Update VS
-        httpPolicyName = (domain + "-LetsEncryptHTTPpolicy")
-        # Check if HTTP policy exists.
-        # Can happen in rare cases, when e.g. script fails or removal failed for whatever reasons.
-        # To prevent this from failing forever, we clean it up at this stage.
-        hpRsp = _do_request_avi("httppolicyset/?name={}".format(httpPolicyName), "GET").json()
-        if hpRsp['count'] > 0:
-            hp_uuid = hpRsp['results'][0]['uuid']
-            print ("Stranded httpPolicySet {} found. Deleting...".format(hp_uuid))
-            _do_request_avi("httppolicyset/{}".format(hp_uuid), "DELETE")
-
-        # Create HTTP policy
-        httppolicy_data = {
-            "name": httpPolicyName,
-            "http_security_policy": {
-                "rules": [{
-                    "name": "Rule 1",
-                    "index": 1,
-                    "enable": True,
-                    "match": {
-                        "path": {
-                            "match_criteria": "CONTAINS",
-                            "match_case": "SENSITIVE",
-                            "match_str": [
-                                ".well-known/acme-challenge/{}".format(token)
-                            ]
-                        }
-                    },
-                    "action": {
-                        "action": "HTTP_SECURITY_ACTION_SEND_RESPONSE",
-                        "status_code": "HTTP_LOCAL_RESPONSE_STATUS_CODE_200",
-                        "file": {
-                            "content_type": "text/plain",
-                            "file_content": keyauthorization
-                        }
-                    }
-                }]
-            },
-            "is_internal_policy": False
-        }
-
-        httppolicy_uuid = None
         try:
-            # Create httpPolicySet
-            rsp = _do_request_avi("httppolicyset", "POST", data=httppolicy_data).json()
-            httppolicy_uuid = rsp["uuid"]
-            print ("Created httpPolicy with uuid {}".format(httppolicy_uuid))
-
-            patch_data = {
-                "add" : {
-                    "http_policies": [{
-                        "http_policy_set_ref": "/api/httppolicyset/{}".format(httppolicy_uuid),
-                        "index": 1000001
-                    }]
-                }
-            }
-            if not serving_on_port_80:
-                # Add port to virtualservice
-                print ("Adding port 80 to VS")
-                service_on_port_80_data = {
-                    "enable_http2": False,
-                    "enable_ssl": False,
-                    "port": 80,
-                    "port_range_end": 80
-                }
-                patch_data["add"]["services"] = [service_on_port_80_data]
-
-            # Adding httpPolicySet to VS
-            if vhMode: # if VH, we set the rule on the parent. Without SNI (so HTTP) it will go to the parent.
-                _do_request_avi("virtualservice/{}".format(vs_uuid_parent), "PATCH", patch_data)
-                print ("Added httpPolicySet to parent-VS {}".format(vs_uuid_parent))
-            else:
-                _do_request_avi("virtualservice/{}".format(vs_uuid), "PATCH", patch_data)
-                print ("Added httpPolicySet to VS {}".format(vs_uuid))
-
-            # check that the file is in place
-            if not disable_check:
-                print ("Validating token from Avi Controller...")
-                try:
-                    maxVerifyAttempts = 5 # maximal amount of verification attempts
-                    # retrying logic. Otherwise race-condition can occurr between avi controller pushing config and the token validation request
-                    for verifyAttempt in range(maxVerifyAttempts):
-                        reqToken = _do_request(wellknown_url, verify=False)
-                        if reqToken[0] != keyauthorization:
-                            print ("Internal token validation failed, {0} of {1} attempts. Retrying in 2 seconds."
-                                        .format((verifyAttempt + 1), maxVerifyAttempts))
-                            time.sleep(2)
-                        else:
-                            break
-                    else:
-                        raise Exception("All {2} internal token verifications failed. Got '{0}' but expected '{1}'."
-                                            .format(reqToken[0], keyauthorization, maxVerifyAttempts))
-                except Exception as e:
-                    raise ValueError("Wrote file, but Avi couldn't verify token at {0}. Exception: {1}".format(wellknown_url, str(e)))
-            else:
-                print ("Waiting 5 seconds before letting LetsEncrypt validating the challenge as validation disabled. Give controller time to push configs.")
-                time.sleep(5) # wait 5 secs if not validating, due to above mentioned race condition
+            add_dns_text_record(token, txt_record_name)
 
             print ("Challenge completed, notifying LetsEncrypt")
             # say the challenge is done
@@ -416,32 +361,9 @@ def get_crt(user, password, tenant, api_version, csr, CA=DEFAULT_CA, disable_che
 
         finally:
             print ("Cleaning up...")
-            # Update the vs
-            if httppolicy_uuid == None:
-                print ("Error: Failed removing httpPolicy as UUID not defined.")
-            else:
-                patch_data = {
-                    "delete" : {
-                        "http_policies": [{
-                            "http_policy_set_ref": "/api/httppolicyset/{}".format(httppolicy_uuid),
-                            "index": 1000001
-                        }]
-                    }
-                }
-                if not serving_on_port_80:
-                    patch_data["delete"]["services"] = [service_on_port_80_data]
 
-                # Remove httpPolicySet from VS
-                if vhMode: # if VH, we set the rule on the parent. Without SNI (so HTTP) it will go to the parent.
-                    _do_request_avi("virtualservice/{}".format(vs_uuid_parent), "PATCH", patch_data)
-                    print ("Removed httpPolicySet from parent-VS {}".format(vs_uuid_parent))
-                else:
-                    _do_request_avi("virtualservice/{}".format(vs_uuid), "PATCH", patch_data)
-                    print ("Removed httpPolicySet from VS {}".format(vs_uuid))
-
-                # Remove httpPolicySet
-                _do_request_avi("httppolicyset/{}".format(httppolicy_uuid), "DELETE")
-                print ("Deleted httpPolicySet")
+            # Remove dns txt record
+            remove_dns_text_record(token, txt_record_name)
 
         print ("{0} verified!".format(domain))
 
