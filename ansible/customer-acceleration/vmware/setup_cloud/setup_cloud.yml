@@ -4,7 +4,7 @@
   roles:
     - role: avinetworks.avisdk
   vars_files:
-    variables.yml
+    variable.yml
   tasks:
     - name: Cloud Connector Configuration
       avi_cloud:
