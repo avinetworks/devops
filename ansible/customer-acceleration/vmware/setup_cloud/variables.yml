@@ -17,7 +17,7 @@ AVI_CREDENTIALS:
 # --------------------------------------------------------------------
 
 # Cluster IP for Avi Controller
-CONTROLLER_CLUSTER_IP: 100.64.19.40
+CONTROLLER_CLUSTER_IP: "Your_Avi_Controller_Cluster_IP"
 
 # --------------------------------------------------------------------
 # Enviroment Variables / Vmware Cloud Setup
@@ -28,24 +28,24 @@ CONTROLLER_CLUSTER_IP: 100.64.19.40
 
 # Cloud Setup
 CC_CLOUDNAME: VMware_Cloud
-CC_VCENTERHOST: "wdc-06-vc10.oc.vmware.com"
-CC_VCENTERUSER: "aviuser1"
+CC_VCENTERHOST: "Your_vCenter_IP/FQDN"
+CC_VCENTERUSER: "Your_vCenter_User"
 CC_VCENTERPASSWORD: "Your_Password"
-CC_VCENTERDATACENTER: "wdc-06-vc10"
+CC_VCENTERDATACENTER: "vCenter_Datacenter"
 
 # Service Engine Network Properties
-SE_MGMT_PORTGRP: "vxw-dvs-34-virtualwire-15-sid-6100014-wdc-06-vc10-avi-dev011"
+SE_MGMT_PORTGRP: "Your_MGMT_PortGroup"
 SE_MGMT_NETWORK_DHCP_ENABLED: false
-SE_MGMT_NETWORK: 100.64.19.0
-SE_MGMT_MASK: 24
-SE_MGMT_STARTRANGE: 100.64.19.100
-SE_MGMT_ENDRANGE: 100.64.19.110
-SE_MGMT_GW: 100.64.19.2
+SE_MGMT_NETWORK: "Your MGMT Subnet Network ID"
+SE_MGMT_MASK: "Network Mask"
+SE_MGMT_STARTRANGE: "Starting IP for MGMT IP Pool"
+SE_MGMT_ENDRANGE: "End IP for MGMT IP Pool"
+SE_MGMT_GW: "Gateway_IP"
 
 # Service Engine Group Properties
 SEG_NAME: "VMware_Cloud_Group"
 SEG_TENANT: "admin"
-SEG_FOLDER: "Antonio"
+SEG_FOLDER: "Your_SE_Folder_Path"
 SEG_VCPU: 4
 SEG_MEMORY: 8192
 SEG_DISK: 30
