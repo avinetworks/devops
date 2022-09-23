@@ -9,10 +9,11 @@
 #     from and via Let's Encrypt using DNS-01 Challenge.
 #     To complete dns-01 challenge, a dns txt record needs to be added under the domain name
 #     for which certificate has to be issued.
-#     There are two functions provided add_dns_text_record(key_digest_64, txt_record_name) and
-#     remove_dns_text_record(key_digest_64, txt_record_name) to add and remove dns txt record with
+#     There are two functions provided add_dns_text_record(key_digest_64, txt_record_name, kwargs) and
+#     remove_dns_text_record(key_digest_64, txt_record_name, kwargs) to add and remove dns txt record with
 #     name txt_record_name and value key_digest_64 respectively.
-#     User will need to provide their own implementation of both the functions.
+#     User will need to provide their custom implementation for both of them.
+#     All configuration information required by both the above functions can be provided as sensitive parameter to the script.
 #     Sample code to add and remove dns txt record in aws hosted domain is provided.
 # Setup -
 #     1. This content needs to be imported in the Avi Controller in the settings menu
@@ -75,7 +76,7 @@ DEFAULT_STAGING_DIRECTORY_URL = "https://acme-staging-v02.api.letsencrypt.org/di
 ACCOUNT_KEY_PATH = "/tmp/letsencrypt.key"
 
 def get_crt(user, password, tenant, api_version, csr, CA=DEFAULT_CA, disable_check=False,
-            overwrite_vs=None, directory_url=DEFAULT_DIRECTORY_URL, contact=None, debug=False):
+            overwrite_vs=None, directory_url=DEFAULT_DIRECTORY_URL, contact=None, debug=False, kwargs=None):
     directory, acct_headers, alg, jwk = None, None, None, None # global variables
 
     # helper functions - base64 encode for jose spec
@@ -164,16 +165,18 @@ def get_crt(user, password, tenant, api_version, csr, CA=DEFAULT_CA, disable_che
             raise Exception(err)
         return rsp
 
-    def add_dns_text_record(key_digest_64, txt_record_name):
+    def add_dns_text_record(key_digest_64, txt_record_name, kwargs):
         # Add your custom code here to add dns txt record under your domain name with name
         # txt_record_name and value key_digest_64
-
-        client = boto3.client('route53', aws_access_key_id='XXXX',
-                              aws_secret_access_key='XXXX')
+        aws_access_key_id = kwargs.get('aws_access_key_id', None)
+        aws_secret_access_key = kwargs.get('aws_secret_access_key', None)
+        hosted_zone_id = kwargs.get('hosted_zone_id', None)
 
         try:
+            client = boto3.client('route53', aws_access_key_id=aws_access_key_id,
+                                  aws_secret_access_key=aws_secret_access_key)
             response = client.change_resource_record_sets(
-                HostedZoneId='XXXX',
+                HostedZoneId=hosted_zone_id,
                 ChangeBatch={
                     'Comment': 'Adding dns txt record',
                     'Changes': [
@@ -196,15 +199,19 @@ def get_crt(user, password, tenant, api_version, csr, CA=DEFAULT_CA, disable_che
         except Exception as e:
             raise Exception("Error adding dns txt record to vs {}",e)
 
-    def remove_dns_text_record(key_digest_64, txt_record_name):
+    def remove_dns_text_record(key_digest_64, txt_record_name, kwargs):
         # Add your custom code here to remove dns txt record under your domain name with name
         # txt_record_name and value key_digest_64
 
-        client = boto3.client('route53', aws_access_key_id='XXXX',
-                              aws_secret_access_key='XXXX')
+        aws_access_key_id = kwargs.get('aws_access_key_id', None)
+        aws_secret_access_key = kwargs.get('aws_secret_access_key', None)
+        hosted_zone_id = kwargs.get('hosted_zone_id', None)
+
         try:
+            client = boto3.client('route53', aws_access_key_id=aws_access_key_id,
+                                  aws_secret_access_key=aws_secret_access_key)
             response = client.change_resource_record_sets(
-                HostedZoneId='XXXX',
+                HostedZoneId=hosted_zone_id,
                 ChangeBatch={
                     'Comment': 'Deleting dns txt record',
                     'Changes': [
@@ -369,7 +376,7 @@ def get_crt(user, password, tenant, api_version, csr, CA=DEFAULT_CA, disable_che
 
         try:
             print("Install DNS TXT resource for domain: %s", domain)
-            add_dns_text_record(keydigest64, txt_record_name)
+            add_dns_text_record(keydigest64, txt_record_name, kwargs)
 
             print ("Challenge completed, notifying LetsEncrypt")
             # say the challenge is done
@@ -383,7 +390,7 @@ def get_crt(user, password, tenant, api_version, csr, CA=DEFAULT_CA, disable_che
             print ("Cleaning up...")
 
             # Remove dns txt record
-            remove_dns_text_record(keydigest64, txt_record_name)
+            remove_dns_text_record(keydigest64, txt_record_name, kwargs)
 
     print ("{0} verified!".format(domain))
 
@@ -469,7 +476,7 @@ def certificate_request(csr, common_name, kwargs):
     try:
         signed_crt = get_crt(user, password, tenant, api_version, csr_temp_file.name,
                                 disable_check=disable_check, overwrite_vs=overwrite_vs,
-                                directory_url=directory_url, contact=contact, debug=debug)
+                                directory_url=directory_url, contact=contact, debug=debug, kwargs=kwargs)
     finally:
         os.remove(csr_temp_file.name)
 
