@@ -1,13 +1,19 @@
 '''
 ###
-# Name: letsencrypt_mgmt_profile.py
+# Name: letsencrypt_mgmt_profile_with_dns.py
 # Version: 0.1.1
 # License: MIT
 #
 # Description -
 #     This is a python script used for automatically requesting and renewing certificates
-#     from and via Let's Encrypt.
-#
+#     from and via Let's Encrypt using DNS-01 Challenge.
+#     To complete dns-01 challenge, a dns txt record needs to be added under the domain name
+#     for which certificate has to be issued.
+#     There are two functions provided add_dns_text_record(key_digest_64, txt_record_name) and
+#     remove_dns_text_record(key_digest_64, txt_record_name) to add and remove dns txt record with
+#     name txt_record_name and value key_digest_64 respectively.
+#     User will need to provide their own implementation of both the functions.
+#     Sample code to add and remove dns txt record in aws hosted domain is provided.
 # Setup -
 #     1. This content needs to be imported in the Avi Controller in the settings menu
 #        at <<Templates - Security - Certificate Management>>.
@@ -159,6 +165,9 @@ def get_crt(user, password, tenant, api_version, csr, CA=DEFAULT_CA, disable_che
         return rsp
 
     def add_dns_text_record(key_digest_64, txt_record_name):
+        # Add your custom code here to add dns txt record under your domain name with name
+        # txt_record_name and value key_digest_64
+
         client = boto3.client('route53', aws_access_key_id='XXXX',
                               aws_secret_access_key='XXXX')
 
@@ -179,6 +188,7 @@ def get_crt(user, password, tenant, api_version, csr, CA=DEFAULT_CA, disable_che
                         }]
                 })
 
+            #Waiting for changes to propogate to all the Route 53 authoritative DNS servers
             while(response["ChangeInfo"]["Status"]!='INSYNC'):
                 response = client.get_change(id=response["ChangeInfo"]["Id"])
 
@@ -187,6 +197,9 @@ def get_crt(user, password, tenant, api_version, csr, CA=DEFAULT_CA, disable_che
             raise Exception("Error adding dns txt record to vs {}",e)
 
     def remove_dns_text_record(key_digest_64, txt_record_name):
+        # Add your custom code here to remove dns txt record under your domain name with name
+        # txt_record_name and value key_digest_64
+
         client = boto3.client('route53', aws_access_key_id='XXXX',
                               aws_secret_access_key='XXXX')
         try:
