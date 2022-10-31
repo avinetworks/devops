@@ -1,10 +1,11 @@
 # --------------------------------------------------------------------
 # Prepare your Environment:
-# pip install boto
+# pip3 install boto3
 # Edit ~/.aws/credentials and add lines below:
 # [default]
-# aws_access_key_id = YOUR_ACCESS_KEY
-# aws_secret_access_key = YOUR_SECRET_KEY
+# AWS_ACCESS_KEY_ID = <YOUR_ACCESS_KEY>
+# AWS_SECRET_ACCESS_KEY = <YOUR_SECRET_KEY>
+# AWS_SESSION_TOKEN = <YOUR_SESSION_TOKEN>
 # --------------------------------------------------------------------
 
 # --------------------------------------------------------------------
@@ -14,44 +15,42 @@
 
 # Controller Credentials
 AVI_CREDENTIALS:
-  controller: "{{ CONTROLLER_CLUSTER_IP }}" # This can be either cluster ip or the ip of the leader controller.
   username: "admin"
   password: "<password>"
-  api_version: "20.1.4"
+  api_version: "21.1.5" # This should match the Avi version you're installing.
 
 # --------------------------------------------------------------------
 # Required Variables / Controller Deployments
-# Description: This are the main variables required for controller deployments.
+# Description: These are the main variables required for controller deployments.
 # --------------------------------------------------------------------
 # Controller Name
 CONTROLLER_NAME_1: "nsxalb-01"
 CONTROLLER_NAME_2: "nsxalb-02"
 CONTROLLER_NAME_3: "nsxalb-03"
 
-# Controller Default Password
-OLD_PASSWORD: "<controller default password>" #Found on download image page
-
 # Controller Configuration Details
 DNS_SERVERS: [ 	8.8.8.8 ]
 NTP_SERVERS: [ '0.us.pool.ntp.org', '1.us.pool.ntp.org', '3.us.pool.ntp.org' ]
 NTP_TYPE: "DNS"  #If servers are hostname use type "DNS", if IP use type "V4"
 ADMIN_EMAIL: test_user@internal.lab   
-BACKUP_PASSPHRASE: "1234567890"
+BACKUP_PASSPHRASE: "Your_Backup_PASSPHRASE"
 
 # --------------------------------------------------------------------
-# Enviroment Variables / Controller Deployments
-# Description: You only have to apply variables on the installation type you desire.
+# EC2 Variables / Controller Deployments
+# Description: These are the variables required for controller EC2 instance deployments.
+# Before creating controller EC2 instances, you must create a key pair and then download the private key to a secure location
+# The key pair is used to initialize Avi admin credential
 # --------------------------------------------------------------------
 
 # AWS Variables
-EC2_SECURITY_GROUP: ag_avi_sec_group
-EC2_INSTANCE_TYPE: c4.4xlarge
-EC2_IMAGE_ID: ami-0822ac66b62a893cc
+EC2_SECURITY_GROUP: <YOUR_PREDIFINED_SECURITY_GROUP>
+EC2_INSTANCE_TYPE: <SIZE_OF_YOUR_CHOICE> # It could be c4.4xlarge, m5.2xlarge, etc.
+EC2_IMAGE_ID: <AVI_EC2_AMI_ID> # Like ami-0822ac66b62a893cc for 21.1.4
 EC2_MONITOR: no
-EC2_SUBNET_ID: subnet-06d88a4c
-EC2_REGION: us-east-1
-EC2_ROOT_VOLUME_SIZE: 256
-EC2_PREFIX: avictrl
+EC2_SUBNET_ID: <YOUR_SUBNET_ID> # Something like subnet-06d88a4c 
+EC2_REGION: <YOUR_REGION_OF_CHOICE>
+EC2_ROOT_VOLUME_SIZE: <DISK_SIZE_IN_GB> # Something like 256, depending on the controller size of your choice
 EC2_KEY_NAME: <key_pair_name>
+EC2_PRIVATE_KEY: <PRIVATE_KEY_LOCATION>
 EC2_IAM_INSTANCE_PROFILE: "AviController-Refined-Role"
 EC2_ASSIGN_PUBLIC_IP: yes

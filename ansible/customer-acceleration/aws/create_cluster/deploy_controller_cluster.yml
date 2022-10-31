@@ -1,65 +1,81 @@
 - hosts: localhost
-  connection: local
   gather_facts: no
   vars_files:
-     variables.yml
+    variables.yml
   vars:
+    ansible_ssh_private_key_file: "{{ EC2_PRIVATE_KEY }}"
+    ansible_host_key_checking : false
     controller_configuration:
       - vm_name: "{{ CONTROLLER_NAME_1 }}"
       - vm_name: "{{ CONTROLLER_NAME_2 }}"     
       - vm_name: "{{ CONTROLLER_NAME_3 }}"
   tasks:
   - name: "Create EC2 Instance"
-    ec2:
-      group: "{{ EC2_SECURITY_GROUP }}"
+    amazon.aws.ec2_instance:
+      name: "{{ item.vm_name }}" 
+      security_group: "{{ EC2_SECURITY_GROUP }}"
       instance_type: "{{ EC2_INSTANCE_TYPE }}"
-      image: "{{ EC2_IMAGE_ID }}"
-      monitoring: "{{ EC2_MONITOR }}"
+      instance_role: "{{ EC2_IAM_INSTANCE_PROFILE | default(omit) }}"
+      image_id: "{{ EC2_IMAGE_ID }}"
+      detailed_monitoring: "{{ EC2_MONITOR }}"
       key_name: "{{ EC2_KEY_NAME }}"
-      vpc_subnet_id: "{{ EC2_SUBNET_ID }}"
       region: "{{ EC2_REGION }}"
-      assign_public_ip: "{{ EC2_ASSIGN_PUBLIC_IP }}"
-      instance_tags: 
-        Name: "{{ item.vm_name }}"
+      vpc_subnet_id: "{{ EC2_SUBNET_ID }}"
+      network:
+        assign_public_ip: "{{ EC2_ASSIGN_PUBLIC_IP }}"
+        delete_on_termination: yes
       wait: yes
-      instance_profile_name: "{{ EC2_IAM_INSTANCE_PROFILE | default(omit) }}"
-      count_tag:
-        Name: "{{ item.vm_name }}"
       exact_count: 1
+      termination_protection: yes
       volumes:
       - device_name: /dev/sda1
-        volume_size: "{{ EC2_ROOT_VOLUME_SIZE }}"
-        delete_on_termination: true
-        termination_protection: yes
+        ebs:
+          volume_size: "{{ EC2_ROOT_VOLUME_SIZE }}"
+          delete_on_termination: true      
     with_items: "{{ controller_configuration }}"
     register: controller_fact
+
+  # in amazon.aws == 4.1.0; when creating EC2 instance, 
+  # public_ip_address attribute randomly missed in the controller_fact variable
+  # even though public ip is assigned to the instance
+  # so created a task to retrieve it after createion   
+  - name: "Retrieve EC2 Instances"
+    amazon.aws.ec2_instance_info:
+      region: "{{ EC2_REGION }}"
+      instance_ids:
+        - "{{ item.instances[0].instance_id }}"
+    with_items: "{{ controller_fact.results }}"  
+    register: instances    
+  - debug:
+      var: instances
+
   - set_fact:
-      CONTROLLER_CLUSTER_IP: "{{ controller_fact.results[0].tagged_instances[0].public_ip }}"
-  - name: Add the newly created EC2 instance(s) host group
-    lineinfile: 
-      dest: variables.yml
-      insertafter: "# IP for Avi Controller MGMT" 
-      line: "{{ 'CONTROLLER_CLUSTER_IP: '+ CONTROLLER_CLUSTER_IP }}"
-      state: present
+      CONTROLLER_CLUSTER_IP: "{{ instances.results[0].instances[0].public_ip_address }}"
+
   - name: Verify All controllers are online
     uri:
       validate_certs: false
-      url: "https://{{ item.tagged_instances[0].public_ip }}/api/initial-data"
+      url: "https://{{ item.instances[0].public_ip_address }}/api/initial-data"
       method: GET
       status_code: 200
     register: result
     until: result.status == 200
     retries: 600
     delay: 10
-    with_items: "{{ controller_fact.results }}"
-  - name: Change admin default password
-    avi_useraccount:
-      controller: "{{ CONTROLLER_CLUSTER_IP }}"
-      username: "{{ AVI_CREDENTIALS.username }}"
-      password: "{{ AVI_CREDENTIALS.password }}"
-      api_version: "{{ AVI_CREDENTIALS.api_version }}"
-      old_password: "{{ OLD_PASSWORD }}"
+    with_items: "{{ instances.results }}"
+
+  # init Avi admin account    
+  - name: "Initialize Avi admin user" 
+    delegate_to: "{{ item.instances[0].public_ip_address }}"
+    remote_user: "{{ AVI_CREDENTIALS.username }}"
+    command:  sudo /opt/avi/scripts/initialize_admin_user.py --password "{{ AVI_CREDENTIALS.password }}"
+    register: result
+    until: result.stdout_lines[0] | regex_search('sync_linux_one_user') and result.stdout_lines[-1] == "Password reset complete"
     ignore_errors: yes
+    retries: 600
+    delay: 10    
+    with_items: "{{ instances.results }}" 
+
   - set_fact:
       dns_list: "{{ dns_list | default([]) + [{'type': 'V4', 'addr': dserver }] }}"
     loop: "{{ DNS_SERVERS }}"
@@ -92,25 +108,28 @@
       name: Backup-Configuration
       backup_passphrase: "{{ BACKUP_PASSPHRASE }}"
       upload_to_remote_host: false
-  - name: Cloud Cluster Setup
+ 
+  - name: Avi Cluster Setup
     avi_cluster:
       controller: "{{ CONTROLLER_CLUSTER_IP }}"
       username: "{{ AVI_CREDENTIALS.username }}"
       password: "{{ AVI_CREDENTIALS.password }}"
       api_version: "{{ AVI_CREDENTIALS.api_version }}"
       nodes:
-          - name: "{{ controller_fact.results[0].tagged_instances[0].private_ip }}" 
-            ip:
-              type: V4
-              addr: "{{ controller_fact.results[0].tagged_instances[0].private_ip }}"
-          - name: "{{ controller_fact.results[1].tagged_instances[0].private_ip  }}"
-            ip:
-              type: V4
-              addr: "{{ controller_fact.results[1].tagged_instances[0].private_ip  }}"
-          - name: "{{ controller_fact.results[2].tagged_instances[0].private_ip }}"
-            ip:
-              type: V4
-              addr: "{{ controller_fact.results[2].tagged_instances[0].private_ip }}"
+        - name: "{{ instances.results[0].item.item.vm_name }}" 
+          ip:
+            type: V4
+            addr: "{{ instances.results[0].instances[0].private_ip_address }}"
+        - name: "{{ instances.results[1].item.item.vm_name  }}"
+          ip:
+            type: V4
+            addr: "{{ instances.results[1].instances[0].private_ip_address  }}"
+          password: "{{ AVI_CREDENTIALS.password }}"
+        - name: "{{ instances.results[2].item.item.vm_name }}"
+          ip:
+            type: V4
+            addr: "{{ instances.results[2].instances[0].private_ip_address }}"
+          password: "{{ AVI_CREDENTIALS.password }}"
       name: cluster01
       tenant_uuid: "admin"
   - name: Verify Cluster Completed
