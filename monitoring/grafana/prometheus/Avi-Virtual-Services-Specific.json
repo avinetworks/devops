@@ -1,0 +1,1762 @@
+{
+    "annotations": {
+      "list": [
+        {
+          "builtIn": 1,
+          "datasource": "-- Grafana --",
+          "enable": true,
+          "hide": true,
+          "iconColor": "rgba(0, 211, 255, 1)",
+          "name": "Annotations & Alerts",
+          "type": "dashboard"
+        }
+      ]
+    },
+    "editable": true,
+    "gnetId": null,
+    "graphTooltip": 0,
+    "iteration": 1576614964549,
+    "links": [],
+    "panels": [
+      {
+        "cacheTimeout": null,
+        "colorBackground": false,
+        "colorValue": false,
+        "colors": [
+          "rgba(245, 54, 54, 0.9)",
+          "rgba(237, 129, 40, 0.89)",
+          "rgba(50, 172, 45, 0.97)"
+        ],
+        "datasource": null,
+        "format": "bps",
+        "gauge": {
+          "maxValue": 100,
+          "minValue": 0,
+          "show": false,
+          "thresholdLabels": false,
+          "thresholdMarkers": true
+        },
+        "gridPos": {
+          "h": 3,
+          "w": 5,
+          "x": 0,
+          "y": 0
+        },
+        "id": 28,
+        "interval": null,
+        "links": [],
+        "mappingType": 1,
+        "mappingTypes": [
+          {
+            "name": "value to text",
+            "value": 1
+          },
+          {
+            "name": "range to text",
+            "value": 2
+          }
+        ],
+        "maxDataPoints": 100,
+        "nullPointMode": "connected",
+        "nullText": null,
+        "options": {},
+        "postfix": "",
+        "postfixFontSize": "50%",
+        "prefix": "",
+        "prefixFontSize": "50%",
+        "rangeMaps": [
+          {
+            "from": "null",
+            "text": "N/A",
+            "to": "null"
+          }
+        ],
+        "sparkline": {
+          "fillColor": "rgba(31, 118, 189, 0.18)",
+          "full": false,
+          "lineColor": "rgb(31, 120, 193)",
+          "show": false
+        },
+        "tableColumn": "",
+        "targets": [
+          {
+            "expr": "avi_l4_client_avg_bandwidth{instance=~\"$instance\", tenant=~\"$tenant\",type=\"virtualservice\",name=\"$virtualservice\"}",
+            "format": "time_series",
+            "interval": "1m",
+            "intervalFactor": 1,
+            "refId": "A",
+            "target": "aliasByNode(network-script.avi.$location.$environment.$device.virtualservice.$vs.l4_client_avg_bandwidth, 6)",
+            "textEditor": true
+          }
+        ],
+        "thresholds": "",
+        "title": "Bandwidth",
+        "type": "singlestat",
+        "valueFontSize": "80%",
+        "valueMaps": [
+          {
+            "op": "=",
+            "text": "N/A",
+            "value": "null"
+          }
+        ],
+        "valueName": "current"
+      },
+      {
+        "cacheTimeout": null,
+        "colorBackground": false,
+        "colorValue": false,
+        "colors": [
+          "rgba(245, 54, 54, 0.9)",
+          "rgba(237, 129, 40, 0.89)",
+          "rgba(50, 172, 45, 0.97)"
+        ],
+        "datasource": null,
+        "format": "none",
+        "gauge": {
+          "maxValue": 100,
+          "minValue": 0,
+          "show": false,
+          "thresholdLabels": false,
+          "thresholdMarkers": true
+        },
+        "gridPos": {
+          "h": 3,
+          "w": 4,
+          "x": 5,
+          "y": 0
+        },
+        "id": 29,
+        "interval": null,
+        "links": [],
+        "mappingType": 1,
+        "mappingTypes": [
+          {
+            "name": "value to text",
+            "value": 1
+          },
+          {
+            "name": "range to text",
+            "value": 2
+          }
+        ],
+        "maxDataPoints": 100,
+        "nullPointMode": "connected",
+        "nullText": null,
+        "options": {},
+        "postfix": "",
+        "postfixFontSize": "50%",
+        "prefix": "",
+        "prefixFontSize": "50%",
+        "rangeMaps": [
+          {
+            "from": "null",
+            "text": "N/A",
+            "to": "null"
+          }
+        ],
+        "sparkline": {
+          "fillColor": "rgba(31, 118, 189, 0.18)",
+          "full": false,
+          "lineColor": "rgb(31, 120, 193)",
+          "show": false
+        },
+        "tableColumn": "",
+        "targets": [
+          {
+            "expr": "avi_l4_client_avg_new_established_conns{instance=~\"$instance\", tenant=~\"$tenant\",type=\"virtualservice\",name=\"$virtualservice\"}",
+            "format": "time_series",
+            "interval": "1m",
+            "intervalFactor": 1,
+            "legendFormat": "",
+            "refId": "A",
+            "target": "network-script.avi.$location.$environment.$device.virtualservice.$vs.l4_client_avg_new_established_conns",
+            "textEditor": false
+          }
+        ],
+        "thresholds": "",
+        "title": "CPS",
+        "type": "singlestat",
+        "valueFontSize": "80%",
+        "valueMaps": [
+          {
+            "op": "=",
+            "text": "N/A",
+            "value": "null"
+          }
+        ],
+        "valueName": "current"
+      },
+      {
+        "cacheTimeout": null,
+        "colorBackground": false,
+        "colorValue": false,
+        "colors": [
+          "rgba(245, 54, 54, 0.9)",
+          "rgba(237, 129, 40, 0.89)",
+          "rgba(50, 172, 45, 0.97)"
+        ],
+        "datasource": null,
+        "format": "none",
+        "gauge": {
+          "maxValue": 100,
+          "minValue": 0,
+          "show": false,
+          "thresholdLabels": false,
+          "thresholdMarkers": true
+        },
+        "gridPos": {
+          "h": 3,
+          "w": 5,
+          "x": 9,
+          "y": 0
+        },
+        "id": 30,
+        "interval": null,
+        "links": [],
+        "mappingType": 1,
+        "mappingTypes": [
+          {
+            "name": "value to text",
+            "value": 1
+          },
+          {
+            "name": "range to text",
+            "value": 2
+          }
+        ],
+        "maxDataPoints": 100,
+        "nullPointMode": "connected",
+        "nullText": null,
+        "options": {},
+        "postfix": "",
+        "postfixFontSize": "50%",
+        "prefix": "",
+        "prefixFontSize": "50%",
+        "rangeMaps": [
+          {
+            "from": "null",
+            "text": "N/A",
+            "to": "null"
+          }
+        ],
+        "sparkline": {
+          "fillColor": "rgba(31, 118, 189, 0.18)",
+          "full": false,
+          "lineColor": "rgb(31, 120, 193)",
+          "show": false
+        },
+        "tableColumn": "",
+        "targets": [
+          {
+            "expr": "avi_l4_client_avg_complete_conns{instance=~\"$instance\", tenant=~\"$tenant\",type=\"virtualservice\",name=\"$virtualservice\"}",
+            "format": "time_series",
+            "interval": "1m",
+            "intervalFactor": 1,
+            "refId": "A",
+            "target": "network-script.avi.$location.$environment.$device.virtualservice.$vs.l4_client_avg_complete_conns",
+            "textEditor": false
+          }
+        ],
+        "thresholds": "",
+        "title": "Concurrent Conns",
+        "type": "singlestat",
+        "valueFontSize": "80%",
+        "valueMaps": [
+          {
+            "op": "=",
+            "text": "N/A",
+            "value": "null"
+          }
+        ],
+        "valueName": "current"
+      },
+      {
+        "cacheTimeout": null,
+        "colorBackground": false,
+        "colorValue": false,
+        "colors": [
+          "rgba(245, 54, 54, 0.9)",
+          "rgba(237, 129, 40, 0.89)",
+          "rgba(50, 172, 45, 0.97)"
+        ],
+        "datasource": null,
+        "format": "none",
+        "gauge": {
+          "maxValue": 100,
+          "minValue": 0,
+          "show": false,
+          "thresholdLabels": false,
+          "thresholdMarkers": true
+        },
+        "gridPos": {
+          "h": 3,
+          "w": 5,
+          "x": 14,
+          "y": 0
+        },
+        "id": 31,
+        "interval": null,
+        "links": [],
+        "mappingType": 1,
+        "mappingTypes": [
+          {
+            "name": "value to text",
+            "value": 1
+          },
+          {
+            "name": "range to text",
+            "value": 2
+          }
+        ],
+        "maxDataPoints": 100,
+        "nullPointMode": "connected",
+        "nullText": null,
+        "options": {},
+        "postfix": "",
+        "postfixFontSize": "50%",
+        "prefix": "",
+        "prefixFontSize": "50%",
+        "rangeMaps": [
+          {
+            "from": "null",
+            "text": "N/A",
+            "to": "null"
+          }
+        ],
+        "sparkline": {
+          "fillColor": "rgba(31, 118, 189, 0.18)",
+          "full": false,
+          "lineColor": "rgb(31, 120, 193)",
+          "show": false
+        },
+        "tableColumn": "",
+        "targets": [
+          {
+            "expr": "avi_l7_client_avg_ssl_handshakes_new{instance=~\"$instance\", tenant=~\"$tenant\",type=\"virtualservice\",name=\"$virtualservice\"}",
+            "format": "time_series",
+            "interval": "1m",
+            "intervalFactor": 1,
+            "refId": "A",
+            "target": "aliasByMetric(network-script.avi.$location.$environment.$device.virtualservice.$vs.l7_client_avg_ssl_handshakes_new)",
+            "textEditor": false
+          }
+        ],
+        "thresholds": "",
+        "title": "SSL TPS",
+        "type": "singlestat",
+        "valueFontSize": "80%",
+        "valueMaps": [
+          {
+            "op": "=",
+            "text": "N/A",
+            "value": "null"
+          }
+        ],
+        "valueName": "current"
+      },
+      {
+        "cacheTimeout": null,
+        "colorBackground": true,
+        "colorValue": false,
+        "colors": [
+          "rgba(245, 54, 54, 0.9)",
+          "rgba(237, 129, 40, 0.89)",
+          "rgba(50, 172, 45, 0.97)"
+        ],
+        "datasource": null,
+        "format": "none",
+        "gauge": {
+          "maxValue": 100,
+          "minValue": 0,
+          "show": false,
+          "thresholdLabels": false,
+          "thresholdMarkers": true
+        },
+        "gridPos": {
+          "h": 3,
+          "w": 5,
+          "x": 19,
+          "y": 0
+        },
+        "id": 32,
+        "interval": null,
+        "links": [],
+        "mappingType": 1,
+        "mappingTypes": [
+          {
+            "name": "value to text",
+            "value": 1
+          },
+          {
+            "name": "range to text",
+            "value": 2
+          }
+        ],
+        "maxDataPoints": 100,
+        "nullPointMode": "connected",
+        "nullText": null,
+        "options": {},
+        "postfix": "",
+        "postfixFontSize": "50%",
+        "prefix": "",
+        "prefixFontSize": "50%",
+        "rangeMaps": [
+          {
+            "from": "null",
+            "text": "N/A",
+            "to": "null"
+          }
+        ],
+        "sparkline": {
+          "fillColor": "rgba(31, 118, 189, 0.18)",
+          "full": false,
+          "lineColor": "rgb(31, 120, 193)",
+          "show": false
+        },
+        "tableColumn": "",
+        "targets": [
+          {
+            "expr": "avi_healthscore_health_score_value{instance=~\"$instance\", tenant=~\"$tenant\",type=\"virtualservice\",name=\"$virtualservice\"}",
+            "format": "time_series",
+            "intervalFactor": 1,
+            "refId": "A",
+            "target": "aliasByMetric(network-script.avi.$location.$environment.$device.virtualservice.$vs.healthscore)",
+            "textEditor": false
+          }
+        ],
+        "thresholds": "0,70,100",
+        "title": "Healthscore",
+        "type": "singlestat",
+        "valueFontSize": "80%",
+        "valueMaps": [
+          {
+            "op": "=",
+            "text": "N/A",
+            "value": "null"
+          }
+        ],
+        "valueName": "current"
+      },
+      {
+        "aliasColors": {},
+        "bars": false,
+        "dashLength": 10,
+        "dashes": false,
+        "datasource": null,
+        "fill": 5,
+        "fillGradient": 0,
+        "gridPos": {
+          "h": 7,
+          "w": 24,
+          "x": 0,
+          "y": 3
+        },
+        "hiddenSeries": false,
+        "id": 27,
+        "legend": {
+          "avg": false,
+          "current": false,
+          "max": false,
+          "min": false,
+          "show": true,
+          "total": false,
+          "values": false
+        },
+        "lines": true,
+        "linewidth": 1,
+        "links": [],
+        "nullPointMode": "connected",
+        "options": {
+          "dataLinks": []
+        },
+        "percentage": false,
+        "pointradius": 5,
+        "points": false,
+        "renderer": "flot",
+        "seriesOverrides": [],
+        "spaceLength": 10,
+        "stack": true,
+        "steppedLine": false,
+        "targets": [
+          {
+            "expr": "avi_l4_client_avg_total_rtt{instance=~\"$instance\", tenant=~\"$tenant\",type=\"virtualservice\",name=\"$virtualservice\"}",
+            "format": "time_series",
+            "interval": "1m",
+            "intervalFactor": 1,
+            "legendFormat": "Client RTT",
+            "refId": "A",
+            "target": "alias(network-script.avi.$location.$environment.$device.virtualservice.$vs.l4_client_avg_total_rtt, 'Client RTT')",
+            "textEditor": false
+          },
+          {
+            "expr": "avi_l7_client_avg_client_data_transfer_time{instance=~\"$instance\", tenant=~\"$tenant\",type=\"virtualservice\",name=\"$virtualservice\"}",
+            "format": "time_series",
+            "hide": false,
+            "interval": "1m",
+            "intervalFactor": 1,
+            "legendFormat": "Data Transfer",
+            "refId": "D",
+            "target": "alias(network-script.avi.$location.$environment.$device.virtualservice.$vs.l7_client_avg_client_data_transfer_time, 'Data Transfer')",
+            "textEditor": false
+          }
+        ],
+        "thresholds": [],
+        "timeFrom": null,
+        "timeRegions": [],
+        "timeShift": null,
+        "title": "Client Side Timing",
+        "tooltip": {
+          "shared": true,
+          "sort": 0,
+          "value_type": "individual"
+        },
+        "type": "graph",
+        "xaxis": {
+          "buckets": null,
+          "mode": "time",
+          "name": null,
+          "show": true,
+          "values": []
+        },
+        "yaxes": [
+          {
+            "format": "ms",
+            "label": null,
+            "logBase": 1,
+            "max": null,
+            "min": null,
+            "show": true
+          },
+          {
+            "format": "short",
+            "label": null,
+            "logBase": 1,
+            "max": null,
+            "min": null,
+            "show": true
+          }
+        ],
+        "yaxis": {
+          "align": false,
+          "alignLevel": null
+        }
+      },
+      {
+        "aliasColors": {},
+        "bars": false,
+        "dashLength": 10,
+        "dashes": false,
+        "datasource": null,
+        "editable": true,
+        "error": false,
+        "fill": 1,
+        "fillGradient": 0,
+        "grid": {},
+        "gridPos": {
+          "h": 7,
+          "w": 8,
+          "x": 0,
+          "y": 10
+        },
+        "hiddenSeries": false,
+        "id": 1,
+        "legend": {
+          "avg": false,
+          "current": false,
+          "max": false,
+          "min": false,
+          "show": true,
+          "total": false,
+          "values": false
+        },
+        "lines": true,
+        "linewidth": 2,
+        "links": [],
+        "nullPointMode": "connected",
+        "options": {
+          "dataLinks": []
+        },
+        "percentage": false,
+        "pointradius": 5,
+        "points": false,
+        "renderer": "flot",
+        "seriesOverrides": [],
+        "spaceLength": 10,
+        "stack": false,
+        "steppedLine": false,
+        "targets": [
+          {
+            "expr": "avi_l4_client_avg_bandwidth{instance=~\"$instance\", tenant=~\"$tenant\",type=\"virtualservice\",name=\"$virtualservice\"}",
+            "format": "time_series",
+            "interval": "1m",
+            "intervalFactor": 1,
+            "legendFormat": "{{name}}",
+            "refId": "B",
+            "target": "aliasByNode(network-script.avi.$location.$environment.$device.virtualservice.$vs.l4_client_avg_bandwidth, 6)",
+            "textEditor": true
+          }
+        ],
+        "thresholds": [],
+        "timeFrom": null,
+        "timeRegions": [],
+        "timeShift": null,
+        "title": "VS Bandwidth",
+        "tooltip": {
+          "msResolution": false,
+          "shared": false,
+          "sort": 0,
+          "value_type": "cumulative"
+        },
+        "type": "graph",
+        "xaxis": {
+          "buckets": null,
+          "mode": "time",
+          "name": null,
+          "show": true,
+          "values": []
+        },
+        "yaxes": [
+          {
+            "format": "bps",
+            "logBase": 1,
+            "max": null,
+            "min": null,
+            "show": true
+          },
+          {
+            "format": "short",
+            "logBase": 1,
+            "max": null,
+            "min": null,
+            "show": true
+          }
+        ],
+        "yaxis": {
+          "align": false,
+          "alignLevel": null
+        }
+      },
+      {
+        "aliasColors": {},
+        "bars": false,
+        "dashLength": 10,
+        "dashes": false,
+        "datasource": null,
+        "editable": true,
+        "error": false,
+        "fill": 1,
+        "fillGradient": 0,
+        "grid": {},
+        "gridPos": {
+          "h": 7,
+          "w": 8,
+          "x": 8,
+          "y": 10
+        },
+        "hiddenSeries": false,
+        "id": 2,
+        "legend": {
+          "avg": false,
+          "current": false,
+          "max": false,
+          "min": false,
+          "show": true,
+          "total": false,
+          "values": false
+        },
+        "lines": true,
+        "linewidth": 2,
+        "links": [],
+        "nullPointMode": "connected",
+        "options": {
+          "dataLinks": []
+        },
+        "percentage": false,
+        "pointradius": 5,
+        "points": false,
+        "renderer": "flot",
+        "seriesOverrides": [],
+        "spaceLength": 10,
+        "stack": false,
+        "steppedLine": false,
+        "targets": [
+          {
+            "expr": "avi_l4_client_avg_new_established_conns{instance=~\"$instance\", tenant=~\"$tenant\",type=\"virtualservice\",name=\"$virtualservice\"}",
+            "format": "time_series",
+            "interval": "1m",
+            "intervalFactor": 1,
+            "legendFormat": "{{name}}",
+            "refId": "A",
+            "target": "aliasByNode(network-script.avi.$location.$environment.$device.virtualservice.$vs.l4_client_avg_new_established_conns, 6)",
+            "textEditor": true
+          }
+        ],
+        "thresholds": [],
+        "timeFrom": null,
+        "timeRegions": [],
+        "timeShift": null,
+        "title": "Connections Per Second",
+        "tooltip": {
+          "msResolution": false,
+          "shared": false,
+          "sort": 0,
+          "value_type": "cumulative"
+        },
+        "type": "graph",
+        "xaxis": {
+          "buckets": null,
+          "mode": "time",
+          "name": null,
+          "show": true,
+          "values": []
+        },
+        "yaxes": [
+          {
+            "format": "short",
+            "logBase": 1,
+            "max": null,
+            "min": null,
+            "show": true
+          },
+          {
+            "format": "short",
+            "logBase": 1,
+            "max": null,
+            "min": null,
+            "show": true
+          }
+        ],
+        "yaxis": {
+          "align": false,
+          "alignLevel": null
+        }
+      },
+      {
+        "aliasColors": {},
+        "bars": false,
+        "dashLength": 10,
+        "dashes": false,
+        "datasource": null,
+        "editable": true,
+        "error": false,
+        "fill": 1,
+        "fillGradient": 0,
+        "grid": {},
+        "gridPos": {
+          "h": 7,
+          "w": 8,
+          "x": 16,
+          "y": 10
+        },
+        "hiddenSeries": false,
+        "id": 4,
+        "legend": {
+          "avg": false,
+          "current": false,
+          "max": false,
+          "min": false,
+          "show": true,
+          "total": false,
+          "values": false
+        },
+        "lines": true,
+        "linewidth": 2,
+        "links": [],
+        "nullPointMode": "connected",
+        "options": {
+          "dataLinks": []
+        },
+        "percentage": false,
+        "pointradius": 5,
+        "points": false,
+        "renderer": "flot",
+        "seriesOverrides": [],
+        "spaceLength": 10,
+        "stack": false,
+        "steppedLine": false,
+        "targets": [
+          {
+            "expr": "avi_l4_client_avg_complete_conns{instance=~\"$instance\", tenant=~\"$tenant\",type=\"virtualservice\",name=\"$virtualservice\"}",
+            "format": "time_series",
+            "interval": "1m",
+            "intervalFactor": 1,
+            "legendFormat": "{{name}}",
+            "refId": "A",
+            "target": "aliasByNode(network-script.avi.$location.$environment.$device.virtualservice.$vs.l4_client_avg_complete_conns, 6)",
+            "textEditor": true
+          }
+        ],
+        "thresholds": [],
+        "timeFrom": null,
+        "timeRegions": [],
+        "timeShift": null,
+        "title": "Concurrent Connections",
+        "tooltip": {
+          "msResolution": false,
+          "shared": false,
+          "sort": 0,
+          "value_type": "cumulative"
+        },
+        "type": "graph",
+        "xaxis": {
+          "buckets": null,
+          "mode": "time",
+          "name": null,
+          "show": true,
+          "values": []
+        },
+        "yaxes": [
+          {
+            "format": "short",
+            "logBase": 1,
+            "max": null,
+            "min": null,
+            "show": true
+          },
+          {
+            "format": "short",
+            "logBase": 1,
+            "max": null,
+            "min": null,
+            "show": true
+          }
+        ],
+        "yaxis": {
+          "align": false,
+          "alignLevel": null
+        }
+      },
+      {
+        "aliasColors": {},
+        "bars": false,
+        "dashLength": 10,
+        "dashes": false,
+        "datasource": null,
+        "editable": true,
+        "error": false,
+        "fill": 1,
+        "fillGradient": 0,
+        "grid": {},
+        "gridPos": {
+          "h": 6,
+          "w": 12,
+          "x": 0,
+          "y": 17
+        },
+        "hiddenSeries": false,
+        "id": 3,
+        "legend": {
+          "avg": false,
+          "current": false,
+          "max": false,
+          "min": false,
+          "show": true,
+          "total": false,
+          "values": false
+        },
+        "lines": true,
+        "linewidth": 2,
+        "links": [],
+        "nullPointMode": "connected",
+        "options": {
+          "dataLinks": []
+        },
+        "percentage": false,
+        "pointradius": 5,
+        "points": false,
+        "renderer": "flot",
+        "seriesOverrides": [],
+        "spaceLength": 10,
+        "stack": false,
+        "steppedLine": false,
+        "targets": [
+          {
+            "expr": "avi_l4_client_avg_rx_pkts{instance=~\"$instance\", tenant=~\"$tenant\",type=\"virtualservice\",name=\"$virtualservice\"}",
+            "format": "time_series",
+            "interval": "1m",
+            "intervalFactor": 1,
+            "legendFormat": "{{name}}",
+            "refId": "A",
+            "target": "aliasByNode(network-script.avi.$location.$environment.$device.virtualservice.$vs.l4_client_avg_rx_pkts, 6)",
+            "textEditor": true
+          }
+        ],
+        "thresholds": [],
+        "timeFrom": null,
+        "timeRegions": [],
+        "timeShift": null,
+        "title": "RX Packets Per Second",
+        "tooltip": {
+          "msResolution": false,
+          "shared": false,
+          "sort": 0,
+          "value_type": "cumulative"
+        },
+        "type": "graph",
+        "xaxis": {
+          "buckets": null,
+          "mode": "time",
+          "name": null,
+          "show": true,
+          "values": []
+        },
+        "yaxes": [
+          {
+            "format": "short",
+            "logBase": 1,
+            "max": null,
+            "min": null,
+            "show": true
+          },
+          {
+            "format": "short",
+            "logBase": 1,
+            "max": null,
+            "min": null,
+            "show": true
+          }
+        ],
+        "yaxis": {
+          "align": false,
+          "alignLevel": null
+        }
+      },
+      {
+        "aliasColors": {},
+        "bars": false,
+        "dashLength": 10,
+        "dashes": false,
+        "datasource": null,
+        "editable": true,
+        "error": false,
+        "fill": 1,
+        "fillGradient": 0,
+        "grid": {},
+        "gridPos": {
+          "h": 6,
+          "w": 12,
+          "x": 12,
+          "y": 17
+        },
+        "hiddenSeries": false,
+        "id": 6,
+        "legend": {
+          "avg": false,
+          "current": false,
+          "max": false,
+          "min": false,
+          "show": true,
+          "total": false,
+          "values": false
+        },
+        "lines": true,
+        "linewidth": 2,
+        "links": [],
+        "nullPointMode": "connected",
+        "options": {
+          "dataLinks": []
+        },
+        "percentage": false,
+        "pointradius": 5,
+        "points": false,
+        "renderer": "flot",
+        "seriesOverrides": [],
+        "spaceLength": 10,
+        "stack": false,
+        "steppedLine": false,
+        "targets": [
+          {
+            "expr": "avi_l4_client_avg_tx_pkts{instance=~\"$instance\", tenant=~\"$tenant\",type=\"virtualservice\",name=\"$virtualservice\"}",
+            "format": "time_series",
+            "interval": "1m",
+            "intervalFactor": 1,
+            "legendFormat": "{{name}}",
+            "refId": "A",
+            "target": "aliasByNode(network-script.avi.$location.$environment.$device.virtualservice.$vs.l4_client_avg_tx_pkts, 6)",
+            "textEditor": true
+          }
+        ],
+        "thresholds": [],
+        "timeFrom": null,
+        "timeRegions": [],
+        "timeShift": null,
+        "title": "TX Packets Per Second",
+        "tooltip": {
+          "msResolution": false,
+          "shared": false,
+          "sort": 0,
+          "value_type": "cumulative"
+        },
+        "type": "graph",
+        "xaxis": {
+          "buckets": null,
+          "mode": "time",
+          "name": null,
+          "show": true,
+          "values": []
+        },
+        "yaxes": [
+          {
+            "format": "short",
+            "logBase": 1,
+            "max": null,
+            "min": null,
+            "show": true
+          },
+          {
+            "format": "short",
+            "logBase": 1,
+            "max": null,
+            "min": null,
+            "show": true
+          }
+        ],
+        "yaxis": {
+          "align": false,
+          "alignLevel": null
+        }
+      },
+      {
+        "aliasColors": {},
+        "bars": false,
+        "dashLength": 10,
+        "dashes": false,
+        "datasource": null,
+        "editable": true,
+        "error": false,
+        "fill": 1,
+        "fillGradient": 0,
+        "grid": {},
+        "gridPos": {
+          "h": 7,
+          "w": 12,
+          "x": 0,
+          "y": 23
+        },
+        "hiddenSeries": false,
+        "id": 8,
+        "legend": {
+          "avg": false,
+          "current": false,
+          "max": false,
+          "min": false,
+          "show": true,
+          "total": false,
+          "values": false
+        },
+        "lines": true,
+        "linewidth": 2,
+        "links": [],
+        "nullPointMode": "connected",
+        "options": {
+          "dataLinks": []
+        },
+        "percentage": false,
+        "pointradius": 5,
+        "points": false,
+        "renderer": "flot",
+        "seriesOverrides": [],
+        "spaceLength": 10,
+        "stack": false,
+        "steppedLine": false,
+        "targets": [
+          {
+            "expr": "avi_healthscore_health_score_value{instance=~\"$instance\", tenant=~\"$tenant\",type=\"virtualservice\",name=\"$virtualservice\"}",
+            "format": "time_series",
+            "interval": "1m",
+            "intervalFactor": 1,
+            "legendFormat": "{{name}}",
+            "refId": "A",
+            "target": "aliasByNode(network-script.avi.$location.$environment.$device.virtualservice.$vs.healthscore, 6)",
+            "textEditor": true
+          }
+        ],
+        "thresholds": [],
+        "timeFrom": null,
+        "timeRegions": [],
+        "timeShift": null,
+        "title": "VS Healthscore",
+        "tooltip": {
+          "msResolution": false,
+          "shared": false,
+          "sort": 0,
+          "value_type": "cumulative"
+        },
+        "type": "graph",
+        "xaxis": {
+          "buckets": null,
+          "mode": "time",
+          "name": null,
+          "show": true,
+          "values": []
+        },
+        "yaxes": [
+          {
+            "format": "short",
+            "logBase": 1,
+            "max": 100,
+            "min": "0",
+            "show": true
+          },
+          {
+            "format": "short",
+            "logBase": 1,
+            "max": null,
+            "min": null,
+            "show": true
+          }
+        ],
+        "yaxis": {
+          "align": false,
+          "alignLevel": null
+        }
+      },
+      {
+        "aliasColors": {},
+        "bars": false,
+        "dashLength": 10,
+        "dashes": false,
+        "datasource": null,
+        "editable": true,
+        "error": false,
+        "fill": 1,
+        "fillGradient": 0,
+        "grid": {},
+        "gridPos": {
+          "h": 7,
+          "w": 12,
+          "x": 12,
+          "y": 23
+        },
+        "hiddenSeries": false,
+        "id": 14,
+        "legend": {
+          "avg": false,
+          "current": false,
+          "max": false,
+          "min": false,
+          "show": true,
+          "total": false,
+          "values": false
+        },
+        "lines": true,
+        "linewidth": 2,
+        "links": [],
+        "nullPointMode": "connected",
+        "options": {
+          "dataLinks": []
+        },
+        "percentage": false,
+        "pointradius": 5,
+        "points": false,
+        "renderer": "flot",
+        "seriesOverrides": [],
+        "spaceLength": 10,
+        "stack": false,
+        "steppedLine": false,
+        "targets": [
+          {
+            "expr": "avi_l7_client_avg_ssl_handshakes_new{instance=~\"$instance\", tenant=~\"$tenant\",type=\"virtualservice\",name=\"$virtualservice\"}",
+            "format": "time_series",
+            "interval": "1m",
+            "intervalFactor": 1,
+            "legendFormat": "l7_client_avg_ssl_handshakes_new",
+            "refId": "A",
+            "target": "aliasByMetric(network-script.avi.$location.$environment.$device.virtualservice.$vs.l7_client_avg_ssl_handshakes_new)",
+            "textEditor": true
+          },
+          {
+            "expr": "avi_l7_client_avg_ssl_connections{instance=~\"$instance\", tenant=~\"$tenant\",type=\"virtualservice\",name=\"$virtualservice\"}",
+            "format": "time_series",
+            "interval": "1m",
+            "intervalFactor": 1,
+            "legendFormat": "l7_client_avg_ssl_connections",
+            "refId": "B",
+            "target": "aliasByMetric(network-script.avi.$location.$environment.$device.virtualservice.$vs.l7_client_avg_ssl_connections)",
+            "textEditor": false
+          }
+        ],
+        "thresholds": [],
+        "timeFrom": null,
+        "timeRegions": [],
+        "timeShift": null,
+        "title": "SSL Statistics /sec",
+        "tooltip": {
+          "msResolution": false,
+          "shared": true,
+          "sort": 0,
+          "value_type": "cumulative"
+        },
+        "type": "graph",
+        "xaxis": {
+          "buckets": null,
+          "mode": "time",
+          "name": null,
+          "show": true,
+          "values": []
+        },
+        "yaxes": [
+          {
+            "format": "short",
+            "logBase": 1,
+            "max": null,
+            "min": null,
+            "show": true
+          },
+          {
+            "format": "short",
+            "logBase": 1,
+            "max": null,
+            "min": null,
+            "show": true
+          }
+        ],
+        "yaxis": {
+          "align": false,
+          "alignLevel": null
+        }
+      },
+      {
+        "aliasColors": {},
+        "bars": false,
+        "dashLength": 10,
+        "dashes": false,
+        "datasource": null,
+        "editable": true,
+        "error": false,
+        "fill": 1,
+        "fillGradient": 0,
+        "grid": {},
+        "gridPos": {
+          "h": 6,
+          "w": 24,
+          "x": 0,
+          "y": 30
+        },
+        "hiddenSeries": false,
+        "id": 13,
+        "legend": {
+          "avg": false,
+          "current": false,
+          "max": false,
+          "min": false,
+          "show": true,
+          "total": false,
+          "values": false
+        },
+        "lines": true,
+        "linewidth": 2,
+        "links": [],
+        "nullPointMode": "connected",
+        "options": {
+          "dataLinks": []
+        },
+        "percentage": false,
+        "pointradius": 5,
+        "points": false,
+        "renderer": "flot",
+        "seriesOverrides": [],
+        "spaceLength": 10,
+        "stack": false,
+        "steppedLine": false,
+        "targets": [
+          {
+            "expr": "avi_l4_client_avg_lossy_connections{instance=~\"$instance\", tenant=~\"$tenant\",type=\"virtualservice\",name=\"$virtualservice\"}",
+            "format": "time_series",
+            "interval": "1m",
+            "intervalFactor": 1,
+            "legendFormat": "{{name}}",
+            "refId": "A",
+            "target": "aliasByMetric(network-script.avi.$location.$environment.$device.virtualservice.$vs.l4_client_avg_lossy_connections)",
+            "textEditor": false
+          }
+        ],
+        "thresholds": [],
+        "timeFrom": null,
+        "timeRegions": [],
+        "timeShift": null,
+        "title": "Average Client Lossy Connections",
+        "tooltip": {
+          "msResolution": false,
+          "shared": true,
+          "sort": 0,
+          "value_type": "cumulative"
+        },
+        "type": "graph",
+        "xaxis": {
+          "buckets": null,
+          "mode": "time",
+          "name": null,
+          "show": true,
+          "values": []
+        },
+        "yaxes": [
+          {
+            "format": "short",
+            "logBase": 1,
+            "max": null,
+            "min": null,
+            "show": true
+          },
+          {
+            "format": "short",
+            "logBase": 1,
+            "max": null,
+            "min": null,
+            "show": true
+          }
+        ],
+        "yaxis": {
+          "align": false,
+          "alignLevel": null
+        }
+      },
+      {
+        "aliasColors": {},
+        "bars": false,
+        "dashLength": 10,
+        "dashes": false,
+        "datasource": null,
+        "editable": true,
+        "error": false,
+        "fill": 1,
+        "fillGradient": 0,
+        "grid": {},
+        "gridPos": {
+          "h": 7,
+          "w": 24,
+          "x": 0,
+          "y": 36
+        },
+        "hiddenSeries": false,
+        "id": 17,
+        "legend": {
+          "avg": false,
+          "current": false,
+          "max": false,
+          "min": false,
+          "show": true,
+          "total": false,
+          "values": false
+        },
+        "lines": true,
+        "linewidth": 2,
+        "links": [],
+        "nullPointMode": "connected",
+        "options": {
+          "dataLinks": []
+        },
+        "percentage": false,
+        "pointradius": 5,
+        "points": false,
+        "renderer": "flot",
+        "seriesOverrides": [],
+        "spaceLength": 10,
+        "stack": false,
+        "steppedLine": false,
+        "targets": [
+          {
+            "expr": "avi_l7_client_avg_resp_4xx_avi_errors{instance=~\"$instance\", tenant=~\"$tenant\",type=\"virtualservice\",name=\"$virtualservice\"}",
+            "format": "time_series",
+            "interval": "1m",
+            "intervalFactor": 1,
+            "legendFormat": "l7_client_avg_resp_4xx_avi_errors",
+            "refId": "A",
+            "target": "aliasByMetric(network-script.avi.$location.$environment.$device.virtualservice.$vs.l7_client_avg_resp_4xx_avi_errors)",
+            "textEditor": false
+          },
+          {
+            "expr": "avi_l7_client_avg_resp_5xx_avi_errors{instance=~\"$instance\", tenant=~\"$tenant\",type=\"virtualservice\",name=\"$virtualservice\"}",
+            "format": "time_series",
+            "instant": false,
+            "interval": "1m",
+            "intervalFactor": 1,
+            "legendFormat": "l7_client_avg_resp_5xx_avi_errors",
+            "refId": "B",
+            "target": "aliasByMetric(network-script.avi.$location.$environment.$device.virtualservice.$vs.l7_client_avg_resp_5xx_avi_errors)",
+            "textEditor": false
+          },
+          {
+            "expr": "avi_l7_client_avg_resp_4xx{instance=~\"$instance\", tenant=~\"$tenant\",type=\"virtualservice\",name=\"$virtualservice\"}",
+            "format": "time_series",
+            "interval": "1m",
+            "intervalFactor": 1,
+            "legendFormat": "l7_client_avg_resp_4xx",
+            "refId": "C",
+            "target": "aliasByMetric(network-script.avi.$location.$environment.$device.virtualservice.$vs.l7_client_avg_resp_4xx)",
+            "textEditor": false
+          },
+          {
+            "expr": "avi_l7_client_avg_resp_5xx{instance=~\"$instance\", tenant=~\"$tenant\",type=\"virtualservice\",name=\"$virtualservice\"}",
+            "format": "time_series",
+            "interval": "1m",
+            "intervalFactor": 1,
+            "legendFormat": "l7_client_avg_resp_5xx",
+            "refId": "D",
+            "target": "aliasByMetric(network-script.avi.$location.$environment.$device.virtualservice.$vs.l7_client_avg_resp_5xx)",
+            "textEditor": false
+          }
+        ],
+        "thresholds": [],
+        "timeFrom": null,
+        "timeRegions": [],
+        "timeShift": null,
+        "title": "4xx 5xx Status Codes",
+        "tooltip": {
+          "msResolution": false,
+          "shared": true,
+          "sort": 0,
+          "value_type": "cumulative"
+        },
+        "type": "graph",
+        "xaxis": {
+          "buckets": null,
+          "mode": "time",
+          "name": null,
+          "show": true,
+          "values": []
+        },
+        "yaxes": [
+          {
+            "format": "short",
+            "label": null,
+            "logBase": 1,
+            "max": null,
+            "min": null,
+            "show": true
+          },
+          {
+            "format": "short",
+            "label": null,
+            "logBase": 1,
+            "max": null,
+            "min": null,
+            "show": true
+          }
+        ],
+        "yaxis": {
+          "align": false,
+          "alignLevel": null
+        }
+      },
+      {
+        "aliasColors": {},
+        "bars": false,
+        "dashLength": 10,
+        "dashes": false,
+        "datasource": null,
+        "fill": 1,
+        "fillGradient": 0,
+        "gridPos": {
+          "h": 7,
+          "w": 24,
+          "x": 0,
+          "y": 43
+        },
+        "hiddenSeries": false,
+        "id": 18,
+        "legend": {
+          "avg": false,
+          "current": false,
+          "max": false,
+          "min": false,
+          "show": true,
+          "total": false,
+          "values": false
+        },
+        "lines": true,
+        "linewidth": 1,
+        "links": [],
+        "nullPointMode": "connected",
+        "options": {
+          "dataLinks": []
+        },
+        "percentage": false,
+        "pointradius": 5,
+        "points": false,
+        "renderer": "flot",
+        "seriesOverrides": [],
+        "spaceLength": 10,
+        "stack": false,
+        "steppedLine": false,
+        "targets": [
+          {
+            "expr": "avi_l4_client_max_open_conns{instance=~\"$instance\", tenant=~\"$tenant\",type=\"virtualservice\",name=\"$virtualservice\"}",
+            "format": "time_series",
+            "interval": "1m",
+            "intervalFactor": 1,
+            "legendFormat": "{{name}}",
+            "refId": "A",
+            "target": "aliasByMetric(network-script.avi.$location.$environment.$device.virtualservice.$vs.l4_client_max_open_conns)",
+            "textEditor": false
+          }
+        ],
+        "thresholds": [],
+        "timeFrom": null,
+        "timeRegions": [],
+        "timeShift": null,
+        "title": "Client Side Open Connections",
+        "tooltip": {
+          "shared": true,
+          "sort": 0,
+          "value_type": "individual"
+        },
+        "type": "graph",
+        "xaxis": {
+          "buckets": null,
+          "mode": "time",
+          "name": null,
+          "show": true,
+          "values": []
+        },
+        "yaxes": [
+          {
+            "format": "short",
+            "label": null,
+            "logBase": 1,
+            "max": null,
+            "min": null,
+            "show": true
+          },
+          {
+            "format": "short",
+            "label": null,
+            "logBase": 1,
+            "max": null,
+            "min": null,
+            "show": true
+          }
+        ],
+        "yaxis": {
+          "align": false,
+          "alignLevel": null
+        }
+      },
+      {
+        "aliasColors": {},
+        "bars": false,
+        "dashLength": 10,
+        "dashes": false,
+        "datasource": null,
+        "editable": true,
+        "error": false,
+        "fill": 0,
+        "fillGradient": 0,
+        "grid": {},
+        "gridPos": {
+          "h": 7,
+          "w": 24,
+          "x": 0,
+          "y": 50
+        },
+        "hiddenSeries": false,
+        "id": 10,
+        "legend": {
+          "avg": false,
+          "current": false,
+          "max": false,
+          "min": false,
+          "show": true,
+          "total": false,
+          "values": false
+        },
+        "lines": true,
+        "linewidth": 2,
+        "links": [],
+        "nullPointMode": "connected",
+        "options": {
+          "dataLinks": []
+        },
+        "percentage": false,
+        "pointradius": 5,
+        "points": false,
+        "renderer": "flot",
+        "seriesOverrides": [],
+        "spaceLength": 10,
+        "stack": false,
+        "steppedLine": false,
+        "targets": [
+          {
+            "expr": "avi_l4_client_apdexc{instance=~\"$instance\", tenant=~\"$tenant\",type=\"virtualservice\",name=\"$virtualservice\"}",
+            "format": "time_series",
+            "interval": "1m",
+            "intervalFactor": 1,
+            "legendFormat": "{{__name__}}",
+            "refId": "A",
+            "target": "aliasByMetric(network-script.avi.$location.$environment.$device.virtualservice.$vs.l4_client_apdexc)",
+            "textEditor": true
+          },
+          {
+            "expr": "avi_l7_client_apdexr{instance=~\"$instance\", tenant=~\"$tenant\",type=\"virtualservice\",name=\"$virtualservice\"}",
+            "format": "time_series",
+            "interval": "1m",
+            "intervalFactor": 1,
+            "legendFormat": "{{__name__}}",
+            "refId": "C",
+            "target": "aliasByMetric(network-script.avi.$location.$environment.$device.virtualservice.$vs.l7_client_apdexr)",
+            "textEditor": true
+          }
+        ],
+        "thresholds": [],
+        "timeFrom": null,
+        "timeRegions": [],
+        "timeShift": null,
+        "title": "Virtual Service ApDex  Values",
+        "tooltip": {
+          "msResolution": false,
+          "shared": true,
+          "sort": 0,
+          "value_type": "cumulative"
+        },
+        "type": "graph",
+        "xaxis": {
+          "buckets": null,
+          "mode": "time",
+          "name": null,
+          "show": true,
+          "values": []
+        },
+        "yaxes": [
+          {
+            "format": "short",
+            "logBase": 1,
+            "max": null,
+            "min": null,
+            "show": true
+          },
+          {
+            "format": "short",
+            "logBase": 1,
+            "max": null,
+            "min": null,
+            "show": true
+          }
+        ],
+        "yaxis": {
+          "align": false,
+          "alignLevel": null
+        }
+      }
+    ],
+    "refresh": "1m",
+    "schemaVersion": 21,
+    "style": "dark",
+    "tags": [
+      "avi"
+    ],
+    "templating": {
+      "list": [
+        {
+          "allFormat": "glob",
+          "allValue": null,
+          "datasource": "Prometheus",
+          "definition": "label_values({type=\"serviceengine\"},instance)",
+          "hide": 0,
+          "includeAll": false,
+          "label": null,
+          "multi": false,
+          "multiFormat": "glob",
+          "name": "instance",
+          "options": [],
+          "query": "label_values({type=\"serviceengine\"},instance)",
+          "refresh": 1,
+          "regex": "",
+          "skipUrlSync": false,
+          "sort": 0,
+          "tagValuesQuery": "",
+          "tags": [],
+          "tagsQuery": "",
+          "type": "query",
+          "useTags": false
+        },
+        {
+          "allFormat": "glob",
+          "allValue": null,
+          "datasource": "Prometheus",
+          "definition": "label_values({type=\"virtualservice\",instance=~\"$instance\"},tenant)",
+          "hide": 0,
+          "includeAll": false,
+          "label": null,
+          "multi": false,
+          "multiFormat": "glob",
+          "name": "tenant",
+          "options": [],
+          "query": "label_values({type=\"virtualservice\",instance=~\"$instance\"},tenant)",
+          "refresh": 1,
+          "regex": "",
+          "skipUrlSync": false,
+          "sort": 0,
+          "tagValuesQuery": "",
+          "tags": [],
+          "tagsQuery": "",
+          "type": "query",
+          "useTags": false
+        },
+        {
+          "allFormat": "glob",
+          "allValue": null,
+          "current": {
+            "text": "DNS VS",
+            "value": "DNS VS"
+          },
+          "datasource": "Prometheus",
+          "definition": "label_values({instance=\"$instance\", tenant=\"$tenant\",type=\"virtualservice\"},name)",
+          "hide": 0,
+          "includeAll": false,
+          "label": null,
+          "multi": false,
+          "name": "virtualservice",
+          "options": [],
+          "query": "label_values({instance=\"$instance\", tenant=\"$tenant\",type=\"virtualservice\"},name)",
+          "refresh": 1,
+          "refresh_on_load": false,
+          "regex": "",
+          "skipUrlSync": false,
+          "sort": 0,
+          "tagValuesQuery": "",
+          "tags": [],
+          "tagsQuery": "",
+          "type": "query",
+          "useTags": false
+        }
+      ]
+    },
+    "time": {
+      "from": "now-3h",
+      "to": "now"
+    },
+    "timepicker": {
+      "collapse": false,
+      "enable": true,
+      "notice": false,
+      "now": true,
+      "refresh_intervals": [
+        "5s",
+        "10s",
+        "30s",
+        "1m",
+        "5m",
+        "15m",
+        "30m",
+        "1h",
+        "2h",
+        "1d"
+      ],
+      "status": "Stable",
+      "time_options": [
+        "5m",
+        "15m",
+        "1h",
+        "6h",
+        "12h",
+        "24h",
+        "2d",
+        "7d",
+        "30d"
+      ],
+      "type": "timepicker"
+    },
+    "timezone": "browser",
+    "title": "Avi-Virtual Services Specific"
+  }
