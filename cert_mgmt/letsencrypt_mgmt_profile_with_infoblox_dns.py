@@ -12,12 +12,7 @@
 #     There are two functions provided add_dns_text_record(key_digest_64, txt_record_name, kwargs) and
 #     remove_dns_text_record(key_digest_64, txt_record_name, kwargs) to add and remove dns txt record with
 #     name txt_record_name and value key_digest_64 respectively.
-#     User will need to provide their custom implementation for both of them.
-#     All configuration information required by both the above functions can be provided as sensitive parameter to the script.
-#     Sample code to add and remove dns txt record in:
-#     aws hosted domain is provided at https://github.com/avinetworks/devops/blob/master/cert_mgmt/letsencrypt_mgmt_profile_with_aws_dns.py .
-#     infoblox hosted domain is provided at https://github.com/avinetworks/devops/blob/master/cert_mgmt/letsencrypt_mgmt_profile_with_infoblox_dns.py .
-
+#     Sample code to add and remove dns txt record in infoblox hosted domain is provided.
 # Setup -
 #     1. This content needs to be imported in the Avi Controller in the settings menu
 #        at <<Templates - Security - Certificate Management>>.
@@ -67,6 +62,7 @@
 import base64, binascii, hashlib, os, json, re, ssl, subprocess, time, urllib.parse
 from urllib.request import urlopen, Request
 from tempfile import NamedTemporaryFile
+import requests
 
 from avi.sdk.avi_api import ApiSession
 
@@ -167,15 +163,102 @@ def get_crt(user, password, tenant, api_version, csr, CA=DEFAULT_CA, disable_che
             raise Exception(err)
         return rsp
 
+    def post_logout(infoblox_host, infoblox_user, infoblox_password, infoblox_wapi_version, infoblox_verify_ssl):
+        try:
+            logout_url = 'https://' + infoblox_host + \
+                         '/wapi/v' + infoblox_wapi_version + '/logout'
+            auth = (infoblox_user, infoblox_password)
+            r = requests.post(
+                url=logout_url, auth=auth, verify=infoblox_verify_ssl, timeout=30)
+            if r.status_code == 200:
+                print("success req[%s]", logout_url)
+                return
+            r_json = r.json()
+            if 'text' in r_json:
+                print("error req[%s] rsp[%s]", logout_url, r_json['text'])
+        except Exception as e:
+            raise Exception("exception req[%s] rsp[%s]", logout_url, str(e))
+
     def add_dns_text_record(key_digest_64, txt_record_name, kwargs):
-        # Add your custom code here to add dns txt record under your domain name with name
-        # txt_record_name and value key_digest_64
-        pass
+        # Create dns txt record with fqdn txt_record_name and value key_digest_64
+        infoblox_host = kwargs.get('infoblox_host', None)
+        infoblox_wapi_version = kwargs.get('infoblox_wapi_version', 'v2.11.2')
+        infoblox_username = kwargs.get('infoblox_username', None)
+        infoblox_password = kwargs.get('infoblox_password', None)
+        infoblox_dns_view = kwargs.get('infoblox_dns_view', 'local')
+        infoblox_verify_ssl = kwargs.get('infoblox_verify_ssl', False)
+
+        rest_url = 'https://' + infoblox_host + '/wapi/v' + \
+                   infoblox_wapi_version + '/record:txt'
+        payload = '{"text": "' + key_digest_64 + '","name": "' + \
+                  txt_record_name + '","view": "' + infoblox_dns_view + '"}'
+        try:
+            r = requests.post(url=rest_url, auth=(infoblox_username, infoblox_password),
+                              verify=infoblox_verify_ssl, data=payload, timeout=300)
+            post_logout(infoblox_host, infoblox_username, infoblox_password, infoblox_wapi_version, infoblox_verify_ssl)
+            r_json = r.json()
+            if r.status_code == 200 or r.status_code == 201:
+                print("Added dns text record")
+            else:
+                if 'text' in r_json:
+                    raise Exception("Return unexpected error code while adding dns txt record to vs {}", r.status_code)
+                else:
+                    r.raise_for_status()
+        except Exception as e:
+            raise Exception("Error adding dns txt record to vs {}", e)
 
     def remove_dns_text_record(key_digest_64, txt_record_name, kwargs):
         # Add your custom code here to remove dns txt record under your domain name with name
         # txt_record_name and value key_digest_64
-        pass
+
+        """ Implements IBA REST API call to delete IBA TXT record
+                :param fqdn: hostname in FQDN
+                """
+        infoblox_host = kwargs.get('infoblox_host', None)
+        infoblox_wapi_version = kwargs.get('infoblox_wapi_version', 'v2.11.2')
+        infoblox_username = kwargs.get('infoblox_username', None)
+        infoblox_password = kwargs.get('infoblox_password', None)
+        infoblox_dns_view = kwargs.get('infoblox_dns_view', 'local')
+        infoblox_verify_ssl = kwargs.get('infoblox_verify_ssl', False)
+
+        rest_url = 'https://' + infoblox_host + '/wapi/v' + infoblox_wapi_version + \
+                   '/record:txt?name=' + txt_record_name + '&view=' + infoblox_dns_view
+        try:
+            r = requests.get(url=rest_url, auth=(infoblox_username, infoblox_password),
+                             verify=infoblox_verify_ssl, timeout=300)
+            post_logout(infoblox_host, infoblox_username, infoblox_password, infoblox_wapi_version, infoblox_verify_ssl)
+            r_json = r.json()
+            if r.status_code == 200:
+                if len(r_json) > 0:
+                    host_ref = r_json[0]['_ref']
+                    if host_ref and re.match("record:txt\/[^:]+:([^\/]+)\/", host_ref).group(1) == txt_record_name:
+                        rest_url = 'https://' + infoblox_host + '/wapi/v' + \
+                                   infoblox_wapi_version + '/' + host_ref
+                        r = requests.delete(url=rest_url, auth=(infoblox_username, infoblox_password),
+                                            verify=infoblox_verify_ssl, timeout=300)
+                        if r.status_code == 200:
+                            return
+                        else:
+                            if 'text' in r_json:
+                                raise Exception(r_json['text'])
+                            else:
+                                r.raise_for_status()
+                    else:
+                        raise Exception(
+                            "Received unexpected host reference: " + host_ref)
+                else:
+                    raise Exception(
+                        "No requested host found: " + txt_record_name)
+                print("Deleted dns text record")
+            else:
+                if 'text' in r_json:
+                    raise Exception(r_json['text'])
+                else:
+                    r.raise_for_status()
+        except ValueError:
+            raise Exception(r)
+        except Exception as e:
+            raise Exception("Error deleting dns txt record from vs {}",e)
 
     if os.path.exists(ACCOUNT_KEY_PATH):
         if debug:
