@@ -182,16 +182,16 @@ def get_crt(user, password, tenant, api_version, csr, CA=DEFAULT_CA, disable_che
     def add_dns_text_record(key_digest_64, txt_record_name, kwargs):
         # Create dns txt record with fqdn txt_record_name and value key_digest_64
         infoblox_host = kwargs.get('infoblox_host', None)
-        infoblox_wapi_version = kwargs.get('infoblox_wapi_version', 'v2.11.2')
+        infoblox_wapi_version = kwargs.get('infoblox_wapi_version', '2.0')
         infoblox_username = kwargs.get('infoblox_username', None)
         infoblox_password = kwargs.get('infoblox_password', None)
-        infoblox_dns_view = kwargs.get('infoblox_dns_view', 'local')
+        infoblox_dns_view = kwargs.get('infoblox_dns_view', 'default')
         infoblox_verify_ssl = kwargs.get('infoblox_verify_ssl', False)
 
         rest_url = 'https://' + infoblox_host + '/wapi/v' + \
                    infoblox_wapi_version + '/record:txt'
         payload = '{"text": "' + key_digest_64 + '","name": "' + \
-                  txt_record_name + '","view": "' + infoblox_dns_view + '"}'
+                  txt_record_name + '"}'
         try:
             r = requests.post(url=rest_url, auth=(infoblox_username, infoblox_password),
                               verify=infoblox_verify_ssl, data=payload, timeout=300)
@@ -215,10 +215,10 @@ def get_crt(user, password, tenant, api_version, csr, CA=DEFAULT_CA, disable_che
                 :param fqdn: hostname in FQDN
                 """
         infoblox_host = kwargs.get('infoblox_host', None)
-        infoblox_wapi_version = kwargs.get('infoblox_wapi_version', 'v2.11.2')
+        infoblox_wapi_version = kwargs.get('infoblox_wapi_version', '2.0')
         infoblox_username = kwargs.get('infoblox_username', None)
         infoblox_password = kwargs.get('infoblox_password', None)
-        infoblox_dns_view = kwargs.get('infoblox_dns_view', 'local')
+        infoblox_dns_view = kwargs.get('infoblox_dns_view', 'default')
         infoblox_verify_ssl = kwargs.get('infoblox_verify_ssl', False)
 
         rest_url = 'https://' + infoblox_host + '/wapi/v' + infoblox_wapi_version + \
