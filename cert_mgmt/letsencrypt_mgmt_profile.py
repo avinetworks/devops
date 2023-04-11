@@ -318,7 +318,24 @@ def get_crt(user, password, tenant, api_version, csr, CA=DEFAULT_CA, disable_che
         hpRsp = _do_request_avi("httppolicyset/?name={}".format(httpPolicyName), "GET").json()
         if hpRsp['count'] > 0:
             hp_uuid = hpRsp['results'][0]['uuid']
-            print ("Stranded httpPolicySet {} found. Deleting...".format(hp_uuid))
+            print("Stranded httpPolicySet {} found. Deleting...".format(hp_uuid))
+            patch_data = {
+                "delete": {
+                    "http_policies": [{
+                        "http_policy_set_ref": "/api/httppolicyset/{}".format(hp_uuid),
+                        "index": 1000001
+                    }]
+                }
+            }
+
+            # Remove httpPolicySet from VS
+            if vhMode:  # if VH, we set the rule on the parent. Without SNI (so HTTP) it will go to the parent.
+                _do_request_avi("virtualservice/{}".format(vs_uuid_parent), "PATCH", patch_data)
+                print("Removed httpPolicySet from parent-VS {}".format(vs_uuid_parent))
+            else:
+                _do_request_avi("virtualservice/{}".format(vs_uuid), "PATCH", patch_data)
+                print("Removed httpPolicySet from VS {}".format(vs_uuid))
+
             _do_request_avi("httppolicyset/{}".format(hp_uuid), "DELETE")
 
         # Create HTTP policy
