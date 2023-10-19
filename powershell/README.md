@@ -1,29 +1,33 @@
 # AviPowerShellSDK
-PowerShell Module for Avi Networks API
+
+PowerShell Module for Avi Networks API.
 
 This directory contains a PowerShell module which acts as a wrapper around the Avi Networks API.
 
-## Basic Usage:
+Tested with PowerShell Core 6.x+ and (Windows) PowerShell 5.x.
+
+## Basic Usage
 
 Copy the AviSDK folder and its contents into one of the default PowerShell module locations, e.g.:
 
-**%userprofile%\Documents\WindowsPowerShell\Modules**
+`%userprofile%\Documents\WindowsPowerShell\Modules`
 
 The module can then be imported using:
 
-```
+```powershell
 Import-Module AviSDK
 ```
 
 Sample scripts can be found in the examples directory.
 
-## Scriptlets provided:
+## Scriptlets provided
 
-```
+```powershell
 New-AviSession
 Invoke-AviRestMethod
 Get-AviObjectsByType
 Get-AviObjectByName
+Get-AviObjectsPaged
 Remove-AviObject
 Get-AviObject
 Set-AviObject
@@ -34,7 +38,7 @@ Disable-AviCertificateWarnings
 
 Standard PowerShell help functions are supported, e.g.:
 
-```
+```powershell
 Get-Help New-AviSession
 Get-Help Get-AviObjectByName -examples
 Get-Help Get-AviObject -full
