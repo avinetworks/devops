@@ -73,6 +73,8 @@ class AviSession {
   $AuthResponse
 }
 
+$AviSdkSkipWarnings = @{}
+
 <#
   .Synopsis
   Initialize an API session to an Avi Vantage controller.
@@ -280,15 +282,58 @@ function Initialize-AviSession {
     try {
       Write-Verbose "Starting controller login $($LoginUrl)"
 
-      $AuthResponse = Invoke-RestMethod -Uri $LoginUrl -Method POST -Body $AuthJson -ContentType "application/json" -SessionVariable WebSession -Headers $Headers -TimeoutSec $AviSession.Credentials.Timeout -Proxy $AviSession.Credentials.Proxy -ProxyCredential $AviSession.Credentials.ProxyCredential -ProxyUseDefaultCredentials:($AviSession.Credentials.ProxyUseDefaultCredentials)
+      $AuthResponse = Invoke-RestMethod @AviSdkSkipWarnings -Uri $LoginUrl -Method POST -Body $AuthJson -ContentType "application/json" -SessionVariable WebSession -Headers $Headers -TimeoutSec $AviSession.Credentials.Timeout -Proxy $AviSession.Credentials.Proxy -ProxyCredential $AviSession.Credentials.ProxyCredential -ProxyUseDefaultCredentials:($AviSession.Credentials.ProxyUseDefaultCredentials)
       break
     }
-    catch [System.Net.WebException] {
+    catch {
       $ErrorRecord = $PSItem
       $Exception = $ErrorRecord.Exception
-      switch ($Exception.Status) {
+      $ExceptionType = $Exception.GetType()
+      $Status = "Unknown"
+      $StatusCode = $null
+
+      switch ($ExceptionType) {
+        "System.Net.WebException" {
+          #Exception returned by PowerShell 5
+          $Status = $Exception.Status
+          $StatusCode = $Exception.Response.StatusCode
+        }
+        "System.Threading.Tasks.TaskCanceledException" {
+          #Exception returned by PowerShell Core (6+) due to async timeout
+          $Status = "Timeout"
+        }
+        "System.Net.Http.HttpRequestException" {
+          #Exception returned by PowerShell Core (6+)
+          $StatusCode = $Exception.StatusCode
+          if ($StatusCode) {
+            $Status = "ProtocolError"
+          }
+          else {
+            $InnerException = $Exception.InnerException
+            $InnerExceptionType = $InnerException.GetType()
+            switch ($InnerExceptionType) {
+              "System.Security.Authentication.AuthenticationException" {
+                $Status = "TrustFailure"
+              }
+              "System.Net.Sockets.SocketException" {
+                $ErrorCode = $InnerException.ErrorCode
+                switch ($ErrorCode) {
+                  10060 {
+                    $Status = "Timeout"
+                  }
+                  11001 {
+                    $Status = "NameResolutionFailure"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+
+      switch ($Status) {
         "ProtocolError" {
-          switch ($Exception.Response.StatusCode.value__) {
+          switch ($StatusCode.value__) {
             { @(401, 419) -contains $_ } {
               #Authentication failed or timed out - abort.
               $PSCmdlet.ThrowTerminatingError($ErrorRecord)
@@ -308,22 +353,35 @@ function Initialize-AviSession {
         }
         "Timeout" {
           #Timeout occurred - follow retry logic.
+          Write-Verbose "Request timed out - will retry"
           break
+        }
+        "NameResolutionFailure" {
+          #Name resolution failed - abort.
+          Write-Verbose "Name resolution failed"
+          $PSCmdlet.ThrowTerminatingError($ErrorRecord)
+        }
+        "TrustFailure" {
+          #Certificate trust failure - abort.
+          Write-Verbose "Certificate Trust validation failed"
+          $PSCmdlet.ThrowTerminatingError($ErrorRecord)
         }
         default {
           #Some other unexpected error occurred - follow retry logic.
+          Write-Verbose "Error occured ($($Exception.Message)) - will retry"
           break
         }
       }
-      $Retries -= 1
-      if ($Retries -lt 0) {
-        $PSCmdlet.ThrowTerminatingError($ErrorRecord)
-      }
-      else {
-        Write-Verbose "Retrying after $($AviSession.Credentials.RetryWait) seconds..."
-        Start-Sleep -Seconds $AviSession.Credentials.RetryWait
-        Write-Verbose "Retries remaining: $($Retries)"
-      }
+    }
+    $Retries -= 1
+    if ($Retries -lt 0) {
+      $PSCmdlet.ThrowTerminatingError($ErrorRecord)
+    }
+    else {
+      #Pause before retry
+      Write-Verbose "Retrying after $($AviSession.Credentials.RetryWait) seconds..."
+      Start-Sleep -Seconds $AviSession.Credentials.RetryWait
+      Write-Verbose "Retries remaining: $($Retries)"
     }
   }
 
@@ -514,16 +572,59 @@ function Invoke-AviRestMethod {
       $ReauthenticationCount = 2
     }
     try {
-      $Response = Invoke-RestMethod -uri $FullUrl -Method $Method -WebSession $AviSession.WebSession -Headers $Headers -Body $JsonBody -ContentType "application/json" -TimeoutSec $Timeout -Proxy $AviSession.Credentials.Proxy -ProxyCredential $AviSession.Credentials.ProxyCredential -ProxyUseDefaultCredentials:($AviSession.Credentials.ProxyUseDefaultCredentials)
+      $Response = Invoke-RestMethod @AviSdkSkipWarnings -uri $FullUrl -Method $Method -WebSession $AviSession.WebSession -Headers $Headers -Body $JsonBody -ContentType "application/json" -TimeoutSec $Timeout -Proxy $AviSession.Credentials.Proxy -ProxyCredential $AviSession.Credentials.ProxyCredential -ProxyUseDefaultCredentials:($AviSession.Credentials.ProxyUseDefaultCredentials)
       #Received a valid response so break out of the retry loop
       break
     }
-    catch [System.Net.WebException] {
+    catch {
       $ErrorRecord = $PSItem
       $Exception = $ErrorRecord.Exception
-      switch ($Exception.Status) {
+      $ExceptionType = $Exception.GetType()
+      $Status = "Unknown"
+      $StatusCode = $null
+
+      switch ($ExceptionType) {
+        "System.Net.WebException" {
+          #Exception returned by PowerShell 5
+          $Status = $Exception.Status
+          $StatusCode = $Exception.Response.StatusCode
+        }
+        "System.Threading.Tasks.TaskCanceledException" {
+          #Exception returned by PowerShell Core (6+) due to async timeout
+          $Status = "Timeout"
+        }
+        "System.Net.Http.HttpRequestException" {
+          #Exception returned by PowerShell Core (6+)
+          $StatusCode = $Exception.StatusCode
+          if ($StatusCode) {
+            $Status = "ProtocolError"
+          }
+          else {
+            $InnerException = $Exception.InnerException
+            $InnerExceptionType = $InnerException.GetType()
+            switch ($InnerExceptionType) {
+              "System.Security.Authentication.AuthenticationException" {
+                $Status = "TrustFailure"
+              }
+              "System.Net.Sockets.SocketException" {
+                $ErrorCode = $InnerException.ErrorCode
+                switch ($ErrorCode) {
+                  10060 {
+                    $Status = "Timeout"
+                  }
+                  11001 {
+                    $Status = "NameResolutionFailure"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+
+      switch ($Status) {
         "ProtocolError" {
-          switch ($Exception.Response.StatusCode.value__) {
+          switch ($StatusCode.value__) {
             { @(401, 419) -contains $_ } {
               #Unauthorized or authentication timeout error occurred.
               if ($ReauthenticationCount -eq 0) {
@@ -558,22 +659,37 @@ function Invoke-AviRestMethod {
             502 {
               #Gateway failure typically occurs due to a transient
               #issue with an intermediate proxy - follow retry logic.
-              Write-Verbose "502 Gateway failure - will retry"
+              Write-Verbose "Gateway failure - will retry"
               break
             }
             default {
-              #Other ProtocolError occurred - abort.
+              #Some other ProtocolError occurred - abort.
               $PSCmdlet.ThrowTerminatingError($ErrorRecord)
             }
           }
           break
+        }
+        "Timeout" {
+          #Timeout occurred - follow retry logic.
+          Write-Verbose "Request timed out - will retry"
+          break
+        }
+        "NameResolutionFailure" {
+          #Name resolution failed - abort.
+          Write-Verbose "Name resolution failed"
+          $PSCmdlet.ThrowTerminatingError($ErrorRecord)
+        }
+        "TrustFailure" {
+          #Certificate trust failure - abort.
+          Write-Verbose "Certificate Trust validation failed"
+          $PSCmdlet.ThrowTerminatingError($ErrorRecord)
         }
         { @("SendFailure", "ReceiveFailure") -contains $_ } {
           #Underlying socket error (e.g. connection reset) - try a new session
           if ($ReauthenticationCount -eq 0) {
             #Try reauthenticating.
             $ReauthenticationCount = 1
-            Write-Verbose "Connection failure ($($Exception.Status)) - will try to re-establish"
+            Write-Verbose "Connection failure ($($Status)) - will try to re-establish"
           }
           else {
             #Reauthentication failed - abort.
@@ -581,34 +697,23 @@ function Invoke-AviRestMethod {
           }
           break
         }
-        "NameResolutionFailure" {
-          #Name resolution failed - follow retry logic.
-          Write-Verbose "Name resolution failed - will retry"
-          break
-        }
-        "Timeout" {
-          #Timeout occurred - follow retry logic.
-          Write-Verbose "API request timed out - will retry"
-          break
-        }
         default {
           #Some other unexpected error occurred - follow retry logic.
-          Write-Verbose "Error occured ($($Exception.Status)) - will retry"
+          Write-Verbose "Error occured ($($Exception.Message)) - will retry"
           break
         }
       }
-      if ($ReauthenticationCount -ne 1) {
-        $Retries -= 1
-        if ($Retries -lt 0) {
-          #Max retries reached - throw the error.
-          $PSCmdlet.ThrowTerminatingError($ErrorRecord)
-        }
-        else {
-          #Pause before retrying.
-          Write-Verbose "Retrying after $($AviSession.Credentials.RetryWait) seconds..."
-          Start-Sleep -Seconds $AviSession.Credentials.RetryWait
-          Write-Verbose "Retries remaining: $($Retries)"
-        }
+    }
+    if ($ReauthenticationCount -ne 1) {
+      $Retries -= 1
+      if ($Retries -lt 0) {
+        $PSCmdlet.ThrowTerminatingError($ErrorRecord)
+      }
+      else {
+        #Pause before retry
+        Write-Verbose "Retrying after $($AviSession.Credentials.RetryWait) seconds..."
+        Start-Sleep -Seconds $AviSession.Credentials.RetryWait
+        Write-Verbose "Retries remaining: $($Retries)"
       }
     }
   }
@@ -1460,6 +1565,14 @@ function Edit-AviObject {
 function Disable-AviCertificateWarnings {
   [CmdletBinding()]
   param()
-  [System.Net.ServicePointManager]::ServerCertificateValidationCallback = { $True }
+  $InvokeRestMethodCmdlet = Get-Command Invoke-RestMethod
+  if ($InvokeRestMethodCmdlet.Parameters.ContainsKey("SkipCertificateCheck")) {
+    $script:AviSdkSkipWarnings = @{
+      SkipCertificateCheck = $true
+    }
+  }
+  else {
+    [System.Net.ServicePointManager]::ServerCertificateValidationCallback = { $True }
+  }
   Write-Verbose "Certificate errors will be ignored"
 }

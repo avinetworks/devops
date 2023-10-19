@@ -1,8 +1,10 @@
 # AviPowerShellSDK
 
-PowerShell Module for Avi Networks API
+PowerShell Module for Avi Networks API.
 
 This directory contains a PowerShell module which acts as a wrapper around the Avi Networks API.
+
+Tested with PowerShell Core 6.x+ and (Windows) PowerShell 5.x.
 
 ## Basic Usage
 
