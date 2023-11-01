@@ -1,12 +1,12 @@
 '''
 ###
-# Name: letsencrypt_mgmt_profile_with_dns.py
-# Version: 0.1.1
+# Name: acme_mgmt_profile_with_eab_dns.py
+# Version: 0.1.2
 # License: MIT
 #
 # Description -
 #     This is a python script used for automatically requesting and renewing certificates
-#     from and via Let's Encrypt using DNS-01 Challenge.
+#     from and via an ACME Provider using DNS-01 Challenge.
 #     To complete dns-01 challenge, a dns txt record needs to be added under the domain name
 #     for which certificate has to be issued.
 #     There are two functions provided add_dns_text_record(key_digest_64, txt_record_name, kwargs) and
@@ -46,6 +46,8 @@
 #                       Useful for scenarios where VS cannot be identified by FQDN/hostname, e.g. when it's only listening on IP.
 #                       Important Note: Export+Import of Avi configuration CAUSES the UUID to change!
 #     letsencrypt_key - Lets Encrypt Account Key (Default: None)
+#     eabkid          - External Account Binding ID (Default: None)
+#     eabhmackey      - External Account Binding HMAC Key (Default: None)
 #
 # Useful links -
 #     Ratelimiting - https://letsencrypt.org/docs/rate-limits/
@@ -55,28 +57,36 @@
 #
 # Authors/Credits -
 #     acme-tiny, modified for Avi Controller <https://github.com/diafygi/acme-tiny>
+#     acmy-tiny, cherry-picked Pull Rqeust 270 for EAB <https://github.com/diafygi/acme-tiny/pull/270/files>
 #     acme-tiny-dns <https://github.com/Trim/acme-dns-tiny>
 #     Nikhil Kumar Yadav <kumaryadavni@vmware.com>, Patrik Kernstock <pkernstock@vmware.com> for <https://github.com/avinetworks/devops/blob/master/cert_mgmt/letsencrypt_mgmt_profile.py>
 #     Priya Koshta <pkoshta@vmware.com>
 ###
 '''
 
-import base64, binascii, hashlib, os, json, re, ssl, subprocess, time, urllib.parse
+import base64, binascii, hashlib, os, json, re, ssl, subprocess, time, urllib.parse, hmac
 from urllib.request import urlopen, Request
 from tempfile import NamedTemporaryFile
 import boto3
 
 from avi.sdk.avi_api import ApiSession
 
-VERSION = "0.1.1"
+VERSION = "0.1.2"
 
+# ZeroSSL URLs, requires account and provided EAB
+# DEFAULT_CA = "https://acme.zerossl.com/v2/DV90" # DEPRECATED! USE DEFAULT_DIRECTORY_URL INSTEAD
+# DEFAULT_DIRECTORY_URL = "https://acme.zerossl.com/v2/DV90/"
+# DEFAULT_STAGING_DIRECTORY_URL = "https://acme.zerossl.com/v2/DV90"
+# ACCOUNT_KEY_PATH = "/tmp/zerossl.key"
+
+# Let's Encrypt URLs
 DEFAULT_CA = "https://acme-v02.api.letsencrypt.org" # DEPRECATED! USE DEFAULT_DIRECTORY_URL INSTEAD
 DEFAULT_DIRECTORY_URL = "https://acme-v02.api.letsencrypt.org/directory"
 DEFAULT_STAGING_DIRECTORY_URL = "https://acme-staging-v02.api.letsencrypt.org/directory"
 ACCOUNT_KEY_PATH = "/tmp/letsencrypt.key"
 
 def get_crt(user, password, tenant, api_version, csr, CA=DEFAULT_CA, disable_check=False,
-            overwrite_vs=None, directory_url=DEFAULT_DIRECTORY_URL, contact=None, debug=False, kwargs=None):
+            overwrite_vs=None, directory_url=DEFAULT_DIRECTORY_URL, contact=None, debug=False, kwargs=None, eabkid=None, eabhmackey=None):
     directory, acct_headers, alg, jwk = None, None, None, None # global variables
 
     # helper functions - base64 encode for jose spec
@@ -193,7 +203,7 @@ def get_crt(user, password, tenant, api_version, csr, CA=DEFAULT_CA, disable_che
 
             #Waiting for changes to propogate to all the Route 53 authoritative DNS servers
             while(response["ChangeInfo"]["Status"]!='INSYNC'):
-                response = client.get_change(id=response["ChangeInfo"]["Id"])
+                response = client.get_change(Id=response["ChangeInfo"]["Id"])
 
             print("Added dns text record")
         except Exception as e:
@@ -291,6 +301,9 @@ def get_crt(user, password, tenant, api_version, csr, CA=DEFAULT_CA, disable_che
     # create account, update contact details (if any), and set the global key identifier
     print ("Registering account...")
     reg_payload = {"termsOfServiceAgreed": True}
+    if eabkid and eabhmackey:  # https://datatracker.ietf.org/doc/html/rfc8555#section-7.3.4
+         print ("Building externalAccountBinding...")
+         reg_payload['externalAccountBinding'] = {"protected": _b64(json.dumps({"alg": "HS256", "kid": eabkid, "url": directory['newAccount']}).encode('utf-8')), "payload": _b64(json.dumps(jwk).encode('utf-8')), "signature": _b64(hmac.new(base64.urlsafe_b64decode(eabhmackey.strip() + '=='), (_b64(json.dumps({"alg": "HS256", "kid": eabkid, "url": directory['newAccount']}).encode('utf-8')) + "." + _b64(json.dumps(jwk).encode('utf-8'))).encode('utf-8'), digestmod=hashlib.sha256).digest())}
     account, code, acct_headers = _send_signed_request(directory['newAccount'], reg_payload, "Error registering")
     print ("Registered!" if code == 201 else "Already registered!")
     if contact is not None:
@@ -378,7 +391,7 @@ def get_crt(user, password, tenant, api_version, csr, CA=DEFAULT_CA, disable_che
             print("Install DNS TXT resource for domain: %s", domain)
             add_dns_text_record(keydigest64, txt_record_name, kwargs)
 
-            print ("Challenge completed, notifying LetsEncrypt")
+            print ("Challenge completed, notifying Certificate Authority")
             # say the challenge is done
             _send_signed_request(challenge['url'], {}, "Error submitting challenges: {0}".format(domain))
             authorization = _poll_until_not(auth_url, ["pending"], "Error checking challenge status for {0}".format(domain))
@@ -422,6 +435,8 @@ def certificate_request(csr, common_name, kwargs):
     directory_url = kwargs.get('directory_url', None)
     overwrite_vs = kwargs.get('overwrite_vs', None)
     letsencrypt_key = kwargs.get('letsencrypt_key', None)
+    eabkid = kwargs.get('eabkid', None)
+    eabhmackey = kwargs.get('eabhmackey', None)
 
     print ("Running version {}".format(VERSION))
 
@@ -476,7 +491,8 @@ def certificate_request(csr, common_name, kwargs):
     try:
         signed_crt = get_crt(user, password, tenant, api_version, csr_temp_file.name,
                                 disable_check=disable_check, overwrite_vs=overwrite_vs,
-                                directory_url=directory_url, contact=contact, debug=debug, kwargs=kwargs)
+                                directory_url=directory_url, contact=contact, debug=debug, kwargs=kwargs,
+                                eabkid=eabkid, eabhmackey=eabhmackey)
     finally:
         os.remove(csr_temp_file.name)
 
