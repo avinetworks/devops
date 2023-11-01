@@ -193,7 +193,7 @@ def get_crt(user, password, tenant, api_version, csr, CA=DEFAULT_CA, disable_che
 
             #Waiting for changes to propogate to all the Route 53 authoritative DNS servers
             while(response["ChangeInfo"]["Status"]!='INSYNC'):
-                response = client.get_change(id=response["ChangeInfo"]["Id"])
+                response = client.get_change(Id=response["ChangeInfo"]["Id"])
 
             print("Added dns text record")
         except Exception as e:
