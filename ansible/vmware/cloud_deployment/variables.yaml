@@ -1,0 +1,100 @@
+---
+# --------------------------------------------------------------------
+# Management Variables
+# Description: These are variables used for any type of ansible deployment.
+# --------------------------------------------------------------------
+# Cluster IP for Avi Controller
+CONTROLLER_CLUSTER_IP: <Controller Cluster/Node IP> # Cluster IP.
+
+# Controller Credentials
+AVI_CREDENTIALS:
+  controller: "{{ CONTROLLER_CLUSTER_IP }}" # This can be either cluster ip or the ip of the leader controller.
+  username: <Avi Username>
+  password: <Avi Password>
+  api_version: <Avi API Version>>
+
+# --------------------------------------------------------------------
+# Required Variables / vSphere Host Information
+# Description: These are the main variables required for vSphere Authentication.
+# --------------------------------------------------------------------
+
+VCENTER_SERVER: <vCenter Server IP / FQDN>
+VCENTER_USERNAME: <vCenter Username>
+VCENTER_PASSWORD: <vCenter Password>
+DATACENTER: <vCenter Datacenter>
+
+
+
+
+# --------------------------------------------------------------------
+# Required Variables / vCenter Cloud Connector
+# Description: These are the main variables required for Avi vCenter Cloud Connector.
+# --------------------------------------------------------------------
+
+CLOUD_NAME: <vCenter Cloud Name>
+DHCP: <DHCP Default Support setting> # Boolean selection. Either true or false.
+CLOUD_PREFIX: <Cloud Object Prefix>
+
+
+
+# --------------------------------------------------------------------
+# Required Variables / DNS Profile
+# Description: These are the main variables required for Avi DNS Provider.
+# --------------------------------------------------------------------
+
+USE_DNS_PROFILE: <Use DNS Profile> # Boolean selection. Either true or false.
+DNS_PROFILE_NAME: <DNS Profile Name>
+DNS_PROFILE_DOMAINS: <Domain Names managed by DNS Profile>
+  - name: <Domain Name 1>
+  - name: <Domain Name 2>
+STATE_BASED_DNS_REGISTRATION: <Use State Based DNS Registration - true / false> #Default is false. This is used to update the DNS record based on the state fo the VS
+
+# --------------------------------------------------------------------
+# Required Variables / IPAM Profile
+# Description: These are the main variables required for Avi IPAM Provider.
+# --------------------------------------------------------------------
+
+USE_IPAM_PROFILE: <Use IPAM Profile> # Boolean selection. Either true or false.
+IPAM_PROFILE_NAME: <IPAM Profile Name>
+
+
+
+# --------------------------------------------------------------------
+# Required Variables / Management Network
+# Description: These are the main variables required for Configuring Management Network deployment.
+# --------------------------------------------------------------------
+
+MGMT_NET_DHCP: <MGMT Network Use DHCP> # Boolean selection. Either true or false.
+MGMT_NET_PORT_GROUP_NAME: <MGMT Network>
+MGMT_NET_MASK: <VIP Network Mask> # Must be in format XX. Ex. 255.255.255.0 is 24
+MGMT_NET_GW: <MGMT Network Gateway Address> #Ex. 10.10.10.1
+MGMT_NETWORK: <MGMT Network Network Address> #Ex. 10.10.10.0
+MGMT_NET_TYPE: <MGMT Network Type> #Either V4 or V6. Default is V4
+MGMT_NET_IP_RANGE_START: <MGMT Network IP Pool Starting IP Range>
+MGMT_NET_IP_RANGE_END: <MGMT Network IP Pool Ending IP Range>
+
+
+# --------------------------------------------------------------------
+# Required Variables / VIP Network
+# Description: These are the main variables required for Configuring VIP Network deployment.
+# --------------------------------------------------------------------
+
+VIP_NET_DHCP: <VIP Network Use DHCP> # Boolean selection. Either true or false.
+VIP_NET_PORT_GROUP_NAME: <VIP Network>
+VIP_NET_MASK: <VIP Network Mask> # Must be in format XX. Ex. 255.255.255.0 is 24
+VIP_NET_GW: <VIP Network Gateway Address> #Ex. 20.20.20.1
+VIP_NETWORK: <VIP Network Network Address> #Ex. 20.20.20.0
+VIP_NET_TYPE: <VIP Network Type> #Either V4 or V6. Default is V4
+VIP_NET_IP_RANGE_START: <VIP Network IP Pool Starting IP Range>
+VIP_NET_IP_RANGE_END: <VIP Network IP Pool Ending IP Range>
+
+# --------------------------------------------------------------------
+# Required Variables / vCenter Content Library
+# Description: These are the main variables required for vCenter Content Library Selection.
+# Notes: vCenter Cloud Content Library support was introduced in 22.x. If your controller Cluster
+# version is less then 22.1, then the variables provided here will not be used even if they are defined.
+# --------------------------------------------------------------------
+
+USE_CONTENT_LIBRARY: <Use Content Library - true / false> #Default is false
+CONTENT_LIBRARY: <Content Library Name>
+
