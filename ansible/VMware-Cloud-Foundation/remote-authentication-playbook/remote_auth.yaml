@@ -1,0 +1,148 @@
+- hosts: localhost
+  connection: local
+  collections:
+    - vmware.alb
+
+  vars:
+    sp: []
+
+  tasks:
+  - include_vars: variables.yml
+
+  - name: Create SAML Cluster VIP Type
+    set_fact:
+      sp: "{{ sp | combine({item.key: item.value}) }}" 
+    with_items:
+      - {key: 'saml_entity_type', value:  'AUTH_SAML_CLUSTER_VIP' }
+      - {key: 'org_name', value:  "{{ SAML_ORG_NAME }}" } 
+      - {key: 'org_display_name', value: "{{ SAML_DISPLAY_NAME }}" }
+      - {key: 'org_url', value: "{{ SAML_ORG_URL }}" }
+      - {key: 'tech_contact_name', value: "{{ TECH_CONTACT_NAME }}" }
+      - {key: 'tech_contact_email', value: "{{ TECH_CONTACT_EMAIL }}" } 
+    when:
+      - SAML_ENTITY_TYPE is defined
+      - SAML_ENTITY_TYPE == "AUTH_SAML_CLUSTER_VIP"
+
+  - name: Create SAML Cluster FQDN Type
+    set_fact:
+      sp: "{{ sp | combine({item.key: item.value}) }}"
+    with_items:
+      - {key: 'saml_entity_type', value:  'AUTH_SAML_DNS_FQDN' }
+      - {key: 'fqdn', value:  "{{ SAML_FQDN }}" }
+      - {key: 'org_name', value:  "{{ SAML_ORG_NAME }}" }
+      - {key: 'org_display_name', value: "{{ SAML_DISPLAY_NAME }}" }
+      - {key: 'org_url', value: "{{ SAML_ORG_URL }}" }
+      - {key: 'tech_contact_name', value: "{{ TECH_CONTACT_NAME }}" }
+      - {key: 'tech_contact_email', value: "{{ TECH_CONTACT_EMAIL }}" }
+    when:
+      - SAML_ENTITY_TYPE is defined
+      - SAML_ENTITY_TYPE == "AUTH_SAML_DNS_FQDN"
+
+  - name: Create SAML Cluster Entity ID Type
+    set_fact:
+      sp: "{{ sp | default({}) | combine({'saml_entity_type': 'AUTH_SAML_APP_VS'}) }}"
+    when:
+      - SAML_ENTITY_TYPE is defined
+      - SAML_ENTITY_TYPE == "AUTH_SAML_APP_VS"
+
+
+  - name: Create SAML auth profile
+    avi_authprofile:
+      avi_credentials: "{{ AVI_CREDENTIALS }}"
+      name: "{{ SAML_PROF_NAME }}"
+      type: "AUTH_PROFILE_SAML"
+      saml:
+        idp:
+          metadata: "{{ SAML_METADATA }}"
+        sp: "{{ sp }}"
+    when:
+      - SAML_PROF_NAME is defined
+    register: auth_profile
+
+
+  - name: Create LDAP auth profile
+    avi_authprofile:
+      avi_credentials: "{{ AVI_CREDENTIALS }}"
+      name: "{{ LDAP_PROF_NAME }}"
+      type: "AUTH_PROFILE_LDAP"
+      ldap:
+        server: "{{ LDAP_SERVER }}"
+        port: "{{ LDAP_PORT }}"
+        security_mode: "{{ LDAP_SEC_MODE }}"
+        base_dn: "{{ BASE_DN }}"
+        bind_as_administrator: true
+        settings:
+          admin_bind_dn: "{{ ADMIN_BIND_DN }}"
+          password: "{{ ADMIN_BIND_PASSWORD }}"
+          user_search_dn: "{{ USER_SEARCH_DN }}"
+          user_search_scope: "{{ USER_SEARCH_SCOPE }}"
+          user_id_attribute: "{{ USER_ID_ATTRIBUTE }}"
+          group_search_dn: "{{ GROUP_SEARCH_DN }}"
+          group_member_attribute: "{{ GROUP_MEM_ATTR }}"
+          group_search_scope: "{{ GROUP_SEARCH_SCOPE }}"
+          group_member_is_full_dn: "{{ GROUP_MEM_FULL_DN }}"
+          group_filter: "{{ GROUP_FILTER }}"
+          ignore_referrals: "{{ IGNORE_REF }}"
+    register: auth_profile
+
+  - name: Retrieve Version
+    avi_api_session:
+      avi_credentials: "{{ AVI_CREDENTIALS | default(omit) }}"
+      http_method: "get"
+      timeout: 300
+      path: "upgradestatusinfo"
+    register: VERSION
+
+  - name: Create Group Mapping for 22.x+
+    avi_authmappingprofile:
+      avi_credentials: "{{ AVI_CREDENTIALS }}"
+      name: "{{ AUTH_MAPPING_PROF_NAME }}"
+      type: "{{ AUTH_MAPPING_PROF_TYPE }}"
+      mapping_rules:
+        - index: 0
+          group_match:
+            criteria: "AUTH_MATCH_CONTAINS"
+            groups:
+              - "{{ AUTH_MAPPING[0].group }}"
+          assign_role: "ASSIGN_MATCHING_ATTRIBUTE_VALUE"
+          role_attribute_name: "{{ AUTH_MAPPING[0].role }}"
+          assign_tenant: "ASSIGN_MATCHING_ATTRIBUTE_VALUE"
+          tenant_attribute_name: "{{ AUTH_MAPPING[0].tenant }}"
+          # Add additional index sections if additional group mappings are required.
+    register: auth_mapping
+    when: VERSION.obj.results.0.version | split('-') | first | regex_search("22.1.[0-9]|30.1.[0-9]")
+
+
+  - name: Assign Policy and Group Mapping for 22.x+
+    avi_systemconfiguration:
+      avi_credentials: "{{ AVI_CREDENTIALS }}"
+      avi_api_update_method: patch
+      avi_api_patch_op: add
+      admin_auth_configuration:
+        allow_local_user_login: True
+        remote_auth_configurations:
+          - index: 0
+            auth_profile_ref: "{{ auth_profile.obj.url }}"
+            auth_mapping_profile_ref: "{{ auth_mapping.obj.url }}"
+    when: VERSION.obj.results.0.version | split('-') | first | regex_search("22.1.[0-9]|30.1.[0-9]")
+
+  - name: Assign Policy and Group Mapping for 20.x and 21.x
+    avi_systemconfiguration:
+      avi_credentials: "{{ AVI_CREDENTIALS }}"
+      avi_api_update_method: patch
+      avi_api_patch_op: add
+      admin_auth_configuration:
+        allow_local_user_login: True
+        auth_profile_ref: "{{ auth_profile.obj.url }}"
+        mapping_rules:
+          - index: 0
+            group_match:
+              criteria: "AUTH_MATCH_CONTAINS"
+              groups:
+                - "{{ AUTH_MAPPING[0].group }}"
+            assign_role: "ASSIGN_MATCHING_ATTRIBUTE_VALUE"
+            role_attribute_name: "{{ AUTH_MAPPING[0].role }}"
+            assign_tenant: "ASSIGN_MATCHING_ATTRIBUTE_VALUE"
+            tenant_attribute_name: "{{ AUTH_MAPPING[0].tenant }}"
+          # Add additional index sections if additional group mappings are required.
+    when: VERSION.obj.results.0.version | split('-') | first | regex_search("20.1.[0-9]|21.1.[0-9]")

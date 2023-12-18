@@ -1,0 +1,92 @@
+- hosts: localhost
+  connection: local
+  collections:
+    - vmware.alb
+    - community.vmware
+  roles:
+    - { role: avinetworks.avicontroller_vmware }
+
+  tasks:
+  - include_vars: variables.yml
+
+  - name: Retrieve Cluster Runtime
+    avi_api_session:
+      avi_credentials: "{{ AVI_CREDENTIALS | default(omit) }}"
+      http_method: "get"
+      timeout: 300
+      path: "cluster/runtime"
+    register: CLUSTER_RUNTIME
+
+  - name: Retrieve Cluster Info
+    avi_api_session:
+      avi_credentials: "{{ AVI_CREDENTIALS | default(omit) }}"
+      http_method: "get"
+      timeout: 300
+      path: "cluster"
+    register: CLUSTER_INFO
+
+  - name: Merge Lists
+    set_fact:
+      new_list: "{{ new_list | default([]) + [{ 'mgmt_ip': item.0.mgmt_ip,'role': item.0.role,'name': item.0.name, 'vm_hostname': item.1.vm_hostname,'state': item.0.state,'vmID': item.1.vm_mor }] }}"
+    when: item.0.name == item.1.name
+    with_together:
+      - "{{ CLUSTER_RUNTIME.obj.node_states }}"
+      - "{{ CLUSTER_INFO.obj.nodes }}"
+
+  - name: Get Failed Host
+    set_fact:
+      failed_Host: "{{ failed_Host | default([]) + [{'vmID': item.vmID, 'mgmt_ip': item.mgmt_ip,'name': item.name, 'vm_hostname': item.vm_hostname }]  }}"
+    loop: "{{ new_list }}"
+    when: item.state == "CLUSTER_INACTIVE"
+
+  - name: END Playbook IF ALL NODES are UP and ACTIVE
+    meta: end_play
+    when: failed_Host is not defined
+
+  - name: Get Cluster Leader Host
+    set_fact:
+      leader_Host: "{{ leader_Host | default([]) + [{ 'mgmt_ip': item.mgmt_ip,'name': item.name, 'vm_hostname': item.vm_hostname }] }}"
+    loop: "{{ new_list }}"
+    when: item.role == "CLUSTER_LEADER"
+
+  - name: Get Active Cluster Follower Host
+    set_fact:
+      follower_Host: "{{ follower_Host | default([]) + [{ 'mgmt_ip': item.mgmt_ip,'name': item.name, 'vm_hostname': item.vm_hostname }] }}"
+    loop: "{{ new_list }}"
+    when: 
+      - item.role == "CLUSTER_FOLLOWER"
+      - item.state == "CLUSTER_ACTIVE"
+
+  - name: Create Single Node cluster
+    include_tasks: ./tasks/single_node_cluster.yaml
+    with_together: 
+      - "{{ leader_Host }}"
+      - "{{ CLUSTER_INFO.obj.virtual_ip.addr }}"
+
+  - name: Check Single Node Cluster Status
+    include_tasks: ./tasks/wait_for_singe_node_cluster_formation.yaml
+    with_items: 
+      - "{{ CLUSTER_INFO.obj.virtual_ip.addr }}"
+
+  - name: Deploy Replacement Controller Node
+    include_tasks: ./tasks/deploy_new_controller.yaml
+    with_together: 
+      - "{{ failed_Host }}"
+
+  - name: Check New Node State
+    include_tasks: ./tasks/check_cluster_node_status.yaml
+    with_items: 
+      - "{{ failed_Host }}"
+
+  - name: Create New cluster
+    include_tasks: ./tasks/create_cluster.yaml
+    with_together: 
+      - "{{ CLUSTER_INFO.obj.virtual_ip.addr }}"
+      - "{{ leader_Host }}"
+      - "{{ failed_Host }}"
+      - "{{ follower_Host }}"
+
+  - name: Check New Cluster Status
+    include_tasks: ./tasks/wait_for_cluster_formation.yaml
+    with_items: 
+      - "{{ CLUSTER_INFO.obj.virtual_ip.addr }}"

@@ -1,0 +1,15 @@
+---
+- name: Verify Cluster Completed
+  uri:
+    validate_certs: False
+    url: "{{ 'https://' + item + '/api/cluster/status'}}"
+    method: GET
+    return_content: yes
+    status_code: 200
+    body_format: json
+  register: result
+  until: result.status == 200 and result.json.cluster_state.state == "CLUSTER_UP_NO_HA"
+  retries: 600
+  delay: 10
+- debug:
+    msg: "The controller cluster deployment completed."

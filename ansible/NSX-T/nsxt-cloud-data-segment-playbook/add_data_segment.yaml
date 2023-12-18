@@ -1,0 +1,108 @@
+- hosts: localhost
+  connection: local
+  collections:
+    - vmware.alb
+  vars:
+    T1_ARRAY: []
+    VLAN_ARRAY: []
+ 
+  tasks:
+  - include_vars: variables.yml
+
+  - name: Retrieve Cloud
+    avi_api_session:
+      avi_credentials: "{{ AVI_CREDENTIALS | default(omit) }}"
+      http_method: "get"
+      timeout: 300
+      path: "cloud?name={{ CLOUD_NAME }}"
+    register: CLOUD_Obj
+
+  - name: get nsxt config
+    set_fact:
+      nsxt_config: "{{ nsxt }}"
+    loop: "{{ CLOUD_Obj['obj']['results'] }}"
+    loop_control:
+      loop_var: nsxt
+
+  - name: Create NEW DATA tier1_lrs ARRAY
+    set_fact:
+      DATA_T1: "{{ DATA_T1 | default([]) + [{'tier1_lr_id': DATA_Obj.T1, 'segment_id': DATA_Obj.SEG}] }}"
+    loop: "{{ NSXT_DATA_T1_SEG }}" 
+    loop_control:
+      loop_var: DATA_Obj 
+    when: 
+      - NSXT_DATA_T1_SEG is defined
+
+  - name: MERGE DATA T1 ARRAY
+    set_fact:
+      T1_ARRAY: "{{ T1_ARRAY + [item] }}"
+    with_items:
+      - "{{ nsxt_config['nsxt_configuration']['data_network_config']['tier1_segment_config']['manual']['tier1_lrs'] }}"
+      - "{{ DATA_T1 }}"
+    when: 
+      - NSXT_DATA_T1_SEG is defined 
+      - NSXT_DATA_VLAN_SEG is not defined
+
+
+  - name: Create DATA Config T1    
+    set_fact:
+      data_network_config:
+        tier1_segment_config:
+          segment_config_mode: "TIER1_SEGMENT_MANUAL"
+          manual:
+            tier1_lrs: "{{ T1_ARRAY }}"
+        tz_type: "{{ nsxt_config['nsxt_configuration']['data_network_config']['tz_type'] }}"
+        transport_zone: "{{ nsxt_config['nsxt_configuration']['data_network_config']['transport_zone'] }}"
+    when: 
+      - NSXT_DATA_T1_SEG is defined 
+
+  - name: Create NEW DATA VLAN ARRAY
+    set_fact:
+      DATA_VLAN: "{{ DATA_VLAN | default([]) + ['/infra/segments/' + DATA_Obj.SEG] }}"
+    loop: "{{ NSXT_DATA_VLAN_SEG }}" 
+    loop_control:
+      loop_var: DATA_Obj 
+    when: 
+      - NSXT_DATA_T1_SEG is not defined 
+      - NSXT_DATA_VLAN_SEG is defined
+
+
+  - name: MERGE DATA VLAN ARRAY
+    set_fact:
+      VLAN_ARRAY: "{{ VLAN_ARRAY + [item] }}"
+    with_items:
+      - "{{ nsxt_config['nsxt_configuration']['data_network_config']['vlan_segments'] }}"
+      - "{{ DATA_VLAN }}"
+    when: 
+      - NSXT_DATA_T1_SEG is not defined 
+      - NSXT_DATA_VLAN_SEG is defined
+
+
+
+
+  - name: Create DATA Config VLAN    
+    set_fact:
+      data_network_config:
+        vlan_segments: "{{ VLAN_ARRAY }}"
+        tz_type: "{{ nsxt_config['nsxt_configuration']['data_network_config']['tz_type'] }}"
+        transport_zone: "{{ nsxt_config['nsxt_configuration']['data_network_config']['transport_zone'] }}"
+    when: 
+      - NSXT_DATA_T1_SEG is not defined 
+      - NSXT_DATA_VLAN_SEG is defined
+
+  - name: Update Cloud
+    avi_cloud:
+      avi_credentials: "{{ AVI_CREDENTIALS | default(omit) }}"
+      vtype: "CLOUD_NSXT"
+      name: "{{ nsxt_config['name'] }}"
+      obj_name_prefix: "{{ nsxt_config['obj_name_prefix'] }}"
+      dhcp_enabled: "{{ nsxt_config['dhcp_enabled'] }}"
+      nsxt_configuration:
+        nsxt_url: "{{ nsxt_config['nsxt_configuration']['nsxt_url'] }}"
+        site_id: default
+        enforcementpoint_id: default
+        domain_id: default
+        automate_dfw_rules: false
+        nsxt_credentials_ref: "{{ nsxt_config['nsxt_configuration']['nsxt_credentials_ref'] }}"  
+        management_network_config: "{{ nsxt_config['nsxt_configuration']['management_network_config'] }}"
+        data_network_config: "{{ data_network_config }}" 
