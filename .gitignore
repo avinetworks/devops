@@ -197,3 +197,7 @@ monitoring/graphite/avi-metric-script-graphite-OLD.py
 # Microsoft Visual Studio
 /.vs
 
+#terraform
+.terraform*
+*tfstate*
+*tfvars
