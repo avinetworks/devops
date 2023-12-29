@@ -7,7 +7,7 @@ provider "vsphere" {
 }
 
 module "vmware_deploy" {
-  source = "../../terraform_modules/vmware_deploy"
+  source = "terraform_modules/vmware_deploy"
 
   vm_datastore = ""
   vsphere_cluster = ""
