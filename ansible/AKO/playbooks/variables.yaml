@@ -1,0 +1,14 @@
+---
+# --------------------------------------------------------------------
+# HELM Variables
+# Description: These are variables used for HELM deployment.
+# --------------------------------------------------------------------
+
+helm_version: <helm version release> #Ex. 3.13.3
+
+# --------------------------------------------------------------------
+# AKO Variables
+# Description: These are variables used for HELM deployment.
+# --------------------------------------------------------------------
+value_file: <ako value file name> #Stored in the root of the workflow project.
+chart_version: <ako version release> #Ex. 1.10.3
