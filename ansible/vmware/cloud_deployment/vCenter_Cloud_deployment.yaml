@@ -1,0 +1,347 @@
+---
+- hosts: localhost
+  connection: local
+  gather_facts: no
+  collections:
+    - vmware.alb
+    - community.vmware
+
+  vars_files:
+    variables.yaml
+
+  tasks:
+    - set_fact:
+        vsphere_server_is_ip: "{{ VCENTER_SERVER is ansible.utils.ipv4 }}"
+
+    - name: 'pbCloudOnly | DNS Lookup on FQDN so Cloud Connector can properly Resolve'
+      avi_api_session:
+        avi_credentials: "{{ AVI_CREDENTIALS }}"
+        http_method: get
+        timeout: 300
+        path: "{{ 'dnslookup/' + VCENTER_SERVER }}"
+      register: statusDnsLookup
+      until:
+        - statusDnsLookup.obj.ips[0] != "0.0.0.0"
+      retries: 120
+      delay: 10
+      when:
+        - vsphere_server_is_ip is false
+      tags:
+        - dnsresolution
+
+    - name: 'pbCloudOnly | Get Session Cookies for CL collection'
+      uri:
+        url: "{{ 'https://' + CONTROLLER_CLUSTER_IP + '/login' }}"
+        method: POST
+        body:
+          username: "{{ AVI_CREDENTIALS.username }}"
+          password: "{{ AVI_CREDENTIALS.password }}"
+        body_format: json
+        validate_certs: false
+      register: login
+
+    - name: 'pbCloudOnly | Get Cluster Version'
+      avi_api_session:
+        avi_credentials: "{{ AVI_CREDENTIALS }}"
+        http_method: get
+        timeout: 300
+        path: "cluster/version"
+      register: cluster_version
+      retries: 120
+      delay: 10
+      tags:
+        - clusterversion
+
+    - name: Display version
+      ansible.builtin.debug:
+        var: cluster_version.obj.Version
+
+    - name: Display version when
+      ansible.builtin.debug:
+        var: cluster_version.obj.Version
+      when: cluster_version.obj.Version  == "22.1.6"
+
+    - name: 'pbCloudOnly | Retrieve vCenter Content Library'
+      uri:
+        url: "{{ 'https://' + CONTROLLER_CLUSTER_IP + '/api/vimgrvcenterruntime/retrieve/contentlibraries' }}"
+        method: POST
+        headers:
+          X-Avi-Version: "{{ AVI_CREDENTIALS.api_version }}"
+          X-CSRFToken: "{{ login.cookies['csrftoken'] }}"
+          Cookie: "{{ login.cookies_string }}"
+          Referer: "{{ 'https://' + CONTROLLER_CLUSTER_IP }}"
+        body:
+          host: "{{ VCENTER_SERVER }}"
+          password: "{{ VCENTER_PASSWORD }}"
+          username: "{{ VCENTER_USERNAME }}"
+        body_format: json
+        validate_certs: false
+      when:
+        - cluster_version.obj.Version  |  regex_search('^22|30.[1-9].[1-9]') or
+          cluster_version.obj.Version == "21.1.6"
+        - USE_CONTENT_LIBRARY is true
+        - CONTENT_LIBRARY is defined
+      register: VCENTER_CL
+
+
+    - name: 'pbCloudOnly | Create vCenter Content Library Config'
+      set_fact:
+        content_lib:
+          id: "{{ item }}"
+          name: "{{ CONTENT_LIBRARY }}"
+      with_items: "{{ VCENTER_CL | community.general.json_query(cl_id) }}"
+      vars:
+        cl_id: "json.resource.vcenter_clibs[?name=='{{ CONTENT_LIBRARY }}'].id"
+      when:
+        - cluster_version.obj.Version  |  regex_search('^22|30.[1-9].[1-9]') or
+          cluster_version.obj.Version == "21.1.6"
+        - USE_CONTENT_LIBRARY is true
+        - CONTENT_LIBRARY is defined
+
+    - name: Defining variable vcenter_configuration - vCenter with Content Library on 21.1.6| 22.x+ Cluster
+      set_fact:
+        vcenter_configuration:
+          username: "{{ VCENTER_USERNAME }}"
+          password: "{{ VCENTER_PASSWORD }}"
+          vcenter_url: "{{ VCENTER_SERVER }}"
+          management_network: "{{ '/api/vimgrnwruntime/?name=' + 'vxw-dvs-34-virtualwire-3-sid-6100002-wdc-06-vc10-avi-mgmt' }}"
+          privilege: WRITE_ACCESS
+          datacenter: "{{ DATACENTER }}"
+          use_content_lib: true
+          content_lib:
+            id: "{{ content_lib.id }}"
+            name: "{{ content_lib.name }}"
+      when:
+        - cluster_version.obj.Version  |  regex_search('^22|30.[1-9].[1-9]') or
+          cluster_version.obj.Version == "21.1.6"
+        - USE_CONTENT_LIBRARY is true
+        - CONTENT_LIBRARY is defined
+
+    - name: Defining variable vcenter_configuration - vCenter without Content Library  on 21.1.6| 22.x+ Cluster
+      set_fact:
+        vcenter_configuration:
+          username: "{{ VCENTER_USERNAME }}"
+          password: "{{ VCENTER_PASSWORD }}"
+          vcenter_url: "{{ VCENTER_SERVER }}"
+          management_network: "{{ '/api/vimgrnwruntime/?name=' + 'vxw-dvs-34-virtualwire-3-sid-6100002-wdc-06-vc10-avi-mgmt' }}"
+          privilege: WRITE_ACCESS
+          datacenter: "{{ DATACENTER }}"
+          use_content_lib: false
+      when:
+        - cluster_version.obj.Version  |  regex_search('^22|30.[1-9].[1-9]') or
+          cluster_version.obj.Version == "21.1.6"
+        - USE_CONTENT_LIBRARY is false
+
+    - name: Defining variable vcenter_configuration - vCenter without Content Library  on 20.x|21.x Cluster
+      set_fact:
+        vcenter_configuration:
+          username: "{{ VCENTER_USERNAME }}"
+          password: "{{ VCENTER_PASSWORD }}"
+          vcenter_url: "{{ VCENTER_SERVER }}"
+          management_network: "{{ '/api/vimgrnwruntime/?name=' + 'vxw-dvs-34-virtualwire-3-sid-6100002-wdc-06-vc10-avi-mgmt' }}"
+          privilege: WRITE_ACCESS
+          datacenter: "{{ DATACENTER }}"
+      when:
+        - cluster_version.obj.Version  |  regex_search('^20.[1-9].[1-9]')
+        - cluster_version.obj.Version  |  regex_search('^21.[1-9].[1-5]')
+
+
+
+    #vCenter Cloud INIT
+    - name: 'pbCloudOnly | Avi vCenter Cloud INIT 21.1.6| 22.x+ Cluster'
+      avi_cloud:
+        avi_credentials: "{{ AVI_CREDENTIALS }}"
+        name: "{{ CLOUD_NAME}}"
+        vtype: CLOUD_VCENTER
+        obj_name_prefix: "{{ CLOUD_PREFIX }}"
+        vcenter_configuration: "{{ vcenter_configuration }}"
+      when:
+        - cluster_version.obj.Version  |  regex_search('^22|30.[1-9].[1-9]') or
+          cluster_version.obj.Version == "21.1.6"
+      tags:
+        - cloud
+
+    #vCenter Cloud INIT
+    - name: 'pbCloudOnly | Avi vCenter Cloud INIT 20.x|21.x CLuster'
+      avi_cloud:
+        avi_credentials: "{{ AVI_CREDENTIALS }}"
+        name: "{{ CLOUD_NAME }}"
+        vtype: CLOUD_VCENTER
+        vcenter_configuration: "{{ vcenter_configuration }}"
+      when:
+        - cluster_version.obj.Version  |  regex_search('^20.[1-9].[1-9]')
+        - cluster_version.obj.Version  |  regex_search('^21.[1-9].[1-5]')
+      tags:
+        - cloud
+
+    #DNS Profile Setup
+    - name: 'pbCloudOnly | Create Avi DNS provider Without domain names'
+      avi_ipamdnsproviderprofile:
+        avi_credentials: "{{ AVI_CREDENTIALS }}"
+        name: "{{ DNS_PROFILE_NAME }}"
+        type: IPAMDNS_TYPE_INTERNAL_DNS
+      register: output_dns_profile_create
+      when:
+        - USE_DNS_PROFILE is true
+        - DNS_PROFILE_NAME is defined
+        - DNS_PROFILE_DOMAINS is defined
+      tags:
+        - dns
+
+    - name: 'pbCloudOnly | Update Avi DNS provider With domain names'
+      avi_ipamdnsproviderprofile:
+        avi_credentials: "{{ AVI_CREDENTIALS }}"
+        avi_api_patch_op: add
+        avi_api_update_method: patch
+        internal_profile:
+          dns_service_domain:
+            - domain_name: "{{ item.name }}"
+              pass_through: true
+              record_ttl: 100
+          ttl: 300
+        name: "{{ DNS_PROFILE_NAME }}"
+        type: IPAMDNS_TYPE_INTERNAL_DNS
+      loop: "{{ DNS_PROFILE_DOMAINS }}"
+      when:
+        - USE_DNS_PROFILE is true
+        - DNS_PROFILE_NAME is defined
+        - DNS_PROFILE_DOMAINS is defined  and "{{ DNS_PROFILE_DOMAINS }}"|length > 0
+      tags:
+        - dns
+
+    # Management Network Setups
+    - name: 'pbCloudOnly | Define Management - deployment'
+      set_fact:
+        mgmt_configured_subnets:
+          - prefix:
+              mask: "{{ MGMT_NET_MASK }}"
+              ip_addr:
+                type: "{{ MGMT_NET_TYPE | default('V4') }}"
+                addr: "{{ MGMT_NETWORK }}"
+            static_ip_ranges:
+              - range:
+                  begin:
+                    type: "{{ MGMT_NET_TYPE  | default('V4') }}"
+                    addr: "{{ MGMT_NET_IP_RANGE_START }}"
+                  end:
+                    type: "{{ MGMT_NET_TYPE  | default('V4') }}"
+                    addr: "{{ MGMT_NET_IP_RANGE_END }}"
+      when:
+        - MGMT_NET_DHCP is false
+        - MGMT_NET_IP_RANGE_START is defined
+        - MGMT_NET_IP_RANGE_END is defined
+
+    - name: 'pbCloudOnly | Configure MGMT Default Gateway'
+      avi_vrfcontext:
+        avi_credentials: "{{ AVI_CREDENTIALS }}"
+        cloud_ref: "/api/cloud/?name={{ CLOUD_NAME }}"
+        name: "management"
+        static_routes:
+          - route_id: "1"
+            prefix:
+              mask: 0
+              ip_addr:
+                type: "V4"
+                addr: "0.0.0.0"
+            next_hop:
+              type: "V4"
+              addr: "{{ MGMT_NET_GW }}"
+      when:
+        - MGMT_NET_DHCP is false
+        - MGMT_NETWORK is defined
+
+
+    - name: 'pbCloudOnly | vCenter Write cloud network discovery in progress'
+      avi_api_session:
+        avi_credentials: "{{ AVI_CREDENTIALS }}"
+        http_method: get
+        timeout: 300
+        path: cloudruntime
+        params:
+          name: "{{ CLOUD_NAME }}"
+      register: statusCloud
+      until:
+        - statusCloud.obj.results[0].network_sync_complete == true
+      retries: 120
+      delay: 10
+      tags:
+        - cloud
+
+    - name: 'pbCloudOnly | Configure Management Network - deployment'
+      avi_network:
+        avi_credentials: "{{ AVI_CREDENTIALS }}"
+        name: "{{ MGMT_NET_PORT_GROUP_NAME }}"
+        cloud_ref: "/api/cloud/?name={{ CLOUD_NAME }}"
+        configured_subnets: "{{ mgmt_configured_subnets | default(omit) }}"
+        dhcp_enabled: "{{ MGMT_NET_DHCP | default('false')}}"
+      register: output_network_mgmt_deployment
+      when:
+        - CLOUD_NAME is defined
+        - MGMT_NET_PORT_GROUP_NAME is defined
+      tags:
+        - ipam
+
+    # VIP Network Setup
+    - name: 'pbCloudOnly | Define VIP - deployment'
+      set_fact:
+        vip_configured_subnets:
+          - prefix:
+              mask: "{{ VIP_NET_MASK }}"
+              ip_addr:
+                type: "{{ VIP_NET_TYPE | default('V4') }}"
+                addr: "{{ VIP_NETWORK }}"
+            static_ip_ranges:
+              - range:
+                  begin:
+                    type: "{{ VIP_NET_TYPE | default('V4') }}"
+                    addr: "{{ VIP_NET_IP_RANGE_START }}"
+                  end:
+                    type: "{{ VIP_NET_TYPE | default('V4') }}"
+                    addr: "{{ VIP_NET_IP_RANGE_END }}"
+      when:
+        - VIP_NET_DHCP is false
+        - VIP_NET_IP_RANGE_START is defined
+        - VIP_NET_IP_RANGE_END is defined
+
+    - name: 'pbCloudOnly | Configure VIP Network - deployment'
+      avi_network:
+        avi_credentials: "{{ AVI_CREDENTIALS }}"
+        name: "{{ VIP_NET_PORT_GROUP_NAME }}"
+        cloud_ref: "/api/cloud/?name={{ CLOUD_NAME }}"
+        configured_subnets: "{{ vip_configured_subnets | default(omit) }}"
+        dhcp_enabled: "{{ VIP_NET_DHCP | default('false')}}"
+      register: output_network_vip_deployment
+      when:
+        - CLOUD_NAME is defined
+        - VIP_NET_PORT_GROUP_NAME is defined
+      tags:
+        - ipam
+
+    - name: 'pbCloudOnly | Create Avi IPAM - deployment'
+      avi_ipamdnsproviderprofile:
+        avi_credentials: "{{ AVI_CREDENTIALS }}"
+        internal_profile:
+          usable_networks:
+            - nw_ref: "/api/network/{{ VIP_NET_PORT_GROUP_NAME }}"
+        name: "{{ IPAM_PROFILE_NAME }}"
+        type: IPAMDNS_TYPE_INTERNAL
+      register: output_ipam_profile_create
+      when:
+        - output_network_vip_deployment.obj.uuid is defined
+        - USE_IPAM_PROFILE is true
+      tags:
+        - ipam
+
+    - name: 'pbCloudOnly | Update Avi Cloud - deployment'
+      avi_cloud:
+        avi_credentials: "{{ AVI_CREDENTIALS }}"
+        name: "{{ CLOUD_NAME }}"
+        vtype: CLOUD_VCENTER
+        vcenter_configuration: "{{ vcenter_configuration }}"
+        dhcp_enabled: "{{ DHCP | default('true') }}"
+        state_based_dns_registration: "{{ STATE_BASED_DNS_REGISTRATION | default('true') }}"
+        ipam_provider_ref: "{{ output_ipam_profile_create.obj.uuid | default(omit) }}"
+        dns_provider_ref: "{{ output_dns_profile_create.obj.uuid | default(omit) }}"
+      register: output_cloud_deployment
+      tags:
+        - cloud
