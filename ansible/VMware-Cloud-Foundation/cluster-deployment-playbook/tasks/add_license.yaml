@@ -1,0 +1,24 @@
+---
+- name: Upload Avi License to controller (FILE)
+  avi_api_session:
+    controller: "{{ CONTROLLER_IP_1 }}"
+    username: "{{ AVI_CREDENTIALS.username }}"
+    password: "{{ AVI_CREDENTIALS.password }}"
+    api_version: "{{ AVI_CREDENTIALS.api_version }}"
+    http_method: put
+    path: license
+    data:
+      license_text: "{{ lookup('file', LICENSE_FILE) }}"
+  when: LICENSE_FILE is defined
+
+- name: Upload Avi License to controller (KEY)
+  avi_api_session:
+    controller: "{{ CONTROLLER_IP_1 }}"
+    username: "{{ AVI_CREDENTIALS.username }}"
+    password: "{{ AVI_CREDENTIALS.password }}"
+    api_version: "{{ AVI_CREDENTIALS.api_version }}"
+    http_method: put
+    path: license
+    data:
+      serial_key: "{{ SERIAL_KEY }}"
+  when: SERIAL_KEY is defined

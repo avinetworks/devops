@@ -1,0 +1,183 @@
+- hosts: localhost
+  connection: local
+  collections:
+    - vmware.alb
+  roles:
+    - { role: avinetworks.avicontroller_vmware }
+  vars_files:
+     variables.yml
+  vars:
+    avi_credentials:
+      api_version: "{{ AVI_CREDENTIALS.api_version }}"
+      username: "{{ AVI_CREDENTIALS.username }}"
+      password: "{{ AVI_CREDENTIALS.password }}"
+      controller: "{{ CONTROLLER_CLUSTER_IP }}"
+  tasks:
+  - include_vars: variables.yml
+  - name: Identify leader
+    avi_api_session:
+      avi_credentials: "{{ avi_credentials }}"
+      http_method: get
+      path: cluster/runtime
+    register: cluster_runtime
+  - set_fact:
+      leader_ip: "{{ node['mgmt_ip'] }}"
+    loop: "{{ cluster_runtime['obj']['node_states']  }}"
+    loop_control:
+      loop_var: node
+    when: node['role'] == 'CLUSTER_LEADER'
+  #Get current image list
+  - name: get image list
+    avi_api_session:
+      avi_credentials: "{{ avi_credentials }}"       
+      http_method: get
+      timeout: 3000
+      path: image
+    register: image_list
+  - set_fact:
+      patch_name: "{{image_list.obj.results | to_json | from_json | json_query(jq) }}"
+    vars:
+      jq: "[?type == 'IMAGE_TYPE_PATCH'] | [?contains(name, '{{ PATCH_UPGRADE_VERSION }}')].name"
+    when: PATCH_UPGRADE_FILE is defined
+  - set_fact: 
+      image_name: "{{image_list.obj.results | to_json | from_json | json_query(jq) }}"
+    vars:
+      jq: "[?type == 'IMAGE_TYPE_SYSTEM'] | [?contains(name, '{{ BASE_UPGRADE_VERSION }}')].name"
+    when: BASE_UPGRADE_FILE is defined
+  #Get image and patch UUID if already present on controller
+  - name: get patch UUID
+    set_fact:
+      patch_uuid: "{{image_list.obj.results | to_json | from_json | json_query(jq) }}"
+    vars:
+      jq: "[?type == 'IMAGE_TYPE_PATCH'] | [?contains(name, '{{ PATCH_UPGRADE_VERSION }}')].uuid"
+    when: 
+      - PATCH_UPGRADE_FILE is defined
+      - patch_name | length > 0
+  - name: get image UUID
+    set_fact:
+      image_uuid: "{{image_list.obj.results | to_json | from_json | json_query(jq) }}"
+    vars:
+      jq: "[?type == 'IMAGE_TYPE_SYSTEM'] | [?contains(name, '{{ BASE_UPGRADE_VERSION }}')].uuid"
+    when: 
+      - BASE_UPGRADE_FILE is defined
+      - image_name | length > 0
+  #Upload patch when is not present on controller
+  - name: Block to upload patch and get UUID
+    block:
+    - name: upload patch using api
+      avi_api_image:
+        avi_credentials: "{{ avi_credentials }}"
+        file_path: "{{ PATCH_UPGRADE_FILE }}"
+    - name: get updated image list
+      avi_api_session:
+        avi_credentials: "{{ avi_credentials }}"       
+        http_method: get
+        timeout: 3000
+        path: image
+      register: updated_image_list
+    - name: get patch UUID
+      set_fact:
+        patch_uuid: "{{updated_image_list.obj.results | to_json | from_json | json_query(jq) }}"
+      vars:
+        jq: "[?type == 'IMAGE_TYPE_PATCH'] | [?contains(name, '{{ PATCH_UPGRADE_VERSION }}')].uuid"
+    when: 
+      - PATCH_UPGRADE_FILE is defined
+      - patch_name | length == 0
+  #Upload image when is not present on controller
+  - name: Block to upload image and get UUID
+    block:
+    - name: upload image using api
+      avi_api_image:
+        avi_credentials: "{{ avi_credentials }}"
+        file_path: "{{ BASE_UPGRADE_FILE }}"
+    - name: get updated image list
+      avi_api_session:
+        avi_credentials: "{{ avi_credentials }}"       
+        http_method: get
+        timeout: 3000
+        path: image
+      register: updated_image_list
+    - name: get image UUID
+      set_fact:
+        image_uuid: "{{updated_image_list.obj.results | to_json | from_json | json_query(jq) }}"
+      vars:
+        jq: "[?type == 'IMAGE_TYPE_SYSTEM'] | [?contains(name, '{{ BASE_UPGRADE_VERSION }}')].uuid" 
+    when: 
+      - BASE_UPGRADE_FILE is defined
+      - image_name | length == 0
+  #Create data payload for upgrade according to type
+  - name: Base only
+    set_fact:
+      case_data:
+        image_uuid: "{{ image_uuid.0 }}"
+    when: 
+      - BASE_UPGRADE_FILE is defined
+      - PATCH_UPGRADE_FILE is not defined
+  - name: Patch only
+    set_fact:
+      case_data:
+        controller_patch_uuid: "{{ patch_uuid.0 }}"
+        se_patch_uuid: "{{ patch_uuid.0 }}"
+    when: 
+      - BASE_UPGRADE_FILE is not defined
+      - PATCH_UPGRADE_FILE is defined
+  - name: Base and patch
+    set_fact:
+      case_data:
+        image_uuid: "{{ image_uuid.0 }}"
+        controller_patch_uuid: "{{ patch_uuid.0 }}"
+        se_patch_uuid: "{{ patch_uuid.0 }}"
+    when: 
+      - BASE_UPGRADE_FILE is defined
+      - PATCH_UPGRADE_FILE is defined
+  - set_fact:
+      base_data:
+        system: true
+        skip_warnings: true
+        se_group_options:
+          action_on_error: "CONTINUE_UPGRADE_OPS_ON_ERROR"
+        #add option to stop on se upgrade failure?
+        suspend_on_failure: false   
+  - set_fact:
+      upgrade_data: "{{ case_data | combine(base_data) }}"
+  #Upgrade System
+  - name: Upgrade Controller
+    avi_api_session:
+      controller: "{{ leader_ip }}"
+      username: "{{ AVI_CREDENTIALS.username }}"
+      password: "{{ AVI_CREDENTIALS.password }}"
+      api_version: "{{ AVI_CREDENTIALS.api_version }}"
+      path: upgrade
+      http_method: post
+      timeout: 300
+      data: "{{ upgrade_data }}"
+  - name: Wait 120 seconds for process to start before checking upgrade status
+    pause:
+      seconds: 120
+  - name: is controller up?
+    avi_api_session:
+      controller: "{{ leader_ip }}"
+      username: "{{ AVI_CREDENTIALS.username }}"
+      password: "{{ AVI_CREDENTIALS.password }}"
+      api_version: "{{ AVI_CREDENTIALS.api_version }}"
+      path: upgradestatusinfo
+      http_method: get
+      timeout: 300
+    register: result
+    until: result.obj is defined
+    retries: 600
+    delay: 10
+    ignore_errors: yes
+  - name: Check status upgrade (Controller)
+    avi_api_session:
+      controller: "{{ leader_ip }}"
+      username: "{{ AVI_CREDENTIALS.username }}"
+      password: "{{ AVI_CREDENTIALS.password }}"
+      api_version: "{{ AVI_CREDENTIALS.api_version }}"
+      path: upgradestatusinfo
+      http_method: get
+      timeout: 300
+    register: result
+    until: (result.obj.results.0.progress == 100) or ("ERROR" in result.obj.results.0.state.state) or ("SUSPENDED" in result.obj.results.0.state.state) or ("PAUSED" in result.obj.results.0.state.state)
+    retries: 600
+    delay: 10

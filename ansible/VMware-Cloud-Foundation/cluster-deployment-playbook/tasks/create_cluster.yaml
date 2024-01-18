@@ -1,0 +1,25 @@
+---
+- name: Cloud Cluster Configuration
+  avi_cluster:
+    controller: "{{ CONTROLLER_IP_1 }}"
+    username: "{{ AVI_CREDENTIALS.username }}"
+    password: "{{ AVI_CREDENTIALS.password }}"
+    api_version: "{{ AVI_CREDENTIALS.api_version }}"
+    virtual_ip:
+      type: V4
+      addr: "{{ CONTROLLER_CLUSTER_IP }}"
+    nodes:
+        - name: "{{ CONTROLLER_NAME_1 }}" 
+          ip:
+            type: V4
+            addr: "{{ CONTROLLER_IP_1 }}"
+        - name: "{{ CONTROLLER_NAME_2 }}"
+          ip:
+            type: V4
+            addr: "{{ CONTROLLER_IP_2 }}"
+        - name: "{{ CONTROLLER_NAME_3 }}"
+          ip:
+            type: V4
+            addr: "{{ CONTROLLER_IP_3 }}"
+    name: "{{ CLUSTER_NAME }}"
+    tenant_uuid: "admin"

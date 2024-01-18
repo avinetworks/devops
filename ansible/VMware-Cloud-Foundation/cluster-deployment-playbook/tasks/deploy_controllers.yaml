@@ -1,0 +1,25 @@
+---
+- name: "Deploying controller node {{ item.vm_name }}"
+  deploy_controller:
+    ovftool_path: "{{ OVFTOOL_PATH }}"
+    vcenter_host: "{{ VCENTER_HOST }}"
+    vcenter_user: "{{ VCENTER_USER }}"
+    vcenter_password: "{{ VCENTER_PASSWORD }}"
+    con_datacenter: "{{ DATACENTER }}"
+    con_cluster: "{{ VMWARE_CLUSTER_NAME }}"
+    con_ova_path: "{{ OVA_PATH }}"
+    con_vm_name: "{{ item.vm_name }}"
+    con_number_of_cpus: "{{ CON_NUMBER_OF_CPUS | default('8') }}"
+    con_memory: "{{ CON_MEMORY | default('24576') }}"
+    con_disk_size: "{{ CON_DISK_SIZE | default('128') }}"
+    con_vcenter_folder: "{{ CON_FOLDER }}"
+    con_datastore: "{{ VMWARE_DATASTORE }}"
+    con_mgmt_network: "{{ CON_MGMT_PORTGROUP }}"
+    con_power_on: true
+    con_mgmt_ip: "{{ item.mgmt_ip }}"
+    con_mgmt_mask: "{{ CON_MGMT_MASK }}"
+    con_default_gw: "{{ CON_DEFAULT_GW }}"
+  delegate_to: localhost
+
+
+  

@@ -1,0 +1,172 @@
+- hosts: localhost
+  connection: local
+  collections:
+    - vmware.alb
+  tasks:
+  - include_vars: variables.yml
+  
+
+  - name: Cloud connector user password change
+    avi_cloudconnectoruser:
+      controller: "{{ CONTROLLER_CLUSTER_IP }}"
+      username: "{{ AVI_CREDENTIALS.username }}"
+      password: "{{ AVI_CREDENTIALS.password }}"
+      api_version: "{{ AVI_CREDENTIALS.api_version }}"
+      name: "{{ NSXT_CLOUDCONNECTORUSER }}"
+      nsxt_credentials:
+        username: "{{ NSXT_USERNAME }}"
+        password: "{{ NSXT_PASSWORD  }}"
+   
+  - name: Cloud connector user password change
+    avi_cloudconnectoruser:
+      controller: "{{ CONTROLLER_CLUSTER_IP }}"
+      username: "{{ AVI_CREDENTIALS.username }}"
+      password: "{{ AVI_CREDENTIALS.password }}"
+      api_version: "{{ AVI_CREDENTIALS.api_version }}"
+      name: "{{ NSXT_VCENTER_CLOUDCONNECTORUSER }}"
+      vcenter_credentials:
+        username: "{{ NSXT_VCENTER_USERNAME }}"
+        password: "{{ NSXT_VCENTER_PASSWORD  }}"
+
+  - name: Retrieve MGMT Transport Zones
+    avi_api_session:
+      avi_credentials: "{{ AVI_CREDENTIALS | default(omit) }}"
+      http_method: "post"
+      timeout: 300
+      path: "nsxt/transportzones"
+      data:
+        host: "{{NSXT_MANAGER}}"
+        credentials_uuid: "{{ lookup('avi', avi_credentials=AVI_CREDENTIALS, obj_name= NSXT_CLOUDCONNECTORUSER, obj_type='cloudconnectoruser').uuid }}"
+    register: MGMT_TZ
+
+  - name: Retrieve DATA Transport Zones
+    avi_api_session:
+      avi_credentials: "{{ AVI_CREDENTIALS | default(omit) }}"
+      http_method: "post"
+      timeout: 300
+      path: "nsxt/transportzones"
+      data:
+        host: "{{NSXT_MANAGER}}"
+        credentials_uuid: "{{ lookup('avi', avi_credentials=AVI_CREDENTIALS, obj_name= NSXT_CLOUDCONNECTORUSER, obj_type='cloudconnectoruser').uuid }}"
+    register: DATA_TZ
+ 
+  - name: Retrieve vCenter Content Library
+    avi_api_session:
+      avi_credentials: "{{ AVI_CREDENTIALS | default(omit) }}"
+      http_method: "post"
+      timeout: 300
+      path: "vcenter/contentlibraries"
+      data:
+        host: "{{VCENTER_HOST}}"
+        credentials_uuid: "{{ lookup('avi', avi_credentials=AVI_CREDENTIALS, obj_name= NSXT_VCENTER_CLOUDCONNECTORUSER, obj_type='cloudconnectoruser').uuid }}"
+    register: VCENTER_CL
+    
+  - name: Create DATA tier1_lrs ARRAY
+    set_fact:
+      DATA_T1: "{{ DATA_T1 | default([]) + [{'tier1_lr_id': DATA_Obj.T1, 'segment_id': DATA_Obj.SEG}] }}"
+    loop: "{{ NSXT_DATA_T1_SEG }}" 
+    loop_control:
+      loop_var: DATA_Obj 
+    when:
+      - NSXT_DATA_T1_SEG is defined
+
+  - name: Create DATA vlan_segment ARRAY
+    set_fact:
+      DATA_VLAN: "{{ DATA_VLAN | default([]) + ['/infra/segments/' + DATA_Obj.SEG] }}"
+    loop: "{{ NSXT_DATA_VLAN_SEG | list }}"  
+    loop_control:
+      loop_var: DATA_Obj      
+    when:
+      - NSXT_DATA_VLAN_SEG is defined
+   
+  - name: Create MGMT Config T1
+    set_fact:
+      management_network_config:
+        overlay_segment: 
+          tier1_lr_id: "/infra/tier-1s/{{ NSXT_MGMT_T1 }}"
+          segment_id: "/infra/segments/{{ NSXT_MGMT_SEG }}"
+        tz_type: "{{ MGMT_TZ | to_json | from_json | json_query(query1) | first }}"
+        transport_zone: "{{ MGMT_TZ | to_json | from_json | json_query(query2) | first }}"
+    when: 
+      - NSXT_MGMT_T1 is defined  
+    vars:
+      query1: "obj.resource.nsxt_transportzones[?name=='{{ NSXT_MGMT_TZ }}'].tz_type"
+      query2: "obj.resource.nsxt_transportzones[?name=='{{ NSXT_MGMT_TZ }}'].id"      
+  - name: Create MGMT Config VLAN
+    set_fact:
+      management_network_config:
+        vlan_segment: "/infra/segments/{{ NSXT_MGMT_SEG }}"
+        tz_type: "{{ MGMT_TZ | to_json | from_json | json_query(query1) | first }}"
+        transport_zone: "{{ MGMT_TZ | to_json | from_json | json_query(query2) | first }}"
+    when: 
+      - NSXT_MGMT_T1 is not defined  
+    vars:
+      query1: "obj.resource.nsxt_transportzones[?name=='{{ NSXT_MGMT_TZ }}'].tz_type"
+      query2: "obj.resource.nsxt_transportzones[?name=='{{ NSXT_MGMT_TZ }}'].id"
+      
+  - name: Create DATA Config T1    
+    set_fact:
+      data_network_config:
+        tier1_segment_config:
+          segment_config_mode: "TIER1_SEGMENT_MANUAL"
+          manual:
+            tier1_lrs: "{{ DATA_T1 }}"
+        tz_type: "{{ DATA_TZ | to_json | from_json | json_query(query3) | first }}"
+        transport_zone: "{{ DATA_TZ | to_json | from_json | json_query(query4) | first }}"
+    when: 
+      - NSXT_DATA_T1_SEG is defined
+    vars:
+      query3: "obj.resource.nsxt_transportzones[?name=='{{ NSXT_DATA_TZ }}'].tz_type"
+      query4: "obj.resource.nsxt_transportzones[?name=='{{ NSXT_DATA_TZ }}'].id"      
+
+  - name: Create DATA Config VLAN    
+    set_fact:
+      data_network_config:
+        vlan_segments: "{{ DATA_VLAN }}"
+        tz_type: "{{ DATA_TZ | to_json | from_json | json_query(query3) | first }}"
+        transport_zone: "{{ DATA_TZ | to_json | from_json | json_query(query4) | first }}"
+    when: 
+      - NSXT_DATA_T1_SEG is not defined     
+    vars:
+      query3: "obj.resource.nsxt_transportzones[?name=='{{ NSXT_DATA_TZ }}'].tz_type"
+      query4: "obj.resource.nsxt_transportzones[?name=='{{ NSXT_DATA_TZ }}'].id"
+
+  - name: Create vCenter Content Library Config
+    set_fact:
+      content_lib:
+        id: "{{ VCENTER_CL | to_json | from_json | json_query(query) | first }}"
+        name: "{{ CONTENT_LIBRARY }}"
+    vars:
+      query: "obj.resource.vcenter_clibs[?name=='{{ CONTENT_LIBRARY }}'].id"
+  
+    
+  - name: Create Cloud
+    avi_cloud:
+      avi_credentials: "{{ AVI_CREDENTIALS | default(omit) }}"
+      vtype: "CLOUD_NSXT"
+      name: "{{ CLOUD_NAME }}"
+      obj_name_prefix: "{{ CLOUD_PREFIX }}"
+      dhcp_enabled: "{{ DHCP }}"
+      nsxt_configuration:
+        nsxt_url: "{{ NSXT_MANAGER }}"
+        site_id: default
+        enforcementpoint_id: default
+        domain_id: default
+        automate_dfw_rules: false
+        nsxt_credentials_ref: "/api/cloudconnectoruser/?name={{NSXT_CLOUDCONNECTORUSER}}"  
+        management_network_config: "{{ management_network_config }}"
+        data_network_config: "{{ data_network_config }}"   
+
+
+
+  - name: Create Vcenter Server
+    avi_api_session:
+      avi_credentials: "{{ AVI_CREDENTIALS | default(omit) }}"
+      http_method: post
+      path: "vcenterserver"
+      data:
+        name: :{{ VCENTER_CONN_NAME }}"
+        vcenter_url: "{{VCENTER_HOST}}"
+        cloud_ref: "/api/cloud/?name={{ CLOUD_NAME }}"
+        vcenter_credentials_ref: "/api/cloudconnectoruser/?name={{ NSXT_VCENTER_CLOUDCONNECTORUSER }}"
+        content_lib: "{{ content_lib }}"

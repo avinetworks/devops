@@ -1,0 +1,11 @@
+---
+- name: "Checking status for new Host"
+  uri:
+    validate_certs: false
+    url: "{{  'https://' + item.mgmt_ip + '/api/initial-data'  }}"
+    method: GET
+    status_code: 200
+  register: result
+  until: result.status == 200
+  retries: 600
+  delay: 10

@@ -1,0 +1,40 @@
+---
+- name: Create ssh credentials
+  avi_cloudconnectoruser:
+    controller: "{{ CONTROLLER_IP_1 }}"
+    username: "{{ AVI_CREDENTIALS.username }}"
+    password: "{{ AVI_CREDENTIALS.password }}"
+    api_version: "{{ AVI_CREDENTIALS.api_version }}"
+    name: "{{ REMOTE_BACKUP_USER }}"
+    obj_password: "{{ REMOTE_BACKUP_PASSWORD }}"
+  when: BACKUP_TO_REMOTE_HOST == "yes"
+  register: result
+
+- name: Set Backup Passphrase
+  avi_backupconfiguration:
+    controller: "{{ CONTROLLER_IP_1 }}"
+    username: "{{ AVI_CREDENTIALS.username }}"
+    password: "{{ AVI_CREDENTIALS.password }}"
+    api_version: "{{ AVI_CREDENTIALS.api_version }}"
+    name: Backup-Configuration
+    backup_passphrase: "{{ BACKUP_PASSPHRASE }}"
+    upload_to_remote_host: "{{ BACKUP_TO_REMOTE_HOST }}"
+    remote_directory: "{{ REMOTE_BCKUP_DIR }}"
+    remote_hostname: "{{ REMOTE_BACKUP_HOST }}"
+    ssh_user_ref: "{{ result.obj.uuid }}"
+  when: BACKUP_TO_REMOTE_HOST == "yes"
+
+- name: Set Backup Passphrase
+  avi_backupconfiguration:
+    controller: "{{ CONTROLLER_IP_1 }}"
+    username: "{{ AVI_CREDENTIALS.username }}"
+    password: "{{ AVI_CREDENTIALS.password }}"
+    api_version: "{{ AVI_CREDENTIALS.api_version }}"
+    name: Backup-Configuration
+    backup_passphrase: "{{ BACKUP_PASSPHRASE }}"
+    upload_to_remote_host: false
+    save_local: true
+  when: BACKUP_TO_REMOTE_HOST == "no"
+
+
+
