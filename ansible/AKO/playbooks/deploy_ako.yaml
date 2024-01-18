@@ -1,0 +1,45 @@
+---
+- hosts: all:!localhost
+
+  vars_files:
+    variables.yaml
+
+
+  tasks:
+
+  - name: install pre-requisites
+    pip:
+      name:
+        - openshift
+        - pyyaml
+        - kubernetes
+
+  - name: Install helm if not exists
+    unarchive:
+      src: 'https://get.helm.sh/helm-v{{ helm_version }}-linux-amd64.tar.gz'
+      dest: /usr/local/bin
+      extra_opts: "--strip-components=1"
+      owner: root
+      group: root
+      mode: 0755
+      remote_src: true
+    args:
+      creates: /usr/local/bin/helm
+    become: yes
+
+
+  - name: copying file with playbook
+    copy:
+      src: '../{{ value_file }}'
+      dest: /tmp/values.yaml
+
+  - name: Deploy AKO chart using values files on target
+    kubernetes.core.helm:
+      release_name: ako
+      chart_ref: oci://projects.registry.vmware.com/ako/helm-charts/ako
+      chart_version: "{{ chart_version }}"
+      create_namespace: true
+      release_namespace: avi-system
+      release_state: present
+      values_files:
+        - /tmp/values.yaml
