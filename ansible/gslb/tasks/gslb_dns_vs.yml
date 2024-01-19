@@ -1,0 +1,124 @@
+---
+- name: GSLB dns_vs | Check if gslb dns_vs exists  
+  avi_api_session:
+    avi_credentials: "{{ item[0].AVI_CREDENTIALS }}"
+    http_method: get
+    path: virtualservice
+    params:
+      name: "{{ item[1].name }}"
+  when: item[1].name is defined
+  register: dns_vs_exists
+  loop: "{{ AVI_CLUSTERS|default([],true)|subelements('GSLB.dns_vses',skip_missing=True) }}"
+  loop_control:
+    label: "{{ item[0].AVI_CREDENTIALS.controller }}"
+- debug:
+    msg: "{{ dns_vs_exists.results }}"
+
+- name: GSLB dns_vs | Create dns vs vip
+  avi_vsvip:
+    avi_credentials: "{{ result.item[0].AVI_CREDENTIALS }}"
+    name: "{{ result.item[1].name + '-VsVip' }}"
+    cloud_ref: "{{ '/api/cloud?name=' + result.item[0].GSLB.se_group.cloud }}"
+    vrf_context_ref: "{{ '/api/vrfcontext?name=' + result.item[1].vrf | default('global') }}"
+    tenant_ref: "{{ '/api/tenant?name=' + result.item[1].tenant | default('admin') }}"
+    vip: 
+      - vip_id: 0
+        auto_allocate_ip: true
+        auto_allocate_ip_type: "V4_ONLY"
+        prefix_length: 32
+        ipam_network_subnet: 
+          - network_ref: /api/network?name="{{ result.item[1].network}}"
+            subnet:
+              ip_addr:
+                addr: "{{ result.item[1].subnet.split('/')[0] }}"
+                type: "V4"
+              mask: "{{ result.item[1].subnet.split('/')[1] }}"
+      # - vip_id: 0
+      #   ip_address:
+      #     addr: "{{ result.item[1].ip_addr}}"
+      #     type: "V4"
+  when: 
+    - result.obj is defined
+    - result.obj.count == 0
+    - result.item[0].GSLB.member_type == 'GSLB_ACTIVE_MEMBER'
+    - result.item[0].GSLB.state == 'present'
+  loop: "{{  dns_vs_exists.results }}"
+  loop_control:
+    loop_var: result
+    label: "{{ result.item[0].AVI_CREDENTIALS.controller }}"
+
+- name: GSLB dns_vs | Create gslb dns-vs
+  avi_virtualservice:
+    avi_credentials: "{{ result.item[0].AVI_CREDENTIALS }}"
+    name: "{{ result.item[1].name }}"
+    enabled: true
+    application_profile_ref: "{{ '/api/applicationprofile?name=' + result.item[1].application_profile }}" 
+    network_profile_ref:  /api/networkprofile?name=System-UDP-Per-Pkt
+    services:
+      - port: 53
+      - port: 53
+        override_network_profile_ref: /api/networkprofile?name=System-TCP-Proxy
+    cloud_ref: "/api/cloud?name={{ result.item[0].GSLB.se_group.cloud }}"
+    se_group_ref: "{{ '/api/serviceenginegroup?name=' + result.item[0].GSLB.se_group.name }}"
+
+    vsvip_ref: "{{ '/api/vsvip?name=' + result.item[1].name + '-VsVip' }}"
+
+  when: 
+    - result.obj is defined
+    - result.obj.count == 0
+    - result.item[0].GSLB.member_type == 'GSLB_ACTIVE_MEMBER'
+    - result.item[0].GSLB.state == 'present'
+  loop: "{{  dns_vs_exists.results }}"
+  loop_control:
+    loop_var: result
+    label: "{{ result.item[0].AVI_CREDENTIALS.controller }}"
+
+- name: GSLB dns_vs | pending dns_vs ready
+  avi_api_session:
+    avi_credentials: "{{ item[0].AVI_CREDENTIALS }}"
+    http_method: get
+    path: virtualservice-inventory
+    params:
+      name: "{{ item[1].name }}"
+      include: runtime
+  register: resp
+  until: resp.obj.results[0].runtime.oper_status.state == 'OPER_UP'
+  retries: 600
+  delay: 10
+  when: 
+    - item[1].name is defined
+    - item[0].GSLB.state == 'present'
+  loop: "{{ AVI_CLUSTERS|default([],true) |subelements('GSLB.dns_vses',skip_missing=True) }}"
+  loop_control:
+    label: "{{ item[0].AVI_CREDENTIALS.controller + ' - ' + item[1].name}}"
+
+- name: GSLB dns_vs | compose dns service list
+  set_fact:
+    dns_service_list: "{{ 
+      dns_service_list|default({}) | combine({result.item[0].AVI_CREDENTIALS.controller: [ '/api/virutalservice/'+ result.obj.results[0].uuid ]}, recursive=true,list_merge='append') }}"
+  loop: "{{ resp.results }}"
+  loop_control:
+    loop_var: result
+    label: "{{ result.item[0].AVI_CREDENTIALS.controller + ' - ' + result.item[1].name}}"
+  when: 
+    - resp is defined
+    - result.item[1].ctrl_dnsservice | default(false)
+
+- debug:
+    var: dns_service_list|default([])
+
+- name: GSLB dns_vs | Add dns service
+  avi_systemconfiguration:
+    avi_credentials: "{{ item.AVI_CREDENTIALS }}"
+    state: present
+    avi_api_update_method: patch
+    avi_api_patch_op: add
+    dns_virtualservice_refs: "{{ dns_service_list[item.AVI_CREDENTIALS.controller] }}"
+  when: 
+    - item.GSLB.dns_vses is defined
+    - item.GSLB.dns_vses | length > 0
+    - item.GSLB.state == 'present'
+    - dns_service_list[item.AVI_CREDENTIALS.controller] | default([], true) | length > 0
+  loop: "{{ AVI_CLUSTERS | default([],true) }}"
+  loop_control:
+    label: "{{ item.AVI_CREDENTIALS.controller }}"

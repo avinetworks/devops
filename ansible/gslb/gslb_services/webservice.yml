@@ -1,0 +1,132 @@
+# --------------------------------------------------------------------
+# Avi Credentials Variables
+# Description: These are Avi credential variables .
+# GSLB service can only be managed through the leader site. Thus the controller IP has to be the GSLB leader site IP.
+# The api_version should match the Avi leader site version.
+# Default tenant is admin if it's not specified. You will need to specify the tenant name if you want to create a GSLB service under a tenant.
+# Description: This are variables used for Avi active/passive sites.
+# --------------------------------------------------------------------
+AVI_CREDENTIALS:
+  controller: "YOUR_LEADER_SITE_IP" 
+  username: "YOUR_USERNAME"
+  password: "YOUR_PASSWORD"
+  api_version: "30.1.1"
+  tenant: admin
+
+# --------------------------------------------------------------------
+# GSLB Services Variables
+# Description: These are variables used for GSLB service.
+# Name is mandatory. It's used to look for GSLB service under the specific tenant. 
+# If such named GSLB service can not be found, a new GSLB service with that name will be created.
+# Once a GSLB service is created, you can add its uuid here. If UUID is provided, UUID is used to identify a GSLB service.
+# When UUID is not provided, name is the identifier. Thus, if you change the name, it will cause duplicated service.
+# When UUID is provided, UUID is the identifier. Then you will be able to change the service name and not cause duplicated GSLB services. 
+# --------------------------------------------------------------------
+GSLB:
+  state: present # absent | present.  'present' to create or update a GSLB service; 'absent' to delete. 
+  #uuid: gslbservice-9386db9a-e95e-4a4d-97a2-bd54ab0850d4 # Optional; if UUID is provided, then you are able to modify GSLB service name after it's created.
+  name: webservice # Mandatory
+  tenant_ref: /api/tenant?name="{{ AVI_CREDENTIALS.tenant|default('admin') }}"
+  enabled: true
+  domain_names:
+    - webservice.gslb.fe.lab
+  health_monitor_refs:
+    - /api/healthmonitor?name=System-GSLB-Ping
+    - /api/healthmonitor?name=System-GSLB-HTTP
+  health_monitor_scope: GSLB_SERVICE_HEALTH_MONITOR_ALL_MEMBERS # GSLB_SERVICE_HEALTH_MONITOR_ALL_MEMBERS | GSLB_SERVICE_HEALTH_MONITOR_ONLY_NON_AVI_MEMBERS
+  controller_health_status_enabled: true
+  pool_algorithm: GSLB_SERVICE_ALGORITHM_PRIORITY # This is 'Groups Load Balancing Algorithm'. It can be GSLB_SERVICE_ALGORITHM_GEO | GSLB_SERVICE_ALGORITHM_PRIORITY
+  min_members: 0 # The minimum number of members to distribute traffic to. Range: 1-65535. O to disable
+  site_persistence_enabled: false
+  topology_policy_enabled: true
+
+  # Group/pool examples
+  groups:
+    - name: Toronto
+      priority: 10 # Default 10
+      enabled: true
+      description: "Optional but always good to add some description!"
+      algorithm: GSLB_ALGORITHM_GEO # This is the pool members LB Algorithm. GSLB_ALGORITHM_CONSISTENT_HASH | GSLB_ALGORITHM_GEO | GSLB_ALGORITHM_PREFERENCE_ORDER | GSLB_ALGORITHM_ROUND_ROBIN | GSLB_ALGORITHM_TOPOLOGY
+      fallback_algorithm: GSLB_ALGORITHM_ROUND_ROBIN # GSLB_ALGORITHM_ROUND_ROBIN | GSLB_ALGORITHM_CONSISTENT_HASH. only need the fallback_algorithm if pool members LB Algorithm is GEO. 
+      members:
+        # Virtual Service member example
+        - cluster_uuid: cluster-4adcffbc-84ba-44f9-9291-24bc36cc85dd # You can get it from the outcome of gslb site deployment or https://controller_ip/api/gslb
+          vs_uuid: virtualservice-d364d8d8-e56f-45d2-a2f7-ed567691ad3e # Login your controller using your tenant cred. Open another tab and type https://controller_ip/api/virtualservice?name=YOUR_VS_NAME&fields=uuid
+          description: "Toronto - webservicetest01" # This is an optional field but it's highly recommended to add the Site and virtual service name here to make it clear which site and virtual service it is
+          enabled: true
+          ip: # This is the virtual service IP
+            addr: 10.206.40.68
+            type: V4
+          public_ip: # optional public IP for the VS; if one member is configured with public IP, all the rest need to have public IP configured as well.
+            ip:
+              addr: 18.18.18.19
+              type: V4
+          location: # Optional
+            source: GSLB_LOCATION_SRC_USER_CONFIGURED # GSLB_LOCATION_SRC_USER_CONFIGURED | GSLB_LOCATION_SRC_FROM_GEODB | GSLB_LOCATION_SRC_INHERIT_FROM_SITE
+            location: # Only needed when the Geo source is User Configured
+              name: Toronto
+              tag: CA
+              latitude: 45.41117
+              longitude: -75.6666
+          preference_order: 1 # Preference order of this member in the group. Only needed when the Group members LB Algorithm is Preference Order.  The DNS Service chooses the member with the lowest preference that is operationally up. Range: 1-128. Default 1.
+          ratio: 1 # Range 1-20. Default 1.
+
+        # IP member example
+        - enabled: true 
+          description: Ottawa
+          #fqdn: "test.fe.local" fqdn and IP are mutual exclusive. 
+          ip:
+            addr: 10.10.10.10
+            type: V4
+          public_ip:
+            ip:
+              addr: 18.18.18.20
+              type: V4
+          preference_order: 1
+          ratio: 1
+          cluster_uuid: "tp_cluster-3f33d002-6b49-4e01-818b-5bc9b5917e30" # Optional for IP member. If the IP belongs to a third party site, specify it here. You can get it from the outcome of gslb site deployment or https://controller_ip/api/gslb
+
+    - name: Barrie
+      priority: 10
+      enabled: true
+      algorithm: GSLB_ALGORITHM_ROUND_ROBIN
+      members:
+        - cluster_uuid: cluster-1415b696-20e4-455c-af38-b7c10e678b07
+          vs_uuid: virtualservice-dcec07ab-1f2d-4b8d-9d61-b5b7c460b9e0
+          description: "Barrie - webservicetest02"
+          enabled: true
+          ip:
+            addr: 10.206.40.182
+            type: V4
+          location:
+            source: GSLB_LOCATION_SRC_INHERIT_FROM_SITE
+          preference_order: 1
+          ratio: 1
+    
+    - name: Vaughan
+      priority: 10
+      enabled: true
+      algorithm: GSLB_ALGORITHM_ROUND_ROBIN
+      members:
+        - cluster_uuid: cluster-987f0f5c-830a-4b8d-89d9-e927a340c670
+          vs_uuid: virtualservice-6dfce2b2-8d21-4520-a91c-1416993be383
+          description: "Vaughan - webservicetest04"
+          enabled: true
+          ip:
+            addr: 10.206.40.193
+            type: V4
+          location:
+            source: GSLB_LOCATION_SRC_INHERIT_FROM_SITE
+          preference_order: 1
+          ratio: 1          
+
+  num_dns_ip: 1 # Number of IP addresses of this GSLB service to be returned by the DNS Service. Range: 1 - 20. Enter 0 to return all IP addresses.
+  ttl: 15 # TTL value (in seconds) for records served for this GSLB service by the DNS Service. Range: 0  - 86400. Default from DNS Service if not specified 
+  down_response:
+    type: GSLB_SERVICE_DOWN_RESPONSE_FALLBACK_IP # GSLB_SERVICE_DOWN_RESPONSE_CNAME  |  GSLB_SERVICE_DOWN_RESPONSE_EMPTY | GSLB_SERVICE_DOWN_RESPONSE_NONE | GSLB_SERVICE_DOWN_RESPONSE_ALL_RECORDS | GSLB_SERVICE_DOWN_RESPONSE_FALLBACK_IP
+    fallback_ip: # only needed when down_response type is Fallback IP
+      addr: 10.10.10.101
+      type: V4
+  resolve_cname: false
+
+Deploy_Date: "2024-Jan-18"

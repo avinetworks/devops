@@ -1,0 +1,288 @@
+# --------------------------------------------------------------------
+# Avi Site Variables
+# Description: These are variables used for Avi active/passive sites.
+# Each Avi site should be defined under AVI_CLUSTERS key with AVI_CREDENTIALS for IP, username and password, and  
+# GSLB for the site's GSLB configuration.
+#   GSLB.state: 'present' means the site will be added, otherwise it's just for stagging purpose
+#   GSLB.site_role: GSLB_LEADER or GSLB_FOLLOWER
+#   GSLB.member_type: GSLB_ACTIVE_MEMBER or GSLB_PASSIVE_MEMBER
+#   GSLB.extra_nodes: you can add up to two extra IP addresses
+#   GSLB.hmon_proxies: define the health monitoring proxy 
+#   GSLB.dns_vs.ctrl_dnsservice: only value 'true' works; it means adding it to controller's DNS service list;
+#                                please be noted the playbook won't remove any VS from the controller's DNS service list
+#
+# After GSLB Site infrastructure is deployed. It will output the name and UUID of both Avi Site and Third Party Site.
+# Please note down the name and UUID for future GSLB service creation.  
+# --------------------------------------------------------------------
+
+AVI_CLUSTERS:
+  - AVI_CREDENTIALS:
+      controller: "Site1_IP" # This can be either cluster or controller node ip.
+      username: "YOUR_USERNAME"
+      password: "YOUR_PASSWORD"
+      api_version: "30.1.1"
+  # GSLB role, user, password, 
+    GSLB:
+      state: present
+      rolename: GSLB-Admin # Do NOT use underscore in the name. If the role doesn't exist, the playbook will create it with required permissions for GSLB.
+      username: gslbadmin  # gslb username. If not existing, the user will be created and assign the aforementioned role.
+      password: "YOUR_PASSWORD_FOR_GSLB_USER"
+      fullname: "GSLB Administrator"
+      userprofile: "No-Lockout-User-Account-Profile"
+      site_role: "GSLB_LEADER"
+      site_name: "Toronto"
+      member_type: "GSLB_ACTIVE_MEMBER"
+      hmon_sharding: true
+      extra_nodes: # Optional
+        - "Site1_Second_IP"
+        - "Site1_Third_IP" 
+      se_group: 
+        name: "gslb-seg" # GSLB SEG Name
+        cloud: "VMware_Cloud" # vSphere Cloud Name
+        max_vs_per_se: 10
+        min_scaleout_per_vs: 2
+        max_scaleout_per_vs: 4
+        min_se: 2
+        max_se: 10
+        buffer_se: 1
+        vcpus_per_se: 2
+        memory_per_se: 4096
+        cpu_reserve: false
+        mem_reserve: true
+        disk_per_se: 15
+        se_name_prefix: gslb
+        vcenter_folder: AviSeFolder
+        vcenter_datastore_mode: VCENTER_DATASTORE_SHARED
+        ha_mode: HA_MODE_SHARED_PAIR
+        algo: "PLACEMENT_ALGO_PACKED" # PLACEMENT_ALGO_DISTRIBUTED
+      
+      dns_vses: 
+        - name: "dns-vs-01"
+          port: 53
+          vrf: global 
+          tenant: admin
+          ctrl_dnsservice: true
+          application_profile: System-DNS
+          network: vxw-dvs-34-virtualwire-3-sid-6100002-wdc-06-vc10-avi-mgmt
+          subnet: 10.206.40.0/22
+          domain_names:
+            - fe.lab
+            - fe.local
+        - name: "dns-vs-02"
+          port: 53
+          vrf: global 
+          tenant: admin
+          ctrl_dnsservice: false
+          application_profile: System-DNS
+          network: vxw-dvs-34-virtualwire-3-sid-6100002-wdc-06-vc10-avi-mgmt
+          subnet: 10.206.40.0/22
+          domain_names:
+            - fe.lab
+            - fe.local      
+      location:
+        name: Toronto
+        tag: CA
+        latitude: 43.70011
+        longitude: -79.4163
+
+  - AVI_CREDENTIALS:
+      controller: "Site2_IP"  # This can be either cluster or controller node ip.
+      username: "YOUR_USERNAME"
+      password: "YOUR_PASSWORD"
+      api_version: "30.1.1"
+  # GSLB role, user, password, 
+    GSLB:
+      state: present
+      rolename: GSLB-Admin # Do NOT use underscore.
+      username: gslbadmin
+      password: "YOUR_PASSWORD_FOR_GSLB_USER"
+      fullname: "GSLB Administrator"
+      userprofile: "No-Lockout-User-Account-Profile"
+      site_role: "GSLB_FOLLOWER"
+      site_name: "Barrie"
+      member_type: "GSLB_ACTIVE_MEMBER"
+      hmon_sharding: true
+      se_group: 
+        name: "gslb-seg"
+        cloud: "VMware_Cloud"
+        max_vs_per_se: 10
+        min_scaleout_per_vs: 2
+        max_scaleout_per_vs: 4
+        min_se: 2
+        max_se: 10
+        buffer_se: 1
+        vcpus_per_se: 2
+        memory_per_se: 4096
+        disk_per_se: 15
+        se_name_prefix: gslb
+        vcenter_folder: AviSeFolder
+        vcenter_datastore_mode: VCENTER_DATASTORE_SHARED
+        cpu_reserve: false
+        mem_reserve: true
+        ha_mode: HA_MODE_SHARED_PAIR
+        algo: PLACEMENT_ALGO_PACKED
+      dns_vses: 
+        - name: "dns-vs-01"
+          port: 53
+          vrf: global 
+          tenant: admin
+          application_profile: System-DNS
+          network: vxw-dvs-34-virtualwire-3-sid-6100002-wdc-06-vc10-avi-mgmt
+          subnet: 10.206.40.0/22
+          domain_names:
+            - fe.lab
+            - fe.local
+        - name: "dns-vs-02"
+          port: 53
+          vrf: global 
+          tenant: admin
+          application_profile: System-DNS
+          network: vxw-dvs-34-virtualwire-3-sid-6100002-wdc-06-vc10-avi-mgmt
+          subnet: 10.206.40.0/22
+          domain_names:
+            - fe.lab
+            - fe.local
+      location:
+        name: Barrie
+        tag: CA
+        latitude: 44.40011
+        longitude: -79.66634
+      hmon_proxies:
+        - Toronto
+  
+  - AVI_CREDENTIALS:
+      controller: "Site3_IP" # This can be either cluster ip or the ip of the leader controller.
+      username: "YOUR_USERNAME"
+      password: "YOUR_PASSWORD"
+      api_version: "30.1.1" 
+    GSLB:
+      state: present
+      rolename: GSLB-Admin # Do NOT use underscore. 
+      username: gslbadmin
+      password: "YOUR_PASSWORD_FOR_GSLB_USER"
+      fullname: "GSLB Administrator"
+      userprofile: "No-Lockout-User-Account-Profile"
+      site_role: "GSLB_FOLLOWER"
+      site_name: "Brampton"
+      member_type: "GSLB_PASSIVE_MEMBER"
+      dns_vses: []
+      location:
+        name: Brampton
+        tag: CA
+        latitude: 43.68341
+        longitude: -79.76633   
+
+  - AVI_CREDENTIALS:
+      controller: "Site4_IP" # This can be either cluster ip or the ip of the leader controller.
+      username: "YOUR_USERNAME"
+      password: "YOUR_PASSWORD"
+      api_version: "30.1.1"
+  # GSLB role, user, password, 
+    GSLB:
+      state: present
+      rolename: GSLB-Admin # Do NOT use underscore. It will be converted to dash
+      username: gslbadmin
+      password: "YOUR_PASSWORD_FOR_GSLB_USER"
+      fullname: "GSLB Administrator"
+      userprofile: "No-Lockout-User-Account-Profile"
+      site_role: "GSLB_FOLLOWER"
+      site_name: "Vaughan"
+      member_type: "GSLB_ACTIVE_MEMBER"
+      hmon_sharding: true
+      se_group: 
+        name: "gslb-seg"
+        cloud: "VMware_Cloud"
+        max_vs_per_se: 10
+        min_scaleout_per_vs: 2
+        max_scaleout_per_vs: 4
+        min_se: 2
+        max_se: 10
+        buffer_se: 1
+        vcpus_per_se: 2
+        memory_per_se: 4096
+        disk_per_se: 15
+        se_name_prefix: gslb
+        vcenter_folder: AviSeFolder
+        vcenter_datastore_mode: VCENTER_DATASTORE_SHARED
+        cpu_reserve: false
+        mem_reserve: true
+        ha_mode: HA_MODE_SHARED_PAIR
+        algo: PLACEMENT_ALGO_DISTRIBUTED
+      dns_vses: 
+        - name: "dns-vs-01"
+          port: 53
+          vrf: global 
+          tenant: admin
+          application_profile: System-DNS
+          network: vxw-dvs-34-virtualwire-3-sid-6100002-wdc-06-vc10-avi-mgmt
+          subnet: 10.206.40.0/22
+          domain_names:
+            - fe.lab
+            - fe.local
+      location:
+        name: Vaughan
+        tag: CA
+        latitude: 43.837208
+        longitude: -79.508278  
+
+# --------------------------------------------------------------------
+# Third Party Site Variables
+# Description: This are variables used for 3rd Party sites.
+# Each 3rd party site should at least have name. 
+# state: 'present' means the site will be added, otherwise it's just for stagging purpose
+# --------------------------------------------------------------------
+THIRD_PARTY_SITES: 
+  - name: Ottawa
+    state: present
+    location:
+      name: Ottawa
+      tag: CA
+      latitude: 45.41117
+      longitude: -75.69812
+  
+  - name: Halifax
+    state: present
+    hmon_proxies: [Barrie]  
+
+  - name: Montreal
+    state: present
+    hmon_proxies:
+      - Vaughan
+
+  - name: Vancouver
+    state: present
+    hmon_proxies:
+      - Toronto
+      - Barrie
+    location:
+      name: Vancouver
+      tag: CA
+      latitude: 45.41117
+      longitude: -75.6666
+
+
+# --------------------------------------------------------------------
+# GSLB Infra Variables
+# Description: These are variables used for the overall GSLB config.
+# REPLICATION_MODE: REPLICATION_MODE_ADAPTIVE, REPLICATION_MODE_CONTINUOUS or REPLICATION_MODE_MANUAL
+# CLIENT_GROUP.type: private or public
+# CLIENT_GROUP.ip_list: can be subnet, range or single IP
+# --------------------------------------------------------------------
+GSLB_CONFIG:
+  DNS_CONFIGS:
+    - domain_name: fe.lab
+    - domain_name: fe.local
+  SEND_INTERVAL: 15
+  REPLICATION_MODE: "REPLICATION_MODE_CONTINUOUS"
+  CLIENT_GROUP:
+    type: 'private'
+    ip_list:
+      - 10.1.0.0/16
+      - 192.168.0.2-192.168.0.200
+      - 172.1.100.100
+
+# --------------------------------------------------------------------
+# This variable is not used for GSLB Site deployment. 
+# Just for a date reference.
+# --------------------------------------------------------------------
+Deploy_Date: "2024-01-18"
