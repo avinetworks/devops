@@ -1,0 +1,94 @@
+---
+- hosts: localhost
+  connection: local
+  collections:
+    - vmware.alb
+
+  vars_files:
+    "{{gslbservice}}" 
+
+  tasks:
+    - name: GSLB Deploy | Delete GSLB
+      avi_gslbservice:
+        "{{ {'avi_credentials': AVI_CREDENTIALS, 'tenant': AVI_CREDENTIALS.tenant|default('admin') } | combine(GSLB) }}"
+      when: 
+        - GSLB.state|lower == 'absent' 
+
+    - name: GSLB Deploy | Verify GSLB by UUID
+      avi_api_session:
+        avi_credentials: "{{ AVI_CREDENTIALS }}"
+        tenant: "{{ AVI_CREDENTIALS.tenant | default('admin') }}"
+        http_method: get
+        path: "{{'gslbservice/' + GSLB.uuid }}"
+      register: gslbservice_uuid
+      when: 
+        - GSLB.uuid is defined 
+        - GSLB.state|lower == 'present' 
+    - debug:
+        var: gslbservice_uuid
+      when:
+        - GSLB.uuid is defined
+        - GSLB.state|lower == 'present'
+
+    - name: GSLB Deploy | Update/Create GSLB service by UUID
+      avi_api_session:
+        avi_credentials: "{{ AVI_CREDENTIALS }}"
+        tenant: "{{ AVI_CREDENTIALS.tenant | default('admin') }}"
+        http_method: put
+        path: "{{'gslbservice/' + GSLB.uuid }}"
+        data: "{{ GSLB }}"
+      when:
+        - GSLB.uuid is defined
+        - GSLB.state|lower == 'present'
+
+    - name: GSLB Deploy | Verify GSLB by Name
+      avi_api_session:
+        avi_credentials: "{{ AVI_CREDENTIALS }}"
+        tenant: "{{ AVI_CREDENTIALS.tenant | default('admin') }}"
+        http_method: get
+        path: gslbservice
+        params:
+          name: "{{ GSLB.name }}"
+      register: gslbservice_name
+      when:
+        - GSLB.name is defined
+        - GSLB.uuid is not defined
+        - GSLB.state|lower == 'present'
+
+    - debug:
+        var: gslbservice_name
+      when:
+        - GSLB.name is defined
+        - GSLB.uuid is not defined
+        - GSLB.state|lower == 'present'
+
+    - debug:
+        msg: "{{ GSLB.name + ' does not exist. Creating it... '}}"
+      when:
+        - gslbservice_name.obj.count is defined
+        - gslbservice_name.obj.count == 0
+        - GSLB.name is defined
+        - GSLB.uuid is not defined
+        - GSLB.state|lower == 'present'
+
+    - debug:
+        msg: "{{ GSLB.name + ' already exists. Will update it accordingly!' }}"
+      when: 
+        - gslbservice_name.obj.count is defined
+        - gslbservice_name.obj.count == 1
+        - GSLB.name is defined
+        - GSLB.uuid is not defined
+        - GSLB.state|lower == 'present'
+
+    - name: GSLB Deploy | Update/Create GSLB service
+      avi_api_session:
+        avi_credentials: "{{ AVI_CREDENTIALS }}"
+        tenant: "{{ AVI_CREDENTIALS.tenant | default('admin') }}"
+        http_method: put
+        path: gslbservice
+        data: "{{ GSLB }}"
+      when:
+        - GSLB.uuid is not defined
+        - GSLB.name is defined
+        - GSLB.state|lower == 'present'
+

@@ -1,0 +1,331 @@
+---
+
+- name: GSLB Config | verify dns_vs exists 
+  avi_api_session:
+    avi_credentials: "{{ item[0].AVI_CREDENTIALS }}"
+    http_method: get
+    path: virtualservice
+    params:
+      name: "{{ item[1].name }}"
+  when: item[1].name is defined
+  register: dns_vs_exists
+  failed_when: dns_vs_exists.obj.count == 0
+  loop: "{{ AVI_CLUSTERS|subelements('GSLB.dns_vses',skip_missing=True) }}"
+  loop_control:
+    label: "{{ item[0].AVI_CREDENTIALS.controller + ' - ' + item[1].name}}"
+- debug:
+    msg: "{{ dns_vs_exists.results }}"
+
+- name: GSLB Config | Get dns_vs UUID
+  set_fact:
+    dns_vs_list:  
+      "{{
+        dns_vs_list|default({}) | combine(
+          {
+            result.item[0].AVI_CREDENTIALS.controller: [ { 'dns_vs_uuid': result.obj.results[0].uuid, 'domain_names': result.item[1].domain_names }]
+          },
+          recursive=true,
+          list_merge='append'
+        )
+      }}"
+  loop: "{{ dns_vs_exists.results }}"
+  loop_control:
+    loop_var: result
+    label: "{{ result.item[0].AVI_CREDENTIALS.controller + ' - ' + result.item[1].name }}"
+- debug:
+    msg: "{{ dns_vs_list }}"
+
+- name: GSLB Config | Verify GSLB site and get cluster UUID
+  avi_api_session:
+    avi_credentials: "{{ item.AVI_CREDENTIALS }}"
+    http_method: post
+    path: gslbsiteops/verify
+    data:
+      name: Verify gslb
+      username: "{{ item.GSLB.username }}"
+      password: "{{ item.GSLB.password }}"
+      port: 443
+      ip_addresses:
+        - type: "{% if item.AVI_CREDENTIALS.controller | ansible.utils.ipv4 %}V4{% else %}DNS{% endif %}"
+          addr: "{{ item.AVI_CREDENTIALS.controller }}"
+  register: gslb_verify
+  loop: "{{ AVI_CLUSTERS }}"
+  loop_control:
+    label: "{{ item.AVI_CREDENTIALS.controller }}"
+
+- debug:
+    msg: "{{ gslb_verify }}"
+
+
+- name: GSLB Config | Get GSLB leader cluster UUID
+  set_fact:
+    leader_avi_cluster_uuid: "{{ result.obj.rx_uuid }}"
+    leader_avi_credentials: "{{ result.item.AVI_CREDENTIALS }}"
+  when: result.item.GSLB.site_role  ==  'GSLB_LEADER' 
+  loop: "{{ gslb_verify.results }}"
+  loop_control:
+    loop_var: result  
+    label: "{{ result.item.AVI_CREDENTIALS.controller }}"
+
+- name: GSLB Config | Compose avi site node IP addr list
+  set_fact:
+    avi_site_node_IP:
+       "{{ 
+          avi_site_node_IP|default({}) | combine(
+            {
+              avi_site[0].GSLB.site_name: [
+                {
+                  
+                  'type': 'V4' if ( avi_site[1] | ansible.utils.ipv4 ) else 'V6' , 
+                  'addr': avi_site[1]
+                
+                }
+              ]
+            },
+            recursive=True,
+            list_merge='append'
+          ) 
+      }}"
+  loop: "{{ AVI_CLUSTERS | subelements('GSLB.extra_nodes', skip_missing=True) }}"
+  loop_control:
+    loop_var: avi_site
+    label: "{{ avi_site[0].AVI_CREDENTIALS.controller }}"  
+
+- name: GSLB Config | Compose site uuid mapping
+  set_fact:
+    site_uuid_mapping: "{{ site_uuid_mapping|default({}) | combine({ result.item.GSLB.site_name: result.obj.rx_uuid}) }}"
+  loop: "{{ gslb_verify.results }}"
+  loop_control:
+    loop_var: result
+    label: "{{ result.item.AVI_CREDENTIALS.controller }}"  
+
+- name: GSLB Config | Compose avi site hmon proxies dict
+  set_fact:
+    avi_hmon_proxies: 
+      "{{ 
+        avi_hmon_proxies|default({}) | combine(
+          {
+            avi_site[0].GSLB.site_name: [
+              {
+                'proxy_type': 'GSLB_HEALTH_MONITOR_PROXY_PRIVATE_MEMBERS',
+                'site_uuid': site_uuid_mapping[avi_site[1]]
+              }
+            ]
+          },
+          recursive=true,
+          list_merge='append'
+        )
+       }}"
+  loop: "{{ AVI_CLUSTERS | subelements('GSLB.hmon_proxies', skip_missing=True) }}"
+  loop_control:
+    loop_var: avi_site
+    label: "{{ avi_site[0].GSLB.site_name + ' - ' + avi_site[1] }}"
+
+- name: GSLB Config | Compose site list
+  set_fact:
+    site_list:  
+      "{{
+        site_list | default([]) + 
+        [
+          {
+            'cluster_uuid': result.obj.rx_uuid,
+            'name': result.item.GSLB.site_name,
+            'port': result.item.GSLB.port | default('443'),
+            'username': result.item.GSLB.username,
+            'password': result.item.GSLB.password,
+            'member_type': result.item.GSLB.member_type,
+            'enabled': true,
+            'dns_vses': dns_vs_list[result.item.AVI_CREDENTIALS.controller] | default(omit),
+            'hm_proxies': avi_hmon_proxies[result.item.GSLB.site_name] | default(omit),
+            'hm_shard_enabled': result.item.GSLB.hmon_sharding | default('false'),
+            'ip_addresses': [
+              {
+                'type': 'V4' if result.item.AVI_CREDENTIALS.controller | ansible.utils.ipv4 else 'V6' , 
+                'addr': result.item.AVI_CREDENTIALS.controller 
+              }  
+            ] + 
+            ( avi_site_node_IP[result.item.GSLB.site_name]|default([],true) ),
+            'location': {
+              'location': result.item.GSLB.location | default(omit),
+              'source': 'GSLB_LOCATION_SRC_USER_CONFIGURED'
+            }
+          }
+        ] 
+      }}"
+    
+  loop: "{{ gslb_verify.results }}"
+  loop_control:
+    loop_var: result
+    label: "{{ result.item.AVI_CREDENTIALS.controller }}"
+
+- name: GSLB Config | Compose 3rd party hmon proxies dict
+  set_fact:
+    hmon_proxies_dict:
+      "{{
+        hmon_proxies_dict|default({}) | combine(
+          {
+            tp_site[0].name: [
+              {
+                'proxy_type': 'GSLB_HEALTH_MONITOR_PROXY_PRIVATE_MEMBERS',
+                'site_uuid': site_uuid_mapping[tp_site[1]]
+              }
+            ]
+          },
+          recursive=true,
+          list_merge='append'
+        )
+      }}" 
+  loop: "{{ THIRD_PARTY_SITES|default([],true)|subelements('hmon_proxies', skip_missing=True)  }}"
+  loop_control:
+    loop_var: tp_site
+    label: "{{tp_site[0].name + ' - ' + tp_site[1]}}"
+  when: THIRD_PARTY_SITES is defined
+
+- debug:
+    var: hmon_proxies_dict
+  when: hmon_proxies_dict is defined
+
+- name: GSLB Config | Compose 3rd party list
+  set_fact:
+    third_part_site_list:
+      "{{
+        third_part_site_list|default([]) + [
+          {
+            'enabled': true,
+            'hm_proxies': hmon_proxies_dict[tp_site.name]|default(omit),
+            'location': {'location': tp_site.location, 'source':'GSLB_LOCATION_SRC_USER_CONFIGURED'} if tp_site.location is defined else {},
+            'name':tp_site.name
+          }
+        ]
+      }}"
+  loop: "{{ THIRD_PARTY_SITES }}"
+  loop_control:
+    loop_var: tp_site
+    label: "{{ tp_site.name }}"
+  when: THIRD_PARTY_SITES is defined
+- debug:
+    var: third_part_site_list
+  when: third_part_site_list is defined
+
+- name: GSLB Config | Compose Client IP sub list 
+  set_fact:
+    client_ip_sub_list: 
+      "{{
+          client_ip_sub_list|default([])  + [
+            {
+              'ip_addr': {
+                  'addr': subnet | ipaddr('network'),
+                  'type': 'V4' if (subnet | ansible.utils.ipv4('bool')) else 'V6' ,
+              },
+              'mask': subnet | ipaddr('prefix')
+            }
+          ]
+    
+      }}"
+  loop: "{{ GSLB_CONFIG.CLIENT_GROUP.ip_list|default([],true) | ipaddr('net')   }}"
+  loop_control:
+    loop_var: subnet
+  when: GSLB_CONFIG.CLIENT_GROUP is defined
+
+- name: GSLB Config | Compose Client IP range list 
+  set_fact:
+    client_ip_range_list: 
+      "{{
+          client_ip_range_list|default([])  + [
+            {
+              'begin': {
+                  'addr': range.split('-')[0],
+                  'type': 'V4' if (range.split('-')[0] | ansible.utils.ipv4) else 'V6' 
+              },
+              'end': {
+                  'addr': range.split('-')[1],
+                  'type': 'V4' if (range.split('-')[1] | ansible.utils.ipv4) else 'V6' 
+              }
+            }
+          ]
+    
+      }}"
+  loop: "{{ GSLB_CONFIG.CLIENT_GROUP.ip_list|default([],true)  | select('search','^.*-.*$')  }}"
+  loop_control:
+    loop_var: range
+  when: GSLB_CONFIG.CLIENT_GROUP is defined
+
+
+- name: GSLB Config | Compose Client IP addr list 
+  set_fact:
+    client_ip_addr_list: 
+      "{{
+          client_ip_addr_list|default([])  + [
+            {
+              'addr': addr,
+              'type': 'V4' if (addr | ansible.utils.ipv4('bool')) else 'V6' 
+            }
+          ]    
+      }}"
+  loop: "{{ GSLB_CONFIG.CLIENT_GROUP.ip_list|default([],true)  | ipaddr('address') }}"
+  loop_control:
+    loop_var: addr
+  when: GSLB_CONFIG.CLIENT_GROUP is defined
+
+
+- name: GSLB Config | Check Client IP Type
+  set_fact:
+    client_ip_type: "{{ 'GSLB_IP_PUBLIC' if GSLB_CONFIG.CLIENT_GROUP.type|upper == 'PUBLIC' else 'GSLB_IP_PRIVATE' }}"
+  when: GSLB_CONFIG.CLIENT_GROUP is defined
+  failed_when: 
+    - GSLB_CONFIG.CLIENT_GROUP.type is defined
+    - GSLB_CONFIG.CLIENT_GROUP.type|upper != 'PRIVATE'
+    - GSLB_CONFIG.CLIENT_GROUP.type|upper != 'PUBLIC'
+
+- name: GSLB Config | Compose Client IP address group 
+  set_fact: 
+    client_ip_group:   
+      "{{ 
+        {
+          'addrs': client_ip_addr_list,
+          'prefixes': client_ip_sub_list,
+          'ranges': client_ip_range_list,
+          'type':  client_ip_type
+        }
+      }}"
+  when: GSLB_CONFIG.CLIENT_GROUP is defined
+
+- name: GSLB Config | Create the GSLB Site
+  avi_gslb:
+    avi_credentials: "{{ leader_avi_credentials }}"
+    name: Default
+    state: present
+    tenant_ref: "/api/tenant?name=admin"
+    leader_cluster_uuid: "{{ leader_avi_cluster_uuid }}"
+    sites: "{{ site_list }}"
+    dns_configs: "{{ GSLB_CONFIG.DNS_CONFIGS | default(omit) }}"
+    send_interval: "{{ GSLB_CONFIG.SEND_INTERVAL | default('15') }}"
+    third_party_sites: "{{ third_part_site_list | default(omit) }}"
+    replication_policy: "{{ GSLB_CONFIG.RELICATION_POLICY | default(omit) }}"
+    client_ip_addr_group: "{{ client_ip_group | default(omit) }}"
+  register: gslb_site_config
+
+- debug:
+    var: gslb_site_config
+
+- name: GSLB Config | Get Avi site name/uuid mapping
+  set_fact:
+    avi_site_mapping: "{{ avi_site_mapping|default([]) + [{'name': site.name, 'uuid': site.cluster_uuid}] }}"
+  loop: "{{ gslb_site_config.obj.sites }}"
+  loop_control:
+    loop_var: site
+    label: "{{ site.name }}"
+
+- name: GSLB Config | Get 3rd party site name/uuid mapping
+  set_fact:
+    third_site_mapping: "{{ third_site_mapping|default([]) + [{'name': site.name, 'uuid': site.cluster_uuid}] }}"
+  loop: "{{ gslb_site_config.obj.third_party_sites }}"
+  loop_control:
+    loop_var: site
+    label: "{{ site.name }}"
+
+- debug:
+    var: "{{ item }}"
+  loop:
+    - avi_site_mapping
+    - third_site_mapping

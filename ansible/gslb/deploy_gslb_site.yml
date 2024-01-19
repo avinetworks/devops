@@ -1,0 +1,56 @@
+---
+- hosts: localhost
+  connection: local
+  collections:
+    - vmware.alb
+
+  vars_files:
+    "{{ site_config }}"  
+
+  tasks:
+    - name: create gslb role
+      include_tasks: 
+        file: ./tasks/gslb_role.yml
+        apply: 
+          tags: always
+      tags: 
+        - gslb
+        - gslb_role
+
+    - name: create gslb user
+      include_tasks: 
+        file: ./tasks/gslb_user.yml
+        apply:
+          tags: always
+      tags:
+        - gslb
+        - gslb_user
+
+    - name: create gslb SEG
+      include_tasks: 
+        file: ./tasks/gslb_seg.yml
+        apply:
+          tags: always
+      tags: 
+        - gslb
+        - gslb_seg
+      
+    - name: create gslb dns_vs
+      include_tasks: 
+        file: ./tasks/gslb_dns_vs.yml
+        apply:
+          tags: always
+      tags: 
+        - gslb
+        - gslb_dns_vs
+   
+    - name: create gslb site
+      include_tasks: 
+        file: ./tasks/gslb_site.yml
+        apply:
+          tags: always
+      tags: 
+        - gslb
+        - gslb_site
+
+

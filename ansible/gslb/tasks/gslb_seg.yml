@@ -1,0 +1,45 @@
+---
+- name: GSLB SEG | Check if SEG exists  
+  avi_api_session:
+    avi_credentials: "{{ item.AVI_CREDENTIALS }}"
+    http_method: get
+    path: serviceenginegroup
+    params:
+      name: "{{ item.GSLB.se_group.name }}"
+      cloud_ref.name: "{{ item.GSLB.se_group.cloud }}"
+  when: 
+    - item.GSLB.se_group.name is defined
+    - item.GSLB.se_group.cloud is defined
+    - item.GSLB.member_type == 'GSLB_ACTIVE_MEMBER'
+  register: seg_exists
+  loop: "{{ AVI_CLUSTERS }}"
+
+- name: GSLB SEG | Create dedicated gslb SEG
+  avi_serviceenginegroup:
+    avi_credentials: "{{ result.item.AVI_CREDENTIALS }}"
+    tenant_ref: /api/tenant?name=admin 
+    name: "{{ result.item.GSLB.se_group.name }}"
+    cloud_ref: "{{'/api/cloud?name='+ result.item.GSLB.se_group.cloud }}"
+    se_name_prefix: "{{ result.item.GSLB.se_group.se_name_prefix}}"
+    ha_mode: "{{ result.item.GSLB.se_group.ha_mode | default('HA_MODE_SHARED_PAIR') }}"
+    algo: "{{ result.item.GSLB.se_group.algo | default('PLACEMENT_ALGO_DISTRIBUTED') }}"
+    vcpus_per_se: "{{ result.item.GSLB.se_group.vcpus_per_se }}"
+    cpu_reserve: "{{ result.item.GSLB.se_group.cpu_reserve | default('false') }}"
+    memory_per_se: "{{ result.item.GSLB.se_group.memory_per_se | default(4) }}"
+    mem_reserve: "{{ result.item.GSLB.se_group.mem_reserve | default('true') }}"
+    disk_per_se: "{{ result.item.GSLB.se_group.disk_per_se | default(15) }}"
+    min_se: "{{ result.item.GSLB.se_group.min_se | default(2) }}"
+    max_se: "{{ result.item.GSLB.se_group.max_se | default(10) }}"
+    buffer_se: "{{ result.item.GSLB.se_group.buffer | default(1) }}"
+    min_scaleout_per_vs: "{{ result.item.GSLB.se_group.min_scaleout_per_vs | default(2) }}"
+    max_scaleout_per_vs: "{{ result.item.GSLB.se_group.max_scaleout_per_vs | default(4) }}"
+    vcenter_folder: "{{ result.item.GSLB.se_group.vcenter_folder }}"
+    vcenter_datastore_mode: "{{ result.item.GSLB.se_group.vcenter_datastore_mode }}"
+  when: 
+    - result.obj is defined
+    - result.obj.count == 0
+    - result.item.GSLB.member_type == 'GSLB_ACTIVE_MEMBER'
+    - result.item.GSLB.state == 'present'
+  loop: "{{ seg_exists.results }}"
+  loop_control:
+    loop_var: result

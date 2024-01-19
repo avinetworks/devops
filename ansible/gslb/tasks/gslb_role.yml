@@ -1,0 +1,39 @@
+---
+- name: GSLB Role | Verify role exists 
+  avi_api_session:
+    avi_credentials: "{{ item.AVI_CREDENTIALS }}"
+    http_method: get
+    path: role
+    params:
+      name: "{{ item.GSLB.rolename }}"
+  when: item.GSLB.rolename is defined
+  register: role_exists
+  loop: "{{ AVI_CLUSTERS }}"
+  loop_control:
+    label: "{{ item.AVI_CREDENTIALS.controller  }}"
+
+- debug:
+    var: role_exists 
+# Follow the permission requirerment for gslb site configuration
+# https://docs.vmware.com/en/VMware-NSX-Advanced-Load-Balancer/22.1/GSLB_Guide.pdf
+- name: GSLB Role | Create GSLB-Admin Role
+  avi_role:
+    avi_credentials: "{{ result.item.AVI_CREDENTIALS }}"
+    name: "{{ result.item.GSLB.rolename }}"
+    privileges:
+      - resource: PERMISSION_GSLB
+        type: WRITE_ACCESS
+      - resource: PERMISSION_GSLBGEODBPROFILE
+        type: WRITE_ACCESS
+      - resource: PERMISSION_VIRTUALSERVICE
+        type: READ_ACCESS
+      - resource: PERMISSION_TENANT
+        type: READ_ACCESS
+  when: 
+    - result.obj is defined
+    - result.obj.count == 0
+    - result.item.GSLB.state == 'present'
+  loop: "{{ role_exists.results }}"
+  loop_control:
+    loop_var: result
+    label: "{{ result.item.AVI_CREDENTIALS.controller + ' - ' + result.item.GSLB.rolename if result.item.GSLB.rolename is defined else result.item.AVI_CREDENTIALS.controller }}"
