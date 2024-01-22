@@ -26,7 +26,7 @@ GSLB:
   state: present # absent | present.  'present' to create or update a GSLB service; 'absent' to delete. 
   #uuid: gslbservice-9386db9a-e95e-4a4d-97a2-bd54ab0850d4 # Optional; if UUID is provided, then you are able to modify GSLB service name after it's created.
   name: webservice # Mandatory
-  tenant_ref: /api/tenant?name="{{ AVI_CREDENTIALS.tenant|default('admin') }}"
+  tenant_ref: "{{ '/api/tenant?name=' + AVI_CREDENTIALS.tenant|default('admin') }}"
   enabled: true
   domain_names:
     - webservice.gslb.fe.lab
