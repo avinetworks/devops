@@ -1,0 +1,20 @@
+- hosts: localhost
+  connection: local
+  collections:
+    - vmware.alb
+  vars_files:
+     variables.yml
+  tasks:
+  - include_vars: variables.yml
+    #Certificate renewal
+  - name: Certificate renewal
+    avi_sslkeyandcertificate:
+      controller: "{{ CONTROLLER_CLUSTER_IP }}"
+      username: "{{ AVI_CREDENTIALS.username }}"
+      password: "{{ AVI_CREDENTIALS.password }}"
+      api_version: "{{ AVI_CREDENTIALS.api_version }}"
+      avi_api_update_method: patch
+      avi_api_patch_op: replace
+      name: "{{ CERT_NAME }}"
+      certificate: 
+        certificate: "{{ lookup('file', NEW_CERT_FILE)  }}"

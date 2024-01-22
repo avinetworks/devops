@@ -1,0 +1,45 @@
+---
+- name: GSLB user | verify user exists 
+  avi_api_session:
+    avi_credentials: "{{ item.AVI_CREDENTIALS }}"
+    http_method: get
+    path: user
+    params:
+      name: "{{ item.GSLB.username }}"
+  when: item.GSLB.username is defined
+  register: user_exists
+  loop: "{{ AVI_CLUSTERS }}"
+  loop_control:
+    label: "{{ item.AVI_CREDENTIALS.controller + ' - ' + (item.GSLB.username if item.GSLB.username is defined else '')}}"
+# - debug:
+#     msg: "{{ user_exists.results }}"
+
+- debug:
+    msg: "{{ result.item.AVI_CREDENTIALS.controller + ' - ' + result.item.GSLB.username + ' exists' if result.obj.count == 1 else result.item.AVI_CREDENTIALS.controller + ' - ' + result.item.GSLB.username + ' does NOT exists!'}}"
+  when: result.obj is defined
+  loop: "{{ user_exists.results }}"
+  loop_control:
+    loop_var: result
+
+- name: GSLB user | Create gslb user 
+  avi_user:
+    avi_credentials: "{{ result.item.AVI_CREDENTIALS }}"
+    state: present
+    name: "{{ result.item.GSLB.fullname }}"
+    obj_username: "{{ result.item.GSLB.username }}"
+    obj_password: "{{ result.item.GSLB.password}}"
+    is_active: true
+    default_tenant_ref: '/api/tenant?name=admin'
+    user_profile_ref: "{{ '/api/useraccountprofile?name=' + result.item.GSLB.userprofile }}"
+    access:
+    - tenant_ref: '/api/tenant?name=admin'
+      role_ref:   "{{ '/api/role?name=' + result.item.GSLB.rolename }}"
+  when: 
+    - result.obj is defined
+    - result.obj.count == 0
+    - result.item.GSLB.state == 'present'
+  loop: "{{ user_exists.results }}"
+  loop_control:
+    loop_var: result
+    label: "{{ result.item.AVI_CREDENTIALS.controller + ' - ' + (result.item.GSLB.username if result.item.GSLB.username is defined else '')}}"
+

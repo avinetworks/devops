@@ -1,0 +1,51 @@
+- hosts: localhost
+  connection: local
+  collections:
+    - vmware.alb
+    - community.vmware
+  roles:
+    - { role: avinetworks.avicontroller_vmware }
+  vars_files:
+     variables.yml
+  vars:
+    controller_configuration:
+      - mgmt_ip: "{{ CONTROLLER_IP_1 }}"
+        vm_name: "{{ CONTROLLER_NAME_1 }}"
+      - mgmt_ip: "{{ CONTROLLER_IP_2 }}"
+        vm_name: "{{ CONTROLLER_NAME_2 }}"
+      - mgmt_ip: "{{ CONTROLLER_IP_3 }}"
+        vm_name: "{{ CONTROLLER_NAME_3 }}"
+  tasks:
+  - include_vars: variables.yml
+  #Set Facts
+  - set_fact:
+      dns_list: "{{ dns_list | default([]) + [{'type': 'V4', 'addr': dserver }] }}"
+    loop: "{{ DNS_SERVERS }}"
+    loop_control:
+      loop_var: dserver
+    name: "Prepare DNS Server List"
+  - set_fact:
+      ntp_list: "{{ ntp_list | default([]) + [{'server': {'type': NTP_TYPE, 'addr': nserver }}] }}"
+    loop: "{{ NTP_SERVERS }}"
+    loop_control:
+      loop_var: nserver
+    name: "Prepare NTP Server List"
+  #Cluster deployment and configuration
+  - name: Include task for controller deployment
+    include_tasks: ./tasks/deploy_controllers.yaml
+    with_items: "{{ controller_configuration }}"
+  - name: Include task for API server readiness
+    include_tasks: ./tasks/check_cluster_node_status.yaml
+    with_items: "{{ controller_configuration }}"
+  - name: Include task for default password change
+    include_tasks: ./tasks/change_default_password.yaml
+  - name: Initial System configuration
+    include_tasks: ./tasks/initial_system_config.yaml
+  - name: Initial Set backup passphrase
+    include_tasks: ./tasks/set_backup_passphrase.yaml
+  - name: Create cluster
+    include_tasks: ./tasks/create_cluster.yaml
+  - name: Wait for cluster formation
+    include_tasks: ./tasks/wait_for_cluster_formation.yaml
+  - name: Add license
+    include_tasks: ./tasks/add_license.yaml

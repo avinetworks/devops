@@ -1,0 +1,127 @@
+- hosts: localhost
+  vars_files:
+       - extra_vars/vars.yaml
+  roles:
+    - role: avinetworks.avisdk
+  tasks:
+      - block:
+            - name: Create Content Library
+              community.vmware.vmware_content_library_manager:
+                hostname: '{{ vcenter.hostname }}'
+                username: '{{ vcenter.username }}'
+                password: '{{ vcenter.password }}'
+                library_name: test-content-lib
+                library_description: 'Library with Datastore Backing'
+                library_type: local
+                datastore_name: datastore
+                validate_certs: False
+                state: present
+              register: content_lib
+
+            - name: Password Update | Vcenter/Nsxt User creation |  Enforcement point creation
+              include_role:
+                  name: nsxt
+              vars:
+                 avi_creds_file: "extra_vars/vars.yaml"
+
+            - name: Retrieve Transport Zones
+              avi_api_session:
+                avi_credentials: "{{ avi_credentials | default(omit) }}"
+                api_context: "{{ avi_api_context | default(omit) }}"
+                http_method: "post"
+                timeout: 300
+                path: "nsxt/transportzones"
+                data:
+                  host: "{{policy_api_endpoint}}"
+                  credentials_uuid: "{{ lookup('avi', avi_credentials=avi_credentials, obj_name='nsxtuser', obj_type='cloudconnectoruser').uuid }}"
+              register: nsxtTransportZones
+
+            - name: Avi Application | Setup App1
+              include_role:
+                name: avinetworks.aviconfig
+              vars:
+                transportZone: "{{ nsxtTransportZones | to_json | from_json | json_query('obj.resource.nsxt_transportzones[?name==`Transport zone overlay type`].id') | first }}"
+                avi_config_file: "extra_vars/cloud_config.yaml"
+                avi_creds_file: "extra_vars/vars.yaml"
+
+            - name: BackupConfiguration object
+              avi_backupconfiguration:
+                controller: "{{ controller.hostname | default(omit) }}"
+                username: "{{ controller.username | default(omit) }}"
+                password: "{{ controller.password | default(omit) }}"
+                backup_passphrase:
+                           - "{{controller.backup_password}}"
+                save_local: true
+                maximum_backups_stored: 4
+                state: present
+                name: Backup-Configuration
+
+            - name: Create Vcenter Server
+              avi_api_session:
+                 controller: "{{ controller.hostname | default(omit) }}"
+                 username: "{{ controller.username | default(omit) }}"
+                 password: "{{ controller.password | default(omit) }}"
+                 api_version: "{{api_version | default(omit) }}"
+                 http_method: post
+                 path: "vcenterserver"
+                 data:
+                   vcenter_url: "{{vcenter.hostname}}"
+                   cloud_ref: "/api/cloud/?name={{cloud_name}}"
+                   vcenter_credentials_ref: "/api/cloudconnectoruser/?name={{vcenter.name}}"
+                   content_lib:
+                     id: "{{content_lib.content_library_info.library_id}}"
+                   name: "{{vcenter.name}}"
+        delegate_to: localhost
+
+      - name:  Verify Route Table Entry
+        shell: route -n | grep "{{router_mgmt_ip}}" && echo "Yes" || echo "No"
+        register: route_out
+        vars:
+           ansible_ssh_user: "{{ controller.username }}"
+           ansible_ssh_pass: "{{ controller.password }}"
+           ansible_become_password: "{{ controller.password }}"
+           ansible_host_key_checking: false
+        become: yes
+        delegate_to: "{{ controller.hostname }}"
+
+      - name: Add IP route table
+        command : route add -net "{{se_mgmt_network}}" gw "{{router_mgmt_ip}}"
+        vars:
+           ansible_ssh_user: "{{ controller.username }}"
+           ansible_ssh_pass: "{{ controller.password }}"
+           ansible_become_password: "{{ controller.password }}"
+           ansible_host_key_checking: false
+        become: yes
+        delegate_to: "{{ controller.hostname }}"
+        when: route_out.stdout == "No"
+
+      - name: Patch to enable basic auth
+        avi_api_session:
+          controller: "{{ controller.hostname | default(omit) }}"
+          username: "{{ controller.username | default(omit) }}"
+          password: "{{ controller.password | default(omit) }}"
+          http_method: put
+          path: "systemconfiguration"
+          api_version: "{{api_version | default(omit) }}"
+          data:
+             portal_configuration:
+                   allow_basic_authentication: true
+             dns_configuration:
+                   server_list:
+                       - addr: "{{ dns_server_ip }}"
+                         type: V4
+      - set_fact:
+           cloud_uuid: "{{ lookup('avi', avi_credentials=avi_credentials, obj_name='nsxtcloud', obj_type='cloud').uuid }}"
+      
+      - name: Checking Cloud Status
+        uri:
+          url: "https://{{ controller.hostname }}/api/cloud/{{cloud_uuid}}/status"
+          url_username: "{{ controller.username | default(omit) }}"
+          url_password: "{{ controller.password | default(omit) }}"
+          method: GET
+          force_basic_auth: yes
+          validate_certs: no
+        register: status
+        retries: 100
+        delay: 10
+        until: status.json.state == "CLOUD_STATE_PLACEMENT_READY"

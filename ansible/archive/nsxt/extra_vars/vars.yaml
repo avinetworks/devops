@@ -1,0 +1,48 @@
+---
+api_version: "{{apiVersion}}"
+policy_api_endpoint: "{{nsxt_url}}"
+########################################### Cloud Vars ###############################
+cloud_type: "CLOUD_NSXT"
+nsx_user: "nsxtuser"
+data_tier_id: "/infra/tier-1s/TLR1_LR"  # tier1 rtr
+data_segment_id: "/infra/segments/TIER1_ALB_DATA_SEGMENT" #pool member
+nsxt_url: "{{nsxt_url}}"  #nsxt mgr ip
+management_tier_id: "/infra/tier-1s/TLR1_LR" #mgmt t1 rtr
+management_segment_id: "/infra/segments/TIER1_ALB_MGMT_SEGMENT" 
+cloud_name: "nsxtcloud"
+cloud_prefix: "nsxt1"
+state: "present"
+avi_role_config_log_mode: False
+dhcp: true
+se_mgmt_network: 192.168.50.0/24 
+router_mgmt_ip: "{{router_mgmt_ip}}"
+dns_server_ip: 10.184.7.5
+
+######################################## Controller Vars ##############################
+avi_credentials:
+      controller: "{{controller.hostname}}"
+      username: "{{controller.username}}"
+      password: "{{controller.password}}"
+      api_version: "{{api_version}}"
+
+controller:
+        hostname: "{{controller_ip}}"
+        username: "admin"
+        password: "{{controller_password}}"
+        backup_password: ""
+        old_password: "" #
+
+######################################## Vcenter Vars ##############################
+vcenter:
+        hostname: "{{vcenter_ip}}"
+        username: "administrator@vsphere.local"
+        password: ""
+        name: "vcuser"
+
+######################################## NSXT Vars ##############################
+nsxt:
+     username: admin
+     password:  
+     name: "nsxtuser"
+     method: PUT      #REST METHOD PUT/GET/DELETE 
+     force_update: 0 #only change to 1 if you want to forcefully create Policy_API_Endpoint

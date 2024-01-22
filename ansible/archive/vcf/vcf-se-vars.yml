@@ -1,0 +1,106 @@
+#-------------------Avi Controller-----------------------------
+#----- Avi controller required information
+avi_controller_ip: 
+avi_username: 
+avi_password: 
+workload_domain:
+
+#----- Avi controller optional information
+se_group:
+
+
+#-------------------vcf vCenter-----------------------------
+#---- vcf vcenter required information
+vcenter_hostname: 
+vcenter_username: 
+vcenter_password: 
+
+datacenter: 
+cluster: 
+datastore: 
+
+#---- vcf vCenter optional information
+folder: 
+
+
+
+
+
+#-------------------Avi SE-----------------------------
+#---- Avi SE required information
+management_network_pg: 
+data_nic_parking_pg: 
+
+#---- Avi SE mgmt IP information
+#---- If blank, DHCP 
+#---- mask is in bits; eg 24
+se_mgmt_ip:
+se_mgmt_mask:
+se_mgmt_gw:
+dns_server:
+
+#---- Avi SE optional information
+
+
+
+se_memory_mb: 
+se_memory_reserve_lock: False
+
+se_num_cpus: 
+se_cpu_reserve_mhz:
+
+se_disk_size_gb:
+
+
+#---- Avi SE optional Data NIC information
+#---- For nics that have a pg defined but no IP info, DHCP will be used
+#---- mask is in bits; eg 24
+
+
+data_network1:
+  se_int_pg: 
+  se_int_ip:
+  se_int_mask:
+
+data_network2:
+  se_int_pg: 
+  se_int_ip: 
+  se_int_mask: 
+
+data_network3:  
+  se_int_pg: 
+  se_int_ip: 
+  se_int_mask: 
+  
+data_network4:
+  se_int_pg: 
+  se_int_ip:
+  se_int_mask:
+  
+data_network5:  
+  se_int_pg:
+  se_int_ip:
+  se_int_mask:
+  
+data_network6:
+  se_int_pg:
+  se_int_ip:
+  se_int_mask:
+  
+data_network7:
+  se_int_pg:
+  se_int_ip:
+  se_int_mask:
+  
+data_network8:
+  se_int_pg:
+  se_int_ip:
+  se_int_mask:
+  
+data_network9:
+  se_int_pg:
+  se_int_ip:
+  se_int_mask:
+
+
+

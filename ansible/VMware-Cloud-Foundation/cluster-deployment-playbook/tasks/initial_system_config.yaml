@@ -1,0 +1,49 @@
+---
+- name: Initial Controller System Configuration (local SMTP)
+  avi_systemconfiguration:
+    controller: "{{ CONTROLLER_IP_1 }}"
+    username: "{{ AVI_CREDENTIALS.username }}"
+    password: "{{ AVI_CREDENTIALS.password }}"
+    api_version: "{{ AVI_CREDENTIALS.api_version }}"
+    welcome_workflow_complete: true
+    dns_configuration:
+      server_list: "{{ dns_list }}"
+    ntp_configuration:
+      ntp_servers: "{{ ntp_list }}"
+    email_configuration:
+      smtp_type: "{{ SMTP_SERVER_TYPE }}"
+      from_email: "{{ SMTP_FROM_EMAIL }}"
+      mail_server_name: "localhost"
+      mail_server_port: 25
+      disable_tls: "{{ SMTP_DISABLE_TLS }}"
+  when: SMTP_SERVER_TYPE | lower == 'smtp_local_host'
+
+- name: Initial Controller System Configuration (remote SMTP)
+  avi_systemconfiguration:
+    controller: "{{ CONTROLLER_IP_1 }}"
+    username: "{{ AVI_CREDENTIALS.username }}"
+    password: "{{ AVI_CREDENTIALS.password }}"
+    api_version: "{{ AVI_CREDENTIALS.api_version }}"
+    welcome_workflow_complete: true
+    dns_configuration:
+      server_list: "{{ dns_list }}"
+    ntp_configuration:
+      ntp_servers: "{{ ntp_list }}"
+    email_configuration:
+      smtp_type: "{{ SMTP_SERVER_TYPE }}"
+      from_email: "{{ SMTP_FROM_EMAIL }}"
+      mail_server_name: "{{ SMTP_SERVER_NAME }}"
+      mail_server_port: "{{ SMTP_SERVER_PORT }}"
+      auth_username: "{{ SMTP_USERNAME }}"
+      auth_password: "{{ SMTP_PASSWORD }}"
+      disable_tls: "{{ SMTP_DISABLE_TLS }}"
+  when: SMTP_SERVER_TYPE | lower == 'smtp_server'
+
+
+
+
+
+
+
+
+
