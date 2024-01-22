@@ -1,6 +1,6 @@
 #####################################################################################
 #  Script to get max CPU usage by Avi SEs over given time period
-#  usage: python core_useage.py [-h] [-v AVI_VERSION] [-s STARTDATE] [-e ENDDATE]
+#  usage: python core_usage.py [-h] [-v AVI_VERSION] [-s STARTDATE] [-e ENDDATE]
 #                        [-d DAYS]
 #                        avi_ip avi_user avi_password
 #  
@@ -22,10 +22,10 @@
 #    -d DAYS, --days DAYS  Number of days from startdate for before enddate
 #
 #  Eg. for maximum usage for month of August 2019
-#      python core_useage.py 10.56.0.82 admin password -s 2019-08-01 -e 2019-08-31
+#      python core_usage.py 10.56.0.82 admin password -s 2019-08-01 -e 2019-08-31
 #
 #  Eg. for maximum usage for 31 days starting 2019-08-01
-#      python core_useage.py 10.56.0.82 admin password -s 2019-08-01 -d 31
+#      python core_usage.py 10.56.0.82 admin password -s 2019-08-01 -d 31
 #
 #  Requires Avi SDK installed:
 #      pip install avisdk
