@@ -7,3 +7,6 @@ Ansible examples please refer to the `ansible` folder. Different environments wi
 
 ## Python
 Python examples can be located in the `python`. This folder will contain useful scripts.
+
+## Use Case examples
+Sample scripts to deploy specific Avi use cases will be in the `usecase_examples` folder. 
