@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="utf-8"?>
+<svg id="Layer_1" data-name="Layer 1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 150 150">
+  <title>avi-hex-card-icons</title>
+  <g id="Layer_1-2" data-name="Layer 1-2">
+    <g style="opacity: 0.15000000596046448;isolation: isolate">
+      <rect x="89.86" y="70.86" width="3.5" height="11.37" style="fill: #4a5565"/>
+    </g>
+    <g style="opacity: 0.15000000596046448;isolation: isolate">
+      <rect x="88.99" y="83.1" width="3.5" height="2.62" style="fill: #4a5565"/>
+    </g>
+    <g style="opacity: 0.15000000596046448;isolation: isolate">
+      <rect x="89.86" y="86.6" width="3.5" height="11.37" style="fill: #4a5565"/>
+    </g>
+    <g style="opacity: 0.15000000596046448;isolation: isolate">
+      <rect x="88.99" y="98.84" width="3.5" height="2.62" style="fill: #4a5565"/>
+    </g>
+    <g style="opacity: 0.15000000596046448;isolation: isolate">
+      <rect x="89.86" y="102.35" width="3.5" height="11.37" style="fill: #4a5565"/>
+    </g>
+    <path d="M102.54,86.17H47.45L44,89.66v5.25l3.5,3.5h55.09l3.51-3.5V89.66Z" style="fill: #fff"/>
+    <path d="M102.54,70.46H47.45L44,74v5.22l3.5,3.5h55.09l3.51-3.5V73.91Z" style="fill: #fff"/>
+    <path d="M102.54,101.9H47.45L44,105.39v5.24l3.5,3.5h55.09l3.51-3.5v-5.24Z" style="fill: #fff"/>
+    <rect x="47.45" y="98.41" width="55.1" height="3.5" style="fill: #fff"/>
+    <rect x="47.45" y="82.66" width="55.1" height="3.5" style="fill: #fff"/>
+    <g style="opacity: 0.15000000596046448;isolation: isolate">
+      <rect x="47.45" y="98.41" width="55.1" height="3.5" style="fill: #495565"/>
+    </g>
+    <g style="opacity: 0.15000000596046448;isolation: isolate">
+      <rect x="47.45" y="82.66" width="55.1" height="3.5" style="fill: #495565"/>
+    </g>
+    <rect x="88.56" y="70.86" width="3.38" height="10.87" style="fill: #ff4b00"/>
+    <rect x="88.56" y="86.86" width="3.38" height="10.87" style="fill: #ff4b00"/>
+    <rect x="88.56" y="102.59" width="3.38" height="10.87" style="fill: #ff4b00"/>
+    <rect x="87.5" y="98.43" width="2.33" height="3.06" style="fill: #ff4b00"/>
+    <rect x="87.5" y="82.48" width="2.33" height="3.06" style="fill: #ff4b00"/>
+    <path d="M102.91,99.28H47.08l-4-4v-6l4-4h55.83l4,4v6Zm-55.1-1.74h54.37l3-3V90l-3-3H47.81l-3,3v4.53Z" style="fill: #495565"/>
+    <path d="M102.91,83.55H47.08l-4-4V73.59l4-4H102.9l4,4v6ZM47.81,81.8h54.37l3-3V74.28l-3-3H47.81l-3,3v4.5Z" style="fill: #495565"/>
+    <path d="M102.91,115H47.08l-4-4v-6l4-4H102.9l4,4v6Zm-55.1-1.75h54.37l3-3v-4.52l-3-3H47.81l-3,3v4.52Z" style="fill: #495565"/>
+    <path d="M103.42,102.78H46.57V97.54h56.85ZM48.32,101h53.35V99.28H48.32Z" style="fill: #495565"/>
+    <g style="opacity: 0.15000000596046448;isolation: isolate">
+      <path d="M58.82,70.46H47.49L44,74v5.22l3.49,3.5H58.82l-5.25-3.93V74.4Z" style="fill: #495566"/>
+    </g>
+    <g style="opacity: 0.15000000596046448;isolation: isolate">
+      <rect x="47.45" y="82.66" width="12.24" height="3.5" style="fill: #495565"/>
+    </g>
+    <g style="opacity: 0.15000000596046448;isolation: isolate">
+      <path d="M58.82,86.17H47.49L44,89.66v5.25l3.49,3.5H58.82l-5.25-3.94V90.09Z" style="fill: #495565"/>
+    </g>
+    <g style="opacity: 0.15000000596046448;isolation: isolate">
+      <rect x="47.45" y="98.41" width="12.24" height="3.5" style="fill: #495565"/>
+    </g>
+    <g style="opacity: 0.15000000596046448;isolation: isolate">
+      <path d="M58.82,101.9H47.49L44,105.39v5.24l3.5,3.5H58.77l-5.24-3.93v-4.36Z" style="fill: #495565"/>
+    </g>
+    <path d="M103.42,87H46.57V81.79h56.85Zm-55.1-1.75h53.35V83.54H48.32Z" style="fill: #495565"/>
+    <g style="opacity: 0.15000000596046448">
+      <polygon points="44.82 105.84 44.82 110.21 46.58 108.46 46.58 107.59 44.82 105.84" style="fill: #495565"/>
+    </g>
+    <g style="opacity: 0.15000000596046448">
+      <polygon points="44.82 90.1 44.82 94.47 46.58 92.72 46.58 91.85 44.82 90.1" style="fill: #495565"/>
+    </g>
+    <g style="opacity: 0.15000000596046448">
+      <polygon points="44.82 74.36 44.82 78.73 46.58 76.98 46.58 76.1 44.82 74.36" style="fill: #495565"/>
+    </g>
+    <g style="opacity: 0.15000000596046448">
+      <polygon points="105.17 105.84 105.17 110.21 103.42 108.46 103.42 107.59 105.17 105.84" style="fill: #495565"/>
+    </g>
+    <g style="opacity: 0.15000000596046448">
+      <polygon points="105.17 90.1 105.17 94.47 103.42 92.72 103.42 91.85 105.17 90.1" style="fill: #495565"/>
+    </g>
+    <g style="opacity: 0.15000000596046448">
+      <polygon points="105.17 74.36 105.17 78.73 103.42 76.98 103.42 76.1 105.17 74.36" style="fill: #495565"/>
+    </g>
+    <g style="opacity: 0.15000000596046448;isolation: isolate">
+      <path d="M103.69,113.59H50.34a.87.87,0,0,1,0-1.74h53.35a.87.87,0,0,1,0,1.74Z" style="fill: #495565"/>
+    </g>
+    <g style="opacity: 0.15000000596046448;isolation: isolate">
+      <path d="M103.69,97.85H50.34a.88.88,0,0,1,0-1.75h53.35a.88.88,0,0,1,0,1.75Z" style="fill: #495565"/>
+    </g>
+    <g style="opacity: 0.15000000596046448;isolation: isolate">
+      <path d="M103.69,82.1H50.34a.87.87,0,1,1,0-1.74h53.35a.87.87,0,0,1,0,1.74Z" style="fill: #495565"/>
+    </g>
+    <path d="M60.57,70.46H51.83V57.74A21.86,21.86,0,0,1,73.69,35.87h1.74A21.89,21.89,0,0,1,97.31,57.74V68.67l-1.76,1.79h-7V67l1.72-2.66-1.74-2.63V57.74A13.14,13.14,0,0,0,75.42,44.61H73.69A13.12,13.12,0,0,0,60.57,57.74h0Z" style="fill: #fff"/>
+    <path d="M98.18,71.33H87.71V66.71l1.55-2.4L87.68,62V57.74A12.26,12.26,0,0,0,75.43,45.49H73.69A12.26,12.26,0,0,0,61.44,57.74V71.33H51V57.74A22.76,22.76,0,0,1,73.69,35h1.74A22.78,22.78,0,0,1,98.18,57.73Zm-8.72-1.74h7V57.74a21,21,0,0,0-21-21H73.69a21,21,0,0,0-21,21V69.59h7V57.74a14,14,0,0,1,14-14h1.69a14,14,0,0,1,14.05,14v3.69l1.92,2.88-1.89,2.92Z" style="fill: #495565"/>
+    <g style="opacity: 0.15000000596046448;isolation: isolate">
+      <path d="M53.57,70.69a.87.87,0,0,1-.87-.87v-12a21,21,0,0,1,21-21h1.74a21,21,0,0,1,21,21,.87.87,0,0,1-.87.87h0a.87.87,0,0,1-.87-.87A19.29,19.29,0,0,0,75.43,38.57H73.69A19.29,19.29,0,0,0,54.45,57.81v12A.88.88,0,0,1,53.57,70.69Z" style="fill: #495565"/>
+    </g>
+  </g>
+</svg>

@@ -1,0 +1,604 @@
+<!doctype html><!--[if lt IE 7]> <html class="no-js lt-ie9 lt-ie8 lt-ie7" lang="en" > <![endif]--><!--[if IE 7]>    <html class="no-js lt-ie9 lt-ie8" lang="en" >        <![endif]--><!--[if IE 8]>    <html class="no-js lt-ie9" lang="en" >               <![endif]--><!--[if gt IE 8]><!--><html class="no-js" lang="en"><!--<![endif]-->
+<!-- Mirrored from info.avinetworks.com/webinars/network-analytics-and-metrics-on-steroids by HTTrack Website Copier/3.x [XR&CO'2014], Fri, 18 Feb 2022 15:34:20 GMT -->
+<!-- Added by HTTrack --><meta http-equiv="content-type" content="text/html;charset=UTF-8" /><!-- /Added by HTTrack -->
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="author" content="Avi Networks, now part of VMware">
+    <meta name="description" content="Grafana enables queries, visualization, and understanding of metrics from many sources. Learn how to simplify your data with Grafana and Avi.">
+    <meta name="generator" content="HubSpot">
+    <title>Network Analytics and Metrics on Steroids | Webinars | Avi Networks</title>
+    <link rel="shortcut icon" href="../hs-fs/hub/443964/file-2160934496-png/Favicon-1.png">
+    
+
+    <script src="../hs/hsstatic/jquery-libs/static-1.1/jquery/jquery-1.7.1.js"></script>
+<script>hsjQuery = window['jQuery'];</script>
+    <meta property="og:description" content="Grafana enables queries, visualization, and understanding of metrics from many sources. Learn how to simplify your data with Grafana and Avi.">
+    <meta property="og:title" content="Network Analytics and Metrics on Steroids | Webinars | Avi Networks">
+    <meta name="twitter:description" content="Grafana enables queries, visualization, and understanding of metrics from many sources. Learn how to simplify your data with Grafana and Avi.">
+    <meta name="twitter:title" content="Network Analytics and Metrics on Steroids | Webinars | Avi Networks">
+
+    
+
+    
+    <style>
+a.cta_button{-moz-box-sizing:content-box !important;-webkit-box-sizing:content-box !important;box-sizing:content-box !important;vertical-align:middle}.hs-breadcrumb-menu{list-style-type:none;margin:0px 0px 0px 0px;padding:0px 0px 0px 0px}.hs-breadcrumb-menu-item{float:left;padding:10px 0px 10px 10px}.hs-breadcrumb-menu-divider:before{content:'›';padding-left:10px}.hs-featured-image-link{border:0}.hs-featured-image{float:right;margin:0 0 20px 20px;max-width:50%}@media (max-width: 568px){.hs-featured-image{float:none;margin:0;width:100%;max-width:100%}}.hs-screen-reader-text{clip:rect(1px, 1px, 1px, 1px);height:1px;overflow:hidden;position:absolute !important;width:1px}
+</style>
+
+<link rel="stylesheet" href="../hs-fs/hub/443964/hub_generated/module_assets/8172515752/1644343404337/module_8172515752_Avi_Module_Template_-_Basic_Header_-_Full_Width_Color_or_Image_Background.min.css">
+<link rel="stylesheet" href="../hs-fs/hub/443964/hub_generated/template_assets/5753940132/1569683721793/Coded_files/Custom/page/Bz_Avi/magnific-popup.min.css">
+<link rel="stylesheet" href="../hs-fs/hub/443964/hub_generated/module_assets/8174280243/1603370660684/module_8174280243_Avi_Module_Template_-_Rich_Text_Content_-_1_or_2_Columns.min.css">
+    
+
+    
+    <link rel="canonical" href="network-analytics-and-metrics-on-steroids.html">
+
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<!-- OneTrust Cookies Consent Notice start -->
+  <script src="https://cdn.cookielaw.org/scripttemplates/otSDKStub.js" type="text/javascript" charset="UTF-8" data-domain-script="c08fd0a4-8093-4930-9189-209981a14929"></script>
+  <script type="text/javascript">
+    function OptanonWrapper() {
+      {
+        window.dataLayer.push({
+          event: 'OneTrustGroupsUpdated'
+        });
+      }
+    }
+
+  </script>
+
+  <style>
+    button.ot-sdk-show-settings {
+      position: fixed !important;
+      bottom: 0px !important;
+      right: 0px !important;
+      z-index: 999999 !important;
+      color: rgb(255, 255, 255) !important;
+      border: 2px solid rgb(29, 66, 138) !important;
+      padding: 6px !important;
+      display: inline-block;
+      margin: -8px 0px 1.2px -82px;
+      background-color: rgb(29, 66, 138);
+      cursor: pointer;
+      border-radius: 2.75rem;
+      font-size: 13px;
+      min-width: 200px;
+      height: 40px;
+      font-weight: bold;
+    }
+    @media (min-width: 900px) {
+      li#menu-item-10244 {
+      display: none;
+      }
+      li#menu-item-10246 {
+      display: none;
+      }
+      li#menu-item-10247 {
+      display: none;
+      }
+      li#menu-item-10246 a,  li#menu-item-10247 a{
+      border: 0;
+      display: inline-block;
+      background-color: #FF4B00;
+      color: #fff;
+      font-weight: 700;
+      text-transform: uppercase;
+      padding: .25em 1.666em;
+      border-radius: 2rem;
+      -webkit-transition: all 0.25s cubic-bezier(.37,0,.45,.99);
+      -o-transition: all 0.25s cubic-bezier(.37,0,.45,.99);
+      transition: all 0.25s cubic-bezier(.37,0,.45,.99);
+      background-color: #fff!important;
+      color: #FF4B00!important;
+      font-size: .8em;
+      margin-left: 30px;
+      }
+    }
+    li#menu-item-10244 a {
+        border: 0;
+    display: inline-block;
+    background-color: #FF4B00;
+    color: #fff;
+    font-weight: 700;
+    text-transform: uppercase;
+    padding: .25em 1.666em;
+    border-radius: 2rem;
+    -webkit-transition: all 0.25s cubic-bezier(.37,0,.45,.99);
+    -o-transition: all 0.25s cubic-bezier(.37,0,.45,.99);
+    transition: all 0.25s cubic-bezier(.37,0,.45,.99);
+    background-color: #fff!important;
+    color: #FF4B00!important;
+    font-size: .8em;
+    margin-left: 30px;
+    }
+
+
+  </style>
+  <!-- OneTrust Cookies Consent Notice end -->
+
+  <!-- Google Tag Manager -->
+  <script type="text/javascript">
+    function setGTM(w, d, s, l, i) {
+      w[l] = w[l] || [];
+      w[l].push({
+        'gtm.start': new Date().getTime(),
+        event: 'gtm.js'
+      });
+      var f = d.getElementsByTagName(s)[0],
+        j = d.createElement(s),
+        dl = l != 'dataLayer' ? '&l=' + l : '';
+      j.async = true;
+      j.src = 'https://www.googletagmanager.com/gtm.js?id=' + i + dl;
+      f.parentNode.insertBefore(j, f);
+    }
+    if (document.cookie.indexOf('OptanonConsent') > -1 && document.cookie.indexOf('groups=') > -1) {
+      setGTM(window, document, 'script', 'dataLayer', 'GTM-K6D79G');
+    } else {
+      waitForOnetrustActiveGroups();
+    }
+    var timer;
+
+    function waitForOnetrustActiveGroups() {
+      if (document.cookie.indexOf('OptanonConsent') > -1 && document.cookie.indexOf('groups=') > -1) {
+        clearTimeout(timer);
+        setGTM(window, document, 'script', 'dataLayer', 'GTM-K6D79G');
+      } else {
+        timer = setTimeout(waitForOnetrustActiveGroups, 250);
+      }
+    }
+
+  </script>
+  <!-- End Google Tag Manager -->
+
+
+<!-- Google Web Fonts -->
+                <link href="https://fonts.googleapis.com/css?family=Lato:300,400,300italic,400italic" rel="stylesheet" type="text/css">
+                <link href="https://fonts.googleapis.com/css?family=Montserrat:400,700" rel="stylesheet" type="text/css">
+
+            <!-- Theme Foundation CSS Package -->
+                <link href="http://cdn2.hubspot.net/hub/7052064/hub_generated/template_assets/1645042270640/hubspot/hubspot_default/shared/responsive/theme-foundation-v1-0.min.css" rel="stylesheet" type="text/css">
+            
+
+
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<script src="https://use.typekit.net/uaa6zqd.js"></script>
+<script>try{Typekit.load({ async: true });}catch(e){}</script>
+
+<style>
+.evidon-banner {
+  z-index: 99999999999 !important;
+}
+</style>
+
+<meta property="og:image" content="https://info.avinetworks.com/hubfs/VMware/Social%20Images/rc_social_wbnr_19Q1-G_analytics_and_metrics_avi_grafana.jpg#keepProtocol">
+<meta property="og:image:width" content="1024">
+<meta property="og:image:height" content="512">
+<meta property="og:image:alt" content="rc_social_wbnr_19Q1-G_analytics_and_metrics_avi_grafana">
+<meta name="twitter:image" content="https://info.avinetworks.com/hubfs/VMware/Social%20Images/rc_social_wbnr_19Q1-G_analytics_and_metrics_avi_grafana.jpg#keepProtocol">
+<meta name="twitter:image:alt" content="rc_social_wbnr_19Q1-G_analytics_and_metrics_avi_grafana">
+
+<meta property="og:url" content="https://info.avinetworks.com/webinars/network-analytics-and-metrics-on-steroids">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="stylesheet" href="http://cdn2.hubspot.net/hub/7052064/hub_generated/template_assets/1645042271536/hubspot/hubspot_default/shared/responsive/layout.min.css">
+
+<link rel="stylesheet" href="../hs-fs/hub/443964/hub_generated/template_assets/2120523630/1600095143456/Coded_files/Custom/page/AVI-Nov2014-theme/AVI-Nov2014-style.css">
+<link rel="stylesheet" href="../hs-fs/hub/443964/hub_generated/template_assets/4640845456/1625859578801/Coded_files/Custom/page/Bz_Avi/global.css">
+<link rel="stylesheet" href="../hs-fs/hub/443964/hub_generated/template_assets/8191115423/1645059591159/Templates/Custom/Page/AD_LP_Custom_Modules/ad-lp-styles.min.css">
+<link rel="stylesheet" href="../hs-fs/hub/443964/hub_generated/template_assets/20858359151/1645059723522/Templates/Custom/Page/AD_LP_Custom_Modules/2019-full-header-download-vmware-override.min.css">
+
+
+
+</head>
+<body class="lp--no-nav   hs-content-id-5525610916 hs-landing-page hs-page hs-content-path-webinars-network-analytics-and-metrics-on-steroids hs-content-name-wbnr-19q1-g-analytics-and-metrics-avi-grafana  " style="">
+    <div class="header-container-wrapper">
+    <div class="header-container container-fluid">
+
+
+    </div><!--end header -->
+</div><!--end header wrapper -->
+
+<div class="body-container-wrapper">
+    <div class="body-container container-fluid">
+
+<div class="row-fluid-wrapper row-depth-1 row-number-1 ">
+<div class="row-fluid ">
+<div class="span12 widget-span widget-type-widget_container " style="" data-widget-type="widget_container" data-x="0" data-w="12">
+<span id="hs_cos_wrapper_module_155260036780610686" class="hs_cos_wrapper hs_cos_wrapper_widget_container hs_cos_wrapper_type_widget_container" style="" data-hs-cos-general-type="widget_container" data-hs-cos-type="widget_container"><div id="hs_cos_wrapper_widget_23364143182" class="hs_cos_wrapper hs_cos_wrapper_widget hs_cos_wrapper_type_module" style="" data-hs-cos-general-type="widget" data-hs-cos-type="module"><div class="row-fluid-wrapper row-depth-1 row-number-1">
+  <div class="row-fluid ">
+    <div class="span12 widget-span widget-type-raw_jinja" style="" data-widget-type="" data-x="0" data-w="12">
+      <div class="hero   ">
+        <div class="l-page-wrap hero__content">
+          <div class="hero__title">
+            
+              
+                <a href="../../avinetworks.com/index.html" class="return-home" target="_blank"><img class="hero__logo" src="../hubfs/white-avi-vmware-logo.png" alt="Avi Networks - Now part of VMware" style="max-width: 200px;"></a>
+              
+            
+            <div class="hero__title-text  ">     
+                
+                  <!-- HTML to show when checked -->
+                  <h3 style="font-style: italic ;">Webinar</h3>
+                
+                <h1>Network Analytics and Metrics on Steroids - Avi Networks + Grafana</h1>
+            </div>
+          </div>
+          
+          <div class="hero__form-wrapper">
+            <div class="lp__form hero__form">
+              <div class="hero__form-title">
+                <h3>Watch Now</h3>
+                <hr>
+                <p>Network Analytics and Metrics on Steroids - Avi Networks + Grafana</p>
+              </div>
+              <span id="hs_cos_wrapper_widget_23364143182_" class="hs_cos_wrapper hs_cos_wrapper_widget hs_cos_wrapper_type_form" style="" data-hs-cos-general-type="widget" data-hs-cos-type="form"><h3 id="hs_cos_wrapper_form_236768483_title" class="hs_cos_wrapper form-title" data-hs-cos-general-type="widget_field" data-hs-cos-type="text"></h3>
+
+<div id="hs_form_target_form_236768483"></div>
+
+
+
+
+
+
+
+
+
+</span> 
+            </div>
+            
+            <div id="popup-form" class="hero__form-wrapper mfp-hide white-popup-block">
+              <div class="lp__form hero__form">
+                <div class="hero__form-title">
+                  <h3>Watch Now</h3>
+                  <hr>
+                  <p>Network Analytics and Metrics on Steroids - Avi Networks + Grafana</p>
+                </div>
+                <span id="hs_cos_wrapper_widget_23364143182_" class="hs_cos_wrapper hs_cos_wrapper_widget hs_cos_wrapper_type_form" style="" data-hs-cos-general-type="widget" data-hs-cos-type="form"><h3 id="hs_cos_wrapper_form_649099500-1645062334273_title" class="hs_cos_wrapper form-title" data-hs-cos-general-type="widget_field" data-hs-cos-type="text"></h3>
+
+<div id="hs_form_target_form_649099500-1645062334273"></div>
+
+
+
+
+
+
+
+
+
+</span> 
+              </div>
+              <div class="hero__form-spacer"> </div>
+            </div>
+            
+
+          
+          </div>
+        </div>
+        
+      </div> 
+     </div><!--end widget-span -->
+  </div><!--end row-->
+</div></div>
+<div id="hs_cos_wrapper_widget_23364143184" class="hs_cos_wrapper hs_cos_wrapper_widget hs_cos_wrapper_type_module" style="" data-hs-cos-general-type="widget" data-hs-cos-type="module"><div class="row-fluid-wrapper row-depth-1 row-number-1 section hide-desktop" style="padding-bottom: 0rem;">
+  <div class="row-fluid ">
+    <div class="span12 widget-span widget-type-raw_jinja" style="" data-widget-type="" data-x="0" data-w="12">
+      <div>
+        <div class="l-page-wrap">
+          <!-- link that opens popup -->
+          <a class="hs-button primary large popup-with-form" href="#popup-form">Watch Now</a>
+        </div>
+      </div>
+    </div><!--end widget-span -->
+  </div><!--end row-->
+</div></div>
+<div id="hs_cos_wrapper_widget_23364143186" class="hs_cos_wrapper hs_cos_wrapper_widget hs_cos_wrapper_type_module" style="" data-hs-cos-general-type="widget" data-hs-cos-type="module"><div class="row-fluid-wrapper row-depth-1 row-number-1 section ">
+  <div class="row-fluid ">
+    <div class="span12 widget-span widget-type-raw_jinja" style="" data-widget-type="" data-x="0" data-w="12">
+      
+        <div class="l-page-wrap inner__content  inner__content--narrow ">
+          
+            <div id="hs_cos_wrapper_widget_23364143186_" class="hs_cos_wrapper hs_cos_wrapper_widget hs_cos_wrapper_type_inline_rich_text" style="" data-hs-cos-general-type="widget" data-hs-cos-type="inline_rich_text" data-hs-cos-field="rte_a"><div class="cell-wrapper layout-widget-wrapper">
+<p>Avi Networks delivers rich, application-centric network analytics that enables administrators to troubleshoot application issues. Grafana enables you to query, visualize, and understand your metrics from multiple sources.</p>
+<p>Join Avi Networks on the webinar to see how:</p>
+<ul>
+<li>Grafana and Avi Networks dramatically simplify how you understand your data</li>
+<li>You can create a single dashboard to view application performance and other IT statistics</li>
+<li>Reduce troubleshooting time by gaining access key reports</li>
+</ul>
+<p>To watch the webinar on-demand, fill out the form to the right.</p>
+</div>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p>&nbsp;</p></div>
+          
+          
+      </div>
+      
+    </div>
+  </div>
+</div></div>
+<div id="hs_cos_wrapper_widget_23364143188" class="hs_cos_wrapper hs_cos_wrapper_widget hs_cos_wrapper_type_module" style="" data-hs-cos-general-type="widget" data-hs-cos-type="module"><div class="row-fluid-wrapper row-depth-1 row-number-1 section section__footer">
+  <div class="row-fluid ">
+    <div class="span12 widget-span widget-type-raw_jinja" style="" data-widget-type="" data-x="0" data-w="12">
+      <div class="l-page-wrap inner__content inner__content--full inner__content--flex">
+        <a href="../../avinetworks.com/index.html"><img src="../hubfs/Brand%20Logos/283409-avi-vmw-blk.png" alt="Avi Networks logo" class="avi-logo"></a>
+        <div class="footer__copyright">
+          <p>©2022 VMware</p>
+          <p><a href="https://www.vmware.com/help/privacy.html">Privacy Policy</a>
+            &nbsp;|&nbsp;<a href="https://www.vmware.com/help/legal.html">Terms of Use</a>
+            &nbsp;|&nbsp;<a href="https://www.vmware.com/help/privacy/california-privacy-rights.html">California Privacy Rights</a></p> 
+<!--           <p><a href="https://avinetworks.com/privacy-policy/">Privacy Policy</a> | <a href="#">Terms &amp; Conditions</a></p> -->
+          
+        </div>
+      </div>
+    </div>
+  </div>
+</div></div></span>
+</div><!--end widget-span -->
+</div><!--end row-->
+</div><!--end row-wrapper -->
+
+    </div><!--end body -->
+</div><!--end body wrapper -->
+
+<div class="footer-container-wrapper">
+    <div class="footer-container container-fluid">
+
+
+    </div><!--end footer -->
+</div><!--end footer wrapper -->
+
+    
+<script>
+(function () {
+    window.addEventListener('load', function () {
+        setTimeout(function () {
+            var xhr = new XMLHttpRequest();
+            xhr.open('POST.html', '/_hcms/perf', true /*async*/);
+            xhr.setRequestHeader("Content-type", "application/json");
+            xhr.onreadystatechange = function () {
+                // do nothing.
+            };
+            var connection = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
+            function populateNetworkInfo(name, connection, info) {
+                if (name in connection) {
+                    info[name] = connection[name];
+                }
+            }
+            var networkInfo = {};
+            if (connection) {
+                ['type', 'effectiveType', 'downlink', 'rtt'].forEach(function(name) {
+                    populateNetworkInfo(name, connection, networkInfo);
+                });
+            }
+            var perfData = {
+                url: location.href,
+                portal: 443964,
+                content: 5525610916,
+                group: -1,
+                connection: networkInfo,
+                timing: performance.timing
+            };
+            xhr.send(JSON.stringify(perfData));
+        }, 3000);  // Execute this 3 seconds after onload.
+    });
+})();
+</script>
+
+<script>
+var hsVars = hsVars || {}; hsVars['language'] = 'en';
+</script>
+
+<script src="../hs/hsstatic/cos-i18n/static-1.53/bundles/project.js"></script>
+
+    <!--[if lte IE 8]>
+    <script charset="utf-8" src="https://js.hsforms.net/forms/v2-legacy.js"></script>
+    <![endif]-->
+
+<script data-hs-allowed="true" src="../_hcms/forms/v2.js"></script>
+
+    <script data-hs-allowed="true">
+        var options = {
+            portalId: '443964',
+            formId: '41c385ff-513d-4455-baec-d66c56f1039b',
+            formInstanceId: '1105',
+            pageId: '5525610916',
+            region: 'na1',
+            
+            
+            
+            
+            pageName: "Network Analytics and Metrics on Steroids | Webinars | Avi Networks",
+            
+            
+            redirectUrl: "https:\/\/info.avinetworks.com\/webinars\/network-analytics-and-metrics-on-steroids-thank-you",
+            
+            
+            
+            
+            
+            css: '',
+            target: '#hs_form_target_form_236768483',
+            
+            
+            
+            
+            
+            contentType: "landing-page",
+            
+            
+            formsBaseUrl: '/_hcms/forms/',
+            
+            
+            formData: {
+                cssClass: 'hs-form stacked hs-custom-form'
+            }
+        };
+
+        options.getExtraMetaDataBeforeSubmit = function() {
+            var metadata = {};
+            
+
+            if (hbspt.targetedContentMetadata) {
+                var count = hbspt.targetedContentMetadata.length;
+                var targetedContentData = [];
+                for (var i = 0; i < count; i++) {
+                    var tc = hbspt.targetedContentMetadata[i];
+                     if ( tc.length !== 3) {
+                        continue;
+                     }
+                     targetedContentData.push({
+                        definitionId: tc[0],
+                        criterionId: tc[1],
+                        smartTypeId: tc[2]
+                     });
+                }
+                metadata["targetedContentMetadata"] = JSON.stringify(targetedContentData);
+            }
+
+            return metadata;
+        };
+
+        hbspt.forms.create(options);
+    </script>
+
+
+    <script data-hs-allowed="true">
+        var options = {
+            portalId: '443964',
+            formId: '41c385ff-513d-4455-baec-d66c56f1039b',
+            formInstanceId: '4224',
+            pageId: '5525610916',
+            region: 'na1',
+            
+            
+            
+            
+            pageName: "Network Analytics and Metrics on Steroids | Webinars | Avi Networks",
+            
+            
+            redirectUrl: "https:\/\/info.avinetworks.com\/webinars\/network-analytics-and-metrics-on-steroids-thank-you",
+            
+            
+            
+            
+            
+            css: '',
+            target: '#hs_form_target_form_649099500-1645062334273',
+            
+            
+            
+            
+            
+            contentType: "landing-page",
+            
+            
+            formsBaseUrl: '/_hcms/forms/',
+            
+            
+            formData: {
+                cssClass: 'hs-form stacked hs-custom-form'
+            }
+        };
+
+        options.getExtraMetaDataBeforeSubmit = function() {
+            var metadata = {};
+            
+
+            if (hbspt.targetedContentMetadata) {
+                var count = hbspt.targetedContentMetadata.length;
+                var targetedContentData = [];
+                for (var i = 0; i < count; i++) {
+                    var tc = hbspt.targetedContentMetadata[i];
+                     if ( tc.length !== 3) {
+                        continue;
+                     }
+                     targetedContentData.push({
+                        definitionId: tc[0],
+                        criterionId: tc[1],
+                        smartTypeId: tc[2]
+                     });
+                }
+                metadata["targetedContentMetadata"] = JSON.stringify(targetedContentData);
+            }
+
+            return metadata;
+        };
+
+        hbspt.forms.create(options);
+    </script>
+
+<script src="../hs-fs/hub/443964/hub_generated/template_assets/5753939847/1569683728792/Coded_files/Custom/page/BZ_Avi_JS/magnific-popup.js"></script>
+<script src="../hs-fs/hub/443964/hub_generated/module_assets/1553536028913/module_8196921603_Custom_Page_AD_LP_Custom_Modules_Avi_Module_Template__Mobile_Form_Button.min.js"></script>
+
+<!-- Start of HubSpot Analytics Code -->
+<script type="text/javascript">
+var _hsq = _hsq || [];
+_hsq.push(["setContentType", "landing-page"]);
+_hsq.push(["setCanonicalUrl", "https:\/\/info.avinetworks.com\/webinars\/network-analytics-and-metrics-on-steroids"]);
+_hsq.push(["setPageId", "5525610916"]);
+_hsq.push(["setContentMetadata", {
+    "contentPageId": 5525610916,
+    "legacyPageId": "5525610916",
+    "contentFolderId": 5365246876,
+    "contentGroupId": null,
+    "abTestId": null,
+    "languageVariantId": 5525610916,
+    "languageCode": null,
+    
+}]);
+</script>
+
+<script type="text/javascript" id="hs-script-loader" async defer src="../hs/scriptloader/443964.js"></script>
+<!-- End of HubSpot Analytics Code -->
+
+
+<script type="text/javascript">
+var hsVars = {
+    ticks: 1645062334224,
+    page_id: 5525610916,
+    
+    content_group_id: 0,
+    portal_id: 443964,
+    app_hs_base_url: "https://app.hubspot.com",
+    cp_hs_base_url: "https://cp.hubspot.com",
+    language: "en",
+    analytics_page_type: "landing-page",
+    analytics_page_id: "5525610916",
+    category_id: 1,
+    folder_id: 5365246876,
+    is_hubspot_user: false
+}
+</script>
+
+
+<script defer src="../hs/hsstatic/HubspotToolsMenu/static-1.119/js/index.js"></script>
+
+<!-- start Main.js DO NOT REMOVE --> 
+
+<script src="../hs-fs/hub/443964/hub_generated/template_assets/2119122174/1569683725365/Coded_files/Custom/page/AVI-Nov2014-theme/AVI-Nov2014-main.js"></script> 
+
+<!-- end Main.js -->
+
+  <!-- Google Tag Manager (noscript) -->
+  <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-K6D79G" height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+  <!-- End Google Tag Manager (noscript) -->
+
+  <!-- OneTrust Button start -->
+  <button id="ot-sdk-btn" class="ot-sdk-show-settings"> Cookie Settings</button>
+  <!-- OneTrust Button end -->
+
+
+    
+    <!-- Generated by the HubSpot Template Builder - template version 1.03 -->
+
+</body>
+<!-- Mirrored from info.avinetworks.com/webinars/network-analytics-and-metrics-on-steroids by HTTrack Website Copier/3.x [XR&CO'2014], Fri, 18 Feb 2022 15:34:20 GMT -->
+</html>

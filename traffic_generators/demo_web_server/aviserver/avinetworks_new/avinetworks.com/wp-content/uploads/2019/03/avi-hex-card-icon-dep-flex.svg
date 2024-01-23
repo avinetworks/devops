@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<svg id="Layer_1" data-name="Layer 1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 150 150">
+  <title>avi-hex-card-icons</title>
+  <g id="Layer_1-2" data-name="Layer 1-2">
+    <g id="Isolation_Mode" data-name="Isolation Mode">
+      <rect x="20" y="21.11" width="107" height="107" style="fill: none"/>
+      <g id="Layer_1-2-2" data-name="Layer 1-2-2">
+        <polyline points="45.56 70.83 45.56 47.14 125.13 47.14 125.13 102.08 45.56 102.08 45.56 88.83" style="fill: #fff"/>
+        <path d="M51.23,50a1.91,1.91,0,1,0,1.91,1.9A1.9,1.9,0,0,0,51.23,50Z" style="fill: #ff4b00"/>
+        <path d="M57,50a1.91,1.91,0,1,0,1.89,1.91h0A1.91,1.91,0,0,0,57,50Z" style="fill: #ff4b00"/>
+        <path d="M62.6,50a1.91,1.91,0,1,0,1.89,1.91h0A1.9,1.9,0,0,0,62.6,50Z" style="fill: #ff4b00"/>
+        <g style="opacity: 0.30000001192092896;isolation: isolate">
+          <rect x="45.56" y="55.79" width="79.57" height="1.66" style="fill: #4a5666"/>
+        </g>
+        <path d="M125.13,102.91H45.56a.83.83,0,0,1-.83-.83V88.83a.83.83,0,1,1,1.65,0v12.42H124.3V48H46.38V70.83a.83.83,0,1,1-1.65,0V47.14a.83.83,0,0,1,.83-.83h79.57a.83.83,0,0,1,.83.83v54.94A.83.83,0,0,1,125.13,102.91Z" style="fill: #4a5666"/>
+        <path d="M55,89.65h-19a.83.83,0,0,1,0-1.65H55a.83.83,0,1,1,0,1.65Z" style="fill: #b4bbc1"/>
+        <path d="M50.29,70.71H40.81a.83.83,0,0,1,0-1.66h9.48a.83.83,0,1,1,0,1.66Z" style="fill: #b4bbc1"/>
+        <path d="M47.45,74.5H31.34a.83.83,0,0,1,0-1.66H47.45a.83.83,0,0,1,0,1.66Z" style="fill: #ff4b00"/>
+        <path d="M56.92,84.91H40.81a.83.83,0,0,1,0-1.65H56.92a.83.83,0,1,1,0,1.65Z" style="fill: #ff4b00"/>
+        <path d="M45.56,80.18H21.87a.83.83,0,1,1,0-1.65H45.56a.83.83,0,0,1,0,1.65Z" style="fill: #4a5666"/>
+        <g style="opacity: 0.6499999761581421;isolation: isolate">
+          <polygon points="84.95 93.02 74.28 86.61 74.28 73.8 84.95 80.21 84.95 93.02" style="fill: #4a5666"/>
+        </g>
+        <polygon points="85.48 79.14 74.28 72.73 85.48 66.32 96.7 72.73 85.48 79.14" style="fill: #4a5666"/>
+        <g style="opacity: 0.30000001192092896;isolation: isolate">
+          <polygon points="96.7 86.61 86.03 93.02 86.03 80.21 96.7 73.8 96.7 86.61" style="fill: #4a5666"/>
+        </g>
+      </g>
+    </g>
+  </g>
+</svg>
