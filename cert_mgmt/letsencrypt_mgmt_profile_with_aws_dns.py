@@ -12,12 +12,8 @@
 #     There are two functions provided add_dns_text_record(key_digest_64, txt_record_name, kwargs) and
 #     remove_dns_text_record(key_digest_64, txt_record_name, kwargs) to add and remove dns txt record with
 #     name txt_record_name and value key_digest_64 respectively.
-#     User will need to provide their custom implementation for both of them.
 #     All configuration information required by both the above functions can be provided as sensitive parameter to the script.
-#     Sample code to add and remove dns txt record in:
-#     aws hosted domain is provided at https://github.com/avinetworks/devops/blob/master/cert_mgmt/letsencrypt_mgmt_profile_with_aws_dns.py .
-#     infoblox hosted domain is provided at https://github.com/avinetworks/devops/blob/master/cert_mgmt/letsencrypt_mgmt_profile_with_infoblox_dns.py .
-
+#     Sample code to add and remove dns txt record in aws hosted domain is provided.
 # Setup -
 #     1. This content needs to be imported in the Avi Controller in the settings menu
 #        at <<Templates - Security - Certificate Management>>.
@@ -67,6 +63,7 @@
 import base64, binascii, hashlib, os, json, re, ssl, subprocess, time, urllib.parse
 from urllib.request import urlopen, Request
 from tempfile import NamedTemporaryFile
+import boto3
 
 from avi.sdk.avi_api import ApiSession
 
@@ -170,12 +167,66 @@ def get_crt(user, password, tenant, api_version, csr, CA=DEFAULT_CA, disable_che
     def add_dns_text_record(key_digest_64, txt_record_name, kwargs):
         # Add your custom code here to add dns txt record under your domain name with name
         # txt_record_name and value key_digest_64
-        pass
+        aws_access_key_id = kwargs.get('aws_access_key_id', None)
+        aws_secret_access_key = kwargs.get('aws_secret_access_key', None)
+        hosted_zone_id = kwargs.get('hosted_zone_id', None)
+
+        try:
+            client = boto3.client('route53', aws_access_key_id=aws_access_key_id,
+                                  aws_secret_access_key=aws_secret_access_key)
+            response = client.change_resource_record_sets(
+                HostedZoneId=hosted_zone_id,
+                ChangeBatch={
+                    'Comment': 'Adding dns txt record',
+                    'Changes': [
+                        {
+                            'Action': 'UPSERT',
+                            'ResourceRecordSet': {
+                                'Name': "{}".format(txt_record_name),
+                                'Type': 'TXT',
+                                'TTL': 123,
+                                'ResourceRecords': [{"Value": "\"{}\"".format(key_digest_64)}]
+                            }
+                        }]
+                })
+
+            #Waiting for changes to propogate to all the Route 53 authoritative DNS servers
+            while(response["ChangeInfo"]["Status"]!='INSYNC'):
+                response = client.get_change(id=response["ChangeInfo"]["Id"])
+
+            print("Added dns text record")
+        except Exception as e:
+            raise Exception("Error adding dns txt record to vs {}",e)
 
     def remove_dns_text_record(key_digest_64, txt_record_name, kwargs):
         # Add your custom code here to remove dns txt record under your domain name with name
         # txt_record_name and value key_digest_64
-        pass
+
+        aws_access_key_id = kwargs.get('aws_access_key_id', None)
+        aws_secret_access_key = kwargs.get('aws_secret_access_key', None)
+        hosted_zone_id = kwargs.get('hosted_zone_id', None)
+
+        try:
+            client = boto3.client('route53', aws_access_key_id=aws_access_key_id,
+                                  aws_secret_access_key=aws_secret_access_key)
+            response = client.change_resource_record_sets(
+                HostedZoneId=hosted_zone_id,
+                ChangeBatch={
+                    'Comment': 'Deleting dns txt record',
+                    'Changes': [
+                        {
+                            'Action': 'DELETE',
+                            'ResourceRecordSet': {
+                                'Name': txt_record_name,
+                                'Type': 'TXT',
+                                'TTL': 123,
+                                'ResourceRecords': [{"Value": "\"{}\"".format(key_digest_64)}]
+                            }
+                        }]
+                })
+            print("Deleted dns text record")
+        except Exception as e:
+            print("Error deleting dns txt record from vs {}",e)
 
     if os.path.exists(ACCOUNT_KEY_PATH):
         if debug:
