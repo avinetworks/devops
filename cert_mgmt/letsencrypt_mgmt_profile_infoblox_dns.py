@@ -219,7 +219,8 @@ def get_crt(user, password, tenant, api_version, csr, CA=DEFAULT_CA, disable_che
         rest_url = 'https://' + infoblox_host + '/wapi/v' + \
                    infoblox_wapi_version + '/record:txt'
         payload = '{"text": "' + key_digest_64 + '","name": "' + \
-                  txt_record_name + '"}'
+                  txt_record_name + '","view": "' + \
+                  infoblox_dns_view + '"}'
         try:
             r = post_infoblox(url=rest_url, auth=(infoblox_username, infoblox_password),
                               verify=infoblox_verify_ssl, data=payload, timeout=300)
