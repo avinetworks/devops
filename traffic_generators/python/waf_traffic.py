@@ -7,7 +7,7 @@ import time
 import random
 from random import randint
 import uuid
-import urllib, urllib2, cookielib
+import urllib3
 import random
 from requests_toolbelt.adapters import source
 
@@ -46,10 +46,10 @@ dvwa_cookie = r.cookies
 
 
 print ("DVWA Cookie")
-print dvwa_cookie
+print(dvwa_cookie)
 
 print ("DVWA Header")
-print r.headers
+print(r.headers)
 
 counter = 0
 #r1.headers = {url1, 'user-agent': ua1, ''}
