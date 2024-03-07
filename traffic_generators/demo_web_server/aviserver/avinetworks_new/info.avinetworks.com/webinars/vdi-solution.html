@@ -1,0 +1,451 @@
+<!doctype html><!--[if lt IE 7]> <html class="no-js lt-ie9 lt-ie8 lt-ie7" lang="en" > <![endif]--><!--[if IE 7]>    <html class="no-js lt-ie9 lt-ie8" lang="en" >        <![endif]--><!--[if IE 8]>    <html class="no-js lt-ie9" lang="en" >               <![endif]--><!--[if gt IE 8]><!--><html class="no-js" lang="en"><!--<![endif]-->
+<!-- Mirrored from info.avinetworks.com/webinars/vdi-solution by HTTrack Website Copier/3.x [XR&CO'2014], Fri, 18 Feb 2022 15:30:15 GMT -->
+<!-- Added by HTTrack --><meta http-equiv="content-type" content="text/html;charset=UTF-8" /><!-- /Added by HTTrack -->
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="author" content="Avi Networks, now part of VMware">
+    <meta name="description" content="Learn how to reliably and securely empower remote workers and minimize business disruptions from our cloud, VDI and application security experts.">
+    <meta name="generator" content="HubSpot">
+    <title>Enabling Remote Workers with Modern VDI</title>
+    <link rel="shortcut icon" href="../hs-fs/hub/443964/file-2160934496-png/Favicon-1.png">
+    
+
+    <script src="../hs/hsstatic/jquery-libs/static-1.1/jquery/jquery-1.7.1.js"></script>
+<script>hsjQuery = window['jQuery'];</script>
+    <meta property="og:description" content="Learn how to reliably and securely empower remote workers and minimize business disruptions from our cloud, VDI and application security experts.">
+    <meta property="og:title" content="Enabling Remote Workers with Modern VDI">
+    <meta name="twitter:description" content="Learn how to reliably and securely empower remote workers and minimize business disruptions from our cloud, VDI and application security experts.">
+    <meta name="twitter:title" content="Enabling Remote Workers with Modern VDI">
+
+    
+
+    
+    <style>
+a.cta_button{-moz-box-sizing:content-box !important;-webkit-box-sizing:content-box !important;box-sizing:content-box !important;vertical-align:middle}.hs-breadcrumb-menu{list-style-type:none;margin:0px 0px 0px 0px;padding:0px 0px 0px 0px}.hs-breadcrumb-menu-item{float:left;padding:10px 0px 10px 10px}.hs-breadcrumb-menu-divider:before{content:'›';padding-left:10px}.hs-featured-image-link{border:0}.hs-featured-image{float:right;margin:0 0 20px 20px;max-width:50%}@media (max-width: 568px){.hs-featured-image{float:none;margin:0;width:100%;max-width:100%}}.hs-screen-reader-text{clip:rect(1px, 1px, 1px, 1px);height:1px;overflow:hidden;position:absolute !important;width:1px}
+</style>
+
+<link rel="stylesheet" href="../hs-fs/hub/443964/hub_generated/module_assets/20226899033/1644343679818/module_20226899033_Avi_Module_Template_-_Basic_Header_-_No_Form_-_Full_Width_Color_or_Image_BG.min.css">
+<link rel="stylesheet" href="../hs-fs/hub/443964/hub_generated/module_assets/8174280243/1603370660684/module_8174280243_Avi_Module_Template_-_Rich_Text_Content_-_1_or_2_Columns.min.css">
+    
+
+    
+    <link rel="canonical" href="vdi-solution.html">
+
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<!-- OneTrust Cookies Consent Notice start -->
+  <script src="https://cdn.cookielaw.org/scripttemplates/otSDKStub.js" type="text/javascript" charset="UTF-8" data-domain-script="c08fd0a4-8093-4930-9189-209981a14929"></script>
+  <script type="text/javascript">
+    function OptanonWrapper() {
+      {
+        window.dataLayer.push({
+          event: 'OneTrustGroupsUpdated'
+        });
+      }
+    }
+
+  </script>
+
+  <style>
+    button.ot-sdk-show-settings {
+      position: fixed !important;
+      bottom: 0px !important;
+      right: 0px !important;
+      z-index: 999999 !important;
+      color: rgb(255, 255, 255) !important;
+      border: 2px solid rgb(29, 66, 138) !important;
+      padding: 6px !important;
+      display: inline-block;
+      margin: -8px 0px 1.2px -82px;
+      background-color: rgb(29, 66, 138);
+      cursor: pointer;
+      border-radius: 2.75rem;
+      font-size: 13px;
+      min-width: 200px;
+      height: 40px;
+      font-weight: bold;
+    }
+    @media (min-width: 900px) {
+      li#menu-item-10244 {
+      display: none;
+      }
+      li#menu-item-10246 {
+      display: none;
+      }
+      li#menu-item-10247 {
+      display: none;
+      }
+      li#menu-item-10246 a,  li#menu-item-10247 a{
+      border: 0;
+      display: inline-block;
+      background-color: #FF4B00;
+      color: #fff;
+      font-weight: 700;
+      text-transform: uppercase;
+      padding: .25em 1.666em;
+      border-radius: 2rem;
+      -webkit-transition: all 0.25s cubic-bezier(.37,0,.45,.99);
+      -o-transition: all 0.25s cubic-bezier(.37,0,.45,.99);
+      transition: all 0.25s cubic-bezier(.37,0,.45,.99);
+      background-color: #fff!important;
+      color: #FF4B00!important;
+      font-size: .8em;
+      margin-left: 30px;
+      }
+    }
+    li#menu-item-10244 a {
+        border: 0;
+    display: inline-block;
+    background-color: #FF4B00;
+    color: #fff;
+    font-weight: 700;
+    text-transform: uppercase;
+    padding: .25em 1.666em;
+    border-radius: 2rem;
+    -webkit-transition: all 0.25s cubic-bezier(.37,0,.45,.99);
+    -o-transition: all 0.25s cubic-bezier(.37,0,.45,.99);
+    transition: all 0.25s cubic-bezier(.37,0,.45,.99);
+    background-color: #fff!important;
+    color: #FF4B00!important;
+    font-size: .8em;
+    margin-left: 30px;
+    }
+
+
+  </style>
+  <!-- OneTrust Cookies Consent Notice end -->
+
+  <!-- Google Tag Manager -->
+  <script type="text/javascript">
+    function setGTM(w, d, s, l, i) {
+      w[l] = w[l] || [];
+      w[l].push({
+        'gtm.start': new Date().getTime(),
+        event: 'gtm.js'
+      });
+      var f = d.getElementsByTagName(s)[0],
+        j = d.createElement(s),
+        dl = l != 'dataLayer' ? '&l=' + l : '';
+      j.async = true;
+      j.src = 'https://www.googletagmanager.com/gtm.js?id=' + i + dl;
+      f.parentNode.insertBefore(j, f);
+    }
+    if (document.cookie.indexOf('OptanonConsent') > -1 && document.cookie.indexOf('groups=') > -1) {
+      setGTM(window, document, 'script', 'dataLayer', 'GTM-K6D79G');
+    } else {
+      waitForOnetrustActiveGroups();
+    }
+    var timer;
+
+    function waitForOnetrustActiveGroups() {
+      if (document.cookie.indexOf('OptanonConsent') > -1 && document.cookie.indexOf('groups=') > -1) {
+        clearTimeout(timer);
+        setGTM(window, document, 'script', 'dataLayer', 'GTM-K6D79G');
+      } else {
+        timer = setTimeout(waitForOnetrustActiveGroups, 250);
+      }
+    }
+
+  </script>
+  <!-- End Google Tag Manager -->
+
+
+<!-- Google Web Fonts -->
+                <link href="https://fonts.googleapis.com/css?family=Lato:300,400,300italic,400italic" rel="stylesheet" type="text/css">
+                <link href="https://fonts.googleapis.com/css?family=Montserrat:400,700" rel="stylesheet" type="text/css">
+
+            <!-- Theme Foundation CSS Package -->
+                <link href="http://cdn2.hubspot.net/hub/7052064/hub_generated/template_assets/1645042270640/hubspot/hubspot_default/shared/responsive/theme-foundation-v1-0.min.css" rel="stylesheet" type="text/css">
+            
+
+
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<script src="https://use.typekit.net/uaa6zqd.js"></script>
+<script>try{Typekit.load({ async: true });}catch(e){}</script>
+
+<style>
+.evidon-banner {
+  z-index: 99999999999 !important;
+}
+</style>
+
+<meta property="og:image" content="https://info.avinetworks.com/hubfs/ondemand-virtual-summit.png#keepProtocol">
+<meta property="og:image:width" content="600">
+<meta property="og:image:height" content="300">
+<meta property="og:image:alt" content="enabling-remote-workers-with-modern-vdi">
+<meta name="twitter:image" content="https://info.avinetworks.com/hubfs/ondemand-virtual-summit.png#keepProtocol">
+<meta name="twitter:image:alt" content="enabling-remote-workers-with-modern-vdi">
+
+<meta property="og:url" content="https://info.avinetworks.com/webinars/vdi-solution">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="stylesheet" href="http://cdn2.hubspot.net/hub/7052064/hub_generated/template_assets/1645042271536/hubspot/hubspot_default/shared/responsive/layout.min.css">
+
+<link rel="stylesheet" href="../hs-fs/hub/443964/hub_generated/template_assets/2120523630/1600095143456/Coded_files/Custom/page/AVI-Nov2014-theme/AVI-Nov2014-style.css">
+<link rel="stylesheet" href="../hs-fs/hub/443964/hub_generated/template_assets/4640845456/1625859578801/Coded_files/Custom/page/Bz_Avi/global.css">
+<link rel="stylesheet" href="../hs-fs/hub/443964/hub_generated/template_assets/8191115423/1645059591159/Templates/Custom/Page/AD_LP_Custom_Modules/ad-lp-styles.min.css">
+<link rel="stylesheet" href="../hs-fs/hub/443964/hub_generated/template_assets/20858359151/1645059723522/Templates/Custom/Page/AD_LP_Custom_Modules/2019-full-header-download-vmware-override.min.css">
+
+
+
+</head>
+<body class="lp--no-nav   hs-content-id-28134527507 hs-landing-page hs-page hs-content-path-webinars-vdi-solution hs-content-name-wbnr-21q1-g-btvs-horizon-avi-ms-summit  " style="">
+    <div class="header-container-wrapper">
+    <div class="header-container container-fluid">
+
+
+    </div><!--end header -->
+</div><!--end header wrapper -->
+
+<div class="body-container-wrapper">
+    <div class="body-container container-fluid">
+
+<div class="row-fluid-wrapper row-depth-1 row-number-1 ">
+<div class="row-fluid ">
+<div class="span12 widget-span widget-type-widget_container " style="" data-widget-type="widget_container" data-x="0" data-w="12">
+<span id="hs_cos_wrapper_module_155260036780610686" class="hs_cos_wrapper hs_cos_wrapper_widget_container hs_cos_wrapper_type_widget_container" style="" data-hs-cos-general-type="widget_container" data-hs-cos-type="widget_container"><div id="hs_cos_wrapper_widget_1586525861246" class="hs_cos_wrapper hs_cos_wrapper_widget hs_cos_wrapper_type_module" style="" data-hs-cos-general-type="widget" data-hs-cos-type="module"><div class="row-fluid-wrapper row-depth-1 row-number-1">
+  <div class="row-fluid ">
+    <div class="span12 widget-span widget-type-raw_jinja" style="" data-widget-type="" data-x="0" data-w="12">
+<div class="hero hero--dark-blue-grad ">
+        <div class="l-page-wrap hero__content">
+          <div class="hero__title">
+
+              
+                <a href="../../avinetworks.com/index.html" class="return-home" target="_blank"><img class="hero__logo" src="../hubfs/white-avi-vmware-logo.png" alt="Avi Networks - Now part of VMware" style="max-width: 200px;"></a>
+              
+
+            <div class="hero__title-text  ">     
+                
+                  <!-- HTML to show when checked -->
+                  <h3 style="font-style: italic ;">Watch our On-Demand Virtual Summit</h3>
+                
+                <h1>Enabling Remote Workers with Modern VDI​ </h1>
+            </div>
+          </div>
+        </div>
+        
+      </div> 
+     </div><!--end widget-span -->
+  </div><!--end row-->
+</div></div>
+<div id="hs_cos_wrapper_widget_9714587605" class="hs_cos_wrapper hs_cos_wrapper_widget hs_cos_wrapper_type_module" style="" data-hs-cos-general-type="widget" data-hs-cos-type="module"><div class="row-fluid-wrapper row-depth-1 row-number-1 section " style="padding-bottom: 0;">
+  <div class="row-fluid ">
+    <div class="span12 widget-span widget-type-raw_jinja" style="" data-widget-type="" data-x="0" data-w="12">
+      
+        <div class="l-page-wrap inner__content ">
+          
+          
+            <div class="span6">
+              <div id="hs_cos_wrapper_widget_9714587605_" class="hs_cos_wrapper hs_cos_wrapper_widget hs_cos_wrapper_type_inline_rich_text" style="" data-hs-cos-general-type="widget" data-hs-cos-type="inline_rich_text" data-hs-cos-field="rte_a"><h3 style="font-size: 24px;">View our On-Demand Half-Day Virtual Summit&nbsp;</h3>
+<p><strong>View one or all six of the recorded sessions to get your answers to load balancing, cloud, VDI, and application security from experts across VMware (Horizon Cloud, Avi Networks, VeloCloud and Microsoft</strong></p>
+<p><span>The unprecedented global situation caused by <strong>COVID-19 has created an instant need for employees to work at home </strong>– large numbers of remote employees now need quick access to their desktops and apps to continue their work and keep our economies flowing, despite the pandemic.</span></p>
+<p><span>Never has the need to standup infrastructure in record time for virtual desktops and apps come into such sharp focus.<strong> Get a blueprint for the fastest path</strong> to reliably and securely empower remote workers and minimize business disruptions.&nbsp;</span></p>
+<p><!--HubSpot Call-to-Action Code --><span class="hs-cta-wrapper" id="hs-cta-wrapper-19349743-dacc-45a3-9546-b1ec654c0f13"><span class="hs-cta-node hs-cta-19349743-dacc-45a3-9546-b1ec654c0f13" id="hs-cta-19349743-dacc-45a3-9546-b1ec654c0f13"><!--[if lte IE 8]><div id="hs-cta-ie-element"></div><![endif]--><a href="https://cta-redirect.hubspot.com/cta/redirect/443964/19349743-dacc-45a3-9546-b1ec654c0f13" target="_blank" rel="noopener"><img class="hs-cta-img" id="hs-cta-img-19349743-dacc-45a3-9546-b1ec654c0f13" style="border-width:0px;" src="https://no-cache.hubspot.com/cta/default/443964/19349743-dacc-45a3-9546-b1ec654c0f13.png" alt="Watch the On-Demand Virtual Summit Now"></a></span><script charset="utf-8" src="../hs/cta/cta/current.js"></script><script type="text/javascript"> hbspt.cta._relativeUrls=true;hbspt.cta.load(443964, '19349743-dacc-45a3-9546-b1ec654c0f13', {"useNewLoader":"true","region":"na1"}); </script></span><!-- end HubSpot Call-to-Action Code --></p>
+<p><span>In addition, we will tell you about VMware's complete solution now available for a&nbsp; 90-day extended trial.&nbsp; You can deploy it virtually and it includes 3rd generation load balancing and Horizon 7 or Horizon for cloud.&nbsp; Start now, pay later when you love it.</span></p>
+<p><strong>Recordings Available:</strong></p>
+<table width="689" style="border-color: #99acc2; border-collapse: collapse; table-layout: fixed; height: 268px; width: 689px;" cellpadding="4">
+<tbody>
+<tr style="height: 60px;">
+<td style="height: 60px; width: 120px;">
+<p>Session 1</p>
+</td>
+<td style="height: 60px; width: 569px;">
+<p><!--HubSpot Call-to-Action Code --><span class="hs-cta-wrapper" id="hs-cta-wrapper-ba711f24-f5ad-4379-9664-8cb1138ae3f1"><span class="hs-cta-node hs-cta-ba711f24-f5ad-4379-9664-8cb1138ae3f1" id="hs-cta-ba711f24-f5ad-4379-9664-8cb1138ae3f1"><!--[if lte IE 8]><div id="hs-cta-ie-element"></div><![endif]--><a href="https://cta-redirect.hubspot.com/cta/redirect/443964/ba711f24-f5ad-4379-9664-8cb1138ae3f1" target="_blank" rel="noopener"><img class="hs-cta-img" id="hs-cta-img-ba711f24-f5ad-4379-9664-8cb1138ae3f1" style="border-width:0px;" src="https://no-cache.hubspot.com/cta/default/443964/ba711f24-f5ad-4379-9664-8cb1138ae3f1.png" alt="Multi-Cloud Load Balancing for Fast, Reliable Virtual Desktops and Apps"></a></span><script charset="utf-8" src="../hs/cta/cta/current.js"></script><script type="text/javascript"> hbspt.cta._relativeUrls=true;hbspt.cta.load(443964, 'ba711f24-f5ad-4379-9664-8cb1138ae3f1', {"useNewLoader":"true","region":"na1"}); </script></span><!-- end HubSpot Call-to-Action Code --></p>
+</td>
+</tr>
+<tr style="height: 37px;">
+<td style="height: 37px; width: 120px;">
+<p>Session 2</p>
+</td>
+<td style="height: 37px; width: 569px;">
+<p><!--HubSpot Call-to-Action Code --><span class="hs-cta-wrapper" id="hs-cta-wrapper-cfc8e3ab-ef2f-4d18-944d-63e3180f50da"><span class="hs-cta-node hs-cta-cfc8e3ab-ef2f-4d18-944d-63e3180f50da" id="hs-cta-cfc8e3ab-ef2f-4d18-944d-63e3180f50da"><!--[if lte IE 8]><div id="hs-cta-ie-element"></div><![endif]--><a href="https://cta-redirect.hubspot.com/cta/redirect/443964/cfc8e3ab-ef2f-4d18-944d-63e3180f50da" target="_blank" rel="noopener"><img class="hs-cta-img" id="hs-cta-img-cfc8e3ab-ef2f-4d18-944d-63e3180f50da" style="border-width:0px;" src="https://no-cache.hubspot.com/cta/default/443964/cfc8e3ab-ef2f-4d18-944d-63e3180f50da.png" alt="Turn-Key Load Balancing for Horizon Cloud on Microsoft Azure"></a></span><script charset="utf-8" src="../hs/cta/cta/current.js"></script><script type="text/javascript"> hbspt.cta._relativeUrls=true;hbspt.cta.load(443964, 'cfc8e3ab-ef2f-4d18-944d-63e3180f50da', {"useNewLoader":"true","region":"na1"}); </script></span><!-- end HubSpot Call-to-Action Code --></p>
+</td>
+</tr>
+<tr style="height: 37px;">
+<td style="height: 37px; width: 120px;">
+<p>Session 3&nbsp;</p>
+</td>
+<td style="height: 37px; width: 569px;">
+<p><!--HubSpot Call-to-Action Code --><span class="hs-cta-wrapper" id="hs-cta-wrapper-5d320d96-d37d-451d-b4fa-df3f82fb21e6"><span class="hs-cta-node hs-cta-5d320d96-d37d-451d-b4fa-df3f82fb21e6" id="hs-cta-5d320d96-d37d-451d-b4fa-df3f82fb21e6"><!--[if lte IE 8]><div id="hs-cta-ie-element"></div><![endif]--><a href="https://cta-redirect.hubspot.com/cta/redirect/443964/5d320d96-d37d-451d-b4fa-df3f82fb21e6" target="_blank" rel="noopener"><img class="hs-cta-img" id="hs-cta-img-5d320d96-d37d-451d-b4fa-df3f82fb21e6" style="border-width:0px;" src="https://no-cache.hubspot.com/cta/default/443964/5d320d96-d37d-451d-b4fa-df3f82fb21e6.png" alt="See Modern, Cloud-Native Load Balancing in Action"></a></span><script charset="utf-8" src="../hs/cta/cta/current.js"></script><script type="text/javascript"> hbspt.cta._relativeUrls=true;hbspt.cta.load(443964, '5d320d96-d37d-451d-b4fa-df3f82fb21e6', {"useNewLoader":"true","region":"na1"}); </script></span><!-- end HubSpot Call-to-Action Code --></p>
+</td>
+</tr>
+<tr style="height: 60px;">
+<td style="height: 60px; width: 120px;">
+<p>Session 4</p>
+</td>
+<td style="height: 60px; width: 569px;">
+<p><!--HubSpot Call-to-Action Code --><span class="hs-cta-wrapper" id="hs-cta-wrapper-82da8006-8510-4b1a-befb-cc3dc8e63e33"><span class="hs-cta-node hs-cta-82da8006-8510-4b1a-befb-cc3dc8e63e33" id="hs-cta-82da8006-8510-4b1a-befb-cc3dc8e63e33"><!--[if lte IE 8]><div id="hs-cta-ie-element"></div><![endif]--><a href="https://cta-redirect.hubspot.com/cta/redirect/443964/82da8006-8510-4b1a-befb-cc3dc8e63e33" target="_blank" rel="noopener"><img class="hs-cta-img" id="hs-cta-img-82da8006-8510-4b1a-befb-cc3dc8e63e33" style="border-width:0px;" src="https://no-cache.hubspot.com/cta/default/443964/82da8006-8510-4b1a-befb-cc3dc8e63e33.png" alt="Getting the Most Out of Windows Virtual Desktop with VMware Horizon Cloud on  Microsoft Azure"></a></span><script charset="utf-8" src="../hs/cta/cta/current.js"></script><script type="text/javascript"> hbspt.cta._relativeUrls=true;hbspt.cta.load(443964, '82da8006-8510-4b1a-befb-cc3dc8e63e33', {"useNewLoader":"true","region":"na1"}); </script></span><!-- end HubSpot Call-to-Action Code --></p>
+</td>
+</tr>
+<tr style="height: 37px;">
+<td style="height: 37px; width: 120px;">
+<p>Session 5</p>
+</td>
+<td style="height: 37px; width: 569px;">
+<p><!--HubSpot Call-to-Action Code --><span class="hs-cta-wrapper" id="hs-cta-wrapper-38267903-35fe-4d6c-ada9-9cbc6a6571d2"><span class="hs-cta-node hs-cta-38267903-35fe-4d6c-ada9-9cbc6a6571d2" id="hs-cta-38267903-35fe-4d6c-ada9-9cbc6a6571d2"><!--[if lte IE 8]><div id="hs-cta-ie-element"></div><![endif]--><a href="https://cta-redirect.hubspot.com/cta/redirect/443964/38267903-35fe-4d6c-ada9-9cbc6a6571d2" target="_blank" rel="noopener"><img class="hs-cta-img" id="hs-cta-img-38267903-35fe-4d6c-ada9-9cbc6a6571d2" style="border-width:0px;" src="https://no-cache.hubspot.com/cta/default/443964/38267903-35fe-4d6c-ada9-9cbc6a6571d2.png" alt="Extending SD-WAN to Azure with VMware SD-WAN by VeloCloud"></a></span><script charset="utf-8" src="../hs/cta/cta/current.js"></script><script type="text/javascript"> hbspt.cta._relativeUrls=true;hbspt.cta.load(443964, '38267903-35fe-4d6c-ada9-9cbc6a6571d2', {"useNewLoader":"true","region":"na1"}); </script></span><!-- end HubSpot Call-to-Action Code --></p>
+</td>
+</tr>
+<tr style="height: 37px;">
+<td style="height: 37px; width: 120px;">
+<p>Session 6</p>
+</td>
+<td style="height: 37px; width: 569px;">
+<p><!--HubSpot Call-to-Action Code --><span class="hs-cta-wrapper" id="hs-cta-wrapper-430730af-9dae-4215-9fe2-d0b9f6a70ade"><span class="hs-cta-node hs-cta-430730af-9dae-4215-9fe2-d0b9f6a70ade" id="hs-cta-430730af-9dae-4215-9fe2-d0b9f6a70ade"><!--[if lte IE 8]><div id="hs-cta-ie-element"></div><![endif]--><a href="https://cta-redirect.hubspot.com/cta/redirect/443964/430730af-9dae-4215-9fe2-d0b9f6a70ade" target="_blank" rel="noopener"><img class="hs-cta-img" id="hs-cta-img-430730af-9dae-4215-9fe2-d0b9f6a70ade" style="border-width:0px;" src="https://no-cache.hubspot.com/cta/default/443964/430730af-9dae-4215-9fe2-d0b9f6a70ade.png" alt="Achieve Business Continuity with Azure VMware Solution"></a></span><script charset="utf-8" src="../hs/cta/cta/current.js"></script><script type="text/javascript"> hbspt.cta._relativeUrls=true;hbspt.cta.load(443964, '430730af-9dae-4215-9fe2-d0b9f6a70ade', {"useNewLoader":"true","region":"na1"}); </script></span><!-- end HubSpot Call-to-Action Code --></p>
+</td>
+</tr>
+</tbody>
+</table>
+<p>&nbsp;</p>
+<p><!--HubSpot Call-to-Action Code --><span class="hs-cta-wrapper" id="hs-cta-wrapper-4ea8b830-661c-48c3-a23c-103d6df69676"><span class="hs-cta-node hs-cta-4ea8b830-661c-48c3-a23c-103d6df69676" id="hs-cta-4ea8b830-661c-48c3-a23c-103d6df69676"><!--[if lte IE 8]><div id="hs-cta-ie-element"></div><![endif]--><a href="https://cta-redirect.hubspot.com/cta/redirect/443964/4ea8b830-661c-48c3-a23c-103d6df69676" target="_blank" rel="noopener"><img class="hs-cta-img" id="hs-cta-img-4ea8b830-661c-48c3-a23c-103d6df69676" style="border-width:0px;" src="https://no-cache.hubspot.com/cta/default/443964/4ea8b830-661c-48c3-a23c-103d6df69676.png" alt="Watch Now"></a></span><script charset="utf-8" src="../hs/cta/cta/current.js"></script><script type="text/javascript"> hbspt.cta._relativeUrls=true;hbspt.cta.load(443964, '4ea8b830-661c-48c3-a23c-103d6df69676', {"useNewLoader":"true","region":"na1"}); </script></span><!-- end HubSpot Call-to-Action Code --></p></div>
+            </div>
+            <div class="span6">
+              <div id="hs_cos_wrapper_widget_9714587605_" class="hs_cos_wrapper hs_cos_wrapper_widget hs_cos_wrapper_type_inline_rich_text" style="" data-hs-cos-general-type="widget" data-hs-cos-type="inline_rich_text" data-hs-cos-field="rte_b"><center>
+<div style="text-align: center;"><img src="../hs-fs/hubfs/Webinars/hdr-virtual-summit_opt-Bafb3.jpg?width=295&amp;name=hdr-virtual-summit_opt-B.jpg" alt="hdr-virtual-summit_opt-B" width="295" style="width: 295px; display: block; margin-left: auto; margin-right: auto;" srcset="https://info.avinetworks.com/hs-fs/hubfs/Webinars/hdr-virtual-summit_opt-B.jpg?width=148&amp;name=hdr-virtual-summit_opt-B.jpg 148w, https://info.avinetworks.com/hs-fs/hubfs/Webinars/hdr-virtual-summit_opt-B.jpg?width=295&amp;name=hdr-virtual-summit_opt-B.jpg 295w, https://info.avinetworks.com/hs-fs/hubfs/Webinars/hdr-virtual-summit_opt-B.jpg?width=443&amp;name=hdr-virtual-summit_opt-B.jpg 443w, https://info.avinetworks.com/hs-fs/hubfs/Webinars/hdr-virtual-summit_opt-B.jpg?width=590&amp;name=hdr-virtual-summit_opt-B.jpg 590w, https://info.avinetworks.com/hs-fs/hubfs/Webinars/hdr-virtual-summit_opt-B.jpg?width=738&amp;name=hdr-virtual-summit_opt-B.jpg 738w, https://info.avinetworks.com/hs-fs/hubfs/Webinars/hdr-virtual-summit_opt-B.jpg?width=885&amp;name=hdr-virtual-summit_opt-B.jpg 885w" sizes="(max-width: 295px) 100vw, 295px"></div>
+<div>&nbsp;</div>
+<div><!--HubSpot Call-to-Action Code --><span class="hs-cta-wrapper" id="hs-cta-wrapper-19349743-dacc-45a3-9546-b1ec654c0f13"><span class="hs-cta-node hs-cta-19349743-dacc-45a3-9546-b1ec654c0f13" id="hs-cta-19349743-dacc-45a3-9546-b1ec654c0f13"><!--[if lte IE 8]><div id="hs-cta-ie-element"></div><![endif]--><a href="https://cta-redirect.hubspot.com/cta/redirect/443964/19349743-dacc-45a3-9546-b1ec654c0f13" target="_blank" rel="noopener"><img class="hs-cta-img" id="hs-cta-img-19349743-dacc-45a3-9546-b1ec654c0f13" style="border-width:0px;" src="https://no-cache.hubspot.com/cta/default/443964/19349743-dacc-45a3-9546-b1ec654c0f13.png" alt="Watch the On-Demand Virtual Summit Now"></a></span><script charset="utf-8" src="../hs/cta/cta/current.js"></script><script type="text/javascript"> hbspt.cta._relativeUrls=true;hbspt.cta.load(443964, '19349743-dacc-45a3-9546-b1ec654c0f13', {"useNewLoader":"true","region":"na1"}); </script></span><!-- end HubSpot Call-to-Action Code --></div>
+</center></div>   
+            </div>
+          
+      </div>
+      
+    </div>
+  </div>
+</div></div>
+<div id="hs_cos_wrapper_widget_9714587607" class="hs_cos_wrapper hs_cos_wrapper_widget hs_cos_wrapper_type_module" style="" data-hs-cos-general-type="widget" data-hs-cos-type="module"><div class="row-fluid-wrapper row-depth-1 row-number-1 section section__footer">
+  <div class="row-fluid ">
+    <div class="span12 widget-span widget-type-raw_jinja" style="" data-widget-type="" data-x="0" data-w="12">
+      <div class="l-page-wrap inner__content inner__content--full inner__content--flex">
+        <a href="../../avinetworks.com/index.html"><img src="../hubfs/Brand%20Logos/283409-avi-vmw-blk.png" alt="Avi Networks logo" class="avi-logo"></a>
+        <div class="footer__copyright">
+          <p>©2022 VMware</p>
+          <p><a href="https://www.vmware.com/help/privacy.html">Privacy Policy</a>
+            &nbsp;|&nbsp;<a href="https://www.vmware.com/help/legal.html">Terms of Use</a>
+            &nbsp;|&nbsp;<a href="https://www.vmware.com/help/privacy/california-privacy-rights.html">California Privacy Rights</a></p> 
+<!--           <p><a href="https://avinetworks.com/privacy-policy/">Privacy Policy</a> | <a href="#">Terms &amp; Conditions</a></p> -->
+          
+        </div>
+      </div>
+    </div>
+  </div>
+</div></div></span>
+</div><!--end widget-span -->
+</div><!--end row-->
+</div><!--end row-wrapper -->
+
+    </div><!--end body -->
+</div><!--end body wrapper -->
+
+<div class="footer-container-wrapper">
+    <div class="footer-container container-fluid">
+
+
+    </div><!--end footer -->
+</div><!--end footer wrapper -->
+
+    
+<script>
+(function () {
+    window.addEventListener('load', function () {
+        setTimeout(function () {
+            var xhr = new XMLHttpRequest();
+            xhr.open('POST.html', '/_hcms/perf', true /*async*/);
+            xhr.setRequestHeader("Content-type", "application/json");
+            xhr.onreadystatechange = function () {
+                // do nothing.
+            };
+            var connection = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
+            function populateNetworkInfo(name, connection, info) {
+                if (name in connection) {
+                    info[name] = connection[name];
+                }
+            }
+            var networkInfo = {};
+            if (connection) {
+                ['type', 'effectiveType', 'downlink', 'rtt'].forEach(function(name) {
+                    populateNetworkInfo(name, connection, networkInfo);
+                });
+            }
+            var perfData = {
+                url: location.href,
+                portal: 443964,
+                content: 28134527507,
+                group: -1,
+                connection: networkInfo,
+                timing: performance.timing
+            };
+            xhr.send(JSON.stringify(perfData));
+        }, 3000);  // Execute this 3 seconds after onload.
+    });
+})();
+</script>
+
+<script>
+var hsVars = hsVars || {}; hsVars['language'] = 'en';
+</script>
+
+<script src="../hs/hsstatic/cos-i18n/static-1.53/bundles/project.js"></script>
+
+<!-- Start of HubSpot Analytics Code -->
+<script type="text/javascript">
+var _hsq = _hsq || [];
+_hsq.push(["setContentType", "landing-page"]);
+_hsq.push(["setCanonicalUrl", "https:\/\/info.avinetworks.com\/webinars\/vdi-solution"]);
+_hsq.push(["setPageId", "28134527507"]);
+_hsq.push(["setContentMetadata", {
+    "contentPageId": 28134527507,
+    "legacyPageId": "28134527507",
+    "contentFolderId": null,
+    "contentGroupId": null,
+    "abTestId": null,
+    "languageVariantId": 28134527507,
+    "languageCode": null,
+    
+}]);
+</script>
+
+<script type="text/javascript" id="hs-script-loader" async defer src="../hs/scriptloader/443964.js"></script>
+<!-- End of HubSpot Analytics Code -->
+
+
+<script type="text/javascript">
+var hsVars = {
+    ticks: 1645062369609,
+    page_id: 28134527507,
+    
+    content_group_id: 0,
+    portal_id: 443964,
+    app_hs_base_url: "https://app.hubspot.com",
+    cp_hs_base_url: "https://cp.hubspot.com",
+    language: "en",
+    analytics_page_type: "landing-page",
+    analytics_page_id: "28134527507",
+    category_id: 1,
+    folder_id: 0,
+    is_hubspot_user: false
+}
+</script>
+
+
+<script defer src="../hs/hsstatic/HubspotToolsMenu/static-1.119/js/index.js"></script>
+
+<!-- start Main.js DO NOT REMOVE --> 
+
+<script src="../hs-fs/hub/443964/hub_generated/template_assets/2119122174/1569683725365/Coded_files/Custom/page/AVI-Nov2014-theme/AVI-Nov2014-main.js"></script> 
+
+<!-- end Main.js -->
+
+  <!-- Google Tag Manager (noscript) -->
+  <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-K6D79G" height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+  <!-- End Google Tag Manager (noscript) -->
+
+  <!-- OneTrust Button start -->
+  <button id="ot-sdk-btn" class="ot-sdk-show-settings"> Cookie Settings</button>
+  <!-- OneTrust Button end -->
+
+
+    
+    <!-- Generated by the HubSpot Template Builder - template version 1.03 -->
+
+</body>
+<!-- Mirrored from info.avinetworks.com/webinars/vdi-solution by HTTrack Website Copier/3.x [XR&CO'2014], Fri, 18 Feb 2022 15:30:16 GMT -->
+</html>
