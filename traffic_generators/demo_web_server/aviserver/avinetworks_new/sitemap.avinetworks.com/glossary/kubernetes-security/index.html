@@ -1,0 +1,1630 @@
+<!DOCTYPE html>
+<html lang="en-US">
+
+
+<!-- Mirrored from sitemap.avinetworks.com/glossary/kubernetes-security/ by HTTrack Website Copier/3.x [XR&CO'2014], Sun, 20 Feb 2022 03:21:26 GMT -->
+<!-- Added by HTTrack --><meta http-equiv="content-type" content="text/html;charset=UTF-8" /><!-- /Added by HTTrack -->
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <meta name="google-site-verification" content="yE_RkyLsnXuVGAwvfQY27Yj81fOTyMgCNMzA7pHmM5A" />
+
+  <!-- OneTrust Cookies Consent Notice start 
+  <script src="https://cdn.cookielaw.org/scripttemplates/otSDKStub.js" type="text/javascript" charset="UTF-8" data-domain-script="c08fd0a4-8093-4930-9189-209981a14929"></script>
+  <script type="text/javascript">
+    function OptanonWrapper() {
+      {
+        window.dataLayer.push({
+          event: 'OneTrustGroupsUpdated'
+        });
+      }
+    }
+
+  </script>-->
+
+<!-- Script for Marker.io -->
+<script>
+  window.markerConfig = {
+    destination: '5d5b02a403d9d760e3f145fb',
+    source: 'snippet'
+  };
+</script>
+<script>
+!function(e,r,a){if(!e.__Marker){e.__Marker={};var t=[],n={__cs:t};["show","hide","isVisible","capture","cancelCapture","unload","reload","isExtensionInstalled","setReporter","setCustomData","on","off"].forEach(function(e){n[e]=function(){var r=Array.prototype.slice.call(arguments);r.unshift(e),t.push(r)}}),e.Marker=n;var s=r.createElement("script");s.async=1,s.src="https://edge.marker.io/latest/shim.js";var i=r.getElementsByTagName("script")[0];i.parentNode.insertBefore(s,i)}}(window,document);
+</script>
+<!-- end Script for Marker.io -->
+
+
+
+
+
+
+  <!-- place your Cookie script below this line (add page reload on button selection) -->
+
+  <script src="https://cdn.cookielaw.org/scripttemplates/otSDKStub.js" type="text/javascript" charset="UTF-8" data-domain-script="c08fd0a4-8093-4930-9189-209981a14929"></script>
+
+  <script>
+    if (document.cookie.indexOf("OptanonAlertBoxClosed=") >= 0) {
+      window.dataLayer = window.dataLayer || [];
+      window.dataLayer.push({
+        'event': 'OnetrustGroupsUpdated',
+        'OptanonAlertBoxClosed': 'true'
+      });
+    } else {
+      window.dataLayer = window.dataLayer || [];
+      window.dataLayer.push({
+        'event': 'OnetrustGroupsUpdated',
+        'OptanonAlertBoxClosed': 'false'
+      });
+    }
+  </script>
+
+  <script type="text/javascript">
+    function OptanonWrapper() {}
+  </script>
+
+
+
+
+
+
+
+
+
+
+  <style>
+    /* one trust overrides */
+    button.ot-sdk-show-settings {
+      position: fixed !important;
+      bottom: 0px !important;
+      right: 0px !important;
+      z-index: 999999 !important;
+      color: rgb(255, 255, 255) !important;
+      border: 2px solid rgb(29, 66, 138) !important;
+      padding: 6px !important;
+      display: inline-block;
+      margin: -8px 0px 1.2px -82px;
+      background-color: rgb(29, 66, 138);
+      cursor: pointer;
+      border-radius: 2.75rem;
+      font-size: 13px;
+      min-width: 200px;
+      height: 40px;
+      font-weight: bold;
+      transition: .25s all ease !important;
+    }
+
+    #onetrust-consent-sdk #onetrust-pc-sdk button:not(#clear-filters-handler):not(.ot-close-icon):not(#filter-btn-handler):not(.ot-remove-objection-handler):not(.ot-obj-leg-btn-handler):not([aria-expanded]):not(.ot-link-btn),
+    #onetrust-consent-sdk #onetrust-pc-sdk .ot-leg-btn-container .ot-active-leg-btn {
+      border-radius: 50px;
+      transition: .25s all ease;
+    }
+
+
+    #ot-sdk-btn.ot-sdk-show-settings:hover,
+    #ot-sdk-btn.optanon-show-settings:hover,
+    .page-template-default #ot-sdk-btn.ot-sdk-show-settings:hover,
+    .page-template-default #ot-sdk-btn.optanon-show-settings:hover {
+      background-color: rgb(29, 66, 138) !important;
+    }
+
+    #onetrust-banner-sdk .ot-sdk-button:focus,
+    #onetrust-banner-sdk :not(.ot-leg-btn-container)>button:focus,
+    #onetrust-banner-sdk input[type="submit"]:focus,
+    #onetrust-banner-sdk input[type="reset"]:focus,
+    #onetrust-banner-sdk input[type="button"]:focus,
+    #onetrust-pc-sdk .ot-sdk-button:focus,
+    #onetrust-pc-sdk :not(.ot-leg-btn-container)>button:focus,
+    #onetrust-pc-sdk input[type="submit"]:focus,
+    #onetrust-pc-sdk input[type="reset"]:focus,
+    #onetrust-pc-sdk input[type="button"]:focus,
+    #ot-sdk-cookie-policy .ot-sdk-button:focus,
+    #ot-sdk-cookie-policy :not(.ot-leg-btn-container)>button:focus,
+    #ot-sdk-cookie-policy input[type="submit"]:focus,
+    #ot-sdk-cookie-policy input[type="reset"]:focus,
+    #ot-sdk-cookie-policy input[type="button"]:focus {
+      outline: none !important;
+    }
+
+    #onetrust-banner-sdk .ot-sdk-button:hover,
+    #onetrust-banner-sdk :not(.ot-leg-btn-container)>button:hover,
+    #onetrust-banner-sdk input[type="submit"]:hover,
+    #onetrust-banner-sdk input[type="reset"]:hover,
+    #onetrust-banner-sdk input[type="button"]:hover,
+    #onetrust-banner-sdk .ot-sdk-button:focus,
+    #onetrust-banner-sdk :not(.ot-leg-btn-container)>button:focus,
+    #onetrust-banner-sdk input[type="submit"]:focus,
+    #onetrust-banner-sdk input[type="reset"]:focus,
+    #onetrust-banner-sdk input[type="button"]:focus,
+    #onetrust-pc-sdk .ot-sdk-button:hover,
+    #onetrust-pc-sdk :not(.ot-leg-btn-container)>button:hover,
+    #onetrust-pc-sdk input[type="submit"]:hover,
+    #onetrust-pc-sdk input[type="reset"]:hover,
+    #onetrust-pc-sdk input[type="button"]:hover,
+    #onetrust-pc-sdk .ot-sdk-button:focus,
+    #onetrust-pc-sdk :not(.ot-leg-btn-container)>button:focus,
+    #onetrust-pc-sdk input[type="submit"]:focus,
+    #onetrust-pc-sdk input[type="reset"]:focus,
+    #onetrust-pc-sdk input[type="button"]:focus,
+    #ot-sdk-cookie-policy .ot-sdk-button:hover,
+    #ot-sdk-cookie-policy :not(.ot-leg-btn-container)>button:hover,
+    #ot-sdk-cookie-policy input[type="submit"]:hover,
+    #ot-sdk-cookie-policy input[type="reset"]:hover,
+    #ot-sdk-cookie-policy input[type="button"]:hover,
+    #ot-sdk-cookie-policy .ot-sdk-button:focus,
+    #ot-sdk-cookie-policy :not(.ot-leg-btn-container)>button:focus,
+    #ot-sdk-cookie-policy input[type="submit"]:focus,
+    #ot-sdk-cookie-policy input[type="reset"]:focus,
+    #ot-sdk-cookie-policy input[type="button"]:focus {
+      opacity: 1 !important;
+    }
+
+    @media (min-width: 900px) {
+      li#menu-item-10244 {
+        display: none;
+      }
+
+      li#menu-item-10246 {
+        display: none;
+      }
+
+      li#menu-item-10247 {
+        display: none;
+      }
+
+      li#menu-item-10246 a,
+      li#menu-item-10247 a {
+        border: 0;
+        display: inline-block;
+        background-color: #FF4B00;
+        color: #fff;
+        font-weight: 700;
+        text-transform: uppercase;
+        padding: .25em 1.666em;
+        border-radius: 2rem;
+        -webkit-transition: all 0.25s cubic-bezier(.37, 0, .45, .99);
+        -o-transition: all 0.25s cubic-bezier(.37, 0, .45, .99);
+        transition: all 0.25s cubic-bezier(.37, 0, .45, .99);
+        background-color: #fff !important;
+        color: #FF4B00 !important;
+        font-size: .8em;
+        margin-left: 30px;
+      }
+    }
+
+    li#menu-item-10244 a {
+      border: 0;
+      display: inline-block;
+      background-color: #FF4B00;
+      color: #fff;
+      font-weight: 700;
+      text-transform: uppercase;
+      padding: .25em 1.666em;
+      border-radius: 2rem;
+      -webkit-transition: all 0.25s cubic-bezier(.37, 0, .45, .99);
+      -o-transition: all 0.25s cubic-bezier(.37, 0, .45, .99);
+      transition: all 0.25s cubic-bezier(.37, 0, .45, .99);
+      background-color: #fff !important;
+      color: #FF4B00 !important;
+      font-size: .8em;
+      margin-left: 30px;
+    }
+  </style>
+  <!-- OneTrust Cookies Consent Notice end -->
+
+  <!-- Google Tag Manager -->
+  <script type="text/javascript">
+    function setGTM(w, d, s, l, i) {
+      w[l] = w[l] || [];
+      w[l].push({
+        'gtm.start': new Date().getTime(),
+        event: 'gtm.js'
+      });
+      var f = d.getElementsByTagName(s)[0],
+        j = d.createElement(s),
+        dl = l != 'dataLayer' ? '&l=' + l : '';
+      j.async = true;
+      j.src = 'https://www.googletagmanager.com/gtm.js?id=' + i + dl;
+      f.parentNode.insertBefore(j, f);
+    }
+    if (document.cookie.indexOf('OptanonConsent') > -1 && document.cookie.indexOf('groups=') > -1) {
+      setGTM(window, document, 'script', 'dataLayer', 'GTM-K6D79G');
+    } else {
+      waitForOnetrustActiveGroups();
+    }
+    var timer;
+
+    function waitForOnetrustActiveGroups() {
+      if (document.cookie.indexOf('OptanonConsent') > -1 && document.cookie.indexOf('groups=') > -1) {
+        clearTimeout(timer);
+        setGTM(window, document, 'script', 'dataLayer', 'GTM-K6D79G');
+      } else {
+        timer = setTimeout(waitForOnetrustActiveGroups, 250);
+      }
+    }
+  </script>
+  <!-- End Google Tag Manager -->
+
+
+
+
+  <meta name='robots' content='index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1' />
+
+	<!-- This site is optimized with the Yoast SEO Premium plugin v16.2 (Yoast SEO v18.1) - https://yoast.com/wordpress/plugins/seo/ -->
+	<title>What is Kubernetes Security? | Avi Networks</title>
+	<meta name="description" content="Learn the definition of Kubernetes Security and get answers to FAQs regarding: Kubernetes security best practices and more." />
+	<meta property="og:locale" content="en_US" />
+	<meta property="og:type" content="article" />
+	<meta property="og:title" content="What is Kubernetes Security? | Avi Networks" />
+	<meta property="og:description" content="Learn the definition of Kubernetes Security and get answers to FAQs regarding: Kubernetes security best practices and more." />
+	<meta property="og:url" content="https://sitemap.avinetworks.com/glossary/kubernetes-security/" />
+	<meta property="og:site_name" content="Avi Networks" />
+	<meta property="article:publisher" content="https://www.facebook.com/Avi-Networks-454887554580101/" />
+	<meta property="article:modified_time" content="2022-02-07T23:19:40+00:00" />
+	<meta property="og:image" content="https://sitemap.avinetworks.com/wp-content/uploads/2021/02/kubernetes-security-diagram.png" />
+	<meta name="twitter:card" content="summary" />
+	<meta name="twitter:site" content="@AviNetworks" />
+	<meta name="twitter:label1" content="Est. reading time" />
+	<meta name="twitter:data1" content="9 minutes" />
+	<script type="application/ld+json" class="yoast-schema-graph">{"@context":"https://schema.org","@graph":[{"@type":"WebSite","@id":"https://sitemap.avinetworks.com/#website","url":"https://sitemap.avinetworks.com/","name":"Avi Networks","description":"","potentialAction":[{"@type":"SearchAction","target":{"@type":"EntryPoint","urlTemplate":"https://sitemap.avinetworks.com/?s={search_term_string}"},"query-input":"required name=search_term_string"}],"inLanguage":"en-US"},{"@type":"ImageObject","@id":"https://sitemap.avinetworks.com/glossary/kubernetes-security/#primaryimage","inLanguage":"en-US","url":"https://sitemap.avinetworks.com/wp-content/uploads/2021/02/kubernetes-security-diagram.png","contentUrl":"https://sitemap.avinetworks.com/wp-content/uploads/2021/02/kubernetes-security-diagram.png"},{"@type":"WebPage","@id":"https://sitemap.avinetworks.com/glossary/kubernetes-security/#webpage","url":"https://sitemap.avinetworks.com/glossary/kubernetes-security/","name":"What is Kubernetes Security? | Avi Networks","isPartOf":{"@id":"https://sitemap.avinetworks.com/#website"},"primaryImageOfPage":{"@id":"https://sitemap.avinetworks.com/glossary/kubernetes-security/#primaryimage"},"datePublished":"2021-02-18T01:02:49+00:00","dateModified":"2022-02-07T23:19:40+00:00","description":"Learn the definition of Kubernetes Security and get answers to FAQs regarding: Kubernetes security best practices and more.","breadcrumb":{"@id":"https://sitemap.avinetworks.com/glossary/kubernetes-security/#breadcrumb"},"inLanguage":"en-US","potentialAction":[{"@type":"ReadAction","target":["https://sitemap.avinetworks.com/glossary/kubernetes-security/"]}]},{"@type":"BreadcrumbList","@id":"https://sitemap.avinetworks.com/glossary/kubernetes-security/#breadcrumb","itemListElement":[{"@type":"ListItem","position":1,"name":"Home","item":"https://sitemap.avinetworks.com/"},{"@type":"ListItem","position":2,"name":"Kubernetes Security"}]}]}</script>
+	<!-- / Yoast SEO Premium plugin. -->
+
+
+<link rel='dns-prefetch' href='http://maxcdn.bootstrapcdn.com/' />
+<link rel='dns-prefetch' href='http://s.w.org/' />
+<script type="text/javascript">
+window._wpemojiSettings = {"baseUrl":"https:\/\/s.w.org\/images\/core\/emoji\/13.1.0\/72x72\/","ext":".png","svgUrl":"https:\/\/s.w.org\/images\/core\/emoji\/13.1.0\/svg\/","svgExt":".svg","source":{"concatemoji":"https:\/\/sitemap.avinetworks.com\/wp-includes\/js\/wp-emoji-release.min.js?ver=5.9"}};
+/*! This file is auto-generated */
+!function(e,a,t){var n,r,o,i=a.createElement("canvas"),p=i.getContext&&i.getContext("2d");function s(e,t){var a=String.fromCharCode;p.clearRect(0,0,i.width,i.height),p.fillText(a.apply(this,e),0,0);e=i.toDataURL();return p.clearRect(0,0,i.width,i.height),p.fillText(a.apply(this,t),0,0),e===i.toDataURL()}function c(e){var t=a.createElement("script");t.src=e,t.defer=t.type="text/javascript",a.getElementsByTagName("head")[0].appendChild(t)}for(o=Array("flag","emoji"),t.supports={everything:!0,everythingExceptFlag:!0},r=0;r<o.length;r++)t.supports[o[r]]=function(e){if(!p||!p.fillText)return!1;switch(p.textBaseline="top",p.font="600 32px Arial",e){case"flag":return s([127987,65039,8205,9895,65039],[127987,65039,8203,9895,65039])?!1:!s([55356,56826,55356,56819],[55356,56826,8203,55356,56819])&&!s([55356,57332,56128,56423,56128,56418,56128,56421,56128,56430,56128,56423,56128,56447],[55356,57332,8203,56128,56423,8203,56128,56418,8203,56128,56421,8203,56128,56430,8203,56128,56423,8203,56128,56447]);case"emoji":return!s([10084,65039,8205,55357,56613],[10084,65039,8203,55357,56613])}return!1}(o[r]),t.supports.everything=t.supports.everything&&t.supports[o[r]],"flag"!==o[r]&&(t.supports.everythingExceptFlag=t.supports.everythingExceptFlag&&t.supports[o[r]]);t.supports.everythingExceptFlag=t.supports.everythingExceptFlag&&!t.supports.flag,t.DOMReady=!1,t.readyCallback=function(){t.DOMReady=!0},t.supports.everything||(n=function(){t.readyCallback()},a.addEventListener?(a.addEventListener("DOMContentLoaded",n,!1),e.addEventListener("load",n,!1)):(e.attachEvent("onload",n),a.attachEvent("onreadystatechange",function(){"complete"===a.readyState&&t.readyCallback()})),(n=t.source||{}).concatemoji?c(n.concatemoji):n.wpemoji&&n.twemoji&&(c(n.twemoji),c(n.wpemoji)))}(window,document,window._wpemojiSettings);
+</script>
+<style type="text/css">
+img.wp-smiley,
+img.emoji {
+	display: inline !important;
+	border: none !important;
+	box-shadow: none !important;
+	height: 1em !important;
+	width: 1em !important;
+	margin: 0 0.07em !important;
+	vertical-align: -0.1em !important;
+	background: none !important;
+	padding: 0 !important;
+}
+</style>
+	<link rel='stylesheet' id='globalcss-css'  href='../../wp-content/themes/avinetworks/css/global271b.css?ver=5.9' type='text/css' media='' />
+<link rel='stylesheet' id='wp-block-library-css'  href='../../wp-includes/css/dist/block-library/style.min271b.css?ver=5.9' type='text/css' media='all' />
+<style id='global-styles-inline-css' type='text/css'>
+body{--wp--preset--color--black: #000000;--wp--preset--color--cyan-bluish-gray: #abb8c3;--wp--preset--color--white: #ffffff;--wp--preset--color--pale-pink: #f78da7;--wp--preset--color--vivid-red: #cf2e2e;--wp--preset--color--luminous-vivid-orange: #ff6900;--wp--preset--color--luminous-vivid-amber: #fcb900;--wp--preset--color--light-green-cyan: #7bdcb5;--wp--preset--color--vivid-green-cyan: #00d084;--wp--preset--color--pale-cyan-blue: #8ed1fc;--wp--preset--color--vivid-cyan-blue: #0693e3;--wp--preset--color--vivid-purple: #9b51e0;--wp--preset--gradient--vivid-cyan-blue-to-vivid-purple: linear-gradient(135deg,rgba(6,147,227,1) 0%,rgb(155,81,224) 100%);--wp--preset--gradient--light-green-cyan-to-vivid-green-cyan: linear-gradient(135deg,rgb(122,220,180) 0%,rgb(0,208,130) 100%);--wp--preset--gradient--luminous-vivid-amber-to-luminous-vivid-orange: linear-gradient(135deg,rgba(252,185,0,1) 0%,rgba(255,105,0,1) 100%);--wp--preset--gradient--luminous-vivid-orange-to-vivid-red: linear-gradient(135deg,rgba(255,105,0,1) 0%,rgb(207,46,46) 100%);--wp--preset--gradient--very-light-gray-to-cyan-bluish-gray: linear-gradient(135deg,rgb(238,238,238) 0%,rgb(169,184,195) 100%);--wp--preset--gradient--cool-to-warm-spectrum: linear-gradient(135deg,rgb(74,234,220) 0%,rgb(151,120,209) 20%,rgb(207,42,186) 40%,rgb(238,44,130) 60%,rgb(251,105,98) 80%,rgb(254,248,76) 100%);--wp--preset--gradient--blush-light-purple: linear-gradient(135deg,rgb(255,206,236) 0%,rgb(152,150,240) 100%);--wp--preset--gradient--blush-bordeaux: linear-gradient(135deg,rgb(254,205,165) 0%,rgb(254,45,45) 50%,rgb(107,0,62) 100%);--wp--preset--gradient--luminous-dusk: linear-gradient(135deg,rgb(255,203,112) 0%,rgb(199,81,192) 50%,rgb(65,88,208) 100%);--wp--preset--gradient--pale-ocean: linear-gradient(135deg,rgb(255,245,203) 0%,rgb(182,227,212) 50%,rgb(51,167,181) 100%);--wp--preset--gradient--electric-grass: linear-gradient(135deg,rgb(202,248,128) 0%,rgb(113,206,126) 100%);--wp--preset--gradient--midnight: linear-gradient(135deg,rgb(2,3,129) 0%,rgb(40,116,252) 100%);--wp--preset--duotone--dark-grayscale: url('#wp-duotone-dark-grayscale');--wp--preset--duotone--grayscale: url('#wp-duotone-grayscale');--wp--preset--duotone--purple-yellow: url('#wp-duotone-purple-yellow');--wp--preset--duotone--blue-red: url('#wp-duotone-blue-red');--wp--preset--duotone--midnight: url('#wp-duotone-midnight');--wp--preset--duotone--magenta-yellow: url('#wp-duotone-magenta-yellow');--wp--preset--duotone--purple-green: url('#wp-duotone-purple-green');--wp--preset--duotone--blue-orange: url('#wp-duotone-blue-orange');--wp--preset--font-size--small: 13px;--wp--preset--font-size--medium: 20px;--wp--preset--font-size--large: 36px;--wp--preset--font-size--x-large: 42px;}.has-black-color{color: var(--wp--preset--color--black) !important;}.has-cyan-bluish-gray-color{color: var(--wp--preset--color--cyan-bluish-gray) !important;}.has-white-color{color: var(--wp--preset--color--white) !important;}.has-pale-pink-color{color: var(--wp--preset--color--pale-pink) !important;}.has-vivid-red-color{color: var(--wp--preset--color--vivid-red) !important;}.has-luminous-vivid-orange-color{color: var(--wp--preset--color--luminous-vivid-orange) !important;}.has-luminous-vivid-amber-color{color: var(--wp--preset--color--luminous-vivid-amber) !important;}.has-light-green-cyan-color{color: var(--wp--preset--color--light-green-cyan) !important;}.has-vivid-green-cyan-color{color: var(--wp--preset--color--vivid-green-cyan) !important;}.has-pale-cyan-blue-color{color: var(--wp--preset--color--pale-cyan-blue) !important;}.has-vivid-cyan-blue-color{color: var(--wp--preset--color--vivid-cyan-blue) !important;}.has-vivid-purple-color{color: var(--wp--preset--color--vivid-purple) !important;}.has-black-background-color{background-color: var(--wp--preset--color--black) !important;}.has-cyan-bluish-gray-background-color{background-color: var(--wp--preset--color--cyan-bluish-gray) !important;}.has-white-background-color{background-color: var(--wp--preset--color--white) !important;}.has-pale-pink-background-color{background-color: var(--wp--preset--color--pale-pink) !important;}.has-vivid-red-background-color{background-color: var(--wp--preset--color--vivid-red) !important;}.has-luminous-vivid-orange-background-color{background-color: var(--wp--preset--color--luminous-vivid-orange) !important;}.has-luminous-vivid-amber-background-color{background-color: var(--wp--preset--color--luminous-vivid-amber) !important;}.has-light-green-cyan-background-color{background-color: var(--wp--preset--color--light-green-cyan) !important;}.has-vivid-green-cyan-background-color{background-color: var(--wp--preset--color--vivid-green-cyan) !important;}.has-pale-cyan-blue-background-color{background-color: var(--wp--preset--color--pale-cyan-blue) !important;}.has-vivid-cyan-blue-background-color{background-color: var(--wp--preset--color--vivid-cyan-blue) !important;}.has-vivid-purple-background-color{background-color: var(--wp--preset--color--vivid-purple) !important;}.has-black-border-color{border-color: var(--wp--preset--color--black) !important;}.has-cyan-bluish-gray-border-color{border-color: var(--wp--preset--color--cyan-bluish-gray) !important;}.has-white-border-color{border-color: var(--wp--preset--color--white) !important;}.has-pale-pink-border-color{border-color: var(--wp--preset--color--pale-pink) !important;}.has-vivid-red-border-color{border-color: var(--wp--preset--color--vivid-red) !important;}.has-luminous-vivid-orange-border-color{border-color: var(--wp--preset--color--luminous-vivid-orange) !important;}.has-luminous-vivid-amber-border-color{border-color: var(--wp--preset--color--luminous-vivid-amber) !important;}.has-light-green-cyan-border-color{border-color: var(--wp--preset--color--light-green-cyan) !important;}.has-vivid-green-cyan-border-color{border-color: var(--wp--preset--color--vivid-green-cyan) !important;}.has-pale-cyan-blue-border-color{border-color: var(--wp--preset--color--pale-cyan-blue) !important;}.has-vivid-cyan-blue-border-color{border-color: var(--wp--preset--color--vivid-cyan-blue) !important;}.has-vivid-purple-border-color{border-color: var(--wp--preset--color--vivid-purple) !important;}.has-vivid-cyan-blue-to-vivid-purple-gradient-background{background: var(--wp--preset--gradient--vivid-cyan-blue-to-vivid-purple) !important;}.has-light-green-cyan-to-vivid-green-cyan-gradient-background{background: var(--wp--preset--gradient--light-green-cyan-to-vivid-green-cyan) !important;}.has-luminous-vivid-amber-to-luminous-vivid-orange-gradient-background{background: var(--wp--preset--gradient--luminous-vivid-amber-to-luminous-vivid-orange) !important;}.has-luminous-vivid-orange-to-vivid-red-gradient-background{background: var(--wp--preset--gradient--luminous-vivid-orange-to-vivid-red) !important;}.has-very-light-gray-to-cyan-bluish-gray-gradient-background{background: var(--wp--preset--gradient--very-light-gray-to-cyan-bluish-gray) !important;}.has-cool-to-warm-spectrum-gradient-background{background: var(--wp--preset--gradient--cool-to-warm-spectrum) !important;}.has-blush-light-purple-gradient-background{background: var(--wp--preset--gradient--blush-light-purple) !important;}.has-blush-bordeaux-gradient-background{background: var(--wp--preset--gradient--blush-bordeaux) !important;}.has-luminous-dusk-gradient-background{background: var(--wp--preset--gradient--luminous-dusk) !important;}.has-pale-ocean-gradient-background{background: var(--wp--preset--gradient--pale-ocean) !important;}.has-electric-grass-gradient-background{background: var(--wp--preset--gradient--electric-grass) !important;}.has-midnight-gradient-background{background: var(--wp--preset--gradient--midnight) !important;}.has-small-font-size{font-size: var(--wp--preset--font-size--small) !important;}.has-medium-font-size{font-size: var(--wp--preset--font-size--medium) !important;}.has-large-font-size{font-size: var(--wp--preset--font-size--large) !important;}.has-x-large-font-size{font-size: var(--wp--preset--font-size--x-large) !important;}
+</style>
+<link rel='stylesheet' id='load-fa-css'  href='https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css?ver=5.9' type='text/css' media='all' />
+<link rel='stylesheet' id='algolia-autocomplete-css'  href='../../wp-content/plugins/search-by-algolia-instant-relevant-results/css/algolia-autocomplete9a60.css?ver=2.11.3' type='text/css' media='screen' />
+<script type='text/javascript' src='../../wp-includes/js/jquery/jquery.minaf6c.js?ver=3.6.0' id='jquery-core-js'></script>
+<script type='text/javascript' src='../../wp-includes/js/jquery/jquery-migrate.mind617.js?ver=3.3.2' id='jquery-migrate-js'></script>
+<script type='text/javascript' src='../../wp-content/themes/avinetworks/vendor/min/bundle-min271b.js?ver=5.9' id='bundle-js'></script>
+<script type='text/javascript' src='../../wp-content/themes/avinetworks/js/global271b.js?ver=5.9' id='globaljs-js'></script>
+<script type='text/javascript' src='../../wp-content/plugins/svg-support/js/svgs-inline8a54.js?ver=1.0.0' id='bodhi_svg_inline-js'></script>
+<script type='text/javascript' id='bodhi_svg_inline-js-after'>
+cssTarget="img.style-svg";ForceInlineSVGActive="false";
+</script>
+<script type='text/javascript' src='../../wp-includes/js/underscore.min0028.js?ver=1.13.1' id='underscore-js'></script>
+<script type='text/javascript' id='wp-util-js-extra'>
+/* <![CDATA[ */
+var _wpUtilSettings = {"ajax":{"url":"\/wp-admin\/admin-ajax.php"}};
+/* ]]> */
+</script>
+<script type='text/javascript' src='../../wp-includes/js/wp-util.min271b.js?ver=5.9' id='wp-util-js'></script>
+<script type='text/javascript' src='../../wp-content/plugins/search-by-algolia-instant-relevant-results/js/algoliasearch/algoliasearch.jquery.min9a60.js?ver=2.11.3' id='algolia-search-js'></script>
+<script type='text/javascript' src='../../wp-content/plugins/search-by-algolia-instant-relevant-results/js/autocomplete.js/autocomplete.min9a60.js?ver=2.11.3' id='algolia-autocomplete-js'></script>
+<script type='text/javascript' src='../../wp-content/plugins/search-by-algolia-instant-relevant-results/js/autocomplete-noconflict9a60.js?ver=2.11.3' id='algolia-autocomplete-noconflict-js'></script>
+<link rel='shortlink' href='../../indexd406.html?p=10218' />
+<script type="text/javascript">var algolia = {"debug":false,"application_id":"9J80PQIFC0","search_api_key":"98dd2b560d6c20d0ec57d606bfef578f","powered_by_enabled":false,"query":"","autocomplete":{"sources":[{"index_id":"posts_resource","index_name":"wp_posts_resource","label":"Resources","admin_name":"Resources","position":0,"max_suggestions":20,"tmpl_suggestion":"autocomplete-post-suggestion","enabled":true},{"index_name":"wp_posts_resource_webinars","label":"Webinars","position":20,"max_suggestions":10,"tmpl_suggestion":"autocomplete-post-suggestion","enabled":true},{"index_name":"wp_posts_resource_videos","label":"How-to videos","position":30,"max_suggestions":10,"tmpl_suggestion":"autocomplete-post-suggestion","enabled":true}],"input_selector":"input[name='s']:not('.no-autocomplete')"},"indices":{"searchable_posts":{"name":"wp_searchable_posts","id":"searchable_posts","enabled":true,"replicas":[]},"posts_resource":{"name":"wp_posts_resource","id":"posts_resource","enabled":true,"replicas":[]}}};</script>		<style type="text/css" id="wp-custom-css">
+			@media screen and (min-width: 901px) {
+li#menu-item-8011 {
+    padding-left: 0;
+}
+
+#menu-item-51 {
+    padding-left: 0;
+}
+
+#menu-item-9989 ul.sub-menu {
+    margin-left: 58.2% !important;
+    max-width: 500px;
+    -webkit-column-count: 4;
+    column-count: 4;
+    -webkit-column-gap: 0em;
+    column-gap: 0em;
+    width: 100%;
+    -webkit-column-width: 100px;
+    column-width: 100px;
+}
+}
+#menu-footer-company li.menu-item.menu-item-5842 a {
+    font-weight: 400 !important;
+    font-size: 16px;
+}
+#menu-footer-company li.menu-item:not(.menu-item-5842) a {
+color: #c1c6cc;
+
+  font-size: .82em !important;
+
+    font-weight: normal !important;
+    font-family: "Open Sans", "Brandon Grotesque", sans-serif;
+    font-feature-settings: "kern" 1, "liga" 1, "pnum" 1, "tnum" 0, "onum" 1, "lnum" 0, "dlig" 0;
+}
+#menu-footer-company li.menu-item:not(.menu-item-5842) a:hover {
+color: rgb(204, 60, 0);
+}
+#menu-footer-company li.menu-item:not(.menu-item-5842) a:before{
+    content: '\f0da';
+    font-family: FontAwesome;
+    padding-right: 0.5em;
+}		</style>
+		<script type="text/html" id="tmpl-autocomplete-header">
+  <div class="autocomplete-header">
+    <div class="autocomplete-header-title">{{{ data.label }}}</div>
+    <div class="clear"></div>
+  </div>
+</script>
+
+<script type="text/html" id="tmpl-autocomplete-post-suggestion">
+  <a class="suggestion-link" href="{{ data.resource_url }}" title="{{ data.post_title }}">
+    <# if ( data.images.thumbnail ) { #>
+      <img class="suggestion-post-thumbnail" src="{{ data.images.thumbnail.url }}" alt="{{ data.post_title }}">
+      <# } #>
+        <div class="suggestion-post-attributes">
+          <span class="suggestion-post-title">{{{ data._highlightResult.post_title.value }}}</span>
+          <# if ( data._snippetResult['content'] ) { #>
+            <span class="suggestion-post-content">{{{ data._snippetResult['content'].value }}}</span>
+            <# } #>
+        </div>
+        <div class="suggestion-post-cat" style="opacity: 0.66;">
+          {{{ data.taxonomies.category[0] }}}
+        </div>
+  </a>
+</script>
+
+<script type="text/html" id="tmpl-autocomplete-term-suggestion">
+  <a class="suggestion-link" href="{{ data.permalink }}" title="{{ data.name }}">
+    <svg viewBox="0 0 21 21" width="21" height="21">
+      <svg width="21" height="21" viewBox="0 0 21 21">
+        <path
+            d="M4.662 8.72l-1.23 1.23c-.682.682-.68 1.792.004 2.477l5.135 5.135c.7.693 1.8.688 2.48.005l1.23-1.23 5.35-5.346c.31-.31.54-.92.51-1.36l-.32-4.29c-.09-1.09-1.05-2.06-2.15-2.14l-4.3-.33c-.43-.03-1.05.2-1.36.51l-.79.8-2.27 2.28-2.28 2.27zm9.826-.98c.69 0 1.25-.56 1.25-1.25s-.56-1.25-1.25-1.25-1.25.56-1.25 1.25.56 1.25 1.25 1.25z"
+            fill-rule="evenodd"></path>
+      </svg>
+    </svg>
+    <span class="suggestion-post-title">{{{ data._highlightResult.name.value }}}</span>
+  </a>
+</script>
+
+<script type="text/html" id="tmpl-autocomplete-user-suggestion">
+  <a class="suggestion-link user-suggestion-link" href="{{ data.posts_url }}" title="{{ data.display_name }}">
+    <# if ( data.avatar_url ) { #>
+      <img class="suggestion-user-thumbnail" src="{{ data.avatar_url }}" alt="{{ data.display_name }}">
+      <# } #>
+
+        <span class="suggestion-post-title">{{{ data._highlightResult.display_name.value }}}</span>
+  </a>
+</script>
+
+<script type="text/html" id="tmpl-autocomplete-footer">
+  <div class="autocomplete-footer">
+    <div class="autocomplete-footer-branding">
+      <a href="#" class="algolia-powered-by-link" title="Algolia">
+        <svg width="130" viewBox="0 0 130 18" xmlns="http://www.w3.org/2000/svg">
+          <title>Search by Algolia</title>
+          <defs>
+            <linearGradient x1="-36.868%" y1="134.936%" x2="129.432%" y2="-27.7%" id="a">
+              <stop stop-color="#00AEFF" offset="0%"/>
+              <stop stop-color="#3369E7" offset="100%"/>
+            </linearGradient>
+          </defs>
+          <g fill="none" fill-rule="evenodd">
+            <path
+                d="M59.399.022h13.299a2.372 2.372 0 0 1 2.377 2.364V15.62a2.372 2.372 0 0 1-2.377 2.364H59.399a2.372 2.372 0 0 1-2.377-2.364V2.381A2.368 2.368 0 0 1 59.399.022z"
+                fill="url(#a)"/>
+            <path
+                d="M66.257 4.56c-2.815 0-5.1 2.272-5.1 5.078 0 2.806 2.284 5.072 5.1 5.072 2.815 0 5.1-2.272 5.1-5.078 0-2.806-2.279-5.072-5.1-5.072zm0 8.652c-1.983 0-3.593-1.602-3.593-3.574 0-1.972 1.61-3.574 3.593-3.574 1.983 0 3.593 1.602 3.593 3.574a3.582 3.582 0 0 1-3.593 3.574zm0-6.418v2.664c0 .076.082.131.153.093l2.377-1.226c.055-.027.071-.093.044-.147a2.96 2.96 0 0 0-2.465-1.487c-.055 0-.11.044-.11.104l.001-.001zm-3.33-1.956l-.312-.311a.783.783 0 0 0-1.106 0l-.372.37a.773.773 0 0 0 0 1.101l.307.305c.049.049.121.038.164-.011.181-.245.378-.479.597-.697.225-.223.455-.42.707-.599.055-.033.06-.109.016-.158h-.001zm5.001-.806v-.616a.781.781 0 0 0-.783-.779h-1.824a.78.78 0 0 0-.783.779v.632c0 .071.066.12.137.104a5.736 5.736 0 0 1 1.588-.223c.52 0 1.035.071 1.534.207a.106.106 0 0 0 .131-.104z"
+                fill="#FFF"/>
+            <path
+                d="M102.162 13.762c0 1.455-.372 2.517-1.123 3.193-.75.676-1.895 1.013-3.44 1.013-.564 0-1.736-.109-2.673-.316l.345-1.689c.783.163 1.819.207 2.361.207.86 0 1.473-.174 1.84-.523.367-.349.548-.866.548-1.553v-.349a6.374 6.374 0 0 1-.838.316 4.151 4.151 0 0 1-1.194.158 4.515 4.515 0 0 1-1.616-.278 3.385 3.385 0 0 1-1.254-.817 3.744 3.744 0 0 1-.811-1.351c-.192-.539-.29-1.504-.29-2.212 0-.665.104-1.498.307-2.054a3.925 3.925 0 0 1 .904-1.433 4.124 4.124 0 0 1 1.441-.926 5.31 5.31 0 0 1 1.945-.365c.696 0 1.337.087 1.961.191a15.86 15.86 0 0 1 1.588.332v8.456h-.001zm-5.954-4.206c0 .893.197 1.885.592 2.299.394.414.904.621 1.528.621.34 0 .663-.049.964-.142a2.75 2.75 0 0 0 .734-.332v-5.29a8.531 8.531 0 0 0-1.413-.18c-.778-.022-1.369.294-1.786.801-.411.507-.619 1.395-.619 2.223zm16.12 0c0 .719-.104 1.264-.318 1.858a4.389 4.389 0 0 1-.904 1.52c-.389.42-.854.746-1.402.975-.548.229-1.391.36-1.813.36-.422-.005-1.26-.125-1.802-.36a4.088 4.088 0 0 1-1.397-.975 4.486 4.486 0 0 1-.909-1.52 5.037 5.037 0 0 1-.329-1.858c0-.719.099-1.411.318-1.999.219-.588.526-1.09.92-1.509.394-.42.865-.741 1.402-.97a4.547 4.547 0 0 1 1.786-.338 4.69 4.69 0 0 1 1.791.338c.548.229 1.019.55 1.402.97.389.42.69.921.909 1.509.23.588.345 1.28.345 1.999h.001zm-2.191.005c0-.921-.203-1.689-.597-2.223-.394-.539-.948-.806-1.654-.806-.707 0-1.26.267-1.654.806-.394.539-.586 1.302-.586 2.223 0 .932.197 1.558.592 2.098.394.545.948.812 1.654.812.707 0 1.26-.272 1.654-.812.394-.545.592-1.166.592-2.098h-.001zm6.962 4.707c-3.511.016-3.511-2.822-3.511-3.274L113.583.926l2.142-.338v10.003c0 .256 0 1.88 1.375 1.885v1.792h-.001zm3.774 0h-2.153V5.072l2.153-.338v9.534zm-1.079-10.542c.718 0 1.304-.578 1.304-1.291 0-.714-.581-1.291-1.304-1.291-.723 0-1.304.578-1.304 1.291 0 .714.586 1.291 1.304 1.291zm6.431 1.013c.707 0 1.304.087 1.786.262.482.174.871.42 1.156.73.285.311.488.735.608 1.182.126.447.186.937.186 1.476v5.481a25.24 25.24 0 0 1-1.495.251c-.668.098-1.419.147-2.251.147a6.829 6.829 0 0 1-1.517-.158 3.213 3.213 0 0 1-1.178-.507 2.455 2.455 0 0 1-.761-.904c-.181-.37-.274-.893-.274-1.438 0-.523.104-.855.307-1.215.208-.36.487-.654.838-.883a3.609 3.609 0 0 1 1.227-.49 7.073 7.073 0 0 1 2.202-.103c.263.027.537.076.833.147v-.349c0-.245-.027-.479-.088-.697a1.486 1.486 0 0 0-.307-.583c-.148-.169-.34-.3-.581-.392a2.536 2.536 0 0 0-.915-.163c-.493 0-.942.06-1.353.131-.411.071-.75.153-1.008.245l-.257-1.749c.268-.093.668-.185 1.183-.278a9.335 9.335 0 0 1 1.66-.142l-.001-.001zm.181 7.731c.657 0 1.145-.038 1.484-.104v-2.168a5.097 5.097 0 0 0-1.978-.104c-.241.033-.46.098-.652.191a1.167 1.167 0 0 0-.466.392c-.121.169-.175.267-.175.523 0 .501.175.79.493.981.323.196.75.289 1.293.289h.001zM84.109 4.794c.707 0 1.304.087 1.786.262.482.174.871.42 1.156.73.29.316.487.735.608 1.182.126.447.186.937.186 1.476v5.481a25.24 25.24 0 0 1-1.495.251c-.668.098-1.419.147-2.251.147a6.829 6.829 0 0 1-1.517-.158 3.213 3.213 0 0 1-1.178-.507 2.455 2.455 0 0 1-.761-.904c-.181-.37-.274-.893-.274-1.438 0-.523.104-.855.307-1.215.208-.36.487-.654.838-.883a3.609 3.609 0 0 1 1.227-.49 7.073 7.073 0 0 1 2.202-.103c.257.027.537.076.833.147v-.349c0-.245-.027-.479-.088-.697a1.486 1.486 0 0 0-.307-.583c-.148-.169-.34-.3-.581-.392a2.536 2.536 0 0 0-.915-.163c-.493 0-.942.06-1.353.131-.411.071-.75.153-1.008.245l-.257-1.749c.268-.093.668-.185 1.183-.278a8.89 8.89 0 0 1 1.66-.142l-.001-.001zm.186 7.736c.657 0 1.145-.038 1.484-.104v-2.168a5.097 5.097 0 0 0-1.978-.104c-.241.033-.46.098-.652.191a1.167 1.167 0 0 0-.466.392c-.121.169-.175.267-.175.523 0 .501.175.79.493.981.318.191.75.289 1.293.289h.001zm8.682 1.738c-3.511.016-3.511-2.822-3.511-3.274L89.461.926l2.142-.338v10.003c0 .256 0 1.88 1.375 1.885v1.792h-.001z"
+                fill="#182359"/>
+            <path
+                d="M5.027 11.025c0 .698-.252 1.246-.757 1.644-.505.397-1.201.596-2.089.596-.888 0-1.615-.138-2.181-.414v-1.214c.358.168.739.301 1.141.397.403.097.778.145 1.125.145.508 0 .884-.097 1.125-.29a.945.945 0 0 0 .363-.779.978.978 0 0 0-.333-.747c-.222-.204-.68-.446-1.375-.725-.716-.29-1.221-.621-1.515-.994-.294-.372-.44-.82-.44-1.343 0-.655.233-1.171.698-1.547.466-.376 1.09-.564 1.875-.564.752 0 1.5.165 2.245.494l-.408 1.047c-.698-.294-1.321-.44-1.869-.44-.415 0-.73.09-.945.271a.89.89 0 0 0-.322.717c0 .204.043.379.129.524.086.145.227.282.424.411.197.129.551.299 1.063.51.577.24.999.464 1.268.671.269.208.466.442.591.704.125.261.188.569.188.924l-.001.002zm3.98 2.24c-.924 0-1.646-.269-2.167-.808-.521-.539-.782-1.281-.782-2.226 0-.97.242-1.733.725-2.288.483-.555 1.148-.833 1.993-.833.784 0 1.404.238 1.858.714.455.476.682 1.132.682 1.966v.682H7.357c.018.577.174 1.02.467 1.329.294.31.707.465 1.241.465.351 0 .678-.033.98-.099a5.1 5.1 0 0 0 .975-.33v1.026a3.865 3.865 0 0 1-.935.312 5.723 5.723 0 0 1-1.08.091l.002-.001zm-.231-5.199c-.401 0-.722.127-.964.381s-.386.625-.432 1.112h2.696c-.007-.491-.125-.862-.354-1.115-.229-.252-.544-.379-.945-.379l-.001.001zm7.692 5.092l-.252-.827h-.043c-.286.362-.575.608-.865.739-.29.131-.662.196-1.117.196-.584 0-1.039-.158-1.367-.473-.328-.315-.491-.761-.491-1.337 0-.612.227-1.074.682-1.386.455-.312 1.148-.482 2.079-.51l1.026-.032v-.317c0-.38-.089-.663-.266-.851-.177-.188-.452-.282-.824-.282-.304 0-.596.045-.876.134a6.68 6.68 0 0 0-.806.317l-.408-.902a4.414 4.414 0 0 1 1.058-.384 4.856 4.856 0 0 1 1.085-.132c.756 0 1.326.165 1.711.494.385.329.577.847.577 1.552v4.002h-.902l-.001-.001zm-1.88-.859c.458 0 .826-.128 1.104-.384.278-.256.416-.615.416-1.077v-.516l-.763.032c-.594.021-1.027.121-1.297.298s-.406.448-.406.814c0 .265.079.47.236.615.158.145.394.218.709.218h.001zm7.557-5.189c.254 0 .464.018.628.054l-.124 1.176a2.383 2.383 0 0 0-.559-.064c-.505 0-.914.165-1.227.494-.313.329-.47.757-.47 1.284v3.105h-1.262V7.218h.988l.167 1.047h.064c.197-.354.454-.636.771-.843a1.83 1.83 0 0 1 1.023-.312h.001zm4.125 6.155c-.899 0-1.582-.262-2.049-.787-.467-.525-.701-1.277-.701-2.259 0-.999.244-1.767.733-2.304.489-.537 1.195-.806 2.119-.806.627 0 1.191.116 1.692.349l-.381 1.015c-.534-.208-.974-.312-1.321-.312-1.028 0-1.542.682-1.542 2.046 0 .666.128 1.166.384 1.501.256.335.631.502 1.125.502a3.23 3.23 0 0 0 1.595-.419v1.101a2.53 2.53 0 0 1-.722.285 4.356 4.356 0 0 1-.932.086v.002zm8.277-.107h-1.268V9.506c0-.458-.092-.8-.277-1.026-.184-.226-.477-.338-.878-.338-.53 0-.919.158-1.168.475-.249.317-.373.848-.373 1.593v2.949h-1.262V4.801h1.262v2.122c0 .34-.021.704-.064 1.09h.081a1.76 1.76 0 0 1 .717-.666c.306-.158.663-.236 1.072-.236 1.439 0 2.159.725 2.159 2.175v3.873l-.001-.001zm7.649-6.048c.741 0 1.319.269 1.732.806.414.537.62 1.291.62 2.261 0 .974-.209 1.732-.628 2.275-.419.542-1.001.814-1.746.814-.752 0-1.336-.27-1.751-.811h-.086l-.231.704h-.945V4.801h1.262v1.987l-.021.655-.032.553h.054c.401-.591.992-.886 1.772-.886zm-.328 1.031c-.508 0-.875.149-1.098.448-.224.299-.339.799-.346 1.501v.086c0 .723.115 1.247.344 1.571.229.324.603.486 1.123.486.448 0 .787-.177 1.018-.532.231-.354.346-.867.346-1.536 0-1.35-.462-2.025-1.386-2.025l-.001.001zm3.244-.924h1.375l1.209 3.368c.183.48.304.931.365 1.354h.043c.032-.197.091-.436.177-.717.086-.281.541-1.616 1.364-4.004h1.364l-2.541 6.73c-.462 1.235-1.232 1.853-2.31 1.853-.279 0-.551-.03-.816-.091v-.999c.19.043.406.064.65.064.609 0 1.037-.353 1.284-1.058l.22-.559-2.385-5.941h.001z"
+                fill="#1D3657"/>
+          </g>
+        </svg>
+      </a>
+    </div>
+  </div>
+</script>
+
+<script type="text/html" id="tmpl-autocomplete-empty">
+  <div class="autocomplete-empty">
+      No results matched your query     <span class="empty-query">"{{ data.query }}"</span>
+  </div>
+</script>
+
+<script type="text/javascript">
+  jQuery(function () {
+    /* init Algolia client */
+    var client = algoliasearch(algolia.application_id, algolia.search_api_key);
+
+    /* setup default sources */
+    var sources = [];
+    jQuery.each(algolia.autocomplete.sources, function (i, config) {
+      var suggestion_template = wp.template(config['tmpl_suggestion']);
+      sources.push({
+        source: algoliaAutocomplete.sources.hits(client.initIndex(config['index_name']), {
+          hitsPerPage: config['max_suggestions'],
+          attributesToSnippet: [
+            'content:10'
+          ],
+          highlightPreTag: '__ais-highlight__',
+          highlightPostTag: '__/ais-highlight__'
+        }),
+        templates: {
+          header: function () {
+            return wp.template('autocomplete-header')({
+              label: _.escape(config['label'])
+            });
+          },
+          suggestion: function (hit) {
+            for (var key in hit._highlightResult) {
+              /* We do not deal with arrays. */
+              if (typeof hit._highlightResult[key].value !== 'string') {
+                continue;
+              }
+              hit._highlightResult[key].value = _.escape(hit._highlightResult[key].value);
+              hit._highlightResult[key].value = hit._highlightResult[key].value.replace(/__ais-highlight__/g, '').replace(/__\/ais-highlight__/g, '');
+            }
+
+            for (var key in hit._snippetResult) {
+              /* We do not deal with arrays. */
+              if (typeof hit._snippetResult[key].value !== 'string') {
+                continue;
+              }
+
+              hit._snippetResult[key].value = _.escape(hit._snippetResult[key].value);
+              hit._snippetResult[key].value = hit._snippetResult[key].value.replace(/__ais-highlight__/g, '').replace(/__\/ais-highlight__/g, '');
+            }
+
+            return suggestion_template(hit);
+          }
+        }
+      });
+
+    });
+
+    /* Setup dropdown menus */
+    jQuery("input[name='s']:not('.no-autocomplete')").each(function (i) {
+      var $searchInput = jQuery(this);
+
+      var config = {
+        debug: algolia.debug,
+        hint: false,
+        openOnFocus: true,
+        appendTo: 'body',
+        templates: {
+          empty: wp.template('autocomplete-empty')
+        }
+      };
+
+      if (algolia.powered_by_enabled) {
+        config.templates.footer = wp.template('autocomplete-footer');
+      }
+
+      /* Instantiate autocomplete.js */
+      var autocomplete = algoliaAutocomplete($searchInput[0], config, sources)
+      .on('autocomplete:selected', function (e, suggestion) {
+        /* Redirect the user when we detect a suggestion selection. */
+        window.location.href = suggestion.permalink;
+      });
+
+      /* Force the dropdown to be re-drawn on scroll to handle fixed containers. */
+      jQuery(window).scroll(function() {
+        if(autocomplete.autocomplete.getWrapper().style.display === "block") {
+          autocomplete.autocomplete.close();
+          autocomplete.autocomplete.open();
+        }
+      });
+    });
+
+    jQuery(document).on("click", ".algolia-powered-by-link", function (e) {
+      e.preventDefault();
+      window.location = "https://www.algolia.com/?utm_source=WordPress&utm_medium=extension&utm_content=" + window.location.hostname + "&utm_campaign=poweredby";
+    });
+  });
+</script>
+
+<script>
+jQuery(function() {
+  // Browser hack to selectivly apply a fix for Safari not following suggestion links
+  var isSafari = !!navigator.userAgent.match(/safari/i) && !navigator.userAgent.match(/chrome/i) && typeof document.body.style.webkitFilter !== "undefined" && !window.chrome;
+
+  if (isSafari) {
+    jQuery('body').on('click', '.suggestion-link',function() { window.location = jQuery(this).attr('href') });
+  }
+});
+</script>
+
+
+
+
+
+
+  <!-- Refresh page after cookie selection -->
+  <script type="text/javascript">
+    (function($) {
+
+      $(document).on("click", ".save-preference-btn-handler", function() {
+        location.reload();
+      });
+      $(document).on("click", "#accept-recommended-btn-handler", function() {
+        location.reload();
+      });
+
+    })(jQuery);
+  </script>
+
+
+<!-- TEMPORARY Resources that were not loading -->
+<style>
+/*! Flickity v2.0.5
+http://flickity.metafizzy.co
+---------------------------------------------- */
+
+.flickity-enabled {
+  position: relative;
+}
+
+.flickity-enabled:focus { outline: none; }
+
+.flickity-viewport {
+  overflow: hidden;
+  position: relative;
+  height: 100%;
+}
+
+.flickity-slider {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+}
+
+/* draggable */
+
+.flickity-enabled.is-draggable {
+  -webkit-tap-highlight-color: transparent;
+          tap-highlight-color: transparent;
+  -webkit-user-select: none;
+     -moz-user-select: none;
+      -ms-user-select: none;
+          user-select: none;
+}
+
+.flickity-enabled.is-draggable .flickity-viewport {
+  cursor: move;
+  cursor: -webkit-grab;
+  cursor: grab;
+}
+
+.flickity-enabled.is-draggable .flickity-viewport.is-pointer-down {
+  cursor: -webkit-grabbing;
+  cursor: grabbing;
+}
+
+/* ---- previous/next buttons ---- */
+
+.flickity-prev-next-button {
+  position: absolute;
+  top: 50%;
+  width: 44px;
+  height: 44px;
+  border: none;
+  border-radius: 50%;
+  background: white;
+  background: hsla(0, 0%, 100%, 0.75);
+  cursor: pointer;
+  /* vertically center */
+  -webkit-transform: translateY(-50%);
+          transform: translateY(-50%);
+}
+
+.flickity-prev-next-button:hover { background: white; }
+
+.flickity-prev-next-button:focus {
+  outline: none;
+  box-shadow: 0 0 0 5px #09F;
+}
+
+.flickity-prev-next-button:active {
+  opacity: 0.6;
+}
+
+.flickity-prev-next-button.previous { left: 10px; }
+.flickity-prev-next-button.next { right: 10px; }
+/* right to left */
+.flickity-rtl .flickity-prev-next-button.previous {
+  left: auto;
+  right: 10px;
+}
+.flickity-rtl .flickity-prev-next-button.next {
+  right: auto;
+  left: 10px;
+}
+
+.flickity-prev-next-button:disabled {
+  opacity: 0.3;
+  cursor: auto;
+}
+
+.flickity-prev-next-button svg {
+  position: absolute;
+  left: 20%;
+  top: 20%;
+  width: 60%;
+  height: 60%;
+}
+
+.flickity-prev-next-button .arrow {
+  fill: #333;
+}
+
+/* ---- page dots ---- */
+
+.flickity-page-dots {
+  position: absolute;
+  width: 100%;
+  bottom: -25px;
+  padding: 0;
+  margin: 0;
+  list-style: none;
+  text-align: center;
+  line-height: 1;
+}
+
+.flickity-rtl .flickity-page-dots { direction: rtl; }
+
+.flickity-page-dots .dot {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  margin: 0 8px;
+  background: #333;
+  border-radius: 50%;
+  opacity: 0.25;
+  cursor: pointer;
+}
+
+.flickity-page-dots .dot.is-selected {
+  opacity: 1;
+}
+
+</style>
+
+
+
+
+</head>
+
+<body class="glossary-template-default single single-glossary postid-10218">
+
+  <!-- Google Tag Manager (noscript) -->
+  <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-K6D79G" height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+  <!-- End Google Tag Manager (noscript) -->
+
+  <!-- OneTrust Button start -->
+  <button id="ot-sdk-btn" class="ot-sdk-show-settings"> Cookie Settings</button>
+  <!-- OneTrust Button end -->
+
+  <div class="top-nav js-top-nav">
+
+    <div class="nav-grid">
+
+      <nav class="nav-grid__item nav-grid__item--courtesy-bar top-nav__courtesty-bar courtesty-bar">
+        <div class="l-page-wrap">
+          <ul class="nav-list nav-list--courtesy-bar js-courtesy">
+            <!-- <li class="nav-list__item" style="color: #2a2a2d">WP ip-172-31-87-99</li> -->
+            <!-- <li class="nav-list__item">
+						<a href="/download" class="nav-list__link">
+							Try Avi
+						</a>
+					</li> -->
+            <!--   <li class="nav-list__item nav-list__item--search">
+            <input type="search" class="nav-search" placeholder="Search...">
+          </li> -->
+            <li class="nav-list__item">
+              <a href="https://blogs.vmware.com/load-balancing/" class="nav-list__link">
+                <i class="fa fa-newspaper-o" aria-hidden="true"></i> Blog
+              </a>
+            </li>
+            <li class="nav-list__item">
+              <a href="../../contact-us/index.html" class="nav-list__link">
+                <i class="fa fa-phone" aria-hidden="true"></i> Contact
+              </a>
+            </li>
+            <li class="nav-list__item">
+              <a href="https://my.vmware.com/web/vmware/home" class="nav-list__link">
+                <i class="fa fa-sign-in" aria-hidden="true"></i> Support
+              </a>
+            </li>
+            <li class="nav-list__item">
+            </li>
+          </ul>
+        </div>
+      </nav>
+
+      <div class="nav-grid__item nav-grid__item--bottom l-page-wrap main-nav">
+
+        <a href="../../index.html" class="main-nav__item main-nav__item--brandmark top-nav__brandmark brandmark">
+          <img src="../../wp-content/uploads/2019/07/283409-avi-vmw-color_updated-reversed-01.png" alt="Avi Networks" class="brandmark__image">
+        </a>
+
+        <div class="main-nav__item main-nav__item--nav-toggle">
+          <button class="nav-toggle js-nav-toggle">
+            <svg fill="#ffffff" height="24" viewBox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg" style="max-height: 24px;">
+              <path d="M0 0h24v24H0z" fill="none" />
+              <path d="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z" />
+            </svg>
+          </button>
+        </div>
+
+        <nav class="main-nav__item main-nav__item--navigation top-nav__navigation">
+          
+      
+			
+        	<div class="menu-main-menu-container"><ul id="menu-main-menu" class="menu"><li id="menu-item-1568" class="menu-item menu-item-type-custom menu-item-object-custom"><a href="../../portal/index.html">Customer Portal</a><span class="sub-nav-description"></span></li>
+<li id="menu-item-5783" class="menu-item--standard menu-item menu-item-type-custom menu-item-object-custom menu-item-has-children"><a href="../../why-avi/index.html">Why Avi</a><span class="sub-nav-description"></span>
+<ul class="sub-menu">
+	<li id="menu-item-10957" class="menu-item menu-item-type-custom menu-item-object-custom menu-item-has-children"><a href="#">Why Avi</a><span class="sub-nav-description"></span>
+	<ul class="sub-menu">
+		<li id="menu-item-8436" class="menu-item menu-item-type-post_type menu-item-object-page"><a href="../../why-avi/index.html">What We Do</a><span class="sub-nav-description">Understand multi-cloud load balancing</span></li>
+		<li id="menu-item-8171" class="menu-item menu-item-type-custom menu-item-object-custom"><a href="../../why-avi/application-delivery-platform/index.html">Platform Overview</a><span class="sub-nav-description">Deep dive into software-defined architecture</span></li>
+		<li id="menu-item-10585" class="menu-item menu-item-type-post_type menu-item-object-page"><a href="../../why-avi/multi-cloud-load-balancing/index.html">Platform Architecture</a><span class="sub-nav-description">Take a new approach to application services</span></li>
+	</ul>
+</li>
+</ul>
+</li>
+<li id="menu-item-5345" class="menu-item--standard menu-item menu-item-type-custom menu-item-object-custom menu-item-has-children"><a href="../../load-balancer-refresh-f5/index.html">Solutions</a><span class="sub-nav-description"></span>
+<ul class="sub-menu">
+	<li id="menu-item-2006" class="menu-item menu-item-type-custom menu-item-object-custom menu-item-has-children"><a href="#">Modern Load Balancing</a><span class="sub-nav-description"></span>
+	<ul class="sub-menu">
+		<li id="menu-item-4714" class="menu-item menu-item-type-post_type menu-item-object-page"><a href="../../load-balancer-refresh-f5/index.html">Upgrade from F5</a><span class="sub-nav-description">Replace legacy load balancers with modern load balancing</span></li>
+		<li id="menu-item-4721" class="menu-item menu-item-type-post_type menu-item-object-page"><a href="../../cisco-aci/index.html">SDN: Cisco ACI</a><span class="sub-nav-description">Automate data center with software load balancers</span></li>
+		<li id="menu-item-4723" class="menu-item menu-item-type-post_type menu-item-object-page"><a href="../../web-application-security/index.html">Web Application Firewall</a><span class="sub-nav-description">Secure web apps with scalable application security</span></li>
+	</ul>
+</li>
+	<li id="menu-item-9002" class="menu-item menu-item-type-custom menu-item-object-custom menu-item-has-children"><a href="#">VMware Ecosystem</a><span class="sub-nav-description"></span>
+	<ul class="sub-menu">
+		<li id="menu-item-4722" class="menu-item menu-item-type-post_type menu-item-object-page"><a href="../../vmware-nsx/index.html">VMware NSX</a><span class="sub-nav-description">Connect and secure your workloads with native NSX integration</span></li>
+		<li id="menu-item-9003" class="menu-item menu-item-type-post_type menu-item-object-page"><a href="../../vmware-horizon/index.html">VMware Horizon</a><span class="sub-nav-description">Enable remote working with the best integrated VDI solution</span></li>
+		<li id="menu-item-4719" class="menu-item menu-item-type-post_type menu-item-object-page"><a href="../../vmware/index.html">VMware vSphere</a><span class="sub-nav-description">Modernize data center and extend VMware load balancing anywhere</span></li>
+	</ul>
+</li>
+	<li id="menu-item-2007" class="menu-item menu-item-type-custom menu-item-object-custom menu-item-has-children"><a href="#">Public / Private Cloud</a><span class="sub-nav-description"></span>
+	<ul class="sub-menu">
+		<li id="menu-item-4717" class="menu-item menu-item-type-post_type menu-item-object-page"><a href="../../microsoft-azure/index.html">Microsoft Azure</a><span class="sub-nav-description">Deliver enteprise-grade load balancing on Azure</span></li>
+		<li id="menu-item-4716" class="menu-item menu-item-type-post_type menu-item-object-page"><a href="../../amazon-web-services/index.html">Amazon Web Services</a><span class="sub-nav-description">Make multi-cloud load balancing easy for AWS</span></li>
+		<li id="menu-item-4715" class="menu-item menu-item-type-post_type menu-item-object-page"><a href="../../google-cloud-platform/index.html">Google Cloud Platform</a><span class="sub-nav-description">Future-proof application delivery for Google Cloud</span></li>
+		<li id="menu-item-4734" class="menu-item menu-item-type-post_type menu-item-object-page"><a href="../../lbaas-openstack/index.html">OpenStack</a><span class="sub-nav-description">Build private cloud with advanced load balancing on OpenStack</span></li>
+	</ul>
+</li>
+	<li id="menu-item-2009" class="menu-item menu-item-type-custom menu-item-object-custom menu-item-has-children"><a href="#">Containers / Microservices</a><span class="sub-nav-description"></span>
+	<ul class="sub-menu">
+		<li id="menu-item-10058" class="menu-item menu-item-type-post_type menu-item-object-page"><a href="../../kubernetes-ingress-controller/index.html">Kubernetes</a><span class="sub-nav-description">Deliver enteprise-grade ingress services for any container platform</span></li>
+		<li id="menu-item-10156" class="menu-item menu-item-type-custom menu-item-object-custom"><a href="../../vmware-tanzu/index.html">VMware Tanzu</a><span class="sub-nav-description">Bridge lab-to-production gap with Kubernetes Ingress Services</span></li>
+	</ul>
+</li>
+</ul>
+</li>
+<li id="menu-item-11047" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-has-children"><a href="../../avi-with-cloud-services/index.html">Products</a><span class="sub-nav-description"></span>
+<ul class="sub-menu">
+	<li id="menu-item-7418" class="menu-item menu-item-type-custom menu-item-object-custom menu-item-has-children"><a href="#">Avi with Cloud Services</a><span class="sub-nav-description"></span>
+	<ul class="sub-menu">
+		<li id="menu-item-10885" class="menu-item menu-item-type-post_type menu-item-object-page"><a href="../../avi-with-cloud-services/index.html">Overview</a><span class="sub-nav-description">Bring simplicity and flexibibilty to consume cloud services</span></li>
+		<li id="menu-item-7240" class="menu-item menu-item-type-post_type menu-item-object-page"><a href="../../software-load-balancer/index.html">Software Load Balancer</a><span class="sub-nav-description">Modernize hardware load balancers</span></li>
+		<li id="menu-item-7239" class="menu-item menu-item-type-post_type menu-item-object-page"><a href="../../intelligent-web-application-firewall/index.html">Intelligent WAF</a><span class="sub-nav-description">Protect web applications with WAF</span></li>
+		<li id="menu-item-7238" class="menu-item menu-item-type-post_type menu-item-object-page"><a href="../../container-ingress/index.html">Container Ingress</a><span class="sub-nav-description">Connect and secure container applications</span></li>
+	</ul>
+</li>
+</ul>
+</li>
+<li id="menu-item-5692" class="menu-item menu-item-type-post_type menu-item-object-page"><a href="../../customers/index.html">Customers</a><span class="sub-nav-description"></span></li>
+<li id="menu-item-10958" class="menu-item menu-item-type-custom menu-item-object-custom menu-item-has-children"><a href="../../education/index.html">Education</a><span class="sub-nav-description"></span>
+<ul class="sub-menu">
+	<li id="menu-item-10743" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-has-children"><a href="../../education/index.html">Education</a><span class="sub-nav-description"></span>
+	<ul class="sub-menu">
+		<li id="menu-item-10745" class="menu-item menu-item-type-post_type menu-item-object-page"><a href="../../education/index.html">Start Here</a><span class="sub-nav-description">Get the catalog of all eduational offerings</span></li>
+		<li id="menu-item-6282" class="menu-item menu-item-type-custom menu-item-object-custom"><a href="../../../info.avinetworks.com/workshops.html">Workshops</a><span class="sub-nav-description">Attend free workshops to get hands-on</span></li>
+		<li id="menu-item-10587" class="menu-item menu-item-type-custom menu-item-object-custom"><a href="../../../info.avinetworks.com/operations-videos.html">Operations Videos</a><span class="sub-nav-description">Learn how to deploy our prooduct</span></li>
+		<li id="menu-item-10452" class="menu-item menu-item-type-post_type menu-item-object-page"><a href="../../application-delivery-how-to-videos/index.html">How-To Videos</a><span class="sub-nav-description">Watch 3-5 min videos and learn new skills</span></li>
+	</ul>
+</li>
+</ul>
+</li>
+<li id="menu-item-54" class="menu-item--standard menu-item menu-item-type-post_type menu-item-object-page menu-item-has-children"><a href="../../resources/index.html">Resources</a><span class="sub-nav-description"></span>
+<ul class="sub-menu">
+	<li id="menu-item-2373" class="menu-item menu-item-type-custom menu-item-object-custom menu-item-has-children"><a href="#">Resource Center</a><span class="sub-nav-description"></span>
+	<ul class="sub-menu">
+		<li id="menu-item-470" class="menu-item menu-item-type-post_type menu-item-object-page"><a href="../../resources/index.html">Content Library</a><span class="sub-nav-description">Find everything related to multi-cloud load balancing</span></li>
+		<li id="menu-item-1819" class="menu-item menu-item-type-post_type menu-item-object-page"><a href="../../webinars/index.html">Webinars</a><span class="sub-nav-description">Join our subject matter experts to explore a use case</span></li>
+		<li id="menu-item-10959" class="menu-item menu-item-type-custom menu-item-object-custom"><a href="../../../info.avinetworks.com/en/virtual-summits.html">Virtual Summit</a><span class="sub-nav-description">Attend a quarterly summit to learn more</span></li>
+		<li id="menu-item-10453" class="menu-item menu-item-type-custom menu-item-object-custom"><a href="../../../info.avinetworks.com/lbtv.html">LBTV</a><span class="sub-nav-description">Hits all major topics of modern load balancing</span></li>
+	</ul>
+</li>
+	<li id="menu-item-2372" class="menu-item menu-item-type-custom menu-item-object-custom menu-item-has-children"><a href="#">Technical Help</a><span class="sub-nav-description"></span>
+	<ul class="sub-menu">
+		<li id="menu-item-471" class="menu-item menu-item-type-custom menu-item-object-custom"><a href="../../../kb.avinetworks.com/index.html">Knowledge Base</a><span class="sub-nav-description">Get the best documentation on our product</span></li>
+		<li id="menu-item-11044" class="menu-item menu-item-type-custom menu-item-object-custom"><a href="https://www.vmware.com/professional-services/virtual-cloud-network.html">Professional Services</a><span class="sub-nav-description">Engage with professional services for migration and customization</span></li>
+		<li id="menu-item-4934" class="menu-item menu-item-type-custom menu-item-object-custom"><a href="https://my.vmware.com/web/vmware/home">Support</a><span class="sub-nav-description">Contact support to resolve issues</span></li>
+		<li id="menu-item-480" class="menu-item menu-item-type-post_type menu-item-object-page"><a href="../index.html">Glossary</a><span class="sub-nav-description">Get familar with related technical terms</span></li>
+	</ul>
+</li>
+</ul>
+</li>
+<li id="menu-item-10246" class="menu-item menu-item-type-post_type menu-item-object-page"><a href="../../contact-us/index.html">Contact</a><span class="sub-nav-description"></span></li>
+<li id="menu-item-10247" class="menu-item menu-item-type-custom menu-item-object-custom"><a href="../../../customerportal.avinetworks.com/login.html">Support</a><span class="sub-nav-description"></span></li>
+<li id="menu-item-10244" class="menu-item menu-item-type-custom menu-item-object-custom"><a href="../../../info.avinetworks.com/schedule-a-demo.html">Request a Demo</a><span class="sub-nav-description"></span></li>
+</ul></div> 
+            
+            <div class="nav-sidebar" style="display:none;">
+            	<div class="nav-sidebar-content">
+                        		<div class="menu-sidebar-nav-container"><ul id="menu-sidebar-nav" class="sidebar-navigation"><li id="menu-item-10791" class="menu-item menu-item-type-custom menu-item-object-custom"><a href="../../../info.avinetworks.com/load-balancing-for-dummies-ebook-web.html">Multi-Cloud Load Balancing Dummies Guide</a><span class="sub-nav-description">Download a free eBook</span></li>
+<li id="menu-item-10792" class="menu-item menu-item-type-custom menu-item-object-custom"><a href="../../../info.avinetworks.com/idc-study-worldwide-application-delivery-controller-market-forecast.html">IDC Business Value Study</a><span class="sub-nav-description">Get ROI and TCO data</span></li>
+<li id="menu-item-10793" class="menu-item menu-item-type-custom menu-item-object-custom"><a href="../../../info.avinetworks.com/guide-advanced-load-balancing.html">Guide to Transform Your Network with Advanced Load Balancing</a><span class="sub-nav-description">Modernize application delivery</span></li>
+</ul></div> 
+                </div>
+                
+                <div class="nav-sidebar-content-2">
+                        		<div class="menu-sidebar-nav-2-container"><ul id="menu-sidebar-nav-2" class="sidebar-navigation"><li id="menu-item-10794" class="menu-item menu-item-type-custom menu-item-object-custom"><a href="../../../info.avinetworks.com/avi-vantage-for-microsoft-azure.html">Best Practices to Load Balancing on Microsoft Azure</a><span class="sub-nav-description">Deep dive into load balancing for Azure</span></li>
+<li id="menu-item-10795" class="menu-item menu-item-type-custom menu-item-object-custom"><a href="../../../info.avinetworks.com/whitepaper-premium-elb-for-aws-deployments.html">Elastic Load Balancing on AWS Whitepaper</a><span class="sub-nav-description">Get enterprise-grade load balancing for AWS</span></li>
+<li id="menu-item-10796" class="menu-item menu-item-type-custom menu-item-object-custom"><a href="../../../info.avinetworks.com/3-myths-to-modernize-encryption.html">Three Myths that Cloud the Path to Modern SSL / TLS Encryption</a><span class="sub-nav-description">Secure and encrypt your applications and traffic</span></li>
+</ul></div> 
+                </div>
+                
+                <div class="nav-sidebar-content-3">
+                        		<div class="menu-sidebar-nav-3-container"><ul id="menu-sidebar-nav-3" class="sidebar-navigation"><li id="menu-item-10797" class="menu-item menu-item-type-custom menu-item-object-custom"><a href="../../../info.avinetworks.com/load-balancer-performance-benchmark-report.html">Load Balancer Performance on Intel Benchmark Report</a><span class="sub-nav-description">Put the software load balancer to a performance test</span></li>
+<li id="menu-item-10798" class="menu-item menu-item-type-custom menu-item-object-custom"><a href="../../../info.avinetworks.com/scalable-application-security-white-paper.html">Achieving a Scalable Application Security Stack</a><span class="sub-nav-description">Take a comprehensive stack approach to application security</span></li>
+<li id="menu-item-10799" class="menu-item menu-item-type-custom menu-item-object-custom"><a href="../../../info.avinetworks.com/whitepaper-kubernetes-clusters.html">Elastic Kubernetes Services and Ingress Controller</a><span class="sub-nav-description">Protect your container workloads in Kubernetes clusters</span></li>
+</ul></div> 
+                </div>
+                
+                <div class="nav-sidebar-content-4">
+                        		<div class="menu-sidebar-nav-4-container"><ul id="menu-sidebar-nav-4" class="sidebar-navigation"><li id="menu-item-10800" class="menu-item menu-item-type-custom menu-item-object-custom"><a href="../../../info.avinetworks.com/load-balancing-for-dummies-ebook-web.html">Multi-Cloud Load Balancing Dummies Guide</a><span class="sub-nav-description">Start with the Dummies Guide</span></li>
+<li id="menu-item-10801" class="menu-item menu-item-type-custom menu-item-object-custom"><a href="../../download/index.html">Try Avi</a><span class="sub-nav-description">Download the product by requesting a trial</span></li>
+<li id="menu-item-10802" class="menu-item menu-item-type-custom menu-item-object-custom"><a href="../../../info.avinetworks.com/schedule-a-demo.html">Request a demo</a><span class="sub-nav-description">Schedule a demo</span></li>
+</ul></div> 
+                </div>
+                
+                <div class="nav-sidebar-content-5">
+                        		<div class="menu-sidebar-nav-5-container"><ul id="menu-sidebar-nav-5" class="sidebar-navigation"><li id="menu-item-10803" class="menu-item menu-item-type-custom menu-item-object-custom"><a href="../../../info.avinetworks.com/avi-migration-tool-whitepaper.html">Migration from Legacy Load Balancer Guide</a><span class="sub-nav-description">Learn how to migrate to Avi easily</span></li>
+<li id="menu-item-10804" class="menu-item menu-item-type-custom menu-item-object-custom"><a href="../../../info.avinetworks.com/application-delivery-automation-whitepaper.html">Application Delivery Automation Whitepaper</a><span class="sub-nav-description">Automate like a pro with step-by-step guidance</span></li>
+<li id="menu-item-10805" class="menu-item menu-item-type-custom menu-item-object-custom"><a href="../../../info.avinetworks.com/doyle-research-guide-to-application-delivery-in-2021-and-beyond.html">Eight Tips for Application Delivery for 2021 and Beyond</a><span class="sub-nav-description">Get strategic recommendations on application delivery</span></li>
+</ul></div> 
+                </div>
+            </div>
+      
+          
+        </nav>
+
+        <div class="main-nav__item main-nav__item--button">
+          <a href="../../../info.avinetworks.com/schedule-a-demo.html" class="main-nav__item--button button button--white button--download">
+            Request a Demo
+          </a>
+        </div>
+
+      </div>
+
+    </div>
+
+  </div>
+	<div id="primary" class="content-area">
+		<main id="main" class="l-content-module-container" role="main">
+
+			<header class="hero-v2" style="background-image: url(../../wp-content/uploads/2018/06/dot-bg.svg);">
+
+				<div class="l-page-wrap">
+
+					<h1 class="hero-v2__title hero-v2__title--no-subtitle">
+						Kubernetes Security					</h1>
+
+				</div>
+
+			</header>
+
+			<article class="section">
+				<div class="l-page-wrap l-page-wrap--narrow main-content main-content--large-text">
+
+          <p><a href="../index.html">&lt;&lt; Back to Technical Glossary</a></p>
+<h2>Kubernetes Security Definition</h2>
+<p>Kubernetes is an extensible, portable, open-source container orchestration platform that dominates the enterprise market. A huge number of organizations manage some portion of their container workloads and services using Kubernetes, making it a massive, rapidly expanding ecosystem. This means Kubernetes security tools, support, and services are widely available, but there are also serious security risks in Kubernetes container environments, including runtime security incidents, misconfigurations, and other Kubernetes security vulnerabilities.</p>
+<p>Kubernetes security risks generally correspond to phases in the container lifecycle. Therefore, best practices and practical recommendations for Kubernetes security—sometimes referred to as Kubernetes container security—are linked to responding correctly to threats at runtime, avoiding misconfigurations during the deploy and build phases, and remediating known vulnerabilities during the build phase. These Kubernetes security best practices are essential to securing cloud-native infrastructure and applications.</p>
+<p><img class="alignnone size-full wp-image-10219" src="../../wp-content/uploads/2021/02/kubernetes-security-diagram.png" alt="Image depicts a Kubernetes Security diagram of the 4C's of cloud native security: cloud, clusters, containers, and code." width="1720" height="992" /></p>
+<p>&nbsp;</p>
+<h2><span style="font-size: x-large;"><strong>Kubernetes Security FAQs</strong></span></h2>
+<h2><span style="color: #009be0;">What is Kubernetes Security?</span></h2>
+<p><span style="font-weight: 400;">Kubernetes security vulnerabilities</span><span style="font-weight: 400;"> and challenges are varied and numerous:</span></p>
+<p><b>Containers</b><b> are widespread.</b> <span style="font-weight: 400;">Containers</span><span style="font-weight: 400;"> enable greater portability, speed, and ability to leverage </span><a href="../microservice/index.html" target="_blank" rel="noopener"><span style="font-weight: 400;">microservices architectures</span></a><span style="font-weight: 400;">, but they can also increase your </span><span style="font-weight: 400;">attack surface</span><span style="font-weight: 400;"> and create security blind spots. Their </span><span style="font-weight: 400;">distributed</span><span style="font-weight: 400;"> nature also makes identifying risks, </span><span style="font-weight: 400;">misconfigurations</span><span style="font-weight: 400;">, and </span><span style="font-weight: 400;">vulnerabilities</span><span style="font-weight: 400;"> quickly more difficult. It is also more challenging to maintain adequate visibility into your </span><span style="font-weight: 400;">cloud-native infrastructure</span><span style="font-weight: 400;"> as more </span><span style="font-weight: 400;">containers</span><span style="font-weight: 400;"> are deployed.</span></p>
+<p><b>Misused images and </b><b>image registries</b><b> can pose </b><b>security risks</b><b>.</b><span style="font-weight: 400;"> Businesses need strong governance policies for building and storing images in </span><span style="font-weight: 400;">trusted image registries</span><span style="font-weight: 400;">. Build </span><span style="font-weight: 400;">container images</span><span style="font-weight: 400;"> using approved, secure </span><span style="font-weight: 400;">base images</span><span style="font-weight: 400;"> that are scanned regularly. Launch </span><span style="font-weight: 400;">containers</span><span style="font-weight: 400;"> in a </span><span style="font-weight: 400;">Kubernetes environment</span><span style="font-weight: 400;"> with only images from </span><span style="font-weight: 400;">allowlisted image registries</span><span style="font-weight: 400;">.</span></p>
+<p><b>Containers</b><b> must communicate.</b> <span style="font-weight: 400;">Containers and pods</span><span style="font-weight: 400;"> talk to each other and to internal and </span><span style="font-weight: 400;">external endpoints</span><span style="font-weight: 400;"> to function properly. This makes for a sprawling </span><span style="font-weight: 400;">deployment environment</span><span style="font-weight: 400;"> in which it is often prohibitively difficult to implement </span><span style="font-weight: 400;">network segmentation</span><span style="font-weight: 400;">. A malicious actor has the potential to move about broadly inside the environment should they breach a </span><span style="font-weight: 400;">container</span><span style="font-weight: 400;">, based on how broadly it communicates with other </span><span style="font-weight: 400;">containers and pods</span><span style="font-weight: 400;">.</span></p>
+<p><b>Default Kubernetes configuration</b><b> options are typically the least secure.</b> <span style="font-weight: 400;">Kubernetes</span><span style="font-weight: 400;"> is designed to simplify management and operations and speed </span><span style="font-weight: 400;">application deployment</span><span style="font-weight: 400;"> in keeping with </span><span style="font-weight: 400;">DevOps principles</span><span style="font-weight: 400;">. Thus, a rich set of controls exists for </span><span style="font-weight: 400;">securing clusters</span><span style="font-weight: 400;"> and their </span><span style="font-weight: 400;">applications</span><span style="font-weight: 400;"> effectively.</span></p>
+<p><span style="font-weight: 400;">For example, </span><span style="font-weight: 400;">Kubernetes pod security policies</span><span style="font-weight: 400;"> control how </span><span style="font-weight: 400;">pods</span><span style="font-weight: 400;"> communicate, much like firewall rules. When a </span><span style="font-weight: 400;">pod</span><span style="font-weight: 400;"> has an associated </span><span style="font-weight: 400;">Kubernetes pod security policy</span><span style="font-weight: 400;">, it is only allowed to communicate with the assets that </span><span style="font-weight: 400;">network policy</span><span style="font-weight: 400;"> defines. However, </span><span style="font-weight: 400;">Kubernetes</span><span style="font-weight: 400;"> does not apply a </span><span style="font-weight: 400;">network policy</span><span style="font-weight: 400;"> to a </span><span style="font-weight: 400;">pod</span><span style="font-weight: 400;"> by default, meaning that all </span><span style="font-weight: 400;">pods</span><span style="font-weight: 400;"> can talk to each other in a </span><span style="font-weight: 400;">Kubernetes environment</span><span style="font-weight: 400;">, leaving them open to risk.</span></p>
+<p><span style="font-weight: 400;">Management, access, and storage of secrets and </span><span style="font-weight: 400;">sensitive data</span><span style="font-weight: 400;"> such as </span><span style="font-weight: 400;">keys</span><span style="font-weight: 400;"> and </span><span style="font-weight: 400;">credentials</span><span style="font-weight: 400;"> present another </span><span style="font-weight: 400;">configuration risk</span><span style="font-weight: 400;"> in </span><span style="font-weight: 400;">containers</span><span style="font-weight: 400;">, and should be mounted into </span><span style="font-weight: 400;">read-only volumes</span><span style="font-weight: 400;">, not passed as </span><span style="font-weight: 400;">environment variables</span><span style="font-weight: 400;">.</span></p>
+<p><b>Compliance challenges for </b><b>Kubernetes</b><b> and </b><b>containers</b><b> are unique.</b><span style="font-weight: 400;"> Internal organizational policies, industry standards and benchmarks, and </span><span style="font-weight: 400;">security best practices</span><span style="font-weight: 400;"> were often created not for </span><span style="font-weight: 400;">cloud-native environments</span><span style="font-weight: 400;">, but for traditional </span><span style="font-weight: 400;">application architectures</span><span style="font-weight: 400;">. Businesses must automate audits and monitoring to successfully operate at scale, given the dynamic and </span><span style="font-weight: 400;">distributed</span><span style="font-weight: 400;"> nature of </span><span style="font-weight: 400;">containerized applications</span><span style="font-weight: 400;">.</span></p>
+<p><b>Kubernetes runtime security</b><b> challenges for </b><b>containers</b><b> are both familiar and new.</b> <span style="font-weight: 400;">Kubernetes</span><span style="font-weight: 400;"> can be treated as immutable infrastructure, destroyed and recreated from a common template rather than changed or patched when it&#8217;s time to update. This is a security advantage of </span><span style="font-weight: 400;">containers</span><span style="font-weight: 400;">, but their launch and removal speed and general ephemerality is also a challenge. Detecting a threat in a </span><span style="font-weight: 400;">running container</span><span style="font-weight: 400;"> means stopping and relaunching—but not without identifying the root problem and </span><span style="font-weight: 400;">reconfiguring</span><span style="font-weight: 400;"> whatever component caused it. </span><span style="font-weight: 400;">Runtime security risks</span><span style="font-weight: 400;"> also include running </span><span style="font-weight: 400;">malicious processes</span><span style="font-weight: 400;"> in </span><span style="font-weight: 400;">compromised containers</span><span style="font-weight: 400;">; </span><span style="font-weight: 400;">crypto mining</span><span style="font-weight: 400;"> and </span><span style="font-weight: 400;">network port scanning</span><span style="font-weight: 400;"> for open paths to valuable resources are examples of this.</span></p>
+<p><span style="font-weight: 400;">To cope with these </span><span style="font-weight: 400;">Kubernetes security concerns</span><span style="font-weight: 400;"> and others, it is essential to integrate security into each phase of the </span><span style="font-weight: 400;">container lifecycle</span><span style="font-weight: 400;">: building, </span><span style="font-weight: 400;">deployment</span><span style="font-weight: 400;">, and </span><span style="font-weight: 400;">runtime</span><span style="font-weight: 400;">. Following best practices for building and </span><span style="font-weight: 400;">configuring your <a href="../../../info.avinetworks.com/whitepaper-kubernetes-clusters.html" target="_blank" rel="noopener">Kubernetes cluster</a></span><span style="font-weight: 400;"> and </span><span style="font-weight: 400;">deployments</span><span style="font-weight: 400;"> and securing </span><span style="font-weight: 400;">Kubernetes infrastructure</span><span style="font-weight: 400;"> reduces overall risk.</span></p>
+<h2><span style="color: #009be0;">Kubernetes Security Best Practices</span></h2>
+<p><b>Build Phase</b></p>
+<p><span style="font-weight: 400;">To </span><span style="font-weight: 400;">secure Kubernetes clusters</span><span style="font-weight: 400;"> and </span><span style="font-weight: 400;">containers</span><span style="font-weight: 400;">, start in the </span><span style="font-weight: 400;">build phase</span><span style="font-weight: 400;"> by building secure </span><span style="font-weight: 400;">container images</span><span style="font-weight: 400;"> and scanning images for </span><span style="font-weight: 400;">known vulnerabilities</span><span style="font-weight: 400;">. Best practices include:</span></p>
+<p><b>Use minimal </b><b>base images</b><b>.</b><span style="font-weight: 400;"> Avoid using </span><span style="font-weight: 400;">base images</span><span style="font-weight: 400;"> with </span><span style="font-weight: 400;">shell script</span><span style="font-weight: 400;"> or </span><span style="font-weight: 400;">OS package managers</span><span style="font-weight: 400;">. If you must include </span><span style="font-weight: 400;">OS packages</span><span style="font-weight: 400;"> which could contain </span><span style="font-weight: 400;">vulnerabilities</span><span style="font-weight: 400;">, at a later step, remove the </span><span style="font-weight: 400;">OS package manager</span><span style="font-weight: 400;">.</span></p>
+<p><b>Remove extra components.</b><span style="font-weight: 400;"> Remove debugging tools from </span><span style="font-weight: 400;">containers</span><span style="font-weight: 400;"> in production. Do not include or retain common tools that could be useful to attackers in images.</span></p>
+<p><b>Update images and third-party tools.</b><span style="font-weight: 400;"> All images and tools you include should be up to date, with the latest versions of their components.</span></p>
+<p><b>Identify </b><b>known vulnerabilities</b><b> with a </b><b>Kubernetes security scanner</b><b>.</b><span style="font-weight: 400;"> Scan images by layer for </span><span style="font-weight: 400;">vulnerabilities</span><span style="font-weight: 400;"> in </span><span style="font-weight: 400;">third-party runtime libraries</span><span style="font-weight: 400;"> and </span><span style="font-weight: 400;">OS packages</span><span style="font-weight: 400;"> your </span><span style="font-weight: 400;">containerized applications</span><span style="font-weight: 400;"> use. </span><span style="font-weight: 400;">Identify vulnerabilities</span><span style="font-weight: 400;"> within your images and determine whether they are fixable. Label </span><span style="font-weight: 400;">non-fixable vulnerabilities</span><span style="font-weight: 400;"> and add them to a filter or allowlist so the team does not get hung up on non-actionable alerts.</span></p>
+<p><b>Integrate security.</b><span style="font-weight: 400;"> Use </span><span style="font-weight: 400;">image scanning</span><span style="font-weight: 400;"> and other </span><span style="font-weight: 400;">Kubernetes security testing tools</span><span style="font-weight: 400;"> to integrate security into your </span><span style="font-weight: 400;">CI/CD pipeline</span><span style="font-weight: 400;">. This automates security and generates alerts when fixable, severe </span><span style="font-weight: 400;">vulnerabilities</span><span style="font-weight: 400;"> are detected.</span></p>
+<p><b>Implement </b><b>defense-in-depth</b><b> and </b><b>remediation policies</b><b>.</b><span style="font-weight: 400;"> Identifying a </span><span style="font-weight: 400;">security risk</span><span style="font-weight: 400;"> in a </span><span style="font-weight: 400;">running deployment</span><span style="font-weight: 400;"> using a </span><span style="font-weight: 400;">container image</span><span style="font-weight: 400;"> demands immediate action, so keep a </span><span style="font-weight: 400;">remediation workflow</span><span style="font-weight: 400;"> and policy checks in place. This allows the team to detect such images, and act to update them immediately.</span></p>
+<p><b>Deploy Phase</b></p>
+<p><span style="font-weight: 400;">Before </span><span style="font-weight: 400;">deployment</span><span style="font-weight: 400;">, </span><span style="font-weight: 400;">Kubernetes infrastructure</span><span style="font-weight: 400;"> must be </span><span style="font-weight: 400;">configured</span><span style="font-weight: 400;"> securely. This demands visibility into what types of </span><span style="font-weight: 400;">Kubernetes infrastructure</span><span style="font-weight: 400;"> will be deployed, and how. To properly engage in </span><span style="font-weight: 400;">Kubernetes security testing</span><span style="font-weight: 400;"> and identify and respond to security policy violations, you need to know:</span></p>
+<ul>
+<li style="font-weight: 400;" aria-level="1"><span style="font-weight: 400;">what will be deployed, including the </span><span style="font-weight: 400;">pods</span><span style="font-weight: 400;"> that will be deployed, and image information, such as </span><span style="font-weight: 400;">vulnerabilities</span><span style="font-weight: 400;"> or components</span></li>
+<li style="font-weight: 400;" aria-level="1"><span style="font-weight: 400;">where </span><span style="font-weight: 400;">deployment</span><span style="font-weight: 400;"> will happen, including which </span><span style="font-weight: 400;">namespaces</span><span style="font-weight: 400;">, </span><span style="font-weight: 400;">clusters</span><span style="font-weight: 400;">, and nodes</span></li>
+<li style="font-weight: 400;" aria-level="1"><span style="font-weight: 400;">the shape of the </span><span style="font-weight: 400;">deployment</span><span style="font-weight: 400;">—for example communication permissions, and </span><span style="font-weight: 400;">pod security</span><span style="font-weight: 400;"> context</span></li>
+<li style="font-weight: 400;" aria-level="1"><span style="font-weight: 400;">what it can access, including volumes, secrets, and other components such as the orchestrator API or host</span></li>
+<li style="font-weight: 400;" aria-level="1"><span style="font-weight: 400;">compliance—does it meet security requirements and policies?</span></li>
+</ul>
+<p>&nbsp;</p>
+<p><span style="font-weight: 400;">Based on these factors, follow these best practices for </span><span style="font-weight: 400;">Kubernetes security</span><span style="font-weight: 400;"> during </span><span style="font-weight: 400;">deployment</span><span style="font-weight: 400;">:</span></p>
+<p><b>Isolate </b><b>sensitive workloads</b><b> and other </b><b>Kubernetes resources</b><b> with </b><b>namespaces</b><b>.</b><span style="font-weight: 400;"> A key isolation boundary, </span><span style="font-weight: 400;">namespaces</span><span style="font-weight: 400;"> provide a reference for </span><span style="font-weight: 400;">access control</span><span style="font-weight: 400;"> restrictions, </span><span style="font-weight: 400;">network policies</span><span style="font-weight: 400;">, and other critical </span><span style="font-weight: 400;">security controls</span><span style="font-weight: 400;">. Limit the impact of destructive actions or errors by authorized users and help contain attacks by separating </span><span style="font-weight: 400;">workloads</span><span style="font-weight: 400;"> into </span><span style="font-weight: 400;">namespaces</span><span style="font-weight: 400;">.</span></p>
+<p><b>Deploy a service mesh.</b><span style="font-weight: 400;"> A service mesh tightly integrates with the infrastructure layer of the application, offering a consistent way to secure, connect, and observe microservices. A service mesh controls how various services share data in their east west communication in a distributed system, usually with sidecar proxies.</span></p>
+<p><span style="font-weight: 400;">A service mesh delivers dynamic traffic management and service discovery, including traffic splitting for incremental rollout, canary releasing, and A/B testing, and traffic duplicating or shadowing. Situated along the critical path for all system requests, a service mesh can also offer insights and added transparency into latency, frequency of errors, and request tracing. A service mesh also supports cross cutting requirements, such as reliability (circuit-breaking and rate limiting) and security (providing TLS and service identity).</span></p>
+<p><b>Control traffic between </b><b>clusters and pods</b><b> with </b><b>Kubernetes network policies</b><b>.</b> <span style="font-weight: 400;">Default Kubernetes configurations</span><span style="font-weight: 400;"> that allow every </span><span style="font-weight: 400;">pod</span><span style="font-weight: 400;"> to communicate are risky. </span><span style="font-weight: 400;">Network segmentation</span><span style="font-weight: 400;"> policies can prevent </span><span style="font-weight: 400;">cross-container lateral movement</span><span style="font-weight: 400;"> by an attacker.</span></p>
+<p><b>Limit access to secrets.</b><span style="font-weight: 400;"> To prevent unnecessary exposure, ensure </span><span style="font-weight: 400;">deployments</span><span style="font-weight: 400;"> access only secrets they require.</span></p>
+<p><b>Assess </b><b>container privileges</b><b>.</b> <span style="font-weight: 400;">Kubernetes security assessment</span><span style="font-weight: 400;"> should consider </span><span style="font-weight: 400;">container capabilities</span><span style="font-weight: 400;">, </span><span style="font-weight: 400;">privileges</span><span style="font-weight: 400;">, and </span><span style="font-weight: 400;">role bindings</span><span style="font-weight: 400;">, which all come with </span><span style="font-weight: 400;">security risk</span><span style="font-weight: 400;">. The </span><span style="font-weight: 400;">least privilege</span><span style="font-weight: 400;"> that allows intended function and capabilities is the goal.</span></p>
+<p><b>Control </b><b>pod security attributes</b><b>, including </b><b>privilege levels</b><b> of </b><b>containers</b><b>, with </b><b>pod security policies</b><b>.</b><span style="font-weight: 400;"> These allow the operator to specify, for example:</span></p>
+<ul>
+<li style="font-weight: 400;" aria-level="1"><span style="font-weight: 400;">Do not allow </span><span style="font-weight: 400;">privilege escalation</span><span style="font-weight: 400;">.</span></li>
+<li style="font-weight: 400;" aria-level="1"><span style="font-weight: 400;">Do not </span><span style="font-weight: 400;">run application</span> <span style="font-weight: 400;">processes</span><span style="font-weight: 400;"> as root.</span></li>
+<li style="font-weight: 400;" aria-level="1"><span style="font-weight: 400;">Use a </span><span style="font-weight: 400;">read-only root filesystem</span><span style="font-weight: 400;">.</span></li>
+<li style="font-weight: 400;" aria-level="1"><span style="font-weight: 400;">Drop unnecessary and unused </span><span style="font-weight: 400;">Linux capabilities</span><span style="font-weight: 400;">.</span></li>
+<li style="font-weight: 400;" aria-level="1"><span style="font-weight: 400;">Do not use the </span><span style="font-weight: 400;">host network</span><span style="font-weight: 400;"> or process space.</span></li>
+<li style="font-weight: 400;" aria-level="1"><span style="font-weight: 400;">Give each </span><span style="font-weight: 400;">application</span><span style="font-weight: 400;"> its own </span><span style="font-weight: 400;">Kubernetes Service Account</span><span style="font-weight: 400;">.</span></li>
+<li style="font-weight: 400;" aria-level="1"><span style="font-weight: 400;">Use </span><span style="font-weight: 400;">SELinux options</span><span style="font-weight: 400;"> for more fine-tuned control.</span></li>
+<li style="font-weight: 400;" aria-level="1"><span style="font-weight: 400;">If it does not need to access the </span><span style="font-weight: 400;">Kubernetes API</span><span style="font-weight: 400;">, do not mount the </span><span style="font-weight: 400;">service account credentials</span><span style="font-weight: 400;"> in a </span><span style="font-weight: 400;">container</span><span style="font-weight: 400;">.</span></li>
+</ul>
+<p>&nbsp;</p>
+<p><b>Assess image provenance.</b><span style="font-weight: 400;"> To maintain </span><span style="font-weight: 400;">Kubernetes security</span><span style="font-weight: 400;">, don’t deploy code from unknown sources, and use images from allowlisted or </span><span style="font-weight: 400;">known registries</span><span style="font-weight: 400;"> only.</span></p>
+<p><b>Extend </b><b>image scanning</b><b> into the </b><b>deploy phase</b><b>.</b> <span style="font-weight: 400;">Vulnerabilities</span><span style="font-weight: 400;"> can be disclosed in between </span><span style="font-weight: 400;">deployment</span><span style="font-weight: 400;"> and scanning, so enforce policies at the </span><span style="font-weight: 400;">deploy phase</span><span style="font-weight: 400;"> by rejecting images built over 90 days ago, or using an automated tool.</span></p>
+<p><b>Use annotations and labels appropriately so teams can identify </b><b>Kubernetes security issues</b><b> and respond to them easily.</b></p>
+<p><b>Enable </b><b>Kubernetes</b> <b>role-based access control (RBAC)</b><b>.</b> <span style="font-weight: 400;">Kubernetes RBAC</span><span style="font-weight: 400;"> controls access authorization to a </span><span style="font-weight: 400;">cluster’s</span> <span style="font-weight: 400;">Kubernetes API servers</span><span style="font-weight: 400;">, both for service accounts and users in the </span><span style="font-weight: 400;">cluster</span><span style="font-weight: 400;">.</span></p>
+<p><b>Runtime Phase</b></p>
+<p><span style="font-weight: 400;">During the </span><span style="font-weight: 400;">runtime phase</span><span style="font-weight: 400;">, </span><span style="font-weight: 400;">containerized applications</span><span style="font-weight: 400;"> experience a range of new security challenges:</span></p>
+<p><b>Leverage contextual information in </b><b>Kubernetes</b><b>.</b> <span style="font-weight: 400;">Kubernetes build</span><span style="font-weight: 400;"> and deploy time can help your team evaluate actual versus </span><span style="font-weight: 400;">expected runtime activity</span><span style="font-weight: 400;"> to identify suspicious activity.</span></p>
+<p><b>Extend </b><b>vulnerability scanning</b><b> and monitoring to </b><b>container images</b><b> in </b><b>running deployments</b><b>.</b><span style="font-weight: 400;"> This should include </span><span style="font-weight: 400;">newly discovered vulnerabilities</span><span style="font-weight: 400;">.</span></p>
+<p><b>Tighten security with </b><b>built-in Kubernetes controls</b><b>.</b><span style="font-weight: 400;"> Limit the </span><span style="font-weight: 400;">capabilities of pods</span><span style="font-weight: 400;"> to eliminate classes of attacks that require </span><span style="font-weight: 400;">privileged access</span><span style="font-weight: 400;">. For example, </span><span style="font-weight: 400;">read-only root file systems</span><span style="font-weight: 400;"> can prevent any attacks that depend on writing to the file system or installing software.</span></p>
+<p><b>Monitor active </b><b>network traffic</b><b>.</b><span style="font-weight: 400;"> Limit insecure and unnecessary communication by comparing existing traffic to allowable traffic based on </span><span style="font-weight: 400;">Kubernetes network security policies</span><span style="font-weight: 400;">.</span></p>
+<p><b>Leverage process allowlisting to identify unexpected running processes.</b><span style="font-weight: 400;"> Creating this kind of allowlist from scratch can be challenging; look to security vendors with expertise in Kubernetes and </span><span style="font-weight: 400;">containers</span><span style="font-weight: 400;">.</span></p>
+<p><b>Analyze and </b><b>compare runtime activity</b><b> of the same </b><b>deployments</b><b> in different </b><b>pods</b><b>.</b> <span style="font-weight: 400;">Containerized applications</span><span style="font-weight: 400;"> may be replicated for fault tolerance, high availability, or scale. Replicas should behave almost identically; if they do not, investigate further.</span></p>
+<p><b>Scale suspicious </b><b>pods</b><b> or stop and restart in case of </b><b>Kubernetes security breach</b><b>.</b><span style="font-weight: 400;"> Contain a successful breach using </span><span style="font-weight: 400;">Kubernetes native controls</span><span style="font-weight: 400;"> by instructing them to stop and then restart instances of </span><span style="font-weight: 400;">breached applications</span><span style="font-weight: 400;"> or automatically scale suspicious </span><span style="font-weight: 400;">pods</span><span style="font-weight: 400;"> to zero.</span></p>
+<p><span style="font-weight: 400;">Follow the</span> <a href="https://cloud.google.com/kubernetes-engine/docs/concepts/cis-benchmarks" target="_blank" rel="noopener"><span style="font-weight: 400;">CIS benchmarks</span><span style="font-weight: 400;"> for Kubernetes </span><span style="font-weight: 400;">security best practices</span></a><span style="font-weight: 400;"> as well.</span></p>
+<h2><span style="color: #009be0;">Does Avi provide a Kubernetes Security Solution?</span></h2>
+<p><span style="font-weight: 400;">Avi Vantage is based on a scale-out, <a href="../software-defined-architecture/index.html" target="_blank" rel="noopener">software-defined architecture</a> that provides observability, traffic management, </span><span style="font-weight: 400;">Kubernetes security</span><span style="font-weight: 400;">, and a rich set of tools to ease rollouts and application maintenance. Avi Networks offers an elastic, centrally orchestrated proxy services fabric with analytics, </span><span style="font-weight: 400;">cloud-native <a href="../../web-application-security/index.html#" target="_blank" rel="noopener">web application security</a></span><span style="font-weight: 400;">, and </span><a href="../load-balancing/index.html" target="_blank" rel="noopener"><span style="font-weight: 400;">load balancing</span></a><span style="font-weight: 400;"> and </span><span style="font-weight: 400;">ingress services</span><span style="font-weight: 400;"> for </span><span style="font-weight: 400;">container-based applications</span><span style="font-weight: 400;"> running in </span><span style="font-weight: 400;">Kubernetes environments</span><span style="font-weight: 400;">.</span></p>
+<p><span style="font-weight: 400;">Avi Networks provides the </span><span style="font-weight: 400;">cloud-native approach</span><span style="font-weight: 400;"> for </span><span style="font-weight: 400;">application networking services</span><span style="font-weight: 400;"> and traffic management that enterprises adopting Kubernetes need. Avi Networks delivers scalable, enterprise-class </span><span style="font-weight: 400;">container ingress</span><span style="font-weight: 400;"> to deploy and manage </span><span style="font-weight: 400;">cloud-native applications</span><span style="font-weight: 400;"> in </span><span style="font-weight: 400;">Kubernetes environments</span></p>
+<p><span style="font-weight: 400;">Learn how to secure your application and data by making intent-based decisions on whether to authorize, block, or quarantine access based on a Common Vulnerability Scoring System (CVSS) score above a predefined threshold </span><a href="https://tanzu.vmware.com/service-mesh" target="_blank" rel="noopener"><span style="font-weight: 400;">here</span></a><span style="font-weight: 400;">.</span></p>
+
+				</div>
+			</article>
+
+
+
+<div class="section section--bg-lgrey featured-resources">
+	<div class="l-page-wrap featured-resources-grid">
+		<h3 class="section__title featured-resources__title featured-resources-grid__item featured-resources-grid__item--title">
+			Featured Resources
+		</h3>
+
+		 <div class="resource-filter-grid__item resource-card wow fadeIn js-resource-card resource-card--videos"  data-wow-duration="1s" data-wow-delay="500ms">
+							<div class="resource-card__back resource-card__back--videos"><div class="resource-card__back-content">
+			<div class="resource-card__tag resource-card__tag--videos">
+                  Videos                </div>
+<h3 class="resource-card__title">
+                  Demo of Kubernetes Ingress Services                </h3>
+								<div class="resource-card__desc">
+									Consolidated Kubernetes Ingress and Security Services including load balancing, WAF and observability across multi-site Kubernetes clusters								</div>
+								<div class="resource-card__button">
+									<a class="button button--small"  href="https://youtu.be/2xt3yxEDDIo" target="_blank">
+										View Now
+									</a>
+								</div></div>
+							</div>
+							<div class="resource-card__inner resource-card__inner--videos js-match-all-g1">
+                <div class="resource-card__tag resource-card__tag--videos">
+                  Videos                </div>
+								<h3 class="resource-card__title">
+                  Demo of Kubernetes Ingress Services                </h3>
+							</div>
+                </div>
+     <div class="resource-filter-grid__item resource-card wow fadeIn js-resource-card resource-card--white-papers"  data-wow-duration="1s" data-wow-delay="500ms">
+							<div class="resource-card__back resource-card__back--white-papers"><div class="resource-card__back-content">
+			<div class="resource-card__tag resource-card__tag--white-papers">
+                  White Papers                </div>
+<h3 class="resource-card__title">
+                  Deliver Elastic Kubernetes Services and Ingress Controller                </h3>
+								<div class="resource-card__desc">
+									Learn about how Avi's elastic container services integrate with Kubernetes clusters.								</div>
+								<div class="resource-card__button">
+									<a class="button button--small"  href="../../../info.avinetworks.com/whitepaper-kubernetes-clusters.html" target="_blank">
+										View Now
+									</a>
+								</div></div>
+							</div>
+							<div class="resource-card__inner resource-card__inner--white-papers js-match-all-g1">
+                <div class="resource-card__tag resource-card__tag--white-papers">
+                  White Papers                </div>
+								<h3 class="resource-card__title">
+                  Deliver Elastic Kubernetes Services and Ingress Controller                </h3>
+							</div>
+                </div>
+     <div class="resource-filter-grid__item resource-card wow fadeIn js-resource-card resource-card--solutions-briefs"  data-wow-duration="1s" data-wow-delay="500ms">
+							<div class="resource-card__back resource-card__back--solutions-briefs"><div class="resource-card__back-content">
+			<div class="resource-card__tag resource-card__tag--solutions-briefs">
+                  Solution Brief                </div>
+<h3 class="resource-card__title">
+                  Simplify Operations for Production Ready Kubernetes                </h3>
+								<div class="resource-card__desc">
+									Learn how to deliver, scale and secure applications in your enterprise grade VMware Tanzu Kubernetes								</div>
+								<div class="resource-card__button">
+									<a class="button button--small"  href="../../../info.avinetworks.com/hubfs/Avi_Website_Resource_Center/container-services-for-VMware-Tanzu-solution-brief.pdf" target="_blank">
+										View Now
+									</a>
+								</div></div>
+							</div>
+							<div class="resource-card__inner resource-card__inner--solutions-briefs js-match-all-g1">
+                <div class="resource-card__tag resource-card__tag--solutions-briefs">
+                  Solution Brief                </div>
+								<h3 class="resource-card__title">
+                  Simplify Operations for Production Ready Kubernetes                </h3>
+							</div>
+                </div>
+    
+	</div>
+</div>
+
+<style>
+
+.resource-filter-grid__item{
+    padding: 10px;
+  border: none;
+}
+.resource-card__back {
+margin: 10px; !important;
+  padding: none !important;
+  border: 1px solid #ffffff !important;
+  background: none;
+  max-width: 340px;
+  max-height: 338px;
+  outline: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+   flex-direction: column;
+        min-height: 320px;
+}
+.resource-card__title {
+  margin-bottom: 0 !important;
+font-size: 1.125rem;
+}
+ .featured-resources {
+    background: #fbfbfb;
+  }
+  .featured-resources__title {
+    font-size: 40px;
+  }
+  .resource-card__inner {
+    max-width: 340px;
+    max-height: 338px;
+        min-height: 320px;
+  }  
+ .resource-card:hover .resource-card__inner .featured-resources__title, .resource-card:hover .resource-card__inner .resource-card__tag{
+display: none !important;
+  }  
+.resource-card__back .resource-card__desc, .resource-card__back .resource-card__tag {
+    color: #333; 
+  }
+.resource-card__button {
+  position: relative;
+  top: unset;
+  bottom: unset;
+  transform: none;
+}
+.resource-card__back .resource-card__title {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+}
+  .resource-card__tag--white-papers, 
+  .resource-card__tag--data-sheets, 
+  .resource-card__tag--solutions-briefs,
+  .resource-card__tag--case-studies,
+  .resource-card__tag--videos,
+  .resource-card__tag--webinar,
+  .resource-card__tag--infographics {
+    text-align: center;
+    font-weight: 100;
+    text-transform: none;
+  }
+  .resource-card__tag--white-papers::before,
+  .resource-card__tag--data-sheets::before,
+  .resource-card__tag--solutions-briefs::before,
+  .resource-card__tag--case-studies::before,
+  .resource-card__tag--videos::before,
+  .resource-card__tag--webinar::before,
+  .resource-card__tag--infographics::before  {
+    display: block;
+    height: 90px;
+    width: 90px;
+    border-radius: 50px;
+    background-repeat: no-repeat !important;
+    margin: 45px auto 12px auto !important;  
+    transition: all 200ms ease-out;
+  }
+  .resource-card__tag--white-papers::before {
+    background: url('../../wp-content/themes/avinetworks/images/rc_icon_whitepaper.svg')  #007DAA center;
+    background-size: 38%;
+  }
+  .resource-card__tag--data-sheets::before {
+    background: url('../../wp-content/themes/avinetworks/images/rc_icon_datasheet.svg')  #CF6000 center;
+    background-size: 40%;
+  }
+  .resource-card__tag--solutions-briefs::before {
+    background: url('../../wp-content/themes/avinetworks/images/rc_icon_solution_brief.svg')  #889621 center;
+    background-size: 40%;
+  }
+  .resource-card__tag--case-studies::before {
+    background: url('../../wp-content/themes/avinetworks/images/rc_icon_case_study.svg')  #AA468E center;
+    background-size: 40%;
+  }
+  .resource-card__tag--videos::before {
+    background: url('../../wp-content/themes/avinetworks/images/rc_icon_video.svg')  #DAB70B center;
+    background-size: 40%;
+  }
+  .resource-card__tag--webinar::before {
+    background: url('../../wp-content/themes/avinetworks/images/rc_icon_video.svg')  #3AB5A5 center;
+    background-size: 40%;
+  }
+  .resource-card__tag--infographics::before {
+    background: url('../../wp-content/themes/avinetworks/images/rc_icon_infographic.svg')  #5c8588 center;
+    background-size: 40%;
+  }
+  .resource-card__back--white-papers, 
+  .resource-card__back--data-sheets, 
+  .resource-card__back--solutions-briefs,
+  .resource-card__back--case-studies,
+  .resource-card__back--videos,
+  .resource-card__back--webinar,
+  .resource-card__back--infographics {
+    background: #fff;
+    border: none;
+    outline: none;
+  }
+  .resource-card__inner--white-papers, 
+  .resource-card__inner--data-sheets, 
+  .resource-card__inner--solutions-briefs,
+  .resource-card__inner--case-studies,
+  .resource-card__inner--videos,
+  .resource-card__inner--webinar,
+  .resource-card__inner--infographics {
+    border: 1px solid;
+    background: #fff;
+    color: #333;
+  }
+  .resource-card__inner--white-papers {
+    border-color: rgba(0, 125,170, 0.3);
+  }
+  .resource-card__inner--data-sheets {
+    border-color: rgba(207, 96, 0, 0.3);
+  }
+  .resource-card__inner--solutions-briefs {
+    border-color: rgba(135, 150,14, 0.3);
+  }
+  .resource-card__inner--case-studies {
+    border-color: rgba(170, 70,142, 0.3);
+  }
+  .resource-card__inner--videos  {
+    border-color: rgba(218, 183,11, 0.3);
+  }
+  .resource-card__inner--webinar {
+    border-color: rgba(58, 181,165, 0.3);
+  }
+  .resource-card__inner--infographics {
+    border-color: rgba(92, 133, 136, 0.3);
+  }
+  .resource-card__tag {
+    margin-bottom: 15px;
+    transition: all 200ms ease-out;
+  }
+  .resource-card__title {
+    font-size: 1.125rem;
+    text-align: center;
+    font-weight: 600;
+    color: #333;
+    margin-top: 0;
+    transition: all 200ms ease-out;
+  }
+  
+.resource-card:hover .resource-card__inner .resource-card__title {
+  display: none;
+}
+.resource-card__back .resource-card__tag:before {
+  display: none;
+}
+.resource-card:hover .resource-card__tag {
+    transform: none;
+  position: relative;
+  top: unset;
+}
+.resource-card:hover .resource-card__title {
+  display: block;
+  position: relative;
+  margin-top: 12px;
+  font-size: 1.125rem;
+    transition: all 300ms ease-out;
+  transform: none;
+  }
+  .resource-card__desc {
+    position: relative;
+     top: unset !important;
+    font-size: 16px !important;
+    font-weight: 100;
+    transition: all 300ms ease-out;
+  }
+  .resource-card:hover .resource-card__desc {
+    margin-top: 12px !important;
+    transform: none;
+    transition: all 300ms ease-out;
+    top: unset;
+    bottom: unset;
+  }
+  .resource-card:not(.resource-card--no-flip):hover .resource-card__front {
+    -webkit-transform: none;
+    transform: none; 
+  }
+  .resource-card:not(.resource-card--no-flip):hover .resource-card__back {
+    z-index: 0010;
+    background: none;
+    box-shadow: 0px 10px 30px rgba(207, 96, 0, 0.3); 
+    transition: all 300ms ease-out;
+  }
+
+  /* unique card background-hover colors */
+  .resource-card.resource-card--white-papers:not(.resource-card--no-flip):hover .resource-card__back {
+    box-shadow: 0px 10px 30px rgba(0, 125,170, 0.3); 
+  }
+  .resource-card.resource-card--solutions-briefs:not(.resource-card--no-flip):hover .resource-card__back {
+    box-shadow: 0px 10px 30px rgba(135, 150,14, 0.3); 
+  }
+  .resource-card.resource-card--case-studies:not(.resource-card--no-flip):hover .resource-card__back {
+    box-shadow: 0px 10px 30px rgba(170, 70,142, 0.3); 
+  }
+  .resource-card.resource-card--videos:not(.resource-card--no-flip):hover .resource-card__back {
+    box-shadow: 0px 10px 30px rgba(218, 183,11, 0.3); 
+  }
+  .resource-card.resource-card--webinar:not(.resource-card--no-flip):hover .resource-card__back {
+    box-shadow: 0px 10px 30px rgba(58, 181,165, 0.3); 
+  }
+  .resource-card.resource-card--infographics:not(.resource-card--no-flip):hover .resource-card__back {
+    box-shadow: 0px 10px 30px rgba(92, 133, 136, 0.3); 
+  }
+  /*end of unique colors*/
+
+  .resource-card:hover .resource-card__tag--data-sheets::before, 
+  .resource-card:hover .resource-card__tag--white-papers::before, 
+  .resource-card:hover .resource-card__tag--solutions-briefs::before,
+  .resource-card:hover .resource-card__tag--case-studies::before,
+  .resource-card:hover .resource-card__tag--videos::before,
+  .resource-card:hover .resource-card__tag--webinar::before,
+  .resource-card:hover .resource-card__tag--infographics::before {
+display: none;
+    top: 50%;
+  }
+  .resource-card__button a {
+    display: none;
+    color: #ffffff;
+  }
+  .resource-card:hover .resource-card__button a {
+    display: inline-block;
+   margin-top: 10px;
+    color: #ffffff;
+    line-height: 1;
+    padding: 8px 24px;
+    font-size: 1.125rem;
+    font-weight: 600;
+  }
+  .resource-card__back--data-sheets .resource-card__button a {
+    background: #CF6000;
+  }
+  .resource-card__back--white-papers .resource-card__button a {
+    background: #007DAA;
+  }
+  .resource-card__back--solutions-briefs .resource-card__button a {
+    background: #889621;
+  }
+  .resource-card__back--case-studies .resource-card__button a {
+    background: #AA468E;
+  }
+  .resource-card__back--videos .resource-card__button a {
+    background: #DAB70B;
+  }
+  .resource-card__back--webinar .resource-card__button a {
+    background: #3AB5A5;
+  }
+  .resource-card__back--infographics .resource-card__button a {
+    background: #5c8588;
+  }
+
+aside#secondary {
+  margin-bottom: 18px;
+}
+.aa-dataset-1 {
+  width: 450px;
+  background: #fff;
+  border: 1px solid #333;;
+}
+  @media only screen and (max-width: 768px) {
+
+
+    .resource-card {
+      border-right: 0;
+      border-left: 0;
+    }
+  }
+
+  /*================
+  Mobile Hide/Show
+  ==================*/
+  .show-desktop,
+  .show-tablet {
+    display: none !important;
+  }
+
+  @media (min-width: 550px) {
+    .show-tablet {
+      display: block !important;
+    }
+    .show-mobile {
+      display: none !important;
+    }
+  }
+
+  @media (min-width: 768px) {
+    .hide-desktop.hide-desktop  {
+      display: none;
+    }
+  } 
+
+  @media (min-width: 800px) {
+    .show-tablet {
+      display: none !important;
+    }
+    .show-desktop {
+      display: block !important;
+    }
+  }
+
+  @media (max-width: 768px) {
+    .hide-mobile.hide-mobile {
+      display: none;
+    }
+  } 
+
+
+</style>
+<script src="../../wp-content/themes/avinetworks/vendor/min/isotope.pkgd.min.js"></script>
+<script>
+( function( $ ) {
+
+	$( function() {
+		$('.resources-card__inner').click(function( ) {
+			$(this).addClass( 'showbackside' );
+		});
+	} );
+	} )( jQuery );
+</script>
+
+
+
+		</main><!-- #main -->
+	</div><!-- #primary -->
+	<a href="#main" class="return-arrow">
+		<svg fill="#ebebeb" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+		    <path d="M7.41 15.41L12 10.83l4.59 4.58L18 14l-6-6-6 6z"/>
+		    <path d="M0 0h24v24H0z" fill="none"/>
+		</svg>
+	</a>
+
+
+<footer class="page-footer">
+
+  <div class="l-page-wrap l-page-wrap--wide-padded">
+    <div class="footer-nav-grid">
+
+    
+
+      <nav class="footer-nav-grid__item footer-nav-grid__item--menu footer-nav-grid__item--2col">
+      <div class="menu-footer-why-avi-container"><ul id="menu-footer-why-avi" class="menu"><li id="menu-item-8434" class="menu-item menu-item-type-custom menu-item-object-custom menu-item-has-children menu-item-8434"><a href="../../why-avi/index.html">Why Avi</a>
+<ul class="sub-menu">
+	<li id="menu-item-8587" class="menu-item menu-item-type-custom menu-item-object-custom menu-item-has-children menu-item-8587"><a href="#0"></a>
+	<ul class="sub-menu">
+		<li id="menu-item-8435" class="menu-item menu-item-type-custom menu-item-object-custom menu-item-8435"><a href="../../why-avi/index.html">What We Do</a></li>
+		<li id="menu-item-8183" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-8183"><a href="../../why-avi/application-delivery-platform/index.html">Platform Overview</a></li>
+		<li id="menu-item-8182" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-8182"><a href="../../why-avi/multi-cloud-load-balancing/index.html">Platform Architecture</a></li>
+	</ul>
+</li>
+</ul>
+</li>
+</ul></div><br><br>
+      <div class="menu-education-container"><ul id="menu-education" class="menu"><li id="menu-item-10967" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-has-children menu-item-10967"><a href="../../education/index.html">Education</a>
+<ul class="sub-menu">
+	<li id="menu-item-10978" class="menu-item menu-item-type-custom menu-item-object-custom menu-item-has-children menu-item-10978"><a href="#0"></a>
+	<ul class="sub-menu">
+		<li id="menu-item-10969" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-10969"><a href="../../education/index.html">Start Here</a></li>
+		<li id="menu-item-10970" class="menu-item menu-item-type-custom menu-item-object-custom menu-item-10970"><a href="../../../info.avinetworks.com/workshops.html">Workshops</a></li>
+		<li id="menu-item-10971" class="menu-item menu-item-type-custom menu-item-object-custom menu-item-10971"><a href="../../../info.avinetworks.com/operations-videos.html">Operations Videos</a></li>
+		<li id="menu-item-10972" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-10972"><a href="../../application-delivery-how-to-videos/index.html">How-To Videos</a></li>
+		<li id="menu-item-10973" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-10973"><a href="../../what-is-load-balancing/index.html">Load Balancing</a></li>
+		<li id="menu-item-10974" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-10974"><a href="../../what-is-a-web-application-firewall/index.html">Web Application Firewall</a></li>
+		<li id="menu-item-10975" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-10975"><a href="../../what-are-microservices-and-containers/index.html">Microservices &#038; Containers</a></li>
+		<li id="menu-item-10976" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-10976"><a href="../../what-is-an-application-delivery-controller/index.html">Application Delivery Controller</a></li>
+		<li id="menu-item-10977" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-10977"><a href="../../what-is-an-ingress-controller/index.html">Ingress Controller</a></li>
+	</ul>
+</li>
+</ul>
+</li>
+</ul></div>        
+      </nav>
+
+      <nav class="footer-nav-grid__item footer-nav-grid__item--menu">
+        <div class="menu-footer-product-container"><ul id="menu-footer-product" class="menu"><li id="menu-item-4824" class="menu-item menu-item-type-custom menu-item-object-custom menu-item-has-children menu-item-4824"><a href="../../software-load-balancer/index.html">Products</a>
+<ul class="sub-menu">
+	<li id="menu-item-10980" class="menu-item menu-item-type-custom menu-item-object-custom menu-item-10980"><a href="#0"></a></li>
+	<li id="menu-item-7286" class="menu-item menu-item-type-custom menu-item-object-custom menu-item-has-children menu-item-7286"><a href="#0">Avi Vantage</a>
+	<ul class="sub-menu">
+		<li id="menu-item-7416" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-7416"><a href="../../saas/index.html">Overview</a></li>
+		<li id="menu-item-7283" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-7283"><a href="../../software-load-balancer/index.html">Software Load Balancer</a></li>
+		<li id="menu-item-7282" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-7282"><a href="../../intelligent-web-application-firewall/index.html">Intelligent WAF</a></li>
+		<li id="menu-item-7281" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-7281"><a href="../../container-ingress/index.html">Container Ingress</a></li>
+	</ul>
+</li>
+</ul>
+</li>
+</ul></div><br><br>
+        <div class="menu-footer-customers-container"><ul id="menu-footer-customers" class="menu"><li id="menu-item-5831" class="menu-item menu-item-type-custom menu-item-object-custom menu-item-has-children menu-item-5831"><a href="../../customers/index.html">Customers</a>
+<ul class="sub-menu">
+	<li id="menu-item-11041" class="menu-item menu-item-type-custom menu-item-object-custom menu-item-has-children menu-item-11041"><a href="#0"></a>
+	<ul class="sub-menu">
+		<li id="menu-item-11036" class="menu-item menu-item-type-custom menu-item-object-custom menu-item-11036"><a href="../../customers/index.html#filter=.case-study-card--technology">Technology</a></li>
+		<li id="menu-item-11037" class="menu-item menu-item-type-custom menu-item-object-custom menu-item-11037"><a href="../../customers/index.html#filter=.case-study-card--financial">Financial</a></li>
+		<li id="menu-item-11038" class="menu-item menu-item-type-custom menu-item-object-custom menu-item-11038"><a href="../../customers/index.html#filter=.case-study-card--e-commerce">E-Commerce</a></li>
+		<li id="menu-item-11039" class="menu-item menu-item-type-custom menu-item-object-custom menu-item-11039"><a href="../../customers/index.html#filter=.case-study-card--media">Media</a></li>
+		<li id="menu-item-11040" class="menu-item menu-item-type-custom menu-item-object-custom menu-item-11040"><a href="../../customers/index.html#filter=.case-study-card--other">Other</a></li>
+	</ul>
+</li>
+</ul>
+</li>
+</ul></div>      </nav>
+
+      <nav class="footer-nav-grid__item footer-nav-grid__item--menu">
+        <div class="menu-footer-solutions-container"><ul id="menu-footer-solutions" class="menu"><li id="menu-item-4822" class="menu-item menu-item-type-custom menu-item-object-custom menu-item-has-children menu-item-4822"><a href="../../microsoft-azure/index.html">Solutions</a>
+<ul class="sub-menu">
+	<li id="menu-item-10981" class="menu-item menu-item-type-custom menu-item-object-custom menu-item-10981"><a href="#0"></a></li>
+	<li id="menu-item-5803" class="menu-item menu-item-type-custom menu-item-object-custom menu-item-has-children menu-item-5803"><a href="#0">Modern Load Balancing</a>
+	<ul class="sub-menu">
+		<li id="menu-item-4816" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-4816"><a href="../../load-balancer-refresh-f5/index.html">Upgrade from F5</a></li>
+		<li id="menu-item-4810" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-4810"><a href="../../cisco-aci/index.html">SDN: Cisco ACI</a></li>
+		<li id="menu-item-10964" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-10964"><a href="../../web-application-security/index.html">Web Application Firewall</a></li>
+	</ul>
+</li>
+	<li id="menu-item-9005" class="menu-item menu-item-type-custom menu-item-object-custom menu-item-has-children menu-item-9005"><a href="#0">VMware Ecosystem</a>
+	<ul class="sub-menu">
+		<li id="menu-item-4813" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-4813"><a href="../../vmware-nsx/index.html">VMware NSX</a></li>
+		<li id="menu-item-9004" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-9004"><a href="../../vmware-horizon/index.html">VMWare Horizon</a></li>
+		<li id="menu-item-4812" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-4812"><a href="../../vmware/index.html">VMware vSphere</a></li>
+	</ul>
+</li>
+	<li id="menu-item-5804" class="menu-item menu-item-type-custom menu-item-object-custom menu-item-has-children menu-item-5804"><a href="#0">Public / Private Cloud</a>
+	<ul class="sub-menu">
+		<li id="menu-item-4819" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-4819"><a href="../../microsoft-azure/index.html">Microsoft Azure</a></li>
+		<li id="menu-item-4818" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-4818"><a href="../../amazon-web-services/index.html">Amazon Web Services</a></li>
+		<li id="menu-item-4817" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-4817"><a href="../../google-cloud-platform/index.html">Google Cloud Platform</a></li>
+		<li id="menu-item-4814" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-4814"><a href="../../lbaas-openstack/index.html">OpenStack</a></li>
+	</ul>
+</li>
+	<li id="menu-item-5806" class="menu-item menu-item-type-custom menu-item-object-custom menu-item-has-children menu-item-5806"><a href="#0">Containers</a>
+	<ul class="sub-menu">
+		<li id="menu-item-10059" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-10059"><a href="../../kubernetes-ingress-controller/index.html">Kubernetes</a></li>
+		<li id="menu-item-10155" class="menu-item menu-item-type-custom menu-item-object-custom menu-item-10155"><a href="../../vmware-tanzu/index.html">VMware Tanzu</a></li>
+	</ul>
+</li>
+</ul>
+</li>
+</ul></div>      </nav>
+
+      <nav class="footer-nav-grid__item footer-nav-grid__item--menu footer-nav-grid__item--2col">
+        <div class="menu-footer-resources-container"><ul id="menu-footer-resources" class="menu"><li id="menu-item-4823" class="menu-item menu-item-type-custom menu-item-object-custom menu-item-has-children menu-item-4823"><a href="../../resources/index.html">Resources</a>
+<ul class="sub-menu">
+	<li id="menu-item-10966" class="menu-item menu-item-type-custom menu-item-object-custom menu-item-10966"><a href="#0"> </a></li>
+	<li id="menu-item-5809" class="menu-item menu-item-type-custom menu-item-object-custom menu-item-has-children menu-item-5809"><a href="../../resources/index.html">Resource Center</a>
+	<ul class="sub-menu">
+		<li id="menu-item-1058" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-1058"><a href="../../resources/index.html">Content Library</a></li>
+		<li id="menu-item-4820" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-4820"><a href="../../webinars/index.html">Webinars</a></li>
+		<li id="menu-item-10451" class="menu-item menu-item-type-custom menu-item-object-custom menu-item-10451"><a href="../../../info.avinetworks.com/lbtv.html">LBTV</a></li>
+		<li id="menu-item-5808" class="menu-item menu-item-type-custom menu-item-object-custom menu-item-5808"><a href="https://blogs.vmware.com/load-balancing/">Blog</a></li>
+	</ul>
+</li>
+	<li id="menu-item-5810" class="menu-item menu-item-type-custom menu-item-object-custom menu-item-has-children menu-item-5810"><a href="#0">Technical Help</a>
+	<ul class="sub-menu">
+		<li id="menu-item-1061" class="menu-item menu-item-type-custom menu-item-object-custom menu-item-1061"><a href="../../../kb.avinetworks.com/index.html">Knowledge Base</a></li>
+		<li id="menu-item-11043" class="menu-item menu-item-type-custom menu-item-object-custom menu-item-11043"><a href="https://www.vmware.com/professional-services/virtual-cloud-network.html">Professional Services</a></li>
+		<li id="menu-item-5812" class="menu-item menu-item-type-custom menu-item-object-custom menu-item-5812"><a href="https://my.vmware.com/web/vmware/home">Support</a></li>
+		<li id="menu-item-1063" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-1063"><a href="../index.html">Glossary</a></li>
+	</ul>
+</li>
+</ul>
+</li>
+</ul></div><br><br>
+        <div class="menu-footer-company-container"><ul id="menu-footer-company" class="menu"><li id="menu-item-5842" class="menu-item menu-item-type-custom menu-item-object-custom menu-item-has-children menu-item-5842"><a href="../../contact-us/index.html">Company</a>
+<ul class="sub-menu">
+	<li id="menu-item-10979" class="menu-item menu-item-type-custom menu-item-object-custom menu-item-has-children menu-item-10979"><a href="#0"></a>
+	<ul class="sub-menu">
+		<li id="menu-item-1070" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-1070"><a href="../../contact-us/index.html">Contact Us</a></li>
+		<li id="menu-item-8781" class="menu-item menu-item-type-custom menu-item-object-custom menu-item-8781"><a href="https://www.vmware.com/help/privacy.html">Privacy Policy</a></li>
+		<li id="menu-item-9906" class="menu-item menu-item-type-custom menu-item-object-custom menu-item-9906"><a href="https://www.vmware.com/help/privacy/california-privacy-rights.html">California Privacy Rights</a></li>
+	</ul>
+</li>
+</ul>
+</li>
+</ul></div>      </nav>
+
+      
+
+    </div>
+
+  </div>
+  
+  
+  <div class="page-footer__social social-bar">
+    <div class="l-page-wrap l-page-wrap--wide-padded">
+      <div class="social-bar__social-media">
+        <a href="https://twitter.com/avinetworks" target="_blank" rel="noopener" class="social-icon social-icon--twitter"><i class="fa fa-twitter"></i></a>
+        <a href="https://www.linkedin.com/company/avi-networks-inc/" target="_blank" rel="noopener" class="social-icon social-icon--linkedin"><i class="fa fa-linkedin"></i></a>
+        <a href="https://youtube.com/Avinetworks" target="_blank" rel="noopener" class="social-icon social-icon--youtube"><i class="fa fa-youtube"></i></a>
+        <a href="https://www.facebook.com/Avi-Networks-454887554580101/" target="_blank" rel="noopener" class="social-icon social-icon--facebook"><i class="fa fa-facebook"></i></a>
+      </div>
+    </div>
+  </div>
+
+
+  <div class="page-footer__brandmark brandmark brandmark--footer">
+    <div class="l-page-wrap l-page-wrap--wide-padded">
+      <span class="page-footer__privacy"><a href="https://www.vmware.com/help/privacy.html">Privacy Policy</a> <a href="https://www.vmware.com/help/privacy/california-privacy-rights.html">| California Privacy Rights</a></span>
+      <span class="page-footer__copyright">© 2022 Avi Networks. All rights reserved.</span>
+      
+      
+      
+
+  <img src="../../wp-content/uploads/2021/10/avi-vmw-logo-grey-1.svg" alt="Avi Networks" class="brandmark__image">
+      
+    </div>
+  </div>
+
+</footer>
+
+<script src="https://code.jquery.com/jquery-migrate-3.3.2.js"></script>
+<script src="../../wp-content/themes/avinetworks/vendor/min/bundle-min.js"></script>
+<script src="../../wp-content/themes/avinetworks/js/global.js"></script>
+
+</body>
+
+
+<!-- Mirrored from sitemap.avinetworks.com/glossary/kubernetes-security/ by HTTrack Website Copier/3.x [XR&CO'2014], Sun, 20 Feb 2022 03:21:27 GMT -->
+</html>

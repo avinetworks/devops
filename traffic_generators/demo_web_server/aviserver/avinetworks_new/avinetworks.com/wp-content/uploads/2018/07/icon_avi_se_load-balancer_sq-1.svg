@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Generator: Adobe Illustrator 22.1.0, SVG Export Plug-In . SVG Version: 6.00 Build 0)  -->
+<svg version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
+	 viewBox="0 0 200 200" style="enable-background:new 0 0 200 200;" xml:space="preserve">
+<style type="text/css">
+	.st0{fill:none;stroke:#495565;stroke-width:3.2515;stroke-miterlimit:10;}
+	.st1{fill:none;stroke:#495565;stroke-width:3.2515;stroke-linecap:round;stroke-miterlimit:10;}
+	.st2{fill:#F05024;stroke:#F04F23;stroke-width:3.2515;stroke-linecap:round;stroke-linejoin:round;}
+	.st3{fill:none;stroke:#FFFFFF;stroke-width:4.7098;stroke-linecap:round;stroke-linejoin:round;}
+</style>
+<title>Asset 2</title>
+<g id="Layer_2_1_">
+	<g id="Layer_1-2">
+		<circle class="st0" cx="174.6" cy="100" r="9.4"/>
+		<circle class="st0" cx="32.5" cy="100" r="16.5"/>
+		<line class="st1" x1="71.7" y1="100" x2="49" y2="100"/>
+		<line class="st1" x1="164.3" y1="100" x2="141.6" y2="100"/>
+		<circle class="st0" cx="152.7" cy="52.9" r="9.4"/>
+		<line class="st1" x1="145.5" y1="60.2" x2="130.9" y2="74.8"/>
+		<circle class="st0" cx="152.7" cy="147.1" r="9.4"/>
+		<line class="st1" x1="145.5" y1="139.8" x2="130.9" y2="125.2"/>
+		<path class="st2" d="M72.7,85.8v28.3c0,3.4,1.9,6.5,4.8,8.2l24.5,14.2c2.9,1.7,6.5,1.7,9.4,0l24.5-14.2c2.9-1.7,4.7-4.8,4.8-8.2
+			V85.8c0-3.4-1.8-6.5-4.8-8.2l-24.6-14.2c-2.9-1.7-6.5-1.7-9.4,0L77.4,77.8C74.5,79.4,72.7,82.5,72.7,85.8z"/>
+		<polyline class="st3" points="94.9,111.8 106.6,88.2 118.4,111.8 		"/>
+	</g>
+</g>
+</svg>

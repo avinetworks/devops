@@ -1,0 +1,12 @@
+# HTTrack Website Copier Cookie File
+# This file format is compatible with Netscape cookies
+customerportal.avinetworks.com	TRUE	/	FALSE	1999999999	NHBIDCGL	0219e765b2-960f-499hiQCY68RmGsXoXGpK4M956etN8H0AHVxJ6Q1XIyuruj_WmRF7Kddv1OE2fKfzZk9sU
+customerportal.avinetworks.com	TRUE	/	FALSE	1999999999	SameSite	None
+portal.avinetworks.com	TRUE	/	FALSE	1999999999	NHBIDCGL	0219e765b2-960f-492Fo7bCb0SHRdmbF_uCkHgnQ_nryGHzj1ZMZnkuCC1XUj8Rry8kNxKu1CfYqV1yMUnkw
+portal.avinetworks.com	TRUE	/	FALSE	1999999999	SameSite	None
+.hubspot.com	TRUE	/	FALSE	1999999999	__cf_bm	JMhPf79Awnd0ClOYRVSW8oIE0RIf50G6Eh7NRQbP0yc-1645197494-0-AUmz82C0UuPQauIUcFCDqYQbPX4JUrnw6N1ACTF1SJvKnm2giE8jSB+w6EhCdZW4CN7Gw/WTDuyF3wy7heS24fo=
+.info.avinetworks.com	TRUE	/	FALSE	1999999999	__cfruid	63bb2bf1d5687d496538553d2ff6b15ced0a73da-1645277873
+info.avinetworks.com	TRUE	/	FALSE	1999999999	SameSite	None
+.blog.avinetworks.com	TRUE	/	FALSE	1999999999	__cfruid	382686a25e17925f695aabbf427c31a2c4e663bc-1645326622
+blog.avinetworks.com	TRUE	/	FALSE	1999999999	SameSite	None
+

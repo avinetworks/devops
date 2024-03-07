@@ -1,0 +1,1 @@
+# This folder is for smaller examples, not necessarily end to end [use-case deployments](../usecase_kits/) 
