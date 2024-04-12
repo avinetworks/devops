@@ -1,0 +1,123 @@
+global:
+  scrape_interval: 15s
+  scrape_timeout: 10s
+  evaluation_interval: 15s
+alerting:
+  alertmanagers:
+  - follow_redirects: true
+    scheme: http
+    timeout: 10s
+    api_version: v2
+    static_configs:
+    - targets: []
+scrape_configs:
+- job_name: prometheus
+  honor_timestamps: true
+  scrape_interval: 15s
+  scrape_timeout: 10s
+  metrics_path: /metrics
+  scheme: http
+  follow_redirects: true
+  static_configs:
+  - targets:
+    - localhost:9090
+## Avi controller scrape configs 
+- job_name: avi_api_vs1  ## Job name
+  honor_timestamps: true
+  params:
+    tenant:
+    - admin   ## Tenant Names to be mentioned comma separated 
+  scrape_interval: 1m ## scrape interval
+  scrape_timeout: 45s ## scrape timeout
+  metrics_path: /api/analytics/prometheus-metrics/virtualservice ## VirtualService metrics collected
+  scheme: http
+  follow_redirects: true
+  metric_relabel_configs:  ## config to replace the controller instance name
+  - source_labels: [instance]
+    separator: ;
+    regex: (.*)
+    target_label: instance
+    replacement: avi-demo-controller ## replacement name to be used
+    action: replace
+  static_configs:
+  - targets:
+    - 172.17.0.2:8080 ## avi-api-proxy container ip address and port 
+- job_name: avi_api_se_specific
+  honor_timestamps: true
+  params:
+    metric_id:
+    - se_if.avg_bandwidth,se_if.avg_rx_pkts,se_if.avg_rx_bytes,se_if.avg_tx_bytes,se_if.avg_tx_pkts  ## Specific SE metrics which are collected
+    tenant:
+    - admin,Demo
+  scrape_interval: 1m
+  scrape_timeout: 45s
+  metrics_path: /api/analytics/prometheus-metrics/serviceengine   ## Metrics path for  Service Engine
+  scheme: http
+  follow_redirects: true
+  metric_relabel_configs:
+  - source_labels: [instance]
+    separator: ;
+    regex: (.*)
+    target_label: instance
+    replacement: avi-demo-controller
+    action: replace
+  static_configs:
+  - targets:
+    - 172.17.0.2:8080
+- job_name: avi_api_se
+  honor_timestamps: true
+  params:
+    tenant:
+    - admin
+  scrape_interval: 1m
+  scrape_timeout: 45s
+  metrics_path: /api/analytics/prometheus-metrics/serviceengine ## Metrics path for  Service Engine
+  scheme: http
+  follow_redirects: true
+  metric_relabel_configs:
+  - source_labels: [instance]
+    separator: ;
+    regex: (.*)
+    target_label: instance
+    replacement: avi-demo-controller
+    action: replace
+  static_configs:
+  - targets:
+    - 172.17.0.2:8080
+- job_name: avi_api_pool
+  honor_timestamps: true
+  params:
+    tenant:
+    - admin
+  scrape_interval: 1m
+  scrape_timeout: 45s
+  metrics_path: /api/analytics/prometheus-metrics/pool  ## Metrics path for Pool  
+  scheme: http
+  follow_redirects: true
+  metric_relabel_configs:
+  - source_labels: [instance]
+    separator: ;
+    regex: (.*)
+    target_label: instance
+    replacement: avi-demo-controller
+    action: replace
+  static_configs:
+  - targets:
+    - 172.17.0.2:8080
+- job_name: avi_api_controller
+  honor_timestamps: true
+  scrape_interval: 1m
+  scrape_timeout: 45s
+  metrics_path: /api/analytics/prometheus-metrics/controller  ## Metrics path for Avi Controller 
+  scheme: http
+  follow_redirects: true
+  metric_relabel_configs:
+  - source_labels: [instance]
+    separator: ;
+    regex: (.*)
+    target_label: instance
+    replacement: avi-demo-controller
+    action: replace
+  static_configs:
+  - targets:
+    - 172.17.0.2:8080
