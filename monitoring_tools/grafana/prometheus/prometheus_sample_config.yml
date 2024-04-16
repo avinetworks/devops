@@ -48,7 +48,7 @@ scrape_configs:
     metric_id:
     - se_if.avg_bandwidth,se_if.avg_rx_pkts,se_if.avg_rx_bytes,se_if.avg_tx_bytes,se_if.avg_tx_pkts  ## Specific SE metrics which are collected
     tenant:
-    - admin,Demo
+    - admin
   scrape_interval: 1m
   scrape_timeout: 45s
   metrics_path: /api/analytics/prometheus-metrics/serviceengine   ## Metrics path for  Service Engine
