@@ -20,4 +20,5 @@ if __name__ == '__main__':
         cpr.delete()
     os.system("systemctl restart license_mgr")
     os.system("systemctl restart portalconnector")
+    print("Cleaned up registration state")
 
