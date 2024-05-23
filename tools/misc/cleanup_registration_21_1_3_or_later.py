@@ -71,6 +71,7 @@ if __name__ == '__main__':
          print("Controller version is less than 21.1.3, no license clean up needed.")
     else:
         from api.models import LicenseStatus
+        from api.models import ALBServicesJob
 
         # Delete license status object
         for ls in LicenseStatus.objects.all():
@@ -91,8 +92,14 @@ if __name__ == '__main__':
                 controllerLicense.save_pb()
 
                 ds.save('controllerlicense', controllerLicense.json_data['uuid'], controllerLicense.protobuf(), None)
-
         print("Controller's license state is cleared.")
+
+        # Delete albservices job from the datastore and database
+        for albservicesJob in ALBServicesJob.objects.all():
+            albservicesJob.delete()
+            ds.delete('albservicesjob', albservicesJob.json_data['uuid'])
+        print("Controller's albservice jobs are cleared.")
+        
        
     os.system("systemctl restart license_mgr")
     os.system("systemctl restart portalconnector")
