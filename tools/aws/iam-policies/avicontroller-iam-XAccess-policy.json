@@ -1,0 +1,29 @@
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Sid": "Stmt1450417666000",
+            "Effect": "Allow",
+            "Action": [
+                "iam:GetPolicy",
+                "iam:GetPolicyVersion",
+                "iam:GetRole",
+                "iam:GetRolePolicy",
+                "iam:ListAttachedRolePolicies",
+                "iam:ListPolicies",
+                "iam:ListRolePolicies",
+                "iam:ListRoles",
+                "iam:ListAccountAliases",
+                "iam:ListAttachedUserPolicies",
+                "iam:ListAttachedGroupPolicies",
+                "iam:GetUserPolicy",
+                "iam:GetGroupPolicy",
+                "iam:ListUserPolicies",
+                "iam:ListgroupPolicies"
+            ],
+            "Resource": [
+                "*"
+            ]
+        }
+    ]
+}
