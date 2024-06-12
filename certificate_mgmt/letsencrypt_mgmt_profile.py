@@ -57,8 +57,9 @@
 import base64, binascii, hashlib, os, json, re, ssl, subprocess, time, urllib.parse
 from urllib.request import urlopen, Request
 from tempfile import NamedTemporaryFile
-
+import concurrent.futures
 from avi.sdk.avi_api import ApiSession
+import time
 
 VERSION = "0.9.7"
 
@@ -66,6 +67,29 @@ DEFAULT_CA = "https://acme-v02.api.letsencrypt.org" # DEPRECATED! USE DEFAULT_DI
 DEFAULT_DIRECTORY_URL = "https://acme-v02.api.letsencrypt.org/directory"
 DEFAULT_STAGING_DIRECTORY_URL = "https://acme-staging-v02.api.letsencrypt.org/directory"
 ACCOUNT_KEY_PATH = "/tmp/letsencrypt.key"
+
+class OrderProperties:
+
+    def __init__(self, domain, token, keyauthorization, auth_url, challenge_url, vs_uuid=None):
+        self.domain = domain
+        self.token = token
+        self.keyauthorization = keyauthorization
+        self.auth_url = auth_url
+        self.challenge_url = challenge_url
+        self.vs_uuid = vs_uuid
+
+class VirtualServiceDetails:
+
+    def __init__(self, rules, rule_number, serving_on_port_80, service_on_port_80_data, vhMode, vs_uuid=None, vs_uuid_parent=None,httppolicy_uuid=None):
+        self.rules = rules
+        self.rule_number = rule_number
+        self.serving_on_port_80 = serving_on_port_80
+        self.service_on_port_80_data = service_on_port_80_data
+        self.vhMode = vhMode
+        self.httppolicy_uuid = httppolicy_uuid
+        self.vs_uuid = vs_uuid
+        self.vs_uuid_parent = vs_uuid_parent
+
 
 def get_crt(user, password, tenant, api_version, csr, CA=DEFAULT_CA, disable_check=False,
             overwrite_vs=None, directory_url=DEFAULT_DIRECTORY_URL, contact=None, debug=False):
@@ -157,6 +181,46 @@ def get_crt(user, password, tenant, api_version, csr, CA=DEFAULT_CA, disable_che
             raise Exception(err)
         return rsp
 
+    def validate_token_controller(wellknown_url, keyauthorization):
+        print ("Validating token from Avi Controller...")
+        try:
+            maxVerifyAttempts = 5 # maximal amount of verification attempts
+            # retrying logic. Otherwise race-condition can occurr between avi controller pushing config and the token validation request
+            for verifyAttempt in range(maxVerifyAttempts):
+                reqToken = _do_request(wellknown_url, verify=False)
+                if reqToken[0] != keyauthorization:
+                    print ("Internal token validation failed, {0} of {1} attempts. Retrying in 2 seconds."
+                                .format((verifyAttempt + 1), maxVerifyAttempts))
+                    time.sleep(2)
+                else:
+                    break
+            else:
+                raise Exception("All {2} internal token verifications failed. Got '{0}' but expected '{1}'."
+                                    .format(reqToken[0], keyauthorization, maxVerifyAttempts))
+        except Exception as e:
+            raise ValueError("Wrote file, but Avi couldn't verify token at {0}. Exception: {1}".format(wellknown_url, str(e)))
+    
+    def validate_and_notify(order_properties, disable_check, debug):
+        wellknown_url = "http://{0}/.well-known/acme-challenge/{1}".format(order_properties.domain, order_properties.token)
+        print(wellknown_url)
+        if debug:
+            print ("DEBUG: Validation URL is: {}".format(wellknown_url))
+        if not disable_check:
+            validate_token_controller(wellknown_url, order_properties.keyauthorization)
+        else:
+            print ("Waiting 5 seconds before letting LetsEncrypt validating the challenge as validation disabled. Give controller time to push configs.")
+            time.sleep(5) # wait 5 secs if not validating, due to above mentioned race condition
+    
+        print ("Challenge completed, notifying LetsEncrypt")
+        # say the challenge is done
+        _send_signed_request(order_properties.challenge_url, {}, "Error submitting challenges: {0}".format(order_properties.domain))
+        authorization = _poll_until_not(order_properties.auth_url, ["pending"], "Error checking challenge status for {0}".format(order_properties.domain))
+        if authorization['status'] != "valid":
+            raise ValueError("Challenge did not pass for {0}: {1}".format(order_properties.domain, authorization))
+        print ("Challenge passed")
+
+
+
     if os.path.exists(ACCOUNT_KEY_PATH):
         if debug:
             print ("DEBUG: Reusing account key.")
@@ -231,7 +295,15 @@ def get_crt(user, password, tenant, api_version, csr, CA=DEFAULT_CA, disable_che
     order, _, order_headers = _send_signed_request(directory['newOrder'], order_payload, "Error creating new order")
     print ("Order created!")
 
-    # get the authorizations that need to be completed
+
+    # Check if the vs is serving on port 80
+    serving_on_port_80 = False
+    service_on_port_80_data = None
+
+    order_properties_list = []
+    domain_to_vs_details = {}
+    rules = []
+    rule_number = 1000001
     for auth_url in order['authorizations']:
         if debug:
             print ("DEBUG: Authorization URL is: {}".format(auth_url))
@@ -245,14 +317,17 @@ def get_crt(user, password, tenant, api_version, csr, CA=DEFAULT_CA, disable_che
         token = re.sub(r"[^A-Za-z0-9_\-]", "_", challenge['token'])
         keyauthorization = "{0}.{1}".format(token, thumbprint)
 
-        wellknown_url = "http://{0}/.well-known/acme-challenge/{1}".format(domain, token)
-        if debug:
-            print ("DEBUG: Validation URL is: {}".format(wellknown_url))
+        # wellknown_url = "http://{0}/.well-known/acme-challenge/{1}".format(domain, token)
+        # if debug:
+        #     print ("DEBUG: Validation URL is: {}".format(wellknown_url))
+        order_properties = OrderProperties(domain, token, keyauthorization, auth_url, challenge['url'])
+        order_properties_list.append(order_properties)
 
         vhMode = False
-        # Check if we need to overwrite VirtualService UUID to something specific
+        vs_uuid = None
+        vs_uuid_parent = None
+        
         if overwrite_vs == None:
-
             # Get VSVIPs/VSs, based on FQDN
             rsp = _do_request_avi("vsvip/?search=(fqdn,{})".format(domain), "GET").json()
             if debug:
@@ -273,7 +348,7 @@ def get_crt(user, password, tenant, api_version, csr, CA=DEFAULT_CA, disable_che
                 raise Exception("Could not find a VS with fqdn = {}".format(domain))
 
             vs_uuid = rsp["results"][0]["uuid"]
-
+        
         else:
             # Overwriting VS UUID to what user specified.
             # ALL SANs of the CSR must be reachable on the specified VS to succeed.
@@ -283,11 +358,9 @@ def get_crt(user, password, tenant, api_version, csr, CA=DEFAULT_CA, disable_che
 
         print ("Found VS {} with fqdn {}".format(vs_uuid, domain))
 
-        # Let's check if VS is enabled, otherwise challenge can never successfully complete.
         if not rsp["results"][0]["enabled"]:
             raise Exception("VS with fqdn {} is not enabled.".format(domain))
 
-        # Special handling for virtualHosting: if child, get services from parent.
         if vhMode and rsp["results"][0]["type"] == "VS_TYPE_VH_CHILD":
             # vh_parent_vs_ref is schema of https://avi.domain.tld/api/virtualservice/virtualservice-UUID, hence picking the last part
             vs_uuid_parent = rsp["results"][0]["vh_parent_vs_ref"].split("/")[-1]
@@ -299,8 +372,7 @@ def get_crt(user, password, tenant, api_version, csr, CA=DEFAULT_CA, disable_che
 
             # we just copy it over. more transparent for further logic.
             rsp["results"][0]["services"] = vhRsp["results"][0]["services"]
-
-        # Check if the vs is serving on port 80
+        
         serving_on_port_80 = False
         service_on_port_80_data = None
         for service in rsp["results"][0]["services"]:
@@ -309,160 +381,141 @@ def get_crt(user, password, tenant, api_version, csr, CA=DEFAULT_CA, disable_che
                 if debug:
                     print ("DEBUG: VS serving on port 80")
                 break
+        ind = 1
+        if overwrite_vs == None:
+            if domain in domain_to_vs_details:
+                ind = len(domain_to_vs_details[domain].rules) + 1
+        else:
+            ind = len(rules) + 1
 
-        # Update VS
-        httpPolicyName = (domain + "-LetsEncryptHTTPpolicy")
+        rule = {
+                "name": "rule-{}".format(domain),
+                "index": ind,
+                "enable": True,
+                "match": {
+                    "path": {
+                        "match_criteria": "CONTAINS",
+                        "match_case": "SENSITIVE",
+                        "match_str": [
+                            ".well-known/acme-challenge/{}".format(token)
+                        ]
+                    }
+                },
+                "action": {
+                    "action": "HTTP_SECURITY_ACTION_SEND_RESPONSE",
+                    "status_code": "HTTP_LOCAL_RESPONSE_STATUS_CODE_200",
+                    "file": {
+                        "content_type": "text/plain",
+                        "file_content": keyauthorization
+                    }
+                }
+            }
+        if overwrite_vs == None:
+            if domain in domain_to_vs_details:
+                vs_detail = domain_to_vs_details[domain]
+                vs_detail.rules.append(rule)
+            else:
+                vs_detail = VirtualServiceDetails([rule], rule_number, serving_on_port_80, service_on_port_80_data, vhMode, vs_uuid, vs_uuid_parent)
+                domain_to_vs_details[domain] = vs_detail
+        else:
+            rules.append(rule)
+        
+        rule_number += 1
+    
+    if overwrite_vs != None:
+        domain_to_vs_details['abc'] = VirtualServiceDetails(rules, rule_number, serving_on_port_80, service_on_port_80_data, vhMode, vs_uuid, vs_uuid_parent)
+
+
+    for domain, vs_detail in domain_to_vs_details.items():
+    # Update VS
+        httpPolicyName = "{}-LetsEncryptHTTPpolicy".format(domain)
         # Check if HTTP policy exists.
         # Can happen in rare cases, when e.g. script fails or removal failed for whatever reasons.
         # To prevent this from failing forever, we clean it up at this stage.
         hpRsp = _do_request_avi("httppolicyset/?name={}".format(httpPolicyName), "GET").json()
         if hpRsp['count'] > 0:
             hp_uuid = hpRsp['results'][0]['uuid']
-            print("Stranded httpPolicySet {} found. Deleting...".format(hp_uuid))
-            patch_data = {
-                "delete": {
-                    "http_policies": [{
-                        "http_policy_set_ref": "/api/httppolicyset/{}".format(hp_uuid),
-                        "index": 1000001
-                    }]
-                }
-            }
-
-            # Remove httpPolicySet from VS
-            if vhMode:  # if VH, we set the rule on the parent. Without SNI (so HTTP) it will go to the parent.
-                _do_request_avi("virtualservice/{}".format(vs_uuid_parent), "PATCH", patch_data)
-                print("Removed httpPolicySet from parent-VS {}".format(vs_uuid_parent))
-            else:
-                _do_request_avi("virtualservice/{}".format(vs_uuid), "PATCH", patch_data)
-                print("Removed httpPolicySet from VS {}".format(vs_uuid))
-
+            print ("Stranded httpPolicySet {} found. Deleting...".format(hp_uuid))
             _do_request_avi("httppolicyset/{}".format(hp_uuid), "DELETE")
 
-        # Create HTTP policy
         httppolicy_data = {
             "name": httpPolicyName,
             "http_security_policy": {
-                "rules": [{
-                    "name": "Rule 1",
-                    "index": 1,
-                    "enable": True,
-                    "match": {
-                        "path": {
-                            "match_criteria": "CONTAINS",
-                            "match_case": "SENSITIVE",
-                            "match_str": [
-                                ".well-known/acme-challenge/{}".format(token)
-                            ]
-                        }
-                    },
-                    "action": {
-                        "action": "HTTP_SECURITY_ACTION_SEND_RESPONSE",
-                        "status_code": "HTTP_LOCAL_RESPONSE_STATUS_CODE_200",
-                        "file": {
-                            "content_type": "text/plain",
-                            "file_content": keyauthorization
-                        }
-                    }
-                }]
+                "rules": vs_detail.rules
             },
             "is_internal_policy": False
         }
-
-        httppolicy_uuid = None
-        try:
+        # TODO - Add a try catch block here
             # Create httpPolicySet
-            rsp = _do_request_avi("httppolicyset", "POST", data=httppolicy_data).json()
-            httppolicy_uuid = rsp["uuid"]
-            print ("Created httpPolicy with uuid {}".format(httppolicy_uuid))
+        rsp = _do_request_avi("httppolicyset", "POST", data=httppolicy_data).json()
+        vs_detail.httppolicy_uuid = rsp["uuid"]
+        print ("Created httpPolicy with uuid {}".format(vs_detail.httppolicy_uuid))
 
-            patch_data = {
-                "add" : {
-                    "http_policies": [{
-                        "http_policy_set_ref": "/api/httppolicyset/{}".format(httppolicy_uuid),
-                        "index": 1000001
-                    }]
-                }
+        patch_data = {
+            "add" : {
+                "http_policies": [{
+                    "http_policy_set_ref": "/api/httppolicyset/{}".format(vs_detail.httppolicy_uuid),
+                    "index": vs_detail.rule_number
+                }]
             }
-            if not serving_on_port_80:
-                # Add port to virtualservice
-                print ("Adding port 80 to VS")
-                service_on_port_80_data = {
-                    "enable_http2": False,
-                    "enable_ssl": False,
-                    "port": 80,
-                    "port_range_end": 80
-                }
-                patch_data["add"]["services"] = [service_on_port_80_data]
+        }
+        if not vs_detail.serving_on_port_80:
+            # Add port to virtualservice
+            print ("Adding port 80 to VS")
+            vs_detail.service_on_port_80_data = {
+                "enable_http2": False,
+                "enable_ssl": False,
+                "port": 80,
+                "port_range_end": 80
+            }
+            patch_data["add"]["services"] = [vs_detail.service_on_port_80_data]
 
-            # Adding httpPolicySet to VS
-            if vhMode: # if VH, we set the rule on the parent. Without SNI (so HTTP) it will go to the parent.
-                _do_request_avi("virtualservice/{}".format(vs_uuid_parent), "PATCH", patch_data)
-                print ("Added httpPolicySet to parent-VS {}".format(vs_uuid_parent))
-            else:
-                _do_request_avi("virtualservice/{}".format(vs_uuid), "PATCH", patch_data)
-                print ("Added httpPolicySet to VS {}".format(vs_uuid))
+        # Adding httpPolicySet to VS
+        if vs_detail.vhMode: # if VH, we set the rule on the parent. Without SNI (so HTTP) it will go to the parent.
+            _do_request_avi("virtualservice/{}".format(vs_detail.vs_uuid_parent), "PATCH", patch_data)
+            print ("Added httpPolicySet to parent-VS {}".format(vs_detail.vs_uuid_parent))
+        else:
+            _do_request_avi("virtualservice/{}".format(vs_detail.vs_uuid), "PATCH", patch_data)
+            print ("Added httpPolicySet to VS {}".format(vs_detail.vs_uuid))
 
-            # check that the file is in place
-            if not disable_check:
-                print ("Validating token from Avi Controller...")
+    try:
+        with concurrent.futures.ThreadPoolExecutor(len(order_properties_list)) as executor:
+            future_to_order = {executor.submit(validate_and_notify, order_properties, disable_check, debug): order_properties for order_properties in order_properties_list}
+            for future in concurrent.futures.as_completed(future_to_order):
+                order_future = future_to_order[future]
                 try:
-                    maxVerifyAttempts = 5 # maximal amount of verification attempts
-                    # retrying logic. Otherwise race-condition can occurr between avi controller pushing config and the token validation request
-                    for verifyAttempt in range(maxVerifyAttempts):
-                        reqToken = _do_request(wellknown_url, verify=False)
-                        if reqToken[0] != keyauthorization:
-                            print ("Internal token validation failed, {0} of {1} attempts. Retrying in 2 seconds."
-                                        .format((verifyAttempt + 1), maxVerifyAttempts))
-                            time.sleep(2)
-                        else:
-                            break
-                    else:
-                        raise Exception("All {2} internal token verifications failed. Got '{0}' but expected '{1}'."
-                                            .format(reqToken[0], keyauthorization, maxVerifyAttempts))
-                except Exception as e:
-                    raise ValueError("Wrote file, but Avi couldn't verify token at {0}. Exception: {1}".format(wellknown_url, str(e)))
-            else:
-                print ("Waiting 5 seconds before letting LetsEncrypt validating the challenge as validation disabled. Give controller time to push configs.")
-                time.sleep(5) # wait 5 secs if not validating, due to above mentioned race condition
-
-            print ("Challenge completed, notifying LetsEncrypt")
-            # say the challenge is done
-            _send_signed_request(challenge['url'], {}, "Error submitting challenges: {0}".format(domain))
-            authorization = _poll_until_not(auth_url, ["pending"], "Error checking challenge status for {0}".format(domain))
-            if authorization['status'] != "valid":
-                raise ValueError("Challenge did not pass for {0}: {1}".format(domain, authorization))
-            print ("Challenge passed")
-
-        finally:
-            print ("Cleaning up...")
-            # Update the vs
-            if httppolicy_uuid == None:
+                    data = future.result()
+                except Exception as exc:
+                    raise ValueError("Wrote file, but Avi couldn't verify token. Exception: {0}".format(str(exc)))
+        print("Length: {}".format(len(order_properties_list)))
+    finally:
+        print ("Cleaning up...")
+        for domain, vs_detail in domain_to_vs_details.items():
+            if vs_detail.httppolicy_uuid == None:
                 print ("Error: Failed removing httpPolicy as UUID not defined.")
             else:
                 patch_data = {
                     "delete" : {
                         "http_policies": [{
-                            "http_policy_set_ref": "/api/httppolicyset/{}".format(httppolicy_uuid),
-                            "index": 1000001
+                            "http_policy_set_ref": "/api/httppolicyset/{}".format(vs_detail.httppolicy_uuid),
+                            "index": vs_detail.rule_number
                         }]
                     }
                 }
-                if not serving_on_port_80:
-                    patch_data["delete"]["services"] = [service_on_port_80_data]
+                if not vs_detail.serving_on_port_80:
+                    patch_data["delete"]["services"] = [vs_detail.service_on_port_80_data]
 
                 # Remove httpPolicySet from VS
-                if vhMode: # if VH, we set the rule on the parent. Without SNI (so HTTP) it will go to the parent.
-                    _do_request_avi("virtualservice/{}".format(vs_uuid_parent), "PATCH", patch_data)
-                    print ("Removed httpPolicySet from parent-VS {}".format(vs_uuid_parent))
+                if vs_detail.vhMode: # if VH, we set the rule on the parent. Without SNI (so HTTP) it will go to the parent.
+                    _do_request_avi("virtualservice/{}".format(vs_detail.vs_uuid_parent), "PATCH", patch_data)
+                    print ("Removed httpPolicySet from parent-VS {}".format(vs_detail.vs_uuid_parent))
                 else:
-                    _do_request_avi("virtualservice/{}".format(vs_uuid), "PATCH", patch_data)
-                    print ("Removed httpPolicySet from VS {}".format(vs_uuid))
+                    _do_request_avi("virtualservice/{}".format(vs_detail.vs_uuid), "PATCH", patch_data)
+                    print ("Removed httpPolicySet from VS {}".format(vs_detail.vs_uuid))
 
                 # Remove httpPolicySet
-                _do_request_avi("httppolicyset/{}".format(httppolicy_uuid), "DELETE")
+                _do_request_avi("httppolicyset/{}".format(vs_detail.httppolicy_uuid), "DELETE")
                 print ("Deleted httpPolicySet")
-
-        print ("{0} verified!".format(domain))
 
     # finalize the order with the csr
     print ("Signing certificate...")
@@ -494,6 +547,8 @@ def certificate_request(csr, common_name, kwargs):
     letsencrypt_key = kwargs.get('letsencrypt_key', None)
 
     print ("Running version {}".format(VERSION))
+    import urllib3
+    urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
     if debug.lower() == "true":
         debug = True
