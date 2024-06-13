@@ -34,18 +34,21 @@
 #     2. This REQUIRES a L7 Virtual Service with publicly available fqdn
 #
 # Parameters -
-#     user            - Avi user name (Default: None)
-#     password        - Password of the above user (Default: None)
-#     tenant          - Avi tenant name (Default: is 'admin')
-#     dryrun          - True/False. If True Let's Encrypt's staging server will be used. (Default: False)
-#                       Main purpose is not to get ratelimited by LetsEncrypt during testing.
-#     contact         - E-mail address sent to letsencrypt for account creation. (Default: None.)
-#                       (set this only once until updated, otherwise an update request will be sent every time.)
-#     directory_url   - Change ACME server, e.g. for using in-house ACME server. (Default: Let's Encrypt Production)
-#     overwrite_vs    - Specify name or UUID of VirtualServer to be used for validation and httpPolicySet. (Default: Not set)
-#                       Useful for scenarios where VS cannot be identified by FQDN/hostname, e.g. when it's only listening on IP.
-#                       Important Note: Export+Import of Avi configuration CAUSES the UUID to change!
-#     letsencrypt_key - Lets Encrypt Account Key (Default: None)
+#     user                  - Avi user name (Default: None)
+#     password              - Password of the above user (Default: None)
+#     tenant                - Avi tenant name (Default: is 'admin')
+#     dryrun                - True/False. If True Let's Encrypt's staging server will be used. (Default: False)
+#                             Main purpose is not to get ratelimited by LetsEncrypt during testing.
+#     contact               - E-mail address sent to letsencrypt for account creation. (Default: None.)
+#                             (set this only once until updated, otherwise an update request will be sent every time.)
+#     directory_url         - Change ACME server, e.g. for using in-house ACME server. (Default: Let's Encrypt Production)
+#     overwrite_vs          - Specify name or UUID of VirtualServer to be used for validation and httpPolicySet. (Default: Not set)
+#                             Useful for scenarios where VS cannot be identified by FQDN/hostname, e.g. when it's only listening on IP.
+#                             Important Note: Export+Import of Avi configuration CAUSES the UUID to change!
+#     letsencrypt_key       - Lets Encrypt Account Key (Default: None)
+#     aws_access_key_id     - AWS Access key with permissions to modify Route 53 records
+#     aws_secret_access_key - AWS Secret key
+#     hosted_zone_id        - ID for zone where DNS challenges should be published
 #
 # Useful links -
 #     Ratelimiting - https://letsencrypt.org/docs/rate-limits/
