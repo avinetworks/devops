@@ -1,0 +1,35 @@
+- hosts: localhost
+  connection: local
+  gather_facts: yes
+  vars:
+    avi_credentials:
+      controller: "{{ controller_ip }}"
+      username: admin
+      password: "{{ avi_password }}"
+      api_version: 31.1.1
+
+  collections:
+    - vmware.alb
+
+  tasks:
+    - name: Analytics profile with sensitive logs
+      vmware.alb.avi_analyticsprofile:
+        avi_credentials: "{{ avi_credentials }}"
+        api_context: '{{avi_api_context | default(omit)}}' 
+        name: Sensitive-Log-AnalyticsProfile
+        sensitive_log_profile:
+          header_field_rules:
+          - action: LOG_FIELD_MASKOFF
+            enabled: true
+            index: 1
+            match:
+              match_criteria: CONTAINS
+              match_str: [Cookie]
+            name: mask-log-match-cookie
+          - action: LOG_FIELD_MASKOFF
+            enabled: true
+            index: 2
+            match:
+              match_criteria: CONTAINS
+              match_str: [SECURITY-PASSWORD]
+            name: mask-log-match-security-password
