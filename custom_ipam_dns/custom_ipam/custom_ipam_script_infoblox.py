@@ -230,11 +230,11 @@ def _get_api_paginated(auth_params, dest_url, dest_url6, data_key, results_per_p
                     next_page_id = resp.get('next_page_id', '')
                     elapsed_time = int(time.time() - page_start_time)
                 return data_vals
-            err_msg = r.status_code + ' : '  + r.text
+            err_msg = str(r.status_code) + ' : '  + r.text
             logger.error("F[GetAvailableNetworksAndSubnets] req[%s] ip_type[%s] err[%s]" % (page_url, ip_type, err_msg))
             raise CustomIpamGeneralException("F[GetAvailableNetworksAndSubnets] req[%s] ip_type[%s] err[%s]" % (page_url, ip_type, err_msg))
         else:
-            err_msg = r6.status_code + ' : '  + r6.text
+            err_msg = str(r6.status_code) + ' : '  + r6.text
             logger.error("F[GetAvailableNetworksAndSubnets] req[%s] ip_type[%s] err[%s]" % (page_url6, ip_type, err_msg))
             raise CustomIpamGeneralException("F[GetAvailableNetworksAndSubnets] req[%s] ip_type[%s] err[%s]" % (page_url6, ip_type, err_msg))
     elif 'server' in auth_params:
@@ -289,7 +289,7 @@ def _get_api_paginated(auth_params, dest_url, dest_url6, data_key, results_per_p
                 next_page_id = resp.get('next_page_id', '')
                 elapsed_time = int(time.time() - page_start_time)
             return data_vals
-        err_msg = r.status_code + ' : '  + r.text
+        err_msg = str(r.status_code) + ' : '  + r.text
         logger.error("F[GetAvailableNetworksAndSubnets] req[%s] ip_type[%s] err[%s]" % (page_url, ip_type, err_msg))
         raise CustomIpamGeneralException("F[GetAvailableNetworksAndSubnets] req[%s] ip_type[%s] err[%s]" % (page_url, ip_type, err_msg))
 
@@ -729,7 +729,7 @@ def DeleteIpamRecord(auth_params, record_info):
                     return True
                 else:
                     if 'text' in r6_json:
-                        err_msg += r6.status_code + " : " + BeautifulSoup(r6.text, 'html.parser').text
+                        err_msg += str(r6.status_code) + " : " + BeautifulSoup(r6.text, 'html.parser').text
                     logger.error(err_msg)
                     raise CustomIpamRecordNotFoundException(err_msg)
             elif 'server' in  auth_params:
@@ -756,12 +756,12 @@ def DeleteIpamRecord(auth_params, record_info):
                     if r.status_code == 200:
                         return True
                 if 'text' in r_json:
-                    err_msg += r.status_code + " : " + BeautifulSoup(r.text, 'html.parser').text
+                    err_msg += str(r.status_code) + " : " + BeautifulSoup(r.text, 'html.parser').text
                 logger.error(err_msg)
                 raise CustomIpamRecordNotFoundException(err_msg)
             else:
                 if 'text' in r6_json:
-                    err_msg += r6.status_code + " : " + BeautifulSoup(r6.text, 'html.parser').text
+                    err_msg += str(r6.status_code) + " : " + BeautifulSoup(r6.text, 'html.parser').text
                 logger.error(err_msg)
                 raise CustomIpamRecordNotFoundException(err_msg)
         elif 'server' in auth_params:
@@ -788,7 +788,7 @@ def DeleteIpamRecord(auth_params, record_info):
                 if r.status_code == 200:
                     return True
             if 'text' in r_json:
-                err_msg += r.status_code + " : " + BeautifulSoup(r.text, 'html.parser').text
+                err_msg += str(r.status_code) + " : " + BeautifulSoup(r.text, 'html.parser').text
             logger.error(err_msg)
             raise CustomIpamRecordNotFoundException(err_msg)
     except CustomIpamAuthenticationErrorException as e:
@@ -906,12 +906,12 @@ def UpdateIpamRecord(auth_params, new_record_info, old_record_info):
                 if r.status_code == 200:
                     host_ref = r_json[0]['_ref'] if len(r_json) > 0 and r_json[0]['_ref'] else None
                 else:
-                    err_msg = r.status_code 
+                    err_msg = str(r.status_code) 
                     err_msg += ' : '  + r_json['text'] if 'text' in r_json else None
                     logger.error("F[UpdateIpamRecord] Error retrieving the record[%s] reason[%s]" % (name, err_msg))
                     raise CustomIpamRecordNotFoundException("F[UpdateIpamRecord] Error retrieving the record[%s] reason[%s]" % (name, err_msg))
             else:
-                err_msg = r6.status_code 
+                err_msg = str(r6.status_code)
                 err_msg += ' : '  + r6_json['text'] if 'text' in r6_json else None
                 logger.error("F[UpdateIpamRecord] Error retrieving the record[%s] reason[%s]" % (name, err_msg))
                 raise CustomIpamRecordNotFoundException("F[UpdateIpamRecord] Error retrieving the record[%s] reason[%s]" % (name, err_msg))
@@ -924,7 +924,7 @@ def UpdateIpamRecord(auth_params, new_record_info, old_record_info):
             if r.status_code == 200:
                 host_ref = r_json[0]['_ref'] if len(r_json) > 0 and r_json[0]['_ref'] else None
             else:
-                err_msg = r.status_code 
+                err_msg = str(r.status_code) 
                 err_msg += ' : '  + r_json['text'] if 'text' in r_json else None
                 logger.error("F[UpdateIpamRecord] Error retrieving the record[%s] reason[%s]" % (name, err_msg))
                 raise CustomIpamRecordNotFoundException("F[UpdateIpamRecord] Error retrieving the record[%s] reason[%s]" % (name, err_msg))
