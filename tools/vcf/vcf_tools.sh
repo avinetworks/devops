@@ -38,6 +38,8 @@ uploadbundle() {
     echo -e "${BLUE}=== Upload Avi binary to SDDCm ===${NC}\n"
     echo -e "${BLUE}=== You will be prompted for SDDC manager vcf user password ===${NC}\n"
     read -p "Enter SDDC Manager FQDN: " sddcm
+    read -p "Enter SDDC Manager administrator username (administrator@vsphere.local by default): " sddcmuser
+    read -s "Enter the SDDC Manager administrator password: " sddcmpass
     read -p "Enter location of PVC file (pvc.json): " pvcfile
     read -p "Enter location of PVC signature file (pvc.sig): " sigfile
     echo -e "${BLUE}=== Enter location of Avi OVA (must be named as expected by PVC file) ===${NC}\n"
@@ -50,7 +52,8 @@ uploadbundle() {
     log "INFO" "Copying pvc files and Avi binary to SDDC manager"
     scp -o StrictHostKeyChecking=no $pvcfile $sigfile $ovapath vcf@$sddcm:/home/vcf/avi
 
-    response=$(curl -s -H 'Content-Type:application/json' https://$sddcm/v1/tokens -d '{"username" : "administrator@vsphere.local","password":"VMware123!VMware123!"}' -k)
+    loginpayload=$(printf '{"username" : %s,"password": %s}' "$sddcmuser", "$sddcmpass")
+    response=$(curl -s -H 'Content-Type:application/json' https://$sddcm/v1/tokens -d "$loginpayload" -k)
     TOKEN=$(echo $response | grep -o '"accessToken": *"[^"]*' | sed 's/"accessToken":"//')
 
     response=$(curl -s -k -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" -X PATCH "https://$sddcm/v1/product-version-catalogs" \
@@ -72,7 +75,7 @@ uploadbundle() {
             break
         elif [[ "$status" == "FAILED" ]]; then
             log "ERROR" "$response"
-            break
+            exit 1
         fi
 
         echo "Checking Product version catalogs update status in 5 seconds..."
@@ -93,6 +96,7 @@ uploadbundle() {
         if [[ "$ERROR_MSG" != "" ]]; then
             log "ERROR" "AVI OVA UPLOAD FAILED: $response"
         fi
+        exit 1
     fi
 }
 
@@ -172,6 +176,7 @@ enforcementpoint() {
     RESPONSE_BODY=${response:0:${#response}-3}
     if [[ "$STATUS_CODE" -ge 400 ]]; then
         log "ERROR" "Avi Onboarding failed:\n$RESPONSE_BODY"
+        exit 1
     else
         log "SUCCESS" "Registration of Avi controller with NSX Manager is successful:\n$RESPONSE_BODY"
     fi
@@ -193,6 +198,7 @@ uploadcertificate() {
     RESPONSE_BODY=${response:0:${#response}-3}
     if [[ "$STATUS_CODE" -ge 400 ]]; then
         log "ERROR" "Certificate upload failed:\n$RESPONSE_BODY"
+        exit 1
     else
         log "SUCCESS" "Upload of certificate into NSX Manager is successful:\n$RESPONSE_BODY"
     fi    
@@ -210,7 +216,7 @@ show_menu() {
     echo "Choose an option:"
     echo "1) Upload Avi bundle to SDDCm"
     echo "2) Upload SDDC manager root CA certificate to NSX manager" 
-    echo "3)  Register Avi enforcement point with NSX manager"
+    echo "3) Register Avi enforcement point with NSX manager"
     echo "4) Quit"
     read -p "Enter your choice [1-4]: " choice
 
