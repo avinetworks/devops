@@ -1,0 +1,73 @@
+{
+    "version": 1,
+    "sequenceNumber": 1,
+    "creationTime": "2025-03-10T12:00:00Z",
+    "publishedTime": "2025-03-10T12:00:00Z",
+    "patches": {
+      "NSX_ALB": [
+        {
+          "releaseDate": "2023-02-28T12:00:00Z",
+          "description": "This VMware Software install bundle contains VMware Avi Load Balancer 22.1.6. For more information, see https://techdocs.broadcom.com/us/en/vmware-security-load-balancing/avi-load-balancer/avi-load-balancer/22-1/vmware-avi-load-balancer-release-notes/release-notes-for-22-1-6.html",
+          "productVersion": "22.1.6-23390967",
+          "artifacts": {
+            "bundles": [
+              {
+                "id": "b532a09c-0adb-46c6-965d-9f47226354a2",
+                "type": "INSTALL",
+                "name": "b532a09c-0adb-46c6-965d-9f47226354a2",
+                "binaries": [
+                  {
+                    "fileName": "controller-22.1.6-9191.ova",
+                    "size": 4371292160,
+                    "checksum": "22af19743f83c1a6a962ee7c2ab2812be81449e26f494f21cd0ac5197724fd8f"
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "releaseDate": "2024-08-08T12:00:00Z",
+          "description": "This VMware Software install bundle contains VMware Avi Load Balancer 22.1.7. For more information, see https://techdocs.broadcom.com/us/en/vmware-security-load-balancing/avi-load-balancer/avi-load-balancer/22-1/vmware-avi-load-balancer-release-notes/release-notes-22-1-7.html",
+          "productVersion": "22.1.7-24190832",
+          "artifacts": {
+            "bundles": [
+              {
+                "id": "e5f256d8-4644-4f3a-b0e2-c0943a05ba7d",
+                "type": "INSTALL",
+                "name": "e5f256d8-4644-4f3a-b0e2-c0943a05ba7d",
+                "binaries": [
+                  {
+                    "fileName": "controller-22.1.7-9093.ova",
+                    "size": 4444385280,
+                    "checksum": "32092a45b05128e79ae88f984575305c69ac92781088a32124cda1c53e04991c"
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "releaseDate": "2025-01-31T12:00:00Z",
+          "description": "This VMware Software install bundle contains VMware Avi Load Balancer 31.1.1. For more information, see https://techdocs.broadcom.com/us/en/vmware-security-load-balancing/avi-load-balancer/avi-load-balancer/31-1/vmware-avi-load-balancer-release-notes/Release-Note-Section-20627.html",
+          "productVersion": "31.1.1-24544104",
+          "artifacts": {
+            "bundles": [
+              {
+                "id": "0323cb47-48b4-457f-b57a-45b10371b563",
+                "type": "INSTALL",
+                "name": "0323cb47-48b4-457f-b57a-45b10371b563",
+                "binaries": [
+                  {
+                    "fileName": "controller-31.1.1-9122.ova",
+                    "size": 4568227840,
+                    "checksum": "bf7f87378e7c368915cf9c483e86564f3ace849678aef13518a75421a9f85096"
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      ]
+    }
+  }
