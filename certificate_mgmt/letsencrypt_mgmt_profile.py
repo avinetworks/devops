@@ -338,8 +338,16 @@ def get_crt(user, password, tenant, api_version, csr, CA=DEFAULT_CA, disable_che
                 vhMode = True
                 search_term = "vh_domain_name.contains={}".format(domain)
             else:
-                vsvip_uuid = rsp["results"][0]["uuid"]
-                search_term = "vsvip_ref={}".format(vsvip_uuid)
+                matching_vsvip_found = False
+                for vsvip in rsp["results"]:
+                    for dns_entry in vsvip.get("dns_info",[]):
+                        if dns_entry.get("fqdn","") == domain:
+                            vsvip_uuid = vsvip.get("uuid")
+                            search_term = "vsvip_ref={}".format(vsvip_uuid)
+                            matching_vsvip_found = True
+                            break
+                    if matching_vsvip_found:
+                        break
 
             rsp = _do_request_avi("virtualservice/?{}".format(search_term), "GET").json()
             if debug:
@@ -539,7 +547,8 @@ def certificate_request(csr, common_name, kwargs):
     tenant = kwargs.get('tenant', None)
     dry_run = kwargs.get('dryrun', "false")
     contact = kwargs.get('contact', None)
-    api_version = kwargs.get('api_version', '20.1.1')
+    # For consistency and compatibility, keep the API version aligned with the controller version
+    api_version = kwargs.get('api_version', '22.1.3')
     disable_check = kwargs.get('disable_check', "false")
     debug = kwargs.get('debug', "false")
     directory_url = kwargs.get('directory_url', None)
