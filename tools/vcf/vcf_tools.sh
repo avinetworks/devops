@@ -39,7 +39,8 @@ uploadbundle() {
     echo -e "${BLUE}=== You will be prompted for SDDC manager vcf user password ===${NC}\n"
     read -p "Enter SDDC Manager FQDN: " sddcm
     read -p "Enter SDDC Manager administrator username (administrator@vsphere.local by default): " sddcmuser
-    read -s "Enter the SDDC Manager administrator password: " sddcmpass
+    read -s -p "Enter the SDDC Manager administrator password: " sddcmpass
+    echo
     read -p "Enter location of PVC file (pvc.json): " pvcfile
     read -p "Enter location of PVC signature file (pvc.sig): " sigfile
     echo -e "${BLUE}=== Enter location of Avi OVA (must be named as expected by PVC file) ===${NC}\n"
@@ -187,7 +188,8 @@ uploadcertificate() {
     echo "=== Upload CA certificate to NSX ==="
     echo "=== This function requires the root certificate to be exported ... ==="
     echo "=== ... to the filesystem in PEM format as root.crt  ==="
-    read -p "Enter your NSX admin password: " nsx_pass
+    read -s -p "Enter your NSX admin password: " nsx_pass
+    echo
     read -p "Enter NSX manager hostname or IP: " nsx_manager
     rawcert=$(cat ./root.crt)
     cert="{\"pem_encoded\": \"${rawcert//$'\n'/\\n}\"}"
