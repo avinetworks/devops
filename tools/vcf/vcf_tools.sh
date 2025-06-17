@@ -12,7 +12,7 @@ log() {
     local level=$1
     local message=$2
     local timestamp=$(date "+%Y-%m-%d %H:%M:%S")
-    # echo -e "${timestamp} [${level}] ${message}" >> "${LOG_FILE}"
+    echo -e "${timestamp} [${level}] ${message}" >> "${LOG_FILE}"
     
     case $level in
         "INFO")
@@ -210,6 +210,9 @@ uploadcertificate() {
 cleanup() {
     log "INFO" "User requested to exit"
     echo -e "\nThank you for using this tool!"
+    unset nsx_pass
+    unset sddcm_pass
+    unset avi_pass
     exit 0
 }
 
