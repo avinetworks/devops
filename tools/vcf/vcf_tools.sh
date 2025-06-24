@@ -12,6 +12,7 @@ log() {
     local level=$1
     local message=$2
     local timestamp=$(date "+%Y-%m-%d %H:%M:%S")
+    local LOG_FILE="/tmp/vcftools.log"
     echo -e "${timestamp} [${level}] ${message}" >> "${LOG_FILE}"
     
     case $level in
@@ -38,7 +39,7 @@ uploadbundle() {
     echo -e "${BLUE}=== Upload Avi binary to SDDCm ===${NC}\n"
     echo -e "${BLUE}=== You will be prompted for SDDC manager vcf user password ===${NC}\n"
     read -p "Enter SDDC Manager FQDN: " sddcm
-    read -p "Enter SDDC Manager administrator username (administrator@vsphere.local by default): " sddcmuser
+    read -p "Enter SDDC Manager administrator username (typically administrator@vsphere.local): " sddcmuser
     read -s -p "Enter the SDDC Manager administrator password: " sddcmpass
     echo
     read -p "Enter location of PVC file (pvc.json): " pvcfile
@@ -237,7 +238,7 @@ show_menu() {
 }
 
 # Main loop
-while true; do
+while true; do\
     show_menu
     echo ""
 done
