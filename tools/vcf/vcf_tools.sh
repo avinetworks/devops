@@ -54,7 +54,7 @@ uploadbundle() {
     log "INFO" "Copying pvc files and Avi binary to SDDC manager"
     scp -o StrictHostKeyChecking=no $pvcfile $sigfile $ovapath vcf@$sddcm:/home/vcf/avi
 
-    loginpayload=$(printf '{"username" : "%s","password": "%s"}' "$sddcmuser" "$sddcmpass")
+    loginpayload=$(printf '{"username" : "%s","password": "%s"}' $sddcmuser $sddcmpass)
     response=$(curl -s -H 'Content-Type:application/json' https://$sddcm/v1/tokens -d "$loginpayload" -k)
     TOKEN=$(echo $response | grep -o '"accessToken": *"[^"]*' | sed 's/"accessToken":"//')
 
