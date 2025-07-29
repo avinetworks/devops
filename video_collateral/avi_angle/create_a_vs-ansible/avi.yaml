@@ -1,0 +1,148 @@
+---
+- hosts: localhost
+  connection: local
+  gather_facts: no
+
+  vars_files:
+    - "vars/app.yml"
+    - "vars/infra.yml"
+
+  collections:
+    - vmware.alb
+
+  tasks:
+
+    - name: Create HTTP health monitor
+      vmware.alb.avi_healthmonitor:
+        avi_credentials: "{{ avi_credentials | default(omit) }}"
+        api_context: "{{ avi_api_context | default(omit) }}"
+        tenant: "{{ tenant }}"
+        avi_api_update_method: patch
+        avi_api_patch_op: add
+        name: "{{ item.name }}"
+        http_monitor:
+          http_request: "{{ item.http_request }}"
+          http_response_code: "{{ item.http_response_code }}"
+        receive_timeout: "{{ item.receive_timeout }}"
+        failed_checks: "{{ item.failed_checks }}"
+        send_interval: "{{ item.send_interval }}"
+        successful_checks: "{{ item.successful_checks }}"
+        type: "{{ item.type }}"
+      loop: "{{ avi_healthmonitor }}"
+      loop_control:
+        label: "name: {{ item.name }}, type {{ item.type }}"
+      when:
+        - item.type == "HEALTH_MONITOR_HTTP"
+        - avi_healthmonitor is defined
+      tags:
+        - hm
+        - pool
+        - vs
+
+    - name: Create Pool Without Server
+      vmware.alb.avi_pool:
+        avi_credentials: "{{ avi_credentials | default(omit) }}"
+        api_context: "{{ avi_api_context | default(omit) }}"
+        name: "{{ avi_pool.name }}"
+        cloud_ref: "/api/cloud/?name={{ avi_cloud.name | default('Default-Cloud') }}"
+        vrf_ref: "/api/vrfcontext/?name={{ tier1_name }}"
+        tenant: "{{ tenant | default('admin') }}"
+        health_monitor_refs:
+          - "/api/healthmonitor?name={{ avi_pool.health_monitor_refs }}"
+      when:
+        - avi_pool is defined
+      tags:
+        - pool
+        - vs
+
+    - name: Update Pool With Servers
+      vmware.alb.avi_pool:
+        avi_credentials: "{{ avi_credentials | default(omit) }}"
+        api_context: "{{ avi_api_context | default(omit) }}"
+        avi_api_patch_op : add
+        avi_api_update_method: patch
+        name: "{{ avi_pool.name }}"
+        cloud_ref: "/api/cloud/?name={{ avi_cloud.name | default('Default-Cloud') }}"
+        vrf_ref: "/api/vrfcontext/?name={{ tier1_name }}"
+        tenant: "{{ tenant | default('admin') }}"
+        health_monitor_refs:
+          - "/api/healthmonitor?name={{ avi_pool.health_monitor_refs }}"
+        default_server_port: "{{ avi_pool.port }}"
+        servers:
+          - ip:
+              addr: "{{ item }}"
+              type: 'V4'
+      loop: "{{ avi_servers_ips }}"
+      loop_control:
+        label: "pool {{ avi_pool.name }}, adding server IP: {{ item }}"
+      when:
+        - avi_servers_ips is defined
+        - avi_pool is defined
+      tags:
+        - pool
+        - vs
+
+    - name: Create VSVIP
+      vmware.alb.avi_vsvip:
+        avi_credentials: "{{ avi_credentials | default(omit) }}"
+        api_context: "{{ avi_api_context | default(omit) }}"
+        name: "vsvip-{{ item.name }}"
+        cloud_ref: "/api/cloud/?name={{ avi_cloud.name | default('Default-Cloud') }}"
+        tenant: "{{ tenant | default('admin') }}"
+        vrf_context_ref: "/api/vrfcontext/?name={{ tier1_name }}"
+        dns_info:
+          - fqdn: "{{ item.dns_info.0 | default(item.name + '.' + domain_name) }}"
+        vip:
+          - auto_allocate_ip: true
+            ipam_network_subnet:
+              network_ref: "/api/network/?name={{ network_name }}"
+              subnet:
+                mask: "{{ network_cidr.split('/')[1] }}"
+                ip_addr:
+                  type: "V4"
+                  addr: "{{ network_cidr.split('/')[0] }}"
+      register: OutputVsVip
+      loop: "{{ avi_virtualservice.http }}"
+      loop_control:
+        label: "vsvip-{{ item.name }}, DNS FQDN: {{ item.dns_info.0 | default(item.name + '.' + domain_name) }}"
+      when:
+        - avi_virtualservice.http is defined
+      tags:
+        - vsvip
+        - vs
+
+    - name: Create VS
+      vmware.alb.avi_virtualservice:
+        avi_credentials: "{{ avi_credentials | default(omit) }}"
+        api_context: "{{ avi_api_context | default(omit) }}"
+        avi_api_update_method: patch
+        avi_api_patch_op: add
+        name: "{{ item.name }}"
+        cloud_ref: "/api/cloud/?name={{ avi_cloud.name | default('Default-Cloud') }}"
+        tenant: "{{ tenant | default('admin') }}"
+        ssl_profile_ref: "/api/sslprofile/?name={{ item.ssl_profile_ref | default('System-Standard') }}"
+        ssl_key_and_certificate_refs: "/api/sslkeyandcertificate/?name={{ item.ssl_key_and_certificate_refs | default('System-Default-Cert') }}"
+        services: "{{ item.services }}"
+        pool_ref: "/api/pool?name={{ item.pool_ref }}"
+        enable_rhi: "{{ item.enable_rhi | default('false') }}"
+        vsvip_ref: "/api/vsvip/?name=vsvip-{{ item.name }}"
+        se_group_ref:  "/api/serviceenginegroup/?name={{ se_group_ref | default('Default-Group') }}"
+        analytics_policy:
+          udf_log_throttle: 10
+          full_client_logs:
+            duration: 30
+            throttle: 10
+            enabled: true
+          metrics_realtime_update:
+            duration: 0
+            enabled: true
+          significant_log_throttle: 0
+          client_insights: NO_INSIGHTS
+          all_headers: true
+      loop: "{{ avi_virtualservice.http }}"
+      loop_control:
+        label: "vs {{ item.name }} creation"
+      when:
+        - avi_virtualservice.http is defined
+      tags:
+        - vs

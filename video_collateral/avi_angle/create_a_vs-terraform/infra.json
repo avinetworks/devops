@@ -1,0 +1,15 @@
+{
+  "avi_servers_ips": [
+    "192.168.3.11",
+    "192.168.3.12"
+  ],
+  "avi_cloud": {
+    "name": "dc1_nsx"
+  },
+  "domain_name": "app.avi.com",
+  "tier1_name": "t1-01",
+  "network_cidr": "192.168.100.0/24",
+  "se_group_ref": "private",
+  "network_name": "seg-vip-1",
+  "tenant": "automation"
+}

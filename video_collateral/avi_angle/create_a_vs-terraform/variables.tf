@@ -1,0 +1,9 @@
+variable "avi_credentials" {}
+variable "avi_servers_ips" {}
+variable "avi_cloud" {}
+variable "domain_name" {}
+variable "tier1_name" {}
+variable "network_cidr" {}
+variable "network_name" {}
+variable "tenant" {}
+variable "se_group_ref" {}

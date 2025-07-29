@@ -54,7 +54,7 @@ uploadbundle() {
     log "INFO" "Copying pvc files and Avi binary to SDDC manager"
     scp -o StrictHostKeyChecking=no $pvcfile $sigfile $ovapath vcf@$sddcm:/home/vcf/avi
 
-    loginpayload=$(printf '{"username" : %s,"password": %s}' "$sddcmuser", "$sddcmpass")
+    loginpayload=$(printf '{"username" : "%s","password": "%s"}' $sddcmuser $sddcmpass)
     response=$(curl -s -H 'Content-Type:application/json' https://$sddcm/v1/tokens -d "$loginpayload" -k)
     TOKEN=$(echo $response | grep -o '"accessToken": *"[^"]*' | sed 's/"accessToken":"//')
 
@@ -70,6 +70,7 @@ uploadbundle() {
     # Poll on the task using /v1/product-version-catalogs/upload-tasks/{task_id} API
     while true; do
         response=$(curl -s -k -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" -X GET "https://$sddcm/v1/product-version-catalogs/upload-tasks/$task_id")
+        log "$response"
         status=$(echo $response | grep -o '"status": *"[^"]*' | sed 's/"status":"//')
         # Check if the status is success/failure/in-progress
         if [[ "$status" == "SUCCEEDED" ]]; then
