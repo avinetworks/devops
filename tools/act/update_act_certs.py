@@ -4,6 +4,7 @@ import os
 import shutil
 import sys
 import subprocess
+import socket
 
 # Default paths
 CERT_DIR = "/server/ssl_certificates/certificates"
@@ -57,6 +58,11 @@ def restart_docker_container():
         sys.exit(1)
 
 def main():
+    # Check if running inside the correct Docker container
+    if socket.gethostname() != 'migrationTools':
+        print("ERROR: This script must be run from inside the 'migrationTools' docker container.", file=sys.stderr)
+        sys.exit(1)
+
     parser = argparse.ArgumentParser(
         description="Update or revert SSL/TLS certificates and restart the container."
     )
