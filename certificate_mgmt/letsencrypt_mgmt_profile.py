@@ -1,7 +1,7 @@
 '''
 ###
 # Name: letsencrypt_mgmt_profile.py
-# Version: 0.9.7
+# Version: 0.9.8
 # License: MIT
 #
 # Description -
@@ -30,7 +30,8 @@
 # Parameters -
 #     user            - Avi user name (Default: None)
 #     password        - Password of the above user (Default: None)
-#     tenant          - Avi tenant name (Default: is 'admin')
+#     tenant          - Avi tenant name (Default: 'admin')
+#     api_version     - AVI API version (Default: 21.1.1)
 #     dryrun          - True/False. If True Let's Encrypt's staging server will be used. (Default: False)
 #                       Main purpose is not to get ratelimited by LetsEncrypt during testing.
 #     contact         - E-mail address sent to letsencrypt for account creation. (Default: None.)
@@ -40,6 +41,8 @@
 #                       Useful for scenarios where VS cannot be identified by FQDN/hostname, e.g. when it's only listening on IP.
 #                       Important Note: Export+Import of Avi configuration CAUSES the UUID to change!
 #     letsencrypt_key - Lets Encrypt Account Key (Default: None)
+#     verify_acme_ssl - True/False.  If True the ssl certificate of the ACME server will be validated against the controller trusted roots.
+#                       Set to false when using an internal/custom CA on your ACME server. (Default: True)
 #
 # Useful links -
 #     Ratelimiting - https://letsencrypt.org/docs/rate-limits/
@@ -92,7 +95,7 @@ class VirtualServiceDetails:
 
 
 def get_crt(user, password, tenant, api_version, csr, CA=DEFAULT_CA, disable_check=False,
-            overwrite_vs=None, directory_url=DEFAULT_DIRECTORY_URL, contact=None, debug=False):
+            overwrite_vs=None, directory_url=DEFAULT_DIRECTORY_URL, contact=None, debug=False, verify_acme_ssl=True):
     directory, acct_headers, alg, jwk = None, None, None, None # global variables
 
     # helper functions - base64 encode for jose spec
@@ -108,7 +111,7 @@ def get_crt(user, password, tenant, api_version, csr, CA=DEFAULT_CA, disable_che
         return out
 
     # helper function - make request and automatically parse json response
-    def _do_request(url, data=None, err_msg="Error", depth=0, verify=True):
+    def _do_request(url, data=None, err_msg="Error", depth=0, verify=verify_acme_ssl):
         try:
             ctx = ssl.create_default_context()
             if not verify:
@@ -539,12 +542,13 @@ def certificate_request(csr, common_name, kwargs):
     tenant = kwargs.get('tenant', None)
     dry_run = kwargs.get('dryrun', "false")
     contact = kwargs.get('contact', None)
-    api_version = kwargs.get('api_version', '20.1.1')
+    api_version = kwargs.get('api_version', '21.1.1')
     disable_check = kwargs.get('disable_check', "false")
     debug = kwargs.get('debug', "false")
     directory_url = kwargs.get('directory_url', None)
     overwrite_vs = kwargs.get('overwrite_vs', None)
     letsencrypt_key = kwargs.get('letsencrypt_key', None)
+    verify_acme_ssl = kwargs.get('verify_acme_ssl', "true")
 
     print ("Running version {}".format(VERSION))
     import urllib3
@@ -590,6 +594,11 @@ def certificate_request(csr, common_name, kwargs):
         with open(ACCOUNT_KEY_PATH, 'w') as f:
             f.write(letsencrypt_key)
 
+    if verify_acme_ssl.lower() == "false":
+        verify_acme_ssl = False
+    else:
+        verify_acme_ssl = True
+
     # Create CSR temp file.
     csr_temp_file = NamedTemporaryFile(mode='w',delete=False)
     csr_temp_file.close()
@@ -601,7 +610,7 @@ def certificate_request(csr, common_name, kwargs):
     try:
         signed_crt = get_crt(user, password, tenant, api_version, csr_temp_file.name,
                                 disable_check=disable_check, overwrite_vs=overwrite_vs,
-                                directory_url=directory_url, contact=contact, debug=debug)
+                                directory_url=directory_url, contact=contact, debug=debug, verify_acme_ssl=verify_acme_ssl)
     finally:
         os.remove(csr_temp_file.name)
 
