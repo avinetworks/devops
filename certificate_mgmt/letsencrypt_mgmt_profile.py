@@ -610,7 +610,8 @@ def certificate_request(csr, common_name, kwargs):
     try:
         signed_crt = get_crt(user, password, tenant, api_version, csr_temp_file.name,
                                 disable_check=disable_check, overwrite_vs=overwrite_vs,
-                                directory_url=directory_url, contact=contact, debug=debug, verify_acme_ssl=verify_acme_ssl)
+                                directory_url=directory_url, contact=contact, debug=debug,
+                                verify_acme_ssl=verify_acme_ssl)
     finally:
         os.remove(csr_temp_file.name)
 
