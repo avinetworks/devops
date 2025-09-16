@@ -19,7 +19,7 @@
             "Resource": "*",
             "Condition": {
                 "StringLike": {
-                    "ec2:ResourceTag/AVICLOUD_UUID": "*"
+                    "ec2:ResourceTag/AVICLOUD_UUID": "*" 
                 }
             }
         },
