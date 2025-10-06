@@ -1,0 +1,71 @@
+formatVersion: 1
+inputs:
+  port:
+    type: integer
+    title: Port
+    description: Destination port for insecure communications
+    default: 80
+  secure_port:
+    type: integer
+    title: SSL-encrypted port
+    description: Destination port for secure communications
+    default: 443
+  servers:
+    type: array
+    title: Servers
+    description: Input the server ip's to add to the pool. Leaving 0.0.0.0 will result in an empty pool being created.
+    items:
+      type: string
+    minItems: 0
+    default:
+      - 0.0.0.0
+  ssl_enable:
+    type: boolean
+    default: false
+    title: Enable SSL
+    description: enable a second port for SSL communications and enable HTTP-to-HTTPS redirect
+  fqdn:
+    type: boolean
+    default: false
+    title: DNS Record
+    description: Create a DNS record for this virtual service
+  fqdn_name:
+    type: string
+    title: Hostname
+    default: ''
+    description: Hostname portion of FQDN
+resources:
+  Idem_AVILB_VIRTUAL_SERVICE:
+    type: Idem.AVILB.APPLICATIONS.VIRTUAL_SERVICE
+    properties:
+      name: vs-${env.deploymentName}
+      account: avi-cloud-account
+      services: '${input.ssl_enable == true ? [{"port": input.port}, {"port": input.secure_port, "enable_ssl": true}] : [{"port": input.port}]}'
+      ssl_profile_ref: System-Standard
+      ssl_key_and_certificate_refs:
+        - System-Default-Cert-EC
+      pool_ref: ${resource.Idem_AVILB_APPLICATIONS_POOL_1.name}
+      vsvip_ref: /api/vsvip?name=${resource.Idem_AVILB_APPLICATIONS_VS_VIP_1.name}
+      application_profile_ref: '${input.ssl_enable == true ? "/api/applicationprofile?name=System-Secure-HTTP" : "/api/applicationprofile?name=System-HTTP"}'
+  Idem_AVILB_APPLICATIONS_VS_VIP_1:
+    type: Idem.AVILB.APPLICATIONS.VS_VIP
+    properties:
+      account: avi-cloud-account
+      vrf_context_ref: t1-01
+      name: vip-${env.deploymentName}
+      dns_info: '${input.fqdn == true ? [{"fqdn": input.fqdn_name + ".app.avi.com", "ttl": 5}] : null}'
+      vip:
+        - vip_id: 0
+          auto_allocate_ip: true
+          ipam_network_subnet:
+            network_ref: seg-vip-1
+  Idem_AVILB_APPLICATIONS_POOL_1:
+    type: Idem.AVILB.APPLICATIONS.POOL
+    properties:
+      name: pool-${env.deploymentName}
+      vrf_ref: t1-01
+      account: avi-cloud-account
+      default_server_port: ${input.port}
+      servers: '${input.servers[0] == "0.0.0.0" ? null :map_by(input.servers, address => {"ip": {"addr": address, "type" : "V4"}})}'
+      health_monitor_refs:
+        - System-HTTP
