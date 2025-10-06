@@ -12,15 +12,23 @@ This shell script will assist you in the following tasks
 The helper script is a bash script and will need to be run from an appropriate system. (Linux, MacOS, Windows with WSL)
 
 
+
+
 ## Detailed information
 
 <details>
     <summary>Uploading the bundle to SDDC manager</summary>
 <br/><br/>
 
-This requires 3 files, pvc.json, pvc.sig, and the Avi OVA for the 31.1.1 release.  The pvc files are available in this repo, and the controller OVA is available on the Broadcom support portal.
+This requires 3 files, pvc.json, pvc.sig, and the Avi OVA for the 31.1.1 (VCF 9.0) or 31.1.2 (VCF 9.0.1) release.  The pvc files are available in this repo, and the controller OVA is available on the Broadcom support portal.
 
-It is critical that the product version entered in the tool (31.1.1-24544104 at the time of this writing) matches the build number in the pvc.json exactly.
+It is critical that the product version entered in the tool matches the build number in the pvc.json exactly.
+
+
+Avi Version | VCF version | Avi OVA filename | Avi product version 
+----------- | ----------- | ---------------- | -------------------
+31.1.1 | 9.0.0 | controller-31.1.1-9122.ova | 31.1.1-24544104
+31.1.2 | 9.0.1 | controller-31.1.2-9193.ova | 31.1.2-24923866
 
 </details>
 
@@ -37,6 +45,5 @@ This step is only necessary if you're using the SDDC Manager certificate lifecyc
 
 ### Copy certificate to clipboard
 ![Copying certificate to clipboard](images/copy_to_clipboard.png 'Copy to clipboard')
-
 Then save the clipboard content to a file named root.crt  
 </details>
