@@ -228,7 +228,7 @@ def _create_dns_record(auth_params, record_name, ips):
                     logger.info("record name[%s] for ipv4addrs %s and ipv6addrs %s already exists."%
                                 (record_name, ips['v4_ips'], ips['v6_ips']))
                 else:
-                    raise CustomDnsRecordAlreadyExistsException(r6_json['text'])
+                    raise CustomDnsRecordAlreadyExistsException("Original exception was: " + r6_json['text'])
             elif server:
                 r = requests.post(url=rest_url, auth=(username, password),
                             verify=False, data=payload)
@@ -244,7 +244,7 @@ def _create_dns_record(auth_params, record_name, ips):
                         logger.info("record name[%s] for ipv4addrs %s and ipv6addrs %s already exists."%
                                     (record_name, ips['v4_ips'], ips['v6_ips']))
                     else:
-                        raise CustomDnsRecordAlreadyExistsException(r_json['text'])
+                        raise CustomDnsRecordAlreadyExistsException("Original exception was: " + r_json['text'])
         elif server:
             r = requests.post(url=rest_url, auth=(username, password),
                         verify=False, data=payload)
@@ -260,7 +260,7 @@ def _create_dns_record(auth_params, record_name, ips):
                     logger.info("record name[%s] for ipv4addrs %s and ipv6addrs %s already exists."%
                                 (record_name, ips['v4_ips'], ips['v6_ips']))
                 else:
-                    raise CustomDnsRecordAlreadyExistsException(r_json['text'])
+                    raise CustomDnsRecordAlreadyExistsException("Original exception was: " + r_json['text'])
     except CustomDnsAuthenticationErrorException as e:
         raise
     except CustomDnsRecordAlreadyExistsException as e:
