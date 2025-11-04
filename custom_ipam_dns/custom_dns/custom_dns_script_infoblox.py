@@ -244,7 +244,7 @@ def _create_dns_record(auth_params, record_name, ips):
                         logger.info("record name[%s] for ipv4addrs %s and ipv6addrs %s already exists."%
                                     (record_name, ips['v4_ips'], ips['v6_ips']))
                     else:
-                        raise CustomDnsRecordAlreadyExistsException(r_json['text'])
+                        raise CustomDnsRecordAlreadyExistsException("Original exception was: " + r_json['text'])
         elif server:
             r = requests.post(url=rest_url, auth=(username, password),
                         verify=False, data=payload)
@@ -260,7 +260,7 @@ def _create_dns_record(auth_params, record_name, ips):
                     logger.info("record name[%s] for ipv4addrs %s and ipv6addrs %s already exists."%
                                 (record_name, ips['v4_ips'], ips['v6_ips']))
                 else:
-                    raise CustomDnsRecordAlreadyExistsException(r_json['text'])
+                    raise CustomDnsRecordAlreadyExistsException("Original exception was: " + r_json['text'])
     except CustomDnsAuthenticationErrorException as e:
         raise
     except CustomDnsRecordAlreadyExistsException as e:
@@ -401,9 +401,19 @@ def _update_dns_record(auth_params, record_name, ips):
         raise CustomDnsGeneralException("Error retrieving the record[%s] reason[%s]" % (record_name, str(e)))
 
 
-def _delete_dns_record(auth_params, record_name):
+def _delete_dns_record(auth_params, record_name, expected_ips=None):
     """
-    Function to delete a given DNS record.
+    Function to delete a given DNS record or remove specific IPs from it.
+    Args
+    ----
+        auth_params: (dict of str: str)
+            Parameters required for authentication.
+        record_name: (str)
+            Name of the DNS record to delete.
+        expected_ips: (dict of str: list of str), optional
+            Expected IPs to match before deletion. Keys are 'v4_ips' and 'v6_ips'.
+            If provided, only matching IPs are removed. If all IPs match or no expected_ips,
+            the entire record is deleted.
     """
     username = auth_params.get('username',None)
     password = auth_params.get('password',None)
@@ -426,25 +436,124 @@ def _delete_dns_record(auth_params, record_name):
             host_ref = None
             err_msg = "record[%s] not found!" % record_name
             if r6.status_code == 200:
-                host_ref = r6_json[0]['_ref'] if len(r6_json) > 0 and r6_json[0]['_ref'] else None
-                if not host_ref:
+                if len(r6_json) > 0:
+                    host_ref = r6_json[0]['_ref'] if r6_json[0]['_ref'] else None
+                    if not host_ref:
+                        logger.info(err_msg)
+                        return
+                    
+                    # Extract IPs from the GET response
+                    host_ipv4addrs = []
+                    host_ipv6addrs = []
+                    if 'ipv4addrs' in r6_json[0] and len(r6_json[0]['ipv4addrs']) > 0:
+                        for ipv4addr in r6_json[0]['ipv4addrs']:
+                            host_ipv4addrs.append(ipv4addr['ipv4addr'])
+                    if 'ipv6addrs' in r6_json[0] and len(r6_json[0]['ipv6addrs']) > 0:
+                        for ipv6addr in r6_json[0]['ipv6addrs']:
+                            host_ipv6addrs.append(ipv6addr['ipv6addr'])
+                    host_ips = host_ipv4addrs + host_ipv6addrs
+                    
+                    # If expected_ips is provided, remove only matching IPs
+                    if expected_ips is not None:
+                        expected_v4_ips = expected_ips.get('v4_ips', []) or []
+                        expected_v6_ips = expected_ips.get('v6_ips', []) or []
+                        # Only verify if there are expected IPs to check
+                        if expected_v4_ips or expected_v6_ips:
+                            # Find matching IPs to remove
+                            matching_v4_ips = list(set(expected_v4_ips) & set(host_ipv4addrs))
+                            matching_v6_ips = list(set(expected_v6_ips) & set(host_ipv6addrs))
+                            
+                            if not matching_v4_ips and not matching_v6_ips:
+                                logger.warning("No matching IPs found for record[%s], skipping deletion. Expected v4_ips[%s], v6_ips[%s], but found[%s]" %
+                                              (record_name, expected_v4_ips, expected_v6_ips, host_ips))
+                                return
+                            
+                            # Calculate remaining IPs after removal
+                            remaining_v4_ips = list(set(host_ipv4addrs) - set(matching_v4_ips))
+                            remaining_v6_ips = list(set(host_ipv6addrs) - set(matching_v6_ips))
+                            
+                            # If all IPs are being removed, delete the entire record
+                            if not remaining_v4_ips and not remaining_v6_ips:
+                                logger.info("All IPs match for record[%s], deleting entire record. Matching v4_ips[%s], v6_ips[%s]" %
+                                            (record_name, matching_v4_ips, matching_v6_ips))
+                                rest_url6 = 'https://[' + server6 + ']/wapi/' + \
+                                    wapi_version + '/' + host_ref
+                                r6 = requests.delete(url=rest_url6, auth=(username, password), verify=False)
+                                _check_and_raise_auth_error(r6)
+                                logger.info("record_name[%s], DELETE req[%s] status_code[%s]" % (record_name, rest_url6, r6.status_code))
+                                r6_json = r6.json()
+                                if r6.status_code == 200:
+                                    return
+                                else:
+                                    if 'text' in r6_json:
+                                        err_msg = str(r6.status_code) + BeautifulSoup(r6.text, 'html.parser').text
+                                    else:
+                                        err_msg = "failed with error code " + str(r6.status_code)
+                                    logger.error(err_msg)
+                                    raise CustomDnsGeneralException(err_msg)
+                            else:
+                                # Remove only matching IPs using PUT with ipv4addrs- and ipv6addrs-
+                                ips_to_remove = {'v4_ips': matching_v4_ips, 'v6_ips': matching_v6_ips}
+                                ipv4addrs_remove, ipv6addrs_remove = _build_ipvxaddrs_objects(ips_to_remove)
+                                payload = {}
+                                if ipv4addrs_remove:
+                                    payload['ipv4addrs-'] = ipv4addrs_remove
+                                if ipv6addrs_remove:
+                                    payload['ipv6addrs-'] = ipv6addrs_remove
+                                
+                                logger.info("Removing matching IPs from record[%s]. Removing v4_ips[%s], v6_ips[%s]. Remaining v4_ips[%s], v6_ips[%s]" %
+                                            (record_name, matching_v4_ips, matching_v6_ips, remaining_v4_ips, remaining_v6_ips))
+                                rest_url6 = 'https://[' + server6 + ']/wapi/' + wapi_version + '/' + host_ref
+                                r6 = requests.put(url=rest_url6, auth=(username, password), verify=False, data=json.dumps(payload))
+                                _check_and_raise_auth_error(r6)
+                                logger.info("record_name[%s], PUT req[%s %s] status_code[%s]" % (record_name, rest_url6, json.dumps(payload), r6.status_code))
+                                r6_json = r6.json()
+                                if r6.status_code == 200 or r6.status_code == 201:
+                                    return
+                                else:
+                                    if 'text' in r6_json:
+                                        err_msg = str(r6.status_code) + (' : ' + r6_json['text'] if 'text' in r6_json else '')
+                                    else:
+                                        err_msg = "failed with error code " + str(r6.status_code)
+                                    logger.error(err_msg)
+                                    raise CustomDnsGeneralException(err_msg)
+                        else:
+                            # expected_ips is provided but empty, delete entire record
+                            rest_url6 = 'https://[' + server6 + ']/wapi/' + \
+                                wapi_version + '/' + host_ref
+                            r6 = requests.delete(url=rest_url6, auth=(username, password), verify=False)
+                            _check_and_raise_auth_error(r6)
+                            logger.info("record_name[%s], DELETE req[%s] status_code[%s]" % (record_name, rest_url6, r6.status_code))
+                            r6_json = r6.json()
+                            if r6.status_code == 200:
+                                return
+                            else:
+                                if 'text' in r6_json:
+                                    err_msg = str(r6.status_code) + BeautifulSoup(r6.text, 'html.parser').text
+                                else:
+                                    err_msg = "failed with error code " + str(r6.status_code)
+                                logger.error(err_msg)
+                                raise CustomDnsGeneralException(err_msg)
+                    else:
+                        # No expected_ips provided, delete entire record (backward compatibility)
+                        rest_url6 = 'https://[' + server6 + ']/wapi/' + \
+                            wapi_version + '/' + host_ref
+                        r6 = requests.delete(url=rest_url6, auth=(username, password), verify=False)
+                        _check_and_raise_auth_error(r6)
+                        logger.info("record_name[%s], DELETE req[%s] status_code[%s]" % (record_name, rest_url6, r6.status_code))
+                        r6_json = r6.json()
+                        if r6.status_code == 200:
+                            return
+                        else:
+                            if 'text' in r6_json:
+                                err_msg = str(r6.status_code) + BeautifulSoup(r6.text, 'html.parser').text
+                            else:
+                                err_msg = "failed with error code " + str(r6.status_code)
+                            logger.error(err_msg)
+                            raise CustomDnsGeneralException(err_msg)
+                else:
                     logger.info(err_msg)
                     return
-                
-                # Delete the record
-                rest_url6 = 'https://[' + server6 + ']/wapi/' + \
-                    wapi_version + '/' + host_ref
-                r6 = requests.delete(url=rest_url6, auth=(username, password), verify=False)
-                _check_and_raise_auth_error(r6)
-                logger.info("record_name[%s], DELETE req[%s] status_code[%s]" % (record_name, rest_url6, r6.status_code))
-                r6_json = r6.json()
-                if r6.status_code == 200:
-                    return
-                else:
-                    if 'text' in r6_json:
-                        err_msg = str(r6.status_code) + BeautifulSoup(r6.text, 'html.parser').text
-                    logger.error(err_msg)
-                    raise CustomDnsGeneralException(err_msg)
             elif server:
                 r = requests.get(url=rest_url, auth=(username, password), verify=False)
                 _check_and_raise_auth_error(r)
@@ -453,27 +562,132 @@ def _delete_dns_record(auth_params, record_name):
                 host_ref = None
                 err_msg = "record[%s] not found!" % record_name
                 if r.status_code == 200:
-                    host_ref = r_json[0]['_ref'] if len(r_json) > 0 and r_json[0]['_ref'] else None
-                    if not host_ref:
-                        logger.info(err_msg)
-                        return
-                    
-                    # Delete the record
-                    rest_url = 'https://' + server + '/wapi/' + \
-                        wapi_version + '/' + host_ref
-                    r = requests.delete(url=rest_url, auth=(username, password), verify=False)
-                    _check_and_raise_auth_error(r)
-                    logger.info("record_name[%s], DELETE req[%s] status_code[%s]" % (record_name, rest_url, r.status_code))
-                    r_json = r.json()
-                    if r.status_code == 200:
-                        return
+                    if len(r_json) > 0:
+                        host_ref = r_json[0]['_ref'] if r_json[0]['_ref'] else None
+                        if not host_ref:
+                            logger.info(err_msg)
+                            return
+                        
+                        # Extract IPs from the GET response
+                        host_ipv4addrs = []
+                        host_ipv6addrs = []
+                        if 'ipv4addrs' in r_json[0] and len(r_json[0]['ipv4addrs']) > 0:
+                            for ipv4addr in r_json[0]['ipv4addrs']:
+                                host_ipv4addrs.append(ipv4addr['ipv4addr'])
+                        if 'ipv6addrs' in r_json[0] and len(r_json[0]['ipv6addrs']) > 0:
+                            for ipv6addr in r_json[0]['ipv6addrs']:
+                                host_ipv6addrs.append(ipv6addr['ipv6addr'])
+                        host_ips = host_ipv4addrs + host_ipv6addrs
+                        
+                        # If expected_ips is provided, remove only matching IPs
+                        if expected_ips is not None:
+                            expected_v4_ips = expected_ips.get('v4_ips', []) or []
+                            expected_v6_ips = expected_ips.get('v6_ips', []) or []
+                            # Only verify if there are expected IPs to check
+                            if expected_v4_ips or expected_v6_ips:
+                                # Find matching IPs to remove
+                                matching_v4_ips = list(set(expected_v4_ips) & set(host_ipv4addrs))
+                                matching_v6_ips = list(set(expected_v6_ips) & set(host_ipv6addrs))
+                                
+                                if not matching_v4_ips and not matching_v6_ips:
+                                    logger.warning("No matching IPs found for record[%s], skipping deletion. Expected v4_ips[%s], v6_ips[%s], but found[%s]" %
+                                                  (record_name, expected_v4_ips, expected_v6_ips, host_ips))
+                                    return
+                                
+                                # Calculate remaining IPs after removal
+                                remaining_v4_ips = list(set(host_ipv4addrs) - set(matching_v4_ips))
+                                remaining_v6_ips = list(set(host_ipv6addrs) - set(matching_v6_ips))
+                                
+                                # If all IPs are being removed, delete the entire record
+                                if not remaining_v4_ips and not remaining_v6_ips:
+                                    logger.info("All IPs match for record[%s], deleting entire record. Matching v4_ips[%s], v6_ips[%s]" %
+                                                (record_name, matching_v4_ips, matching_v6_ips))
+                                    rest_url = 'https://' + server + '/wapi/' + \
+                                        wapi_version + '/' + host_ref
+                                    r = requests.delete(url=rest_url, auth=(username, password), verify=False)
+                                    _check_and_raise_auth_error(r)
+                                    logger.info("record_name[%s], DELETE req[%s] status_code[%s]" % (record_name, rest_url, r.status_code))
+                                    r_json = r.json()
+                                    if r.status_code == 200:
+                                        return
+                                    else:
+                                        if 'text' in r_json:
+                                            err_msg = str(r.status_code) + BeautifulSoup(r.text, 'html.parser').text
+                                        else:
+                                            err_msg = "failed with error code " + str(r.status_code)
+                                        logger.error(err_msg)
+                                        raise CustomDnsGeneralException(err_msg)
+                                else:
+                                    # Remove only matching IPs using PUT with ipv4addrs- and ipv6addrs-
+                                    ips_to_remove = {'v4_ips': matching_v4_ips, 'v6_ips': matching_v6_ips}
+                                    ipv4addrs_remove, ipv6addrs_remove = _build_ipvxaddrs_objects(ips_to_remove)
+                                    payload = {}
+                                    if ipv4addrs_remove:
+                                        payload['ipv4addrs-'] = ipv4addrs_remove
+                                    if ipv6addrs_remove:
+                                        payload['ipv6addrs-'] = ipv6addrs_remove
+                                    
+                                    logger.info("Removing matching IPs from record[%s]. Removing v4_ips[%s], v6_ips[%s]. Remaining v4_ips[%s], v6_ips[%s]" %
+                                                (record_name, matching_v4_ips, matching_v6_ips, remaining_v4_ips, remaining_v6_ips))
+                                    rest_url = 'https://' + server + '/wapi/' + wapi_version + '/' + host_ref
+                                    r = requests.put(url=rest_url, auth=(username, password), verify=False, data=json.dumps(payload))
+                                    _check_and_raise_auth_error(r)
+                                    logger.info("record_name[%s], PUT req[%s %s] status_code[%s]" % (record_name, rest_url, json.dumps(payload), r.status_code))
+                                    r_json = r.json()
+                                    if r.status_code == 200 or r.status_code == 201:
+                                        return
+                                    else:
+                                        if 'text' in r_json:
+                                            err_msg = str(r.status_code) + (' : ' + r_json['text'] if 'text' in r_json else '')
+                                        else:
+                                            err_msg = "failed with error code " + str(r.status_code)
+                                        logger.error(err_msg)
+                                        raise CustomDnsGeneralException(err_msg)
+                            else:
+                                # expected_ips is provided but empty, delete entire record
+                                rest_url = 'https://' + server + '/wapi/' + \
+                                    wapi_version + '/' + host_ref
+                                r = requests.delete(url=rest_url, auth=(username, password), verify=False)
+                                _check_and_raise_auth_error(r)
+                                logger.info("record_name[%s], DELETE req[%s] status_code[%s]" % (record_name, rest_url, r.status_code))
+                                r_json = r.json()
+                                if r.status_code == 200:
+                                    return
+                                else:
+                                    if 'text' in r_json:
+                                        err_msg = str(r.status_code) + BeautifulSoup(r.text, 'html.parser').text
+                                    else:
+                                        err_msg = "failed with error code " + str(r.status_code)
+                                    logger.error(err_msg)
+                                    raise CustomDnsGeneralException(err_msg)
+                        else:
+                            # No expected_ips provided, delete entire record (backward compatibility)
+                            rest_url = 'https://' + server + '/wapi/' + \
+                                wapi_version + '/' + host_ref
+                            r = requests.delete(url=rest_url, auth=(username, password), verify=False)
+                            _check_and_raise_auth_error(r)
+                            logger.info("record_name[%s], DELETE req[%s] status_code[%s]" % (record_name, rest_url, r.status_code))
+                            r_json = r.json()
+                            if r.status_code == 200:
+                                return
+                            else:
+                                if 'text' in r_json:
+                                    err_msg = str(r.status_code) + BeautifulSoup(r.text, 'html.parser').text
+                                else:
+                                    err_msg = "failed with error code " + str(r.status_code)
+                                logger.error(err_msg)
+                                raise CustomDnsGeneralException(err_msg)
                 if 'text' in r_json:
                     err_msg = str(r.status_code) + BeautifulSoup(r.text, 'html.parser').text
+                else:
+                    err_msg = "failed with error code " + str(r.status_code)
                 logger.error(err_msg)
                 raise CustomDnsGeneralException(err_msg)
             else:
                 if 'text' in r6_json:
                     err_msg = str(r6.status_code) + BeautifulSoup(r6.text, 'html.parser').text
+                else:
+                    err_msg = "failed with error code " + str(r6.status_code)
                 logger.error(err_msg)
                 raise CustomDnsGeneralException(err_msg)
         elif server:
@@ -485,22 +699,125 @@ def _delete_dns_record(auth_params, record_name):
             host_ref = None
             err_msg = "record[%s] not found!" % record_name
             if r.status_code == 200:
-                host_ref = r_json[0]['_ref'] if len(r_json) > 0 and r_json[0]['_ref'] else None
-                if not host_ref:
-                    logger.info(err_msg)
-                    return
-                
-                # Delete the record
-                rest_url = 'https://' + server + '/wapi/' + \
-                    wapi_version + '/' + host_ref
-                r = requests.delete(url=rest_url, auth=(username, password), verify=False)
-                _check_and_raise_auth_error(r)
-                logger.info("record_name[%s], DELETE req[%s] status_code[%s]" % (record_name, rest_url, r.status_code))
-                r_json = r.json()
-                if r.status_code == 200:
-                    return
+                if len(r_json) > 0:
+                    host_ref = r_json[0]['_ref'] if r_json[0]['_ref'] else None
+                    if not host_ref:
+                        logger.info(err_msg)
+                        return
+                    
+                    # Extract IPs from the GET response
+                    host_ipv4addrs = []
+                    host_ipv6addrs = []
+                    if 'ipv4addrs' in r_json[0] and len(r_json[0]['ipv4addrs']) > 0:
+                        for ipv4addr in r_json[0]['ipv4addrs']:
+                            host_ipv4addrs.append(ipv4addr['ipv4addr'])
+                    if 'ipv6addrs' in r_json[0] and len(r_json[0]['ipv6addrs']) > 0:
+                        for ipv6addr in r_json[0]['ipv6addrs']:
+                            host_ipv6addrs.append(ipv6addr['ipv6addr'])
+                    host_ips = host_ipv4addrs + host_ipv6addrs
+                    
+                    # If expected_ips is provided, remove only matching IPs
+                    if expected_ips is not None:
+                        expected_v4_ips = expected_ips.get('v4_ips', []) or []
+                        expected_v6_ips = expected_ips.get('v6_ips', []) or []
+                        # Only verify if there are expected IPs to check
+                        if expected_v4_ips or expected_v6_ips:
+                            # Find matching IPs to remove
+                            matching_v4_ips = list(set(expected_v4_ips) & set(host_ipv4addrs))
+                            matching_v6_ips = list(set(expected_v6_ips) & set(host_ipv6addrs))
+                            
+                            if not matching_v4_ips and not matching_v6_ips:
+                                logger.warning("No matching IPs found for record[%s], skipping deletion. Expected v4_ips[%s], v6_ips[%s], but found[%s]" %
+                                              (record_name, expected_v4_ips, expected_v6_ips, host_ips))
+                                return
+                            
+                            # Calculate remaining IPs after removal
+                            remaining_v4_ips = list(set(host_ipv4addrs) - set(matching_v4_ips))
+                            remaining_v6_ips = list(set(host_ipv6addrs) - set(matching_v6_ips))
+                            
+                            # If all IPs are being removed, delete the entire record
+                            if not remaining_v4_ips and not remaining_v6_ips:
+                                logger.info("All IPs match for record[%s], deleting entire record. Matching v4_ips[%s], v6_ips[%s]" %
+                                            (record_name, matching_v4_ips, matching_v6_ips))
+                                rest_url = 'https://' + server + '/wapi/' + \
+                                    wapi_version + '/' + host_ref
+                                r = requests.delete(url=rest_url, auth=(username, password), verify=False)
+                                _check_and_raise_auth_error(r)
+                                logger.info("record_name[%s], DELETE req[%s] status_code[%s]" % (record_name, rest_url, r.status_code))
+                                r_json = r.json()
+                                if r.status_code == 200:
+                                    return
+                                else:
+                                    if 'text' in r_json:
+                                        err_msg = str(r.status_code) + BeautifulSoup(r.text, 'html.parser').text
+                                    else:
+                                        err_msg = "failed with error code " + str(r.status_code)
+                                    logger.error(err_msg)
+                                    raise CustomDnsGeneralException(err_msg)
+                            else:
+                                # Remove only matching IPs using PUT with ipv4addrs- and ipv6addrs-
+                                ips_to_remove = {'v4_ips': matching_v4_ips, 'v6_ips': matching_v6_ips}
+                                ipv4addrs_remove, ipv6addrs_remove = _build_ipvxaddrs_objects(ips_to_remove)
+                                payload = {}
+                                if ipv4addrs_remove:
+                                    payload['ipv4addrs-'] = ipv4addrs_remove
+                                if ipv6addrs_remove:
+                                    payload['ipv6addrs-'] = ipv6addrs_remove
+                                
+                                logger.info("Removing matching IPs from record[%s]. Removing v4_ips[%s], v6_ips[%s]. Remaining v4_ips[%s], v6_ips[%s]" %
+                                            (record_name, matching_v4_ips, matching_v6_ips, remaining_v4_ips, remaining_v6_ips))
+                                rest_url = 'https://' + server + '/wapi/' + wapi_version + '/' + host_ref
+                                r = requests.put(url=rest_url, auth=(username, password), verify=False, data=json.dumps(payload))
+                                _check_and_raise_auth_error(r)
+                                logger.info("record_name[%s], PUT req[%s %s] status_code[%s]" % (record_name, rest_url, json.dumps(payload), r.status_code))
+                                r_json = r.json()
+                                if r.status_code == 200 or r.status_code == 201:
+                                    return
+                                else:
+                                    if 'text' in r_json:
+                                        err_msg = str(r.status_code) + (' : ' + r_json['text'] if 'text' in r_json else '')
+                                    else:
+                                        err_msg = "failed with error code " + str(r.status_code)
+                                    logger.error(err_msg)
+                                    raise CustomDnsGeneralException(err_msg)
+                        else:
+                            # expected_ips is provided but empty, delete entire record
+                            rest_url = 'https://' + server + '/wapi/' + \
+                                wapi_version + '/' + host_ref
+                            r = requests.delete(url=rest_url, auth=(username, password), verify=False)
+                            _check_and_raise_auth_error(r)
+                            logger.info("record_name[%s], DELETE req[%s] status_code[%s]" % (record_name, rest_url, r.status_code))
+                            r_json = r.json()
+                            if r.status_code == 200:
+                                return
+                            else:
+                                if 'text' in r_json:
+                                    err_msg = str(r.status_code) + BeautifulSoup(r.text, 'html.parser').text
+                                else:
+                                    err_msg = "failed with error code " + str(r.status_code)
+                                logger.error(err_msg)
+                                raise CustomDnsGeneralException(err_msg)
+                    else:
+                        # No expected_ips provided, delete entire record (backward compatibility)
+                        rest_url = 'https://' + server + '/wapi/' + \
+                            wapi_version + '/' + host_ref
+                        r = requests.delete(url=rest_url, auth=(username, password), verify=False)
+                        _check_and_raise_auth_error(r)
+                        logger.info("record_name[%s], DELETE req[%s] status_code[%s]" % (record_name, rest_url, r.status_code))
+                        r_json = r.json()
+                        if r.status_code == 200:
+                            return
+                        else:
+                            if 'text' in r_json:
+                                err_msg = str(r.status_code) + BeautifulSoup(r.text, 'html.parser').text
+                            else:
+                                err_msg = "failed with error code " + str(r.status_code)
+                            logger.error(err_msg)
+                            raise CustomDnsGeneralException(err_msg)
             if 'text' in r_json:
                 err_msg = str(r.status_code) + BeautifulSoup(r.text, 'html.parser').text
+            else:
+                err_msg = "failed with error code " + str(r.status_code)
             logger.error(err_msg)
             raise CustomDnsGeneralException(err_msg)
     except CustomDnsAuthenticationErrorException as e:
@@ -617,7 +934,7 @@ def DeleteDnsRecords(records_info, auth_params):
     tmp_auth_params['password'] = '<sensitive>'
     logger.info("records_info %s, auth_params %s"%(records_info, tmp_auth_params))
     for fqdn in records_info['dns_info'].keys():
-        _delete_dns_record(auth_params, fqdn)
+        _delete_dns_record(auth_params, fqdn, expected_ips=records_info.get('ips'))
     return True
 
 
