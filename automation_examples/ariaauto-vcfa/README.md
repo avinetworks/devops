@@ -1,13 +1,15 @@
 # Aria Automation & VCF-A Load Balancer Automation Blueprints
 
-This repository contains automation blueprints for deploying and managing NSX Advanced Load Balancer (ALB) resources using VMware Aria Automation and VMware Cloud Foundation - Automation (VCF-A).
+This repository contains automation blueprints for deploying and managing VMware Avi Load Balancer (ALB) resources using VMware Aria Automation and VMware Cloud Foundation - Automation (VCF-A).
 
 ## Overview
 
-These blueprints demonstrate Infrastructure as Code (IaC) patterns for automated load balancer provisioning across different VMware platforms:
+These blueprints demonstrate Infrastructure as Code (IaC) patterns for automated load balancer provisioning across different VMware platforms using VMware Avi Load Balancer:
 
-- **Aria Automation (aria_auto/)**: Blueprints for deploying ALB/Avi load balancers in vCenter and NSX-T environments (Aria Automation 8.18.1patch3)
+- **Aria Automation (aria_auto/)**: Blueprints for deploying Avi load balancers in vCenter and NSX-T environments (Aria Automation 8.18.1patch3)
 - **VCF-A (vcf-a/)**: Blueprints for deploying load balancers in VMware Cloud Foundation - Automation using Kubernetes ingress patterns (All Apps orgs in VCF-A 9)
+
+> **Note**: VMware Avi Load Balancer was formerly known as NSX Advanced Load Balancer (NSX-ALB) or Avi Vantage. You may see references to "NSX-ALB in API endpoints, resource types, and legacy documentation.
 
 ## Directory Structure
 
@@ -43,12 +45,23 @@ ariaauto-vcfa/
 
 #### `fullstack_deployment.yaml`
 Complete infrastructure deployment including:
-- Apache web server VMs (Ubuntu 18.04)
-- Avi LB Virtual Service
+- Apache web server VMs (Ubuntu 18.04) - provisioned and configured via cloud-init in the blueprint
+- Avi Virtual Service
 - Pool configuration with health monitors
 - Optional SSL termination
 - WAF policy application
-- Cloud-init configuration for automated web server setup
+- Automated web server setup
+
+**What does cloud-init do?**
+The cloud-init configuration in this blueprint:
+- Provisions Ubuntu VMs through Aria Automation
+- Installs Apache web server and PHP packages
+- Creates user accounts with passwords
+- Configures SSH access
+- Sets hostname
+- Customizes the default web page
+
+This handles the **backend server** setup. The AviController (which must be pre-configured as a prerequisite) handles the **load balancer** configuration.
 
 **Key Features:**
 - Scalable deployment (small/medium/large)
@@ -79,25 +92,33 @@ Multi-tenant version with:
 - Separate secure/insecure virtual service resources
 - Pre-configured SSL certificate references
 
-### Event-Driven Automation
+### Event-Driven Automation (ABX Actions)
+
+**What is ABX?**
+ABX (Action Based eXtensibility) is VMware Aria Automation's serverless function platform that allows you to run Python, Node.js, or PowerShell scripts in response to events. Think of it as "serverless functions for automation" - you write code that executes automatically when specific events occur (like deploying a virtual service).
 
 #### Event Subscription: SSL Certificate Generation
 Located in `event subscription for generating an SSL certificate/`
 - **Purpose**: Automatically request SSL certificates when virtual services are deployed
-- **Trigger**: Virtual service creation events
+- **Trigger**: Virtual service creation events (Aria Automation deployment events)
+- **Technology**: Python ABX action that calls Avi Controller REST API
 - **Actions**: 
-  - API call to certificate management profile
-  - RSA 2048-bit key generation
-  - Automatic certificate binding to virtual service
+  - Authenticates to Avi Controller
+  - Creates SSL certificate request via API (`/api/sslkeyandcertificate`)
+  - Generates RSA 2048-bit key
+  - Submits request to certificate management profile
+  - Binds certificate to virtual service automatically
 
 #### Event Subscription: Content Switching
 Located in `add a content switch rule for a new standalone pool/`
 - **Purpose**: Add content switching rules to existing virtual services
-- **Trigger**: New pool deployment
+- **Trigger**: New pool deployment events
+- **Technology**: Python ABX action that patches HTTP policies
 - **Actions**:
-  - Create new pool with optional NSX Security Group integration
+  - Queries virtual service and existing HTTP policy
+  - Creates new pool with optional NSX Security Group integration
   - PATCH existing HTTP policy with new switching rule
-  - Path-based routing configuration
+  - Configures path-based routing dynamically
 
 ### Custom Forms
 
@@ -192,13 +213,14 @@ Most blueprints support:
 ## Prerequisites
 
 ### For Aria Automation Blueprints:
-- VMware Aria Automation with cloud zones configured
-- NSX Advanced Load Balancer (Avi) controller
-- NSX-T or vCenter cloud configured in Avi Controller
-- IPAM/IPAM profiles configured
-- Network segments configured
+- VMware Aria Automation (version 8.18.1patch3 or later) with cloud zones configured
+- VMware Avi Load Balancer Controller deployed and licensed
+- **NSX-T or vCenter cloud configured in Avi Controller** (see "How to Configure Clouds" below)
+- IPAM/DNS profiles configured in Avi Controller
+- Network segments/port groups available and accessible
 - (Optional) Certificate management profile for automated cert generation
 - (Optional) DNS profile for automatic DNS registration
+- (Optional) ABX service enabled for event-driven automation
 
 ### For VCF-A Blueprints:
 - VMware Cloud Foundation - Automation
@@ -214,13 +236,70 @@ Most blueprints support:
 **⚠️ IMPORTANT: Sensitive information has been replaced with placeholders. Update before deployment:**
 
 ### Aria Automation Files:
-- **Controller URLs**: Replace `<CONTROLLER_FQDN>` with your Avi Controller FQDN
+- **Controller URLs**: Replace `<CONTROLLER_FQDN>` with your Avi Controller FQDN (e.g., `avi.example.com`)
 - **Credentials**: Replace `<USERNAME>` and `<PASSWORD>` with appropriate credentials
-- **Network References**: Update network API paths to match your environment
+- **Network References**: Update network API paths to match your environment (see "How to Find Network References" below)
 - **Certificate References**: Update certificate UUID/name references
 - **IPAM Subnets**: Configure appropriate IPAM network references
-- **Tenant Names**: Update tenant names to match your configuration
+- **Tenant Names**: Update tenant names to match your configuration (default is typically `admin`)
 - **Domain Names**: Replace `<DOMAIN>` with your DNS domain
+
+### How to Find Network References
+
+Network references in Avi follow this format: `/api/network?name=<network-name>` or `/api/network/<network-uuid>`
+
+**Method 1: Avi Controller UI**
+1. Log into your Avi Controller web interface
+2. Navigate to **Infrastructure > Networks**
+3. Find your desired network (e.g., VIP network, server network)
+4. Note the network name
+5. Use format: `/api/network?name=<network-name>`
+
+**Method 2: Avi Controller API**
+```bash
+# Get all networks
+curl -k -X GET https://<CONTROLLER_FQDN>/api/network \
+  -H "X-Avi-Tenant: admin" \
+  -u admin:<password>
+
+# Response includes network details with URLs like:
+# "url": "https://controller/api/network/network-xxxxx-xxxx-xxxx"
+# "name": "VMNetwork-PortGroup"
+```
+
+**Method 3: Check Existing Virtual Services**
+1. Go to **Applications > Virtual Services**
+2. Edit an existing virtual service
+3. Look at the VIP network configuration
+4. Copy the network reference format
+
+**Example Network References:**
+- vCenter: `/api/network?name=VM-Network` (port group name)
+- NSX-T: `/api/network?name=vxw-dvs-34-virtualwire-256-sid-2230254-wdc-02-vc23-avi-mgmt-2` (segment name)
+- By UUID: `/api/network/network-f8e5b5e5-4c3e-4b1a-9c8e-5d6f7e8f9a0b` (Avi network object UUID)
+
+### How to Configure Clouds in Avi Controller
+
+Before using these blueprints, you must configure clouds in Avi Controller:
+
+**For vCenter Cloud:**
+1. Navigate to **Infrastructure > Clouds**
+2. Click **Create > VMware vCenter/vSphere ESX**
+3. Provide vCenter credentials and connection details
+4. Configure management network and data networks
+5. Set up IPAM/DNS profiles
+
+**For NSX-T Cloud:**
+1. Navigate to **Infrastructure > Clouds**
+2. Click **Create > NSX-T**
+3. Provide NSX-T Manager credentials
+4. Select Transport Zone and Tier-1 gateway
+5. Configure overlay segment settings
+6. Set up IPAM/DNS profiles
+
+**Documentation:**
+- [Avi vCenter Cloud Configuration](https://techdocs.broadcom.com/us/en/vmware-security-load-balancing/avi-load-balancer/avi-load-balancer/30-2/vmware-avi-load-balancer-installation-guide/installing-nsx-alb-in-vmware-vsphere-environments.html)
+- [Avi NSX-T Cloud Configuration](https://techdocs.broadcom.com/us/en/vmware-security-load-balancing/avi-load-balancer/avi-load-balancer/30-2/vmware-avi-load-balancer-installation-guide/installing-nsx-alb-in-vmware-nsx-t-environments.html)
 
 ### VCF-A Files:
 - **Namespace Names**: Update to your supervisor namespace
@@ -283,9 +362,16 @@ Most blueprints support:
 
 ### Avi Controller API
 All Aria Automation blueprints interact with Avi Controller via:
-- REST API endpoints (`/api/virtualservice`, `/api/pool`, etc.)
-- Reference-based resource linking
-- Tenant-aware API calls
+- REST API endpoints (`/api/virtualservice`, `/api/pool`, `/api/vsvip`, etc.)
+- Reference-based resource linking (using URLs or query parameters)
+- Tenant-aware API calls (X-Avi-Tenant header)
+- Session-based authentication with CSRF tokens
+
+**API Authentication Flow (ABX Actions):**
+1. POST to `/login` with username/password
+2. Receive session cookie and API version
+3. Include `X-Avi-Tenant`, `X-Avi-Version`, `X-CSRFToken` headers in subsequent calls
+4. Make API calls to create/modify resources
 
 ### NSX-T Integration
 - Security group-based pool membership
@@ -294,8 +380,9 @@ All Aria Automation blueprints interact with Avi Controller via:
 
 ### DNS Integration
 - Infoblox IPAM (referenced in some blueprints)
-- PowerDNS (VCF-A external-dns)
-- Avi DNS service
+- PowerDNS (vSphere Supervisor external-dns)
+- Avi DNS service (built-in virtual service for DNS)
+- External DNS providers via IPAM profiles
 
 ### Certificate Management
 - Certificate management profiles (Aria Automation)
@@ -314,10 +401,13 @@ All Aria Automation blueprints interact with Avi Controller via:
 ## Troubleshooting
 
 ### Aria Automation
-- Check ABX action logs for API call failures
+- Check ABX action logs in Aria Automation (**Extensibility > Actions > Action Runs**)
 - Verify cloud zone configuration and credentials
-- Ensure network references are valid
-- Validate Avi Controller connectivity
+- Ensure network references are valid (query `/api/network` endpoint)
+- Validate Avi Controller connectivity (check firewall rules, DNS resolution)
+- Review deployment logs in Aria Automation
+- Test API authentication manually using curl/Postman
+- Verify account references match cloud zone configuration
 
 ### VCF-A
 - Check supervisor namespace permissions
@@ -327,9 +417,24 @@ All Aria Automation blueprints interact with Avi Controller via:
 
 ## Support & Documentation
 
-- **NSX ALB Documentation**: [VMware Docs](https://docs.vmware.com/en/VMware-NSX-Advanced-Load-Balancer/)
-- **Aria Automation**: [VMware Docs](https://docs.vmware.com/en/VMware-Aria-Automation/)
-- **VCF-A**: [VMware Cloud Foundation Docs](https://docs.vmware.com/en/VMware-Cloud-Foundation/)
+- **Avi Documentation**: [Broadcom TechDocs - VMware Avi Load Balancer](https://techdocs.broadcom.com/us/en/vmware-security-load-balancing/avi-load-balancer.html)
+- **Aria Automation**: [Broadcom TechDocs - Aria Automation](https://techdocs.broadcom.com/us/en/vmware-cis/aria/aria-automation/8-18/getting-started-with-aria-auto-on-prem-8-18.html)
+- **VCF-A**: [Broadcom TechDocs - VMware Cloud Foundation](https://techdocs.broadcom.com/us/en/vmware-cis/vcf/vcf-9-0-and-later/9-0/building-your-cloud-applications.html)
+- **Avi API Reference**: Available at `https://<your-controller>/api/` (interactive Swagger documentation)
+- **Aria Automation ABX**: [ABX Actions Documentation](https://techdocs.broadcom.com/us/en/vmware-cis/aria/aria-automation/8-18/assembler-on-prem-using-and-managing-master-map-8-18/maphead-designing-your-deployments/maphead-extensibility-in-cloud-assembly.html)
+
+## Glossary
+
+- **Avi**: VMware Avi Load Balancer (formerly NSX Advanced Load Balancer / Avi Vantage)
+- **ABX**: Action Based eXtensibility - serverless functions in Aria Automation
+- **VIP**: Virtual IP address assigned to a virtual service
+- **Pool**: Group of backend servers that handle traffic
+- **Virtual Service**: Load balancer configuration combining VIP, pool, and policies
+- **Cloud**: Avi integration with infrastructure (vCenter, NSX-T, etc.)
+- **Service Engine**: Data plane component that processes traffic
+- **IPAM**: IP Address Management profile for automatic IP allocation
+- **VRF**: Virtual Routing and Forwarding context for network isolation
+- **Tier-1 Gateway**: NSX-T logical router for north-south traffic
 
 ## Notes
 
