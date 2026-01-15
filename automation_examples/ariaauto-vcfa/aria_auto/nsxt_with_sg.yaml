@@ -1,0 +1,71 @@
+formatVersion: 1
+name: LBaaS Demo
+version: 1
+inputs:
+  port:
+    type: integer
+    title: Port
+    description: Destination port for insecure communications
+    default: 80
+  secure_port:
+    type: integer
+    title: SSL-encrypted port
+    description: Destination port for secure communications
+    default: 443
+  pool_security_group:
+    type: string
+    title: NSX Security Group name
+    description: name of the NSG that contains the pool members
+  ssl_enable:
+    type: boolean
+    default: false
+    title: Enable SSL
+    description: enable a second port for SSL communications and enable HTTP-to-HTTPS redirect
+  fqdn:
+    type: boolean
+    default: false
+    title: DNS Record
+    description: Create a DNS record for this virtual service
+  fqdn_name:
+    type: string
+    title: Hostname
+    default: ''
+    description: Hostname portion of FQDN
+resources:
+  Idem_AVILB_VS_VIP_1:
+    type: Idem.AVILB.APPLICATIONS.VS_VIP
+    properties:
+      account: <CONTROLLER_ACCOUNT_NAME>  # SANITIZED: Replace with your Avi Controller account name
+      name: vip-${env.deploymentName}
+      vrf_context_ref: <VRF_CONTEXT_NAME>  # SANITIZED: Replace with your VRF context name
+      tier1_lr: <TIER1_GATEWAY_NAME>  # SANITIZED: Replace with your NSX-T Tier-1 gateway name
+      dns_info: '${input.fqdn == true ? [{"fqdn": input.fqdn_name + ".<DOMAIN>", "ttl": 5}] : null}'  # SANITIZED: Replace <DOMAIN>
+      vip:
+        - vip_id: 0
+          auto_allocate_ip: true
+          ipam_network_subnet:
+            network_ref: /api/network/<IPAM_NETWORK_REF>  # SANITIZED: Replace with your IPAM network reference
+  Idem_AVILB_VIRTUAL_SERVICE:
+    type: Idem.AVILB.APPLICATIONS.VIRTUAL_SERVICE
+    properties:
+      name: vs-${env.deploymentName}
+      vrf_context_ref: <VRF_CONTEXT_NAME>  # SANITIZED: Replace with your VRF context name
+      account: <CONTROLLER_ACCOUNT_NAME>  # SANITIZED: Replace with your Avi Controller account name
+      services: '${input.ssl_enable == true ? [{"port": input.port}, {"port": input.secure_port, "enable_ssl": true}] : [{"port": input.port}]}'
+      ssl_profile_ref: System-Standard
+      ssl_key_and_certificate_refs:
+        - <SSL_CERTIFICATE_NAME>  # SANITIZED: Replace with your SSL certificate name
+      pool_ref: ${resource.Idem_AVILB_POOL_1.name}
+      vsvip_ref: /api/vsvip?name=${resource.Idem_AVILB_VS_VIP_1.name}
+      application_profile_ref: '${input.ssl_enable == true ? "/api/applicationprofile?name=System-Secure-HTTP" : "/api/applicationprofile?name=System-HTTP"}'
+  Idem_AVILB_POOL_1:
+    type: Idem.AVILB.APPLICATIONS.POOL
+    properties:
+      name: pool-${env.deploymentName}
+      tier1_lr: <TIER1_GATEWAY_NAME>  # SANITIZED: Replace with your NSX-T Tier-1 gateway name
+      account: <CONTROLLER_ACCOUNT_NAME>  # SANITIZED: Replace with your Avi Controller account name
+      default_server_port: ${input.port}
+      nsx_securitygroup:
+        - <SECURITY_GROUP_NAME>  # SANITIZED: Replace with your NSX Security Group name
+      health_monitor_refs:
+        - System-HTTP

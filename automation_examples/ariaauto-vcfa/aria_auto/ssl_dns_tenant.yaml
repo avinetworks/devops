@@ -1,0 +1,95 @@
+formatVersion: 1
+name: LBaaS Demo
+version: 1
+inputs:
+  port:
+    type: integer
+    title: Port
+    description: Destination port for insecure communications
+    default: 80
+  secure_port:
+    type: integer
+    title: SSL-encrypted port
+    description: Destination port for secure communications
+    default: 443
+  servers:
+    type: array
+    title: Servers
+    description: Input the server ip's to add to the pool. Leaving 0.0.0.0 will result in an empty pool being created.
+    items:
+      type: string
+    minItems: 0
+    default:
+      - 0.0.0.0
+  ssl_enable:
+    type: boolean
+    default: false
+    title: Enable SSL
+    description: enable a second port for SSL communications and enable HTTP-to-HTTPS redirect
+  fqdn:
+    type: boolean
+    default: false
+    title: DNS Record
+    description: Create a DNS record for this virtual service
+  tenant:
+    type: string
+    enum:
+      - admin
+      - Demo
+      - Marketing
+      - Sales
+      - Bears
+    description: The tenant to deploy the app in
+    title: Tenant
+resources:
+  Idem_AVILB_VS_VIP_1:
+    type: Idem.AVILB.APPLICATIONS.VS_VIP
+    properties:
+      name: vip-${env.deploymentName}
+      account: <CONTROLLER_FQDN>  # SANITIZED: Replace with your Avi Controller FQDN
+      tenant_ref: ${input.tenant}
+      dns_info: '${input.fqdn == true ? [{"fqdn": env.deploymentName + ".<DOMAIN>", "ttl": 5}] : null}'  # SANITIZED: Replace <DOMAIN>
+      vip:
+        - vip_id: 0
+          auto_allocate_ip: true
+          ipam_network_subnet:
+            network_ref: /api/network?name=<NETWORK_NAME>  # SANITIZED: Replace with your network name
+  Idem_AVILB_VIRTUAL_SERVICE_1_Insecure:
+    type: Idem.AVILB.APPLICATIONS.VIRTUAL_SERVICE
+    properties:
+      count: '${input.ssl_enable == true ? 0 : 1}'
+      name: vs-${env.deploymentName}
+      tenant_ref: ${input.tenant}
+      account: <CONTROLLER_FQDN>  # SANITIZED: Replace with your Avi Controller FQDN
+      services:
+        - port: ${input.port}
+      pool_ref: ${resource.Idem_AVILB_POOL_1.name}
+      vsvip_ref: /api/vsvip?name=${resource.Idem_AVILB_VS_VIP_1.name}
+      application_profile_ref: /api/applicationprofile?name=System-HTTP
+  Idem_AVILB_VIRTUAL_SERVICE_Secure:
+    type: Idem.AVILB.APPLICATIONS.VIRTUAL_SERVICE
+    properties:
+      count: '${input.ssl_enable == true ? 1 : 0}'
+      name: vs-${env.deploymentName}
+      tenant_ref: ${input.tenant}
+      account: <CONTROLLER_FQDN>  # SANITIZED: Replace with your Avi Controller FQDN
+      services:
+        - port: ${input.port}
+        - port: ${input.secure_port}
+          enable_ssl: true
+      ssl_profile_ref: /api/sslprofile?name=System-Standard
+      ssl_key_and_certificate_refs:
+        - https://<CONTROLLER_FQDN>/api/sslkeyandcertificate/<SSL_CERT_UUID>  # SANITIZED: Replace <CONTROLLER_FQDN> and <SSL_CERT_UUID>
+      pool_ref: ${resource.Idem_AVILB_POOL_1.name}
+      vsvip_ref: /api/vsvip?name=${resource.Idem_AVILB_VS_VIP_1.name}
+      application_profile_ref: /api/applicationprofile?name=System-Secure-HTTP
+  Idem_AVILB_POOL_1:
+    type: Idem.AVILB.APPLICATIONS.POOL
+    properties:
+      name: pool-${env.deploymentName}
+      tenant_ref: ${input.tenant}
+      account: <CONTROLLER_FQDN>  # SANITIZED: Replace with your Avi Controller FQDN
+      default_server_port: ${input.port}
+      servers: '${input.servers[0] == "0.0.0.0" ? null :map_by(input.servers, address => {"ip": {"addr": address, "type" : "V4"}})}'
+      health_monitor_refs:
+        - System-HTTP

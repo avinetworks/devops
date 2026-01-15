@@ -1,0 +1,22 @@
+formatVersion: 1
+inputs:
+  vs:
+    type: string
+    title: Virtual Service
+    description: VS with policy to update
+  path:
+    type: string
+    title: Match path
+    description: match path for content switch
+resources:
+  Idem_AVILB_APPLICATIONS_POOL_1:
+    type: Idem.AVILB.APPLICATIONS.POOL
+    properties:
+      name: ${env.deploymentName}
+      account: <CONTROLLER_ACCOUNT_NAME>  # SANITIZED: Replace with your Avi Controller account name
+      tier1_lr: <TIER1_GATEWAY_NAME>  # SANITIZED: Replace with your NSX-T Tier-1 gateway name
+      cloud_ref: <CLOUD_NAME>  # SANITIZED: Replace with your Avi cloud name
+      nsx_securitygroup:
+        - <SECURITY_GROUP_NAME>  # SANITIZED: Replace with your NSX Security Group name
+      health_monitor_refs:
+        - System-HTTP

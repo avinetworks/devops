@@ -1,0 +1,204 @@
+formatVersion: 1
+name: NSX ALB Apache
+version: 1
+inputs:
+  ssl_services:
+    type: string
+    default: |
+      services:
+        - port: ${input.port}
+        - enable_ssl: true
+          port: 443
+  non_ssl_services:
+    type: string
+    default: |
+      services:
+        - port: ${input.port}
+  clusterSize:
+    type: string
+    enum:
+      - small
+      - medium
+      - large
+    default: small
+    title: Apache Cluster Size
+    description: Web Front End Cluster Size. Small creates one web server and no ALB. Medium creates 2 web servers and a ALB. Large creates 4 web servers and a ALB.
+  username:
+    type: string
+    title: Username
+    default: <USERNAME>  # SANITIZED: Replace with your desired username
+  password:
+    type: string
+    title: Password
+    encrypted: false
+    default: <PASSWORD>  # SANITIZED: Replace with your desired password
+  controller:
+    type: string
+    title: Controller
+    description: Select the NSX ALB Controller to provision to
+    readOnly: true
+    default: <CONTROLLER_ACCOUNT_NAME>  # SANITIZED: Replace with your Avi Controller account name
+  vip_net:
+    type: string
+    title: Virtual IP Address Network
+    description: Set the IP address for the loadbalancer vip.
+    default: /api/network?name=VMNetwork-PortGroup
+    oneOf:
+      - title: VM Network
+        const: /api/network?name=VMNetwork-PortGroup
+  port:
+    type: integer
+    title: Port
+    default: 80
+  health_monitor:
+    type: array
+    items:
+      type: string
+    title: Health Monitors
+    default:
+      - System-HTTP
+    minItems: 1
+    maxItems: 10
+  enable_ssl:
+    type: boolean
+    title: Enable SSL Termination ?
+    default: false
+  lb_algorithm:
+    type: string
+    title: Load Balancer Algorithm
+    description: The load balancing algorithm will pick a server within the pool's list of available servers.
+    readOnly: false
+    default: LB_ALGORITHM_LEAST_CONNECTIONS
+    oneOf:
+      - title: Least Connections
+        const: LB_ALGORITHM_LEAST_CONNECTIONS
+      - title: Round Robin
+        const: LB_ALGORITHM_ROUND_ROBIN
+      - title: Fastest Response
+        const: LB_ALGORITHM_FASTEST_RESPONSE
+      - title: Consistent Hash
+        const: LB_ALGORITHM_CONSISTENT_HASH
+      - title: Least Load
+        const: LB_ALGORITHM_LEAST_LOAD
+      - title: Fewest Servers
+        const: LB_ALGORITHM_FEWEST_SERVERS
+      - title: Random
+        const: LB_ALGORITHM_RANDOM
+      - title: Fewest Tasks
+        const: LB_ALGORITHM_FEWEST_TASKS
+      - title: Core Affinity
+        const: LB_ALGORITHM_CORE_AFFINITY
+  waf_policy:
+    type: string
+    title: WAF Policy
+    description: Select WAF policy
+    default: System-WAF-Policy
+    oneOf:
+      - title: System Policy
+        const: System-WAF-Policy
+resources:
+  VIP:
+    type: Idem.AVILB.APPLICATIONS.VS_VIP
+    properties:
+      name: apache-vip-${uuid()}
+      description: Managed by Aria Automation
+      count: ${input.clusterSize == "small" ? 0:1}
+      account: ${input.controller}
+      vip:
+        - vip_id: 0
+          auto_allocate_ip: true
+          ipam_network_subnet:
+            network_ref: ${input.vip_net}
+  VirtualService:
+    type: Idem.AVILB.APPLICATIONS.VIRTUAL_SERVICE
+    properties:
+      name: apache-vs-${uuid()}
+      description: Managed by Aria Assembler
+      count: ${input.clusterSize == "small" ? 0:1}
+      account: ${input.controller}
+      cloud_type: CLOUD_VCENTER
+      services:
+        - enable_ssl: ${input.enable_ssl}
+          port: ${input.port}
+      vsvip_ref: /api/vsvip/${resource.VIP[0].resource_id}
+      pool_ref: /api/pool/${resource.Pool[0].resource_id}
+      waf_policy_ref: ${input.waf_policy}
+  Pool:
+    type: Idem.AVILB.APPLICATIONS.POOL
+    properties:
+      name: apache-pool-${uuid()}
+      description: Managed by Aria Automation
+      count: ${input.clusterSize == "small" ? 0:1}
+      account: ${input.controller}
+      default_server_port: ${input.port}
+      health_monitor_refs: ${input.health_monitor}
+      lb_algorithm: ${input.lb_algorithm}
+      servers: '${map_by(resource.Apache[*].address, address => {"ip": {"addr": address, "type" : "V4"}})}'
+  Apache:
+    type: Cloud.Machine
+    properties:
+      name: apache-web
+      flavor: medium
+      imageRef: https://cloud-images.ubuntu.com/releases/18.04/release/ubuntu-18.04-server-cloudimg-amd64.ova
+      cloudConfig: |
+        repo_update: true
+        repo_upgrade: all
+        apt_source:
+          - source: deb http://archive.ubuntu.com/ubuntu main universe multiverse restricted
+
+        packages:
+          - apache2
+          - php
+          - php-mysql
+          - libapache2-mod-php
+          - php-cli
+          - php-common
+          - php-intl
+          - php-gd
+          - php-mbstring
+          - php-xml
+          - php-zip
+          - php-curl
+          - php-xmlrpc
+          - unzip
+          - open-vm-tools
+
+        users:
+          - name: ${input.username}
+            sudo: ['ALL=(ALL) NOPASSWD:ALL']
+            groups: sudo
+            shell: /bin/bash
+          - name: ocuser
+            sudo: ['ALL=(ALL) NOPASSWD:ALL']
+            groups: sudo
+            shell: /bin/bash
+
+        write_files:
+          - path: /etc/hosts
+            content: 127.0.0.1 ${self.resourceName}
+            append: true
+
+        runcmd:
+          - systemctl restart apache2
+          - USER=ocuser
+          - PASS=${input.password}
+          - echo $USER:$PASS | /usr/sbin/chpasswd
+          - echo ${input.username}:$PASS | /usr/sbin/chpasswd
+          - sed -i "s/PasswordAuthentication no/PasswordAuthentication yes/g" /etc/ssh/sshd_config
+          - service ssh reload
+          - hostnamectl set-hostname ${self.resourceName}
+          - sed -i 's/Apache2 Ubuntu Default Page/${self.resourceName}/g' /var/www/html/index.html
+          - systemctl reload apache2
+          - systemctl restart apache2
+          - echo 'Cloud-init is done!' >> /tmp/finished.txt
+      networks:
+        - network: ${resource.Cloud_Network_1.id}
+      count: ${input.clusterSize == "small" ? 1 :input.clusterSize == "medium" ? 2:4}
+  Cloud_Network_1:
+    type: Cloud.Network
+    dependsOn:
+      - VIP
+    properties:
+      networkType: existing
+      constraints:
+        - tag: env:<ENVIRONMENT_TAG>  # SANITIZED: Replace with your environment tag

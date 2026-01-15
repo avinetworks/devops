@@ -1,0 +1,31 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: external-dns
+spec:
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: external-dns
+  template:
+    metadata:
+      labels:
+        app: external-dns
+    spec:
+      # Only use if you're also using RBAC
+      # serviceAccountName: external-dns
+      containers:
+      - name: external-dns
+        image: registry.k8s.io/external-dns/external-dns:v0.20.0
+        args:
+        - --source=service # or ingress or both
+        - --source=ingress
+        - --provider=pdns
+        - --pdns-server=http://<POWERDNS_SERVER_URL>  # SANITIZED: Replace with your PowerDNS server URL
+        - --pdns-server-id=<POWERDNS_SERVER_ID>  # SANITIZED: Replace with your PowerDNS server ID
+        - --pdns-api-key=<POWERDNS_API_KEY>  # SANITIZED: Replace with your PowerDNS API key
+        - --txt-owner-id=<OWNER_ID>  # SANITIZED: Replace with your owner ID
+        - --domain-filter=<DOMAIN_FILTER>  # SANITIZED: Replace with your domain filter (e.g., example.com)
+        - --log-level=debug
+        - --interval=30s
