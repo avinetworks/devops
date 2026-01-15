@@ -1,13 +1,13 @@
 # Aria Automation & VCF-A Load Balancer Automation Blueprints
 
-This repository contains automation blueprints for deploying and managing NSX Advanced Load Balancer (ALB) resources using VMware Aria Automation and VMware Cloud Foundation with Aria (VCF-A).
+This repository contains automation blueprints for deploying and managing NSX Advanced Load Balancer (ALB) resources using VMware Aria Automation and VMware Cloud Foundation - Automation (VCF-A).
 
 ## Overview
 
 These blueprints demonstrate Infrastructure as Code (IaC) patterns for automated load balancer provisioning across different VMware platforms:
 
 - **Aria Automation (aria_auto/)**: Blueprints for deploying ALB/Avi load balancers in vCenter and NSX-T environments (Aria Automation 8.18.1patch3)
-- **VCF-A (vcf-a/)**: Blueprints for deploying load balancers in VMware Cloud Foundation with Aria using Kubernetes ingress patterns (All Apps orgs in VCF-A 9)
+- **VCF-A (vcf-a/)**: Blueprints for deploying load balancers in VMware Cloud Foundation - Automation using Kubernetes ingress patterns (All Apps orgs in VCF-A 9)
 
 ## Directory Structure
 
@@ -201,7 +201,7 @@ Most blueprints support:
 - (Optional) DNS profile for automatic DNS registration
 
 ### For VCF-A Blueprints:
-- VMware Cloud Foundation with Aria
+- VMware Cloud Foundation - Automation
 - Supervisor cluster enabled
 - Namespace with appropriate permissions
 - VM images published to content library
