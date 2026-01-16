@@ -1,0 +1,241 @@
+layout:
+  pages:
+    - id: page_general
+      sections:
+        - id: section_12f7fe60
+          fields:
+            - id: project
+              display: dropDown
+              state:
+                visible: true
+                read-only: false
+              signpostPosition: right-middle
+        - id: section_deploymentName
+          fields:
+            - id: deploymentName
+              display: textField
+              signpostPosition: right-middle
+        - id: section_port
+          fields:
+            - id: port
+              display: integerField
+              state:
+                visible: true
+                read-only: false
+              signpostPosition: right-middle
+        - id: section_df1943db
+          fields:
+            - id: ssl_enable
+              display: checkbox
+              state:
+                visible: true
+                read-only: false
+              signpostPosition: right-middle
+        - id: section_secure_port
+          fields:
+            - id: secure_port
+              display: integerField
+              state:
+                visible:
+                  - value: true
+                    equals:
+                      ssl_enable: true
+                read-only: false
+              signpostPosition: right-middle
+        - id: section_servers
+          fields:
+            - id: servers
+              display: array
+              state:
+                visible: true
+                read-only: false
+              signpostPosition: right-middle
+        - id: section_fqdn
+          fields:
+            - id: fqdn
+              display: checkbox
+              state:
+                visible: true
+                read-only: false
+              signpostPosition: right-middle
+        - id: section_fqdn_name
+          fields:
+            - id: fqdn_name
+              display: textField
+              state:
+                visible:
+                  - value: true
+                    equals:
+                      fqdn: true
+                read-only: false
+              signpostPosition: right-middle
+        - id: section_dcbda46e
+          fields:
+            - id: healthmon_list
+              display: dropDown
+              state:
+                visible: true
+                read-only: false
+              signpostPosition: right-middle
+        - id: section_healthmon
+          fields:
+            - id: healthmon
+              display: checkbox
+              state:
+                visible: true
+                read-only: false
+              signpostPosition: right-middle
+      title: General
+      state: {}
+    - id: page_b2867653
+      sections:
+        - id: section_bdc48f58
+          fields:
+            - id: hm_req_type
+              display: dropDown
+              state:
+                visible: true
+                read-only: false
+              signpostPosition: right-middle
+        - id: section_11a1cd6f
+          fields:
+            - id: hm_path
+              display: textField
+              state:
+                visible: true
+                read-only: false
+              signpostPosition: right-middle
+      title: Custom Health Monitor
+      state:
+        visible:
+          - value: true
+            equals:
+              healthmon: true
+schema:
+  project:
+    label: Project
+    type:
+      dataType: string
+      isMultiple: false
+    valueList:
+      id: projects
+      type: scriptAction
+    constraints:
+      required: true
+  deploymentName:
+    label: Deployment Name
+    type:
+      dataType: string
+      isMultiple: false
+    constraints:
+      required: true
+      max-value: 900
+  port:
+    label: Port
+    description: Destination port for insecure communications
+    signpost: Destination port for insecure communications
+    type:
+      dataType: integer
+      isMultiple: false
+    default: 80
+  ssl_enable:
+    label: Enable SSL
+    description: >-
+      enable a second port for SSL communications and enable HTTP-to-HTTPS
+      redirect
+    signpost: >-
+      enable a second port for SSL communications and enable HTTP-to-HTTPS
+      redirect
+    type:
+      dataType: boolean
+      isMultiple: false
+    default: false
+  secure_port:
+    label: SSL-encrypted port
+    description: Destination port for secure communications
+    signpost: Destination port for secure communications
+    type:
+      dataType: integer
+      isMultiple: false
+    default: 443
+  servers:
+    label: Servers
+    description: >-
+      Input the server ip's to add to the pool. Leaving 0.0.0.0 will result in
+      an empty pool being created.
+    signpost: >-
+      Input the server ip's to add to the pool. Leaving 0.0.0.0 will result in
+      an empty pool being created.
+    type:
+      dataType: string
+      isMultiple: true
+    default:
+      - 0.0.0.0
+  fqdn:
+    label: DNS Record
+    description: Create a DNS record for this virtual service
+    signpost: Create a DNS record for this virtual service
+    type:
+      dataType: boolean
+      isMultiple: false
+    default: false
+    constraints: {}
+  fqdn_name:
+    label: Hostname
+    description: Hostname portion of FQDN
+    signpost: Hostname portion of FQDN
+    type:
+      dataType: string
+      isMultiple: false
+    default:
+      bind: deploymentName
+  healthmon_list:
+    label: Health Monitor
+    type:
+      dataType: string
+      isMultiple: false
+    valueList:
+      id: com.vmware.avi/avi_get_healthmons
+      type: scriptAction
+      parameters:
+        - $type:
+            dataType: secureString
+            isMultiple: false
+          password: '`<PASSWORD>`'  # SANITIZED: Replace with your Avi Controller password
+        - $type:
+            dataType: string
+            isMultiple: false
+          controller: '`<CONTROLLER_FQDN>`'  # SANITIZED: Replace with your Avi Controller FQDN
+        - $type:
+            dataType: string
+            isMultiple: false
+          username: '`<USERNAME>`'  # SANITIZED: Replace with your Avi Controller username
+        - $type:
+            dataType: string
+            isMultiple: false
+          tenant: '`<TENANT_NAME>`'  # SANITIZED: Replace with your Avi tenant name
+    constraints:
+      required: true
+  healthmon:
+    label: Custom Health Monitor
+    type:
+      dataType: boolean
+      isMultiple: false
+    default: false
+  hm_req_type:
+    label: Health Monitor request type
+    type:
+      dataType: string
+      isMultiple: false
+    default: HEAD
+    valueList:
+      - HEAD
+      - GET
+  hm_path:
+    label: Destination Path for Health Check
+    type:
+      dataType: string
+      isMultiple: false
+    default: /
+options:
+  externalValidations: []

@@ -1,0 +1,179 @@
+layout:
+  pages:
+    - id: page_general
+      sections:
+        - id: section_project
+          fields:
+            - id: project
+              display: dropDown
+              signpostPosition: right-middle
+        - id: section_deploymentName
+          fields:
+            - id: deploymentName
+              display: textField
+              signpostPosition: right-middle
+        - id: section_fqdn
+          fields:
+            - id: fqdn
+              display: checkbox
+              state:
+                visible: true
+                read-only: false
+              signpostPosition: right-middle
+        - id: section_7db06ced
+          fields:
+            - id: fqdn_name
+              display: textField
+              state:
+                read-only: false
+                visible:
+                  - equals:
+                      fqdn: true
+                    value: true
+              signpostPosition: right-middle
+        - id: section_port
+          fields:
+            - id: port
+              display: integerField
+              state:
+                visible: true
+                read-only: false
+              signpostPosition: right-middle
+        - id: section_servers
+          fields:
+            - id: servers
+              display: array
+              state:
+                visible: true
+                read-only: false
+              signpostPosition: right-middle
+        - id: section_ssl_enable
+          fields:
+            - id: ssl_enable
+              display: checkbox
+              state:
+                visible: true
+                read-only: false
+              signpostPosition: right-middle
+        - id: section_9f30cb71
+          fields:
+            - id: secure_port
+              display: integerField
+              state:
+                read-only: false
+                visible:
+                  - equals:
+                      ssl_enable: true
+                    value: true
+              signpostPosition: right-middle
+        - id: section_app_profile
+          fields:
+            - id: app_profile
+              display: dropDown
+              state:
+                visible: true
+                read-only: false
+              signpostPosition: right-middle
+      title: General
+schema:
+  project:
+    label: Project
+    type:
+      dataType: string
+      isMultiple: false
+    valueList:
+      id: projects
+      type: scriptAction
+    constraints:
+      required: true
+  deploymentName:
+    label: Deployment Name
+    type:
+      dataType: string
+      isMultiple: false
+    constraints:
+      required: true
+      max-value: 900
+  fqdn:
+    label: DNS Record
+    description: Create a DNS record for this virtual service
+    signpost: Create a DNS record for this virtual service
+    type:
+      dataType: boolean
+      isMultiple: false
+    default: false
+  fqdn_name:
+    label: Hostname
+    description: Hostname portion of FQDN
+    signpost: Hostname portion of FQDN
+    type:
+      dataType: string
+      isMultiple: false
+    constraints:
+      required: true
+    default:
+      bind: deploymentName
+  port:
+    label: Port
+    description: Destination port for insecure communications
+    signpost: Destination port for insecure communications
+    type:
+      dataType: integer
+      isMultiple: false
+    default: 80
+  servers:
+    label: Servers
+    description: >-
+      Input the server ip's to add to the pool. Leaving 0.0.0.0 will result in
+      an empty pool being created.
+    signpost: >-
+      Input the server ip's to add to the pool. Leaving 0.0.0.0 will result in
+      an empty pool being created.
+    type:
+      dataType: string
+      isMultiple: true
+    default:
+      - 0.0.0.0
+  ssl_enable:
+    label: Enable SSL
+    description: >-
+      enable a second port for SSL communications and enable HTTP-to-HTTPS
+      redirect
+    signpost: >-
+      enable a second port for SSL communications and enable HTTP-to-HTTPS
+      redirect
+    type:
+      dataType: boolean
+      isMultiple: false
+    default: false
+  secure_port:
+    label: SSL-encrypted port
+    description: Destination port for secure communications
+    signpost: Destination port for secure communications
+    type:
+      dataType: integer
+      isMultiple: false
+    default: 443
+  app_profile:
+    label: Application Profile
+    description: Application profile for Virtual Service
+    signpost: Application profile for Virtual Service
+    type:
+      dataType: string
+      isMultiple: false
+    valueList:
+      id: com.vmware.avi/Avi_GetAppProfiles
+      type: scriptAction
+      parameters:
+        - $type:
+            dataType: string
+            isMultiple: false
+          controller: '`<CONTROLLER_FQDN>`'  # SANITIZED: Replace with your Avi Controller FQDN
+        - $type:
+            dataType: string
+            isMultiple: false
+          tenant: '`<TENANT_NAME>`'  # SANITIZED: Replace with your Avi tenant name
+    constraints:
+      required: true
+options:
+  externalValidations: []

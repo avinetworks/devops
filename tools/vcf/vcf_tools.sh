@@ -34,6 +34,44 @@ log() {
     esac
 }
 
+# Function to escape JSON strings (handles quotes, backslashes, newlines, etc.)
+json_escape() {
+    local string="$1"
+    # Escape backslashes first
+    string="${string//\\/\\\\}"
+    # Escape double quotes
+    string="${string//\"/\\\"}"
+    # Escape newlines
+    string="${string//$'\n'/\\n}"
+    # Escape carriage returns
+    string="${string//$'\r'/\\r}"
+    # Escape tabs
+    string="${string//$'\t'/\\t}"
+    echo -n "$string"
+}
+
+# Function to URL encode strings for use in curl -u option
+url_encode() {
+    local string="$1"
+    local encoded=""
+    local i
+    for ((i=0; i<${#string}; i++)); do
+        local char="${string:$i:1}"
+        case "$char" in
+            [a-zA-Z0-9.~_-])
+                encoded+="$char"
+                ;;
+            *)
+                # Use printf to get the ASCII value and convert to hex
+                local ascii=$(printf '%d' "'$char")
+                printf -v hex "%02X" "$ascii"
+                encoded+="%$hex"
+                ;;
+        esac
+    done
+    echo -n "$encoded"
+}
+
 # Function to upload Avi bundle to SDDC Manager
 uploadbundle() {
     echo -e "${BLUE}=== Upload Avi binary to SDDCm ===${NC}\n"
@@ -54,7 +92,9 @@ uploadbundle() {
     log "INFO" "Copying pvc files and Avi binary to SDDC manager"
     scp -o StrictHostKeyChecking=no $pvcfile $sigfile $ovapath vcf@$sddcm:/home/vcf/avi
 
-    loginpayload=$(printf '{"username" : "%s","password": "%s"}' $sddcmuser $sddcmpass)
+    sddcmuser_escaped=$(json_escape "$sddcmuser")
+    sddcmpass_escaped=$(json_escape "$sddcmpass")
+    loginpayload=$(printf '{"username" : "%s","password": "%s"}' "$sddcmuser_escaped" "$sddcmpass_escaped")
     response=$(curl -s -H 'Content-Type:application/json' https://$sddcm/v1/tokens -d "$loginpayload" -k)
     TOKEN=$(echo $response | grep -o '"accessToken": *"[^"]*' | sed 's/"accessToken":"//')
 
@@ -115,7 +155,8 @@ enforcementpoint() {
 
     # login to Avi controller
     log "INFO" "Login to Avi Controller"
-    HEADER_COOKIES=$(curl -s -k -H "Content-Type: application/json" -D - -X POST "https://$avi_cluster/login" --data '{"username": "admin", "password":"'$avi_pass'"}' -o /dev/null | grep -i "^set-cookie:" | sed 's/^set-cookie: //i')
+    avi_pass_escaped=$(json_escape "$avi_pass")
+    HEADER_COOKIES=$(curl -s -k -H "Content-Type: application/json" -D - -X POST "https://$avi_cluster/login" --data "{\"username\": \"admin\", \"password\":\"$avi_pass_escaped\"}" -o /dev/null | grep -i "^set-cookie:" | sed 's/^set-cookie: //i')
 
     # Get the session and csrf cookie
     COOKIES=$(echo "$HEADER_COOKIES" | sed -E 's/^([^;]+).*/\1/g')
@@ -164,16 +205,18 @@ enforcementpoint() {
     echo
     log "INFO" "Initiating Avi onboarding in NSX Manager"
     echo
-    response=$(curl --connect-timeout 180 -sS -k -u "admin:$nsx_pass" -w "%{http_code}" -o - -X PUT "https://$nsx_manager/policy/api/v1/infra/alb-onboarding-workflow" \
+    nsx_pass_encoded=$(url_encode "$nsx_pass")
+    avi_pass_escaped=$(json_escape "$avi_pass")
+    response=$(curl --connect-timeout 180 -sS -k -u "admin:$nsx_pass_encoded" -w "%{http_code}" -o - -X PUT "https://$nsx_manager/policy/api/v1/infra/alb-onboarding-workflow" \
     --header 'X-Allow-Overwrite: True' \
     --header 'Content-Type: application/json' \
-    --data-raw '{
-        "owned_by": "VCF",
-        "cluster_ip": "'$avi_cluster'",
-        "infra_admin_username" : "admin",
-        "infra_admin_password" : "'$avi_pass'",
-        "default_cert": '$default_cert'
-        }')
+    --data-raw "{
+        \"owned_by\": \"VCF\",
+        \"cluster_ip\": \"$avi_cluster\",
+        \"infra_admin_username\" : \"admin\",
+        \"infra_admin_password\" : \"$avi_pass_escaped\",
+        \"default_cert\": $default_cert
+        }")
 
     STATUS_CODE=${response: -3}
     RESPONSE_BODY=${response:0:${#response}-3}
@@ -194,8 +237,10 @@ uploadcertificate() {
     echo
     read -p "Enter NSX manager hostname or IP: " nsx_manager
     rawcert=$(cat ./root.crt)
-    cert="{\"pem_encoded\": \"${rawcert//$'\n'/\\n}\"}"
-    response=$(curl -k -sS -u "admin:$nsx_pass" -w "%{http_code}" --location -X POST -o - "https://$nsx_manager/policy/api/v1/trust-management/certificates/sddcm_root?action=import_trusted_ca" \
+    cert_escaped=$(json_escape "$rawcert")
+    cert="{\"pem_encoded\": \"$cert_escaped\"}"
+    nsx_pass_encoded=$(url_encode "$nsx_pass")
+    response=$(curl -k -sS -u "admin:$nsx_pass_encoded" -w "%{http_code}" --location -X POST -o - "https://$nsx_manager/policy/api/v1/trust-management/certificates/sddcm_root?action=import_trusted_ca" \
     --header 'Content-Type: application/json' \
     -d "$cert")
     STATUS_CODE=${response: -3}
