@@ -105,8 +105,10 @@ Located in `event subscription for generating an SSL certificate/`
 - **Actions**: 
   - Authenticates to Avi Controller
   - Creates SSL certificate request via API (`/api/sslkeyandcertificate`)
-  - Generates RSA 2048-bit key
-  - Submits request to certificate management profile
+    - Prompts the controller to generate an RSA 2048-bit key
+    - Submits the certificate signing request to the external CA
+    - CA will respond with a signed certificate
+    - Controller will add this to the Avi certificate store
   - Binds certificate to virtual service automatically
 
 #### Event Subscription: Content Switching
@@ -192,7 +194,7 @@ Most blueprints support:
 - `CCI.Supervisor.Resource`: Generic Kubernetes resource wrapper
 - Native Kubernetes resources (Ingress, Service, VirtualMachine, etc.)
 
-## Security Features
+## Virtual Service Features
 
 ### SSL/TLS Configuration
 - System-Standard SSL profiles
@@ -205,7 +207,7 @@ Most blueprints support:
 - Custom health check paths and methods
 - Configurable health check intervals
 
-### Network Security
+### NSX Cloud-specific parameters
 - NSX Security Group integration for dynamic pool membership
 - VRF context isolation for multi-tenancy
 - Tier-1 gateway routing

@@ -66,6 +66,6 @@ resources:
       account: <CONTROLLER_ACCOUNT_NAME>  # SANITIZED: Replace with your Avi Controller account name
       default_server_port: ${input.port}
       nsx_securitygroup:
-        - <SECURITY_GROUP_NAME>  # SANITIZED: Replace with your NSX Security Group name
+        - ${input.pool_security_group}
       health_monitor_refs:
         - System-HTTP

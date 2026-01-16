@@ -12,10 +12,12 @@ inputs:
   certificate_name:
     type: string
     title: Certificate Secret
+    description: Name of the Kubernetes TLS secret containing the certificate
     enum:
-      - Wildcard ECC
-      - Wildcard RSA
-      - System Default
+      - wildcard-ecc
+      - wildcard-rsa
+      - system-default
+    default: system-default
 resources:
   CCI_Supervisor_Namespace_1:
     type: CCI.Supervisor.Namespace
@@ -144,7 +146,7 @@ resources:
           tls:
             - hosts:
                 - ${input.app_prefix}-web.<DOMAIN>  # SANITIZED: Replace <DOMAIN> with your DNS domain
-              secretName: <TLS_SECRET_NAME>  # SANITIZED: Replace with your TLS secret name
+              secretName: ${input.certificate_name}
           rules:
             - host: ${input.app_prefix}-web.<DOMAIN>  # SANITIZED: Replace <DOMAIN> with your DNS domain
               http:

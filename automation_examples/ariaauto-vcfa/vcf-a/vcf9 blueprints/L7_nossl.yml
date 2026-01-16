@@ -9,21 +9,15 @@ inputs:
     type: string
     title: Application Name
     description: Prefix to identify application components
-  os:
-    type: string
-    title: Operating System
-    description: OS to deploy
-    enum:
-      - Ubuntu
-      - Debian
-      - Photon
   app_user:
     type: string
     title: Application Username
     description: Username for logging into the server
+    default: aviuser
   app_password:
     type: string
     title: Application Password
+    description: Password for the application user
     encrypted: true
     writeOnly: true
 resources:
@@ -43,7 +37,7 @@ resources:
           name: ${input.app_prefix}-bootstrap-secret
           namespace: ${resource.CCI_Supervisor_Namespace_1.name}
         stringData:
-          aviuser-passwd: <PASSWORD_HASH>  # SANITIZED: Replace with your password hash (use mkpasswd or similar)
+          user-password: ${input.app_password}
   VM_1:
     type: CCI.Supervisor.Resource
     dependsOn:
@@ -72,10 +66,10 @@ resources:
                   - /usr/bin/apt update
                   - /usr/bin/apt-get install -y apache2 php php-mysql libapache2-mod-php php-cli php-common php-intl php-gd php-mbstring php-xml php-zip php-curl php-xmlrpc unzip open-vm-tools
                 users:
-                  - name: aviuser
+                  - name: ${input.app_user}
                     passwd:
                       name: ${input.app_prefix}-bootstrap-secret
-                      key: aviuser-passwd
+                      key: user-password
                     lock_passwd: false
                     sudo: ALL=(ALL) NOPASSWD:ALL
       wait:
@@ -110,10 +104,10 @@ resources:
                   - /usr/bin/apt update
                   - /usr/bin/apt-get install -y apache2 php php-mysql libapache2-mod-php php-cli php-common php-intl php-gd php-mbstring php-xml php-zip php-curl php-xmlrpc unzip open-vm-tools
                 users:
-                  - name: aviuser
+                  - name: ${input.app_user}
                     passwd:
                       name: ${input.app_prefix}-bootstrap-secret
-                      key: aviuser-passwd
+                      key: user-password
                     lock_passwd: false
                     sudo: ALL=(ALL) NOPASSWD:ALL
       wait:
