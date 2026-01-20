@@ -20,7 +20,7 @@ The helper script is a bash script and will need to be run from an appropriate s
     <summary>Uploading the bundle to SDDC manager</summary>
 <br/><br/>
 
-This requires 3 files, pvc.json, pvc.sig, and the Avi OVA for the 31.1.1 (VCF 9.0) or 31.1.2 (VCF 9.0.1) release.  The pvc files are available in this repo, and the controller OVA is available on the Broadcom support portal.
+This requires 3 files, pvc.json, pvc.sig, and the Avi OVA corresponding to your VCF release.  The pvc files are available in this repo, and the controller OVA is available on the Broadcom support portal.
 
 It is critical that the product version entered in the tool matches the build number in the pvc.json exactly.
 
@@ -29,6 +29,7 @@ Avi Version | VCF version | Avi OVA filename | Avi product version
 ----------- | ----------- | ---------------- | -------------------
 31.1.1 | 9.0.0 | controller-31.1.1-9122.ova | 31.1.1-24544104
 31.1.2 | 9.0.1 | controller-31.1.2-9193.ova | 31.1.2-24923866
+31.2.1 | 9.0.2 | controller-31.2.1-9148.ova | 31.2.1-25015167
 
 </details>
 
