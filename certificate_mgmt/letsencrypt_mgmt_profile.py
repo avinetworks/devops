@@ -187,7 +187,15 @@ def get_crt(user, password, tenant, api_version, csr, CA=DEFAULT_CA, disable_che
             maxVerifyAttempts = 5 # maximal amount of verification attempts
             # retrying logic. Otherwise race-condition can occurr between avi controller pushing config and the token validation request
             for verifyAttempt in range(maxVerifyAttempts):
-                reqToken = _do_request(wellknown_url, verify=False)
+                try:
+                    reqToken = _do_request(wellknown_url, verify=False)
+                except ValueError as e:
+                    print("Validation HTTP error (retry if attempts remain): {}".format(str(e)))
+                    if verifyAttempt + 1 == maxVerifyAttempts:
+                        raise
+                    print("Retrying in 2 seconds...")
+                    time.sleep(2)
+                    continue
                 if reqToken[0] != keyauthorization:
                     print ("Internal token validation failed, {0} of {1} attempts. Retrying in 2 seconds."
                                 .format((verifyAttempt + 1), maxVerifyAttempts))
@@ -531,7 +539,7 @@ def get_crt(user, password, tenant, api_version, csr, CA=DEFAULT_CA, disable_che
     _send_signed_request(order['finalize'], {"csr": _b64(csr_der)}, "Error finalizing order")
 
     # poll the order to monitor when it's done
-    order = _poll_until_not(order_headers['Location'], ["pending", "processing"], "Error checking order status")
+    order = _poll_until_not(order_headers['Location'], ["pending", "processing", "ready"], "Error checking order status")
     if order['status'] != "valid":
         raise ValueError("Order failed: {0}".format(order))
 

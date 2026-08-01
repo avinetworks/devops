@@ -469,7 +469,7 @@ def get_crt(user, password, tenant, api_version, csr, CA=DEFAULT_CA, disable_che
     _send_signed_request(order['finalize'], {"csr": _b64(csr_der)}, "Error finalizing order")
 
     # poll the order to monitor when it's done
-    order = _poll_until_not(order_headers['Location'], ["pending", "processing"], "Error checking order status")
+    order = _poll_until_not(order_headers['Location'], ["pending", "processing", "ready"], "Error checking order status")
     if order['status'] != "valid":
         raise ValueError("Order failed: {0}".format(order))
 
