@@ -1,4 +1,3 @@
-
 """
 This script allows the user to communicate with Infoblox DNS provider.
 
@@ -34,6 +33,7 @@ import logging
 import copy
 from bs4 import BeautifulSoup
 
+CERT_VERIFICATION = False
 
 class CustomDnsAuthenticationErrorException(Exception):
     """
@@ -115,6 +115,7 @@ def _get_ips_by_host(auth_params, record_name, ip_type='V4_V6'):
     """
     Function to return ips for a given record name.
     """
+    record_name = record_name.lower()
     username = auth_params.get('username',None)
     password = auth_params.get('password',None)
     server = auth_params.get('server',None)
@@ -128,7 +129,7 @@ def _get_ips_by_host(auth_params, record_name, ip_type='V4_V6'):
     ipaddrs = []
     try:
         if server6:
-            r6 = requests.get(url=rest_url6, auth=(username, password), verify=False)
+            r6 = requests.get(url=rest_url6, auth=(username, password), verify=CERT_VERIFICATION)
             logger.info("record_name[%s], GET req[%s] status_code[%s]" % (record_name, rest_url6, r6.status_code))
             r6_json = r6.json()
             err_msg = str(r6.status_code)
@@ -146,7 +147,7 @@ def _get_ips_by_host(auth_params, record_name, ip_type='V4_V6'):
                 else:
                     err_msg += ": No host records found!"
             elif server:
-                r = requests.get(url=rest_url, auth=(username, password), verify=False)
+                r = requests.get(url=rest_url, auth=(username, password), verify=CERT_VERIFICATION)
                 logger.info("record_name[%s], GET req[%s] status_code[%s]" % (record_name, rest_url, r.status_code))
                 r_json = r.json()
                 err_msg = str(r.status_code)
@@ -199,6 +200,7 @@ def _create_dns_record(auth_params, record_name, ips):
     """
     Function to create a DNS record.
     """
+    record_name = record_name.lower()
     username = auth_params.get('username',None)
     password = auth_params.get('password',None)
     server = auth_params.get('server',None)
@@ -215,7 +217,7 @@ def _create_dns_record(auth_params, record_name, ips):
     try:
         if server6:
             r6 = requests.post(url=rest_url6, auth=(username, password),
-                    verify=False, data=payload)
+                    verify=CERT_VERIFICATION, data=payload)
             _check_and_raise_auth_error(r6)
             logger.info("record_name[%s], POST req[%s %s] status_code[%s]" % (record_name, rest_url6, payload, r6.status_code))
             r6_json = r6.json()
@@ -231,7 +233,7 @@ def _create_dns_record(auth_params, record_name, ips):
                     raise CustomDnsRecordAlreadyExistsException(r6_json['text'])
             elif server:
                 r = requests.post(url=rest_url, auth=(username, password),
-                            verify=False, data=payload)
+                            verify=CERT_VERIFICATION, data=payload)
                 _check_and_raise_auth_error(r)
                 logger.info("record_name[%s], POST req[%s %s] status_code[%s]" % (record_name, rest_url, payload, r.status_code))
                 r_json = r.json()
@@ -244,10 +246,10 @@ def _create_dns_record(auth_params, record_name, ips):
                         logger.info("record name[%s] for ipv4addrs %s and ipv6addrs %s already exists."%
                                     (record_name, ips['v4_ips'], ips['v6_ips']))
                     else:
-                        raise CustomDnsRecordAlreadyExistsException("Original exception was: " + r_json['text'])
+                        raise CustomDnsRecordAlreadyExistsException(r_json['text'])
         elif server:
             r = requests.post(url=rest_url, auth=(username, password),
-                        verify=False, data=payload)
+                        verify=CERT_VERIFICATION, data=payload)
             _check_and_raise_auth_error(r)
             logger.info("record_name[%s], POST req[%s %s] status_code[%s]" % (record_name, rest_url, payload, r.status_code))
             r_json = r.json()
@@ -260,7 +262,7 @@ def _create_dns_record(auth_params, record_name, ips):
                     logger.info("record name[%s] for ipv4addrs %s and ipv6addrs %s already exists."%
                                 (record_name, ips['v4_ips'], ips['v6_ips']))
                 else:
-                    raise CustomDnsRecordAlreadyExistsException("Original exception was: " + r_json['text'])
+                    raise CustomDnsRecordAlreadyExistsException(r_json['text'])
     except CustomDnsAuthenticationErrorException as e:
         raise
     except CustomDnsRecordAlreadyExistsException as e:
@@ -279,6 +281,7 @@ def _update_dns_record(auth_params, record_name, ips):
     """
     Function to update a given DNS record.
     """
+    record_name = record_name.lower()
     username = auth_params.get('username',None)
     password = auth_params.get('password',None)
     server = auth_params.get('server',None)
@@ -296,7 +299,7 @@ def _update_dns_record(auth_params, record_name, ips):
     rest_url6 = 'https://[' + server6 + ']/wapi/' + wapi_version + '/record:host?name=' + record_name if server6 else None
     try:
         if server6:
-            r6 = requests.get(url=rest_url6, auth=(username, password), verify=False)
+            r6 = requests.get(url=rest_url6, auth=(username, password), verify=CERT_VERIFICATION)
             _check_and_raise_auth_error(r6)
             logger.info("record_name[%s], GET req[%s] status_code[%s]" % (record_name, rest_url6, r6.status_code))
             r6_json = r6.json()
@@ -311,7 +314,7 @@ def _update_dns_record(auth_params, record_name, ips):
                 rest_url6 = 'https://[' + server6 + ']/wapi/' + wapi_version + '/' + host_ref + '?_return_fields=ipv4addrs,ipv6addrs'
                 try:
                     r6 = requests.put(url=rest_url6, auth=(username, password),
-                                verify=False, data=payload)
+                                verify=CERT_VERIFICATION, data=payload)
                     _check_and_raise_auth_error(r6)
                     logger.info("record_name[%s], PUT req[%s %s] status_code[%s]" % (record_name, rest_url6, payload, r6.status_code))
                     r6_json = r6.json()
@@ -326,7 +329,7 @@ def _update_dns_record(auth_params, record_name, ips):
                                     (record_name, rest_url6, payload, str(e)))
                     raise CustomDnsGeneralException("Error updating dns record %s on Infoblox, reason[%s]" %(record_name, str(e)))
             elif server:
-                r = requests.get(url=rest_url, auth=(username, password), verify=False)
+                r = requests.get(url=rest_url, auth=(username, password), verify=CERT_VERIFICATION)
                 _check_and_raise_auth_error(r)
                 logger.info("record_name[%s], GET req[%s] status_code[%s]" % (record_name, rest_url, r.status_code))
                 r_json = r.json()
@@ -341,7 +344,7 @@ def _update_dns_record(auth_params, record_name, ips):
                     rest_url = 'https://' + server + '/wapi/' + wapi_version + '/' + host_ref + '?_return_fields=ipv4addrs,ipv6addrs'
                     try:
                         r = requests.put(url=rest_url, auth=(username, password),
-                                    verify=False, data=payload)
+                                    verify=CERT_VERIFICATION, data=payload)
                         _check_and_raise_auth_error(r)
                         logger.info("record_name[%s], PUT req[%s %s] status_code[%s]" % (record_name, rest_url, payload, r.status_code))
                         r_json = r.json()
@@ -362,7 +365,7 @@ def _update_dns_record(auth_params, record_name, ips):
                 err_msg = str(r6.status_code) + (' : '  + r6_json['text'] if 'text' in r6_json else '')
                 raise CustomDnsGeneralException(err_msg)
         elif server:
-            r = requests.get(url=rest_url, auth=(username, password), verify=False)
+            r = requests.get(url=rest_url, auth=(username, password), verify=CERT_VERIFICATION)
             _check_and_raise_auth_error(r)
             logger.info("record_name[%s], GET req[%s] status_code[%s]" % (record_name, rest_url, r.status_code))
             r_json = r.json()
@@ -377,7 +380,7 @@ def _update_dns_record(auth_params, record_name, ips):
                 rest_url = 'https://' + server + '/wapi/' + wapi_version + '/' + host_ref + '?_return_fields=ipv4addrs,ipv6addrs'
                 try:
                     r = requests.put(url=rest_url, auth=(username, password),
-                                verify=False, data=payload)
+                                verify=CERT_VERIFICATION, data=payload)
                     _check_and_raise_auth_error(r)
                     logger.info("record_name[%s], PUT req[%s %s] status_code[%s]" % (record_name, rest_url, payload, r.status_code))
                     r_json = r.json()
@@ -415,6 +418,7 @@ def _delete_dns_record(auth_params, record_name, expected_ips=None):
             If provided, only matching IPs are removed. If all IPs match or no expected_ips,
             the entire record is deleted.
     """
+    record_name = record_name.lower()
     username = auth_params.get('username',None)
     password = auth_params.get('password',None)
     server = auth_params.get('server',None)
@@ -429,7 +433,7 @@ def _delete_dns_record(auth_params, record_name, expected_ips=None):
     try:
         if server6:
             # Get the reference of the dns record
-            r6 = requests.get(url=rest_url6, auth=(username, password), verify=False)
+            r6 = requests.get(url=rest_url6, auth=(username, password), verify=CERT_VERIFICATION)
             _check_and_raise_auth_error(r6)
             logger.info("record_name[%s], GET req[%s] status_code[%s]" % (record_name, rest_url6, r6.status_code))
             r6_json = r6.json()
@@ -478,7 +482,7 @@ def _delete_dns_record(auth_params, record_name, expected_ips=None):
                                             (record_name, matching_v4_ips, matching_v6_ips))
                                 rest_url6 = 'https://[' + server6 + ']/wapi/' + \
                                     wapi_version + '/' + host_ref
-                                r6 = requests.delete(url=rest_url6, auth=(username, password), verify=False)
+                                r6 = requests.delete(url=rest_url6, auth=(username, password), verify=CERT_VERIFICATION)
                                 _check_and_raise_auth_error(r6)
                                 logger.info("record_name[%s], DELETE req[%s] status_code[%s]" % (record_name, rest_url6, r6.status_code))
                                 r6_json = r6.json()
@@ -504,7 +508,7 @@ def _delete_dns_record(auth_params, record_name, expected_ips=None):
                                 logger.info("Removing matching IPs from record[%s]. Removing v4_ips[%s], v6_ips[%s]. Remaining v4_ips[%s], v6_ips[%s]" %
                                             (record_name, matching_v4_ips, matching_v6_ips, remaining_v4_ips, remaining_v6_ips))
                                 rest_url6 = 'https://[' + server6 + ']/wapi/' + wapi_version + '/' + host_ref
-                                r6 = requests.put(url=rest_url6, auth=(username, password), verify=False, data=json.dumps(payload))
+                                r6 = requests.put(url=rest_url6, auth=(username, password), verify=CERT_VERIFICATION, data=json.dumps(payload))
                                 _check_and_raise_auth_error(r6)
                                 logger.info("record_name[%s], PUT req[%s %s] status_code[%s]" % (record_name, rest_url6, json.dumps(payload), r6.status_code))
                                 r6_json = r6.json()
@@ -521,7 +525,7 @@ def _delete_dns_record(auth_params, record_name, expected_ips=None):
                             # expected_ips is provided but empty, delete entire record
                             rest_url6 = 'https://[' + server6 + ']/wapi/' + \
                                 wapi_version + '/' + host_ref
-                            r6 = requests.delete(url=rest_url6, auth=(username, password), verify=False)
+                            r6 = requests.delete(url=rest_url6, auth=(username, password), verify=CERT_VERIFICATION)
                             _check_and_raise_auth_error(r6)
                             logger.info("record_name[%s], DELETE req[%s] status_code[%s]" % (record_name, rest_url6, r6.status_code))
                             r6_json = r6.json()
@@ -538,7 +542,7 @@ def _delete_dns_record(auth_params, record_name, expected_ips=None):
                         # No expected_ips provided, delete entire record (backward compatibility)
                         rest_url6 = 'https://[' + server6 + ']/wapi/' + \
                             wapi_version + '/' + host_ref
-                        r6 = requests.delete(url=rest_url6, auth=(username, password), verify=False)
+                        r6 = requests.delete(url=rest_url6, auth=(username, password), verify=CERT_VERIFICATION)
                         _check_and_raise_auth_error(r6)
                         logger.info("record_name[%s], DELETE req[%s] status_code[%s]" % (record_name, rest_url6, r6.status_code))
                         r6_json = r6.json()
@@ -555,7 +559,7 @@ def _delete_dns_record(auth_params, record_name, expected_ips=None):
                     logger.info(err_msg)
                     return
             elif server:
-                r = requests.get(url=rest_url, auth=(username, password), verify=False)
+                r = requests.get(url=rest_url, auth=(username, password), verify=CERT_VERIFICATION)
                 _check_and_raise_auth_error(r)
                 logger.info("record_name[%s], GET req[%s] status_code[%s]" % (record_name, rest_url, r.status_code))
                 r_json = r.json()
@@ -604,7 +608,7 @@ def _delete_dns_record(auth_params, record_name, expected_ips=None):
                                                 (record_name, matching_v4_ips, matching_v6_ips))
                                     rest_url = 'https://' + server + '/wapi/' + \
                                         wapi_version + '/' + host_ref
-                                    r = requests.delete(url=rest_url, auth=(username, password), verify=False)
+                                    r = requests.delete(url=rest_url, auth=(username, password), verify=CERT_VERIFICATION)
                                     _check_and_raise_auth_error(r)
                                     logger.info("record_name[%s], DELETE req[%s] status_code[%s]" % (record_name, rest_url, r.status_code))
                                     r_json = r.json()
@@ -630,7 +634,7 @@ def _delete_dns_record(auth_params, record_name, expected_ips=None):
                                     logger.info("Removing matching IPs from record[%s]. Removing v4_ips[%s], v6_ips[%s]. Remaining v4_ips[%s], v6_ips[%s]" %
                                                 (record_name, matching_v4_ips, matching_v6_ips, remaining_v4_ips, remaining_v6_ips))
                                     rest_url = 'https://' + server + '/wapi/' + wapi_version + '/' + host_ref
-                                    r = requests.put(url=rest_url, auth=(username, password), verify=False, data=json.dumps(payload))
+                                    r = requests.put(url=rest_url, auth=(username, password), verify=CERT_VERIFICATION, data=json.dumps(payload))
                                     _check_and_raise_auth_error(r)
                                     logger.info("record_name[%s], PUT req[%s %s] status_code[%s]" % (record_name, rest_url, json.dumps(payload), r.status_code))
                                     r_json = r.json()
@@ -647,7 +651,7 @@ def _delete_dns_record(auth_params, record_name, expected_ips=None):
                                 # expected_ips is provided but empty, delete entire record
                                 rest_url = 'https://' + server + '/wapi/' + \
                                     wapi_version + '/' + host_ref
-                                r = requests.delete(url=rest_url, auth=(username, password), verify=False)
+                                r = requests.delete(url=rest_url, auth=(username, password), verify=CERT_VERIFICATION)
                                 _check_and_raise_auth_error(r)
                                 logger.info("record_name[%s], DELETE req[%s] status_code[%s]" % (record_name, rest_url, r.status_code))
                                 r_json = r.json()
@@ -664,7 +668,7 @@ def _delete_dns_record(auth_params, record_name, expected_ips=None):
                             # No expected_ips provided, delete entire record (backward compatibility)
                             rest_url = 'https://' + server + '/wapi/' + \
                                 wapi_version + '/' + host_ref
-                            r = requests.delete(url=rest_url, auth=(username, password), verify=False)
+                            r = requests.delete(url=rest_url, auth=(username, password), verify=CERT_VERIFICATION)
                             _check_and_raise_auth_error(r)
                             logger.info("record_name[%s], DELETE req[%s] status_code[%s]" % (record_name, rest_url, r.status_code))
                             r_json = r.json()
@@ -692,7 +696,7 @@ def _delete_dns_record(auth_params, record_name, expected_ips=None):
                 raise CustomDnsGeneralException(err_msg)
         elif server:
             # Get the reference of the dns record
-            r = requests.get(url=rest_url, auth=(username, password), verify=False)
+            r = requests.get(url=rest_url, auth=(username, password), verify=CERT_VERIFICATION)
             _check_and_raise_auth_error(r)
             logger.info("record_name[%s], GET req[%s] status_code[%s]" % (record_name, rest_url, r.status_code))
             r_json = r.json()
@@ -741,7 +745,7 @@ def _delete_dns_record(auth_params, record_name, expected_ips=None):
                                             (record_name, matching_v4_ips, matching_v6_ips))
                                 rest_url = 'https://' + server + '/wapi/' + \
                                     wapi_version + '/' + host_ref
-                                r = requests.delete(url=rest_url, auth=(username, password), verify=False)
+                                r = requests.delete(url=rest_url, auth=(username, password), verify=CERT_VERIFICATION)
                                 _check_and_raise_auth_error(r)
                                 logger.info("record_name[%s], DELETE req[%s] status_code[%s]" % (record_name, rest_url, r.status_code))
                                 r_json = r.json()
@@ -767,7 +771,7 @@ def _delete_dns_record(auth_params, record_name, expected_ips=None):
                                 logger.info("Removing matching IPs from record[%s]. Removing v4_ips[%s], v6_ips[%s]. Remaining v4_ips[%s], v6_ips[%s]" %
                                             (record_name, matching_v4_ips, matching_v6_ips, remaining_v4_ips, remaining_v6_ips))
                                 rest_url = 'https://' + server + '/wapi/' + wapi_version + '/' + host_ref
-                                r = requests.put(url=rest_url, auth=(username, password), verify=False, data=json.dumps(payload))
+                                r = requests.put(url=rest_url, auth=(username, password), verify=CERT_VERIFICATION, data=json.dumps(payload))
                                 _check_and_raise_auth_error(r)
                                 logger.info("record_name[%s], PUT req[%s %s] status_code[%s]" % (record_name, rest_url, json.dumps(payload), r.status_code))
                                 r_json = r.json()
@@ -784,7 +788,7 @@ def _delete_dns_record(auth_params, record_name, expected_ips=None):
                             # expected_ips is provided but empty, delete entire record
                             rest_url = 'https://' + server + '/wapi/' + \
                                 wapi_version + '/' + host_ref
-                            r = requests.delete(url=rest_url, auth=(username, password), verify=False)
+                            r = requests.delete(url=rest_url, auth=(username, password), verify=CERT_VERIFICATION)
                             _check_and_raise_auth_error(r)
                             logger.info("record_name[%s], DELETE req[%s] status_code[%s]" % (record_name, rest_url, r.status_code))
                             r_json = r.json()
@@ -801,7 +805,7 @@ def _delete_dns_record(auth_params, record_name, expected_ips=None):
                         # No expected_ips provided, delete entire record (backward compatibility)
                         rest_url = 'https://' + server + '/wapi/' + \
                             wapi_version + '/' + host_ref
-                        r = requests.delete(url=rest_url, auth=(username, password), verify=False)
+                        r = requests.delete(url=rest_url, auth=(username, password), verify=CERT_VERIFICATION)
                         _check_and_raise_auth_error(r)
                         logger.info("record_name[%s], DELETE req[%s] status_code[%s]" % (record_name, rest_url, r.status_code))
                         r_json = r.json()
@@ -871,10 +875,10 @@ def TestLogin(auth_params):
         r = None
         r6 = None
         if server:
-            r = requests.get(url=schema_url, auth=auth, verify=False, timeout=30)
+            r = requests.get(url=schema_url, auth=auth, verify=CERT_VERIFICATION, timeout=30)
             logger.info("F[TestLogin] req[%s] status_code[%s]" % (schema_url, r.status_code))
         if server6:
-            r6 = requests.get(url=schema_url6, auth=auth, verify=False, timeout=30)
+            r6 = requests.get(url=schema_url6, auth=auth, verify=CERT_VERIFICATION, timeout=30)
             logger.info("F[TestLogin] req[%s] status_code[%s]" % (schema_url6, r6.status_code))
         if (not r or r.status_code == 200) and (not r6 or r6.status_code == 200):
             return True
