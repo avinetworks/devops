@@ -5,7 +5,7 @@ See [this doc](https://docs.vmware.com/en/VMware-Avi-Load-Balancer/30.2/Configur
 
 ## vault_cert_management.py
 
-This is a Certificate Management Profile script for Hashicorp Vault acting as a Certificate Authority (PKI Secrets Engine).
+This is a Certificate Management Profile script for Hashicorp Vault acting as a Certificate Authority (PKI Secrets Engine). Must use either vault_token or (role_name, role_id, secret_id)
 
 The Certificate Management Profile should be configured with the following parameters:
 
@@ -22,8 +22,24 @@ API path for the **sign** API endpoint for the specific PKI secrets engine and r
 Example: /v1/pki_int/sign/contoso-com-role
 
 *vault_token*:\
-**REQUIRED**\
+**OPTIONAL**\
 An API token with sufficient access to call the signing API.
+
+Note: It is strongly recommended to mark this parameter as "sensitive".
+
+Vault Token may be omitted if all these are specified:
+
+*role_name*:\
+**OPTIONAL**\
+Role Name to be used in authentication path for role.
+
+*role_id*:\
+**OPTIONAL**\
+Role ID to be used in authentication path for role.
+
+*secret_id*:\
+**OPTIONAL**\
+Secret ID to be used in authentication path for role.
 
 Note: It is strongly recommended to mark this parameter as "sensitive".
 

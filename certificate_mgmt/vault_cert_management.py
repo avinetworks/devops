@@ -14,13 +14,42 @@ REMOTE_API_ERROR=2
 REQUESTS_ERROR=3
 TEMP_FILE_ERROR=4
 
+def get_vault_token_with_approle(vault_addr, role_name, role_id, secret_id, vault_namespace=None, api_timeout=20):
+    """
+    Authenticate with Vault using AppRole and retrieve a token.
+    """
+    url = f'{vault_addr}/v1/auth/{role_name}/login'
+    headers = {}
+    if vault_namespace:
+        headers['X-Vault-Namespace'] = vault_namespace
+
+    data = {
+        'role_id': role_id,
+        'secret_id': secret_id
+    }
+
+    try:
+        r = requests.post(url, headers=headers, json=data, timeout=api_timeout)
+        if r.status_code >= 400:
+            try:
+                r_errors = ' | '.join(r.json()['errors'])
+            except (JSONDecodeError, KeyError):
+                r_errors = r.text
+            sys.stderr.write(f'Error during AppRole authentication: {r_errors}')
+            sys.exit(REMOTE_API_ERROR)
+
+        return r.json()['auth']['client_token']
+    except Exception as e:
+        sys.stderr.write(f'Error during AppRole authentication request: {str(e)}')
+        sys.exit(REQUESTS_ERROR)
+
 def certificate_request(csr, common_name, args_dict):
     if 'vault_addr' not in args_dict:
         sys.stderr.write('Vault API Root Address (vault_addr) not specified')
         sys.exit(PARAMS_ERROR)
 
-    if 'vault_token' not in args_dict:
-        sys.stderr.write('Vault Token (vault_token) not specified')
+    if 'vault_token' not in args_dict and ('role_id' not in args_dict or 'secret_id' not in args_dict or 'role_name' not in args_dict):
+        sys.stderr.write('Vault Token (vault_token), AppRole credentials (role_name, role_id, and secret_id), or role_name not specified')
         sys.exit(PARAMS_ERROR)
 
     if 'vault_path' not in args_dict:
@@ -28,17 +57,27 @@ def certificate_request(csr, common_name, args_dict):
         sys.exit(PARAMS_ERROR)
 
     vault_addr = args_dict['vault_addr']
-    vault_token = args_dict['vault_token']
+    vault_token = args_dict.get('vault_token', None)
     vault_path = args_dict['vault_path']
+    if vault_path.startswith('/'):
+        vault_path = vault_path[1:]
     vault_namespace = args_dict.get('vault_namespace', None)
     verify_endpoint = args_dict.get('verify_endpoint', None)
     api_timeout = args_dict.get('api_timeout', 20)
+
+    if 'role_name' in args_dict and 'role_id' in args_dict and 'secret_id' in args_dict:
+        role_name = args_dict['role_name']
+        role_id = args_dict['role_id']
+        secret_id = args_dict['secret_id']
+        vault_token = get_vault_token_with_approle(
+            vault_addr, role_name, role_id, secret_id, vault_namespace, api_timeout
+        )
 
     headers = {'X-Vault-Token': vault_token}
     if vault_namespace:
         headers['X-Vault-Namespace'] = vault_namespace
 
-    url = f'{vault_addr}{vault_path}'
+    url = f'{vault_addr}/{vault_path}'
     api_data = {
         'common_name': common_name,
         'csr': csr
