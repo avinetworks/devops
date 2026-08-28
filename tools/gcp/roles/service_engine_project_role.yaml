@@ -28,6 +28,7 @@ includedPermissions:
 - compute.instances.setTags
 - compute.instances.use
 - compute.machineTypes.get
+- compute.machineTypes.list
 - compute.regionOperations.get
 - compute.regions.get
 - compute.regions.list
