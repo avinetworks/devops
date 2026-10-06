@@ -12,9 +12,11 @@ This directory contains IAM policies and trust policies used by Avi Controller c
 - Scope: Generally `Resource: *` with conditions on `ec2:ResourceTag/AVICLOUD_UUID` or `avicloud_uuid` where applicable.
 
 ### avicontroller-iam-policy.json
-- Purpose: Read IAM metadata about Avi roles and policies.
-- Key actions: `iam:Get*`, `iam:List*` for roles/policies/instance-profiles.
+- Purpose: Read IAM metadata about Avi roles and policies, and pass the `vmimport` role to VM Import/Export.
+- Key actions: `iam:Get*`, `iam:List*` for roles/policies/instance-profiles, and `iam:PassRole` on the `vmimport` role.
 - Resources: Avi role/policy ARNs (e.g., `arn:aws:iam::*:role/AviController-Refined-Role`, `arn:aws:iam::*:policy/AviController*`) and `vmimport` role.
+- Required: The `AviControllerPassVmimportRole` statement must have `<Account_ID>` replaced with your 12-digit AWS account ID. Unlike the wildcards elsewhere in this directory, this is not optional scoping — IAM rejects the policy document with `MalformedPolicyDocument` if the placeholder is left in place.
+    - `ec2:ImportSnapshot` passes the `vmimport` service role to VM Import/Export, so the caller needs `iam:PassRole` on that role. Without it, SE AMI creation fails with `AuthFailure ... not authorized to perform iam:PassRole` and the cloud goes into a failed state. AWS began enforcing this requirement after these policies were first published (JIRA AV-296569).
 -Scope: Replace the prefix value as per the deployment.     
     - Role name used is AviController-Refined-Role
     - instance_profile_name should be same as Role name
@@ -63,6 +65,7 @@ This directory contains IAM policies and trust policies used by Avi Controller c
 - Purpose: Permissions for the `vmimport` role to import snapshots and register AMIs from S3.
 - Key actions: `s3:GetBucketLocation`, `s3:ListBucket`, `s3:GetObject`, and EC2 image/snapshot operations (`CopySnapshot`, `ModifySnapshotAttribute`, `RegisterImage`, `Describe*`).
 - Resources: S3 `avi-se-*` buckets and all EC2 for describes.
+- Scope: Replace `avi` with the new_se_prefix as per the deployment `arn:aws:s3:::<new_se_prefix>-se-*`. This must match the prefix used in `avicontroller-s3-policy.json` — if the two differ, the `vmimport` role cannot read the SE image from the bucket the Controller created and image import fails.
 
 ### vmimport-role-trust.json
 - Purpose: Trust policy for the `vmimport` role.
