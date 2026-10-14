@@ -16,7 +16,7 @@ This directory contains IAM policies and trust policies used by Avi Controller c
 - Key actions: `iam:Get*`, `iam:List*` for roles/policies/instance-profiles, and `iam:PassRole` on the `vmimport` role.
 - Resources: Avi role/policy ARNs (e.g., `arn:aws:iam::*:role/AviController-Refined-Role`, `arn:aws:iam::*:policy/AviController*`) and `vmimport` role.
 - Required: The `AviControllerPassVmimportRole` statement must have `<Account_ID>` replaced with your 12-digit AWS account ID. Unlike the wildcards elsewhere in this directory, this is not optional scoping — IAM rejects the policy document with `MalformedPolicyDocument` if the placeholder is left in place.
-    - `ec2:ImportSnapshot` passes the `vmimport` service role to VM Import/Export, so the caller needs `iam:PassRole` on that role. Without it, SE AMI creation fails with `AuthFailure ... not authorized to perform iam:PassRole` and the cloud goes into a failed state. AWS began enforcing this requirement after these policies were first published (JIRA AV-296569).
+    - `ec2:ImportSnapshot` passes the `vmimport` service role to VM Import/Export, so the caller needs `iam:PassRole` on that role. Without it, SE AMI creation fails with `AuthFailure ... not authorized to perform iam:PassRole` and the cloud goes into a failed state. AWS began enforcing this requirement after these policies were first published .
 -Scope: Replace the prefix value as per the deployment.     
     - Role name used is AviController-Refined-Role
     - instance_profile_name should be same as Role name
