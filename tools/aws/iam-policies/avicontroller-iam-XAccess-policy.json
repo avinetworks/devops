@@ -19,7 +19,7 @@
                 "iam:GetUserPolicy",
                 "iam:GetGroupPolicy",
                 "iam:ListUserPolicies",
-                "iam:ListgroupPolicies"
+                "iam:ListGroupPolicies"
             ],
             "Resource": [
                 "*"

@@ -39,6 +39,12 @@
                 "iam:ListRoles"
             ],
             "Resource": "*"
+        },
+        {
+            "Sid": "AviControllerPassVmimportRole",
+            "Effect": "Allow",
+            "Action": "iam:PassRole",
+            "Resource": "arn:aws:iam::<Account_ID>:role/vmimport"
         }
     ]
 }
