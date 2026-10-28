@@ -1,4 +1,4 @@
-# AVI eMudhra Certificate Exposure Scanner
+# Avi eMudhra Certificate Exposure Scanner
 
 The `avi_emudhra_cert_scan.py` script assesses Avi Load Balancer configurations to identify exposure to compromised eMudhra intermediate CA certificates. Additionally, it detects certificates chaining to eMudhra roots currently being phased out of trust stores by major browser and operating system vendors.
 
